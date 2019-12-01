@@ -5,24 +5,19 @@
 <%@ Import Namespace="YAF.Types.Extensions" %>
 
 <div class="row">
-    <div class="col-md-6">
-        <h5>
-            <asp:PlaceHolder ID="SelectionHolder" runat="server" Visible="false">
-                <asp:CheckBox ID="chkSelected" runat="server"
-                              Text="&nbsp;"
-                              CssClass="custom-control custom-checkbox d-inline-flex" />
-            </asp:PlaceHolder>
-            
-            <asp:Label runat="server" ID="TopicIcon"></asp:Label>
-          
-            <asp:Label runat="server" ID="Priority" Visible="False"></asp:Label> 
-            <asp:HyperLink runat="server" ID="TopicLink"></asp:HyperLink>
-            <asp:Label runat="server" ID="FavoriteCount"></asp:Label>
-        </h5>
+    <div class="col-lg-8 col-sm-8 col-md-8 col-12">
+        <asp:PlaceHolder ID="SelectionHolder" runat="server" Visible="false">
+            <asp:CheckBox ID="chkSelected" runat="server" Text="&nbsp;" CssClass="custom-control custom-checkbox d-inline-flex" />
+        </asp:PlaceHolder>
+
+        <asp:Label runat="server" ID="TopicIcon"></asp:Label>
+        <asp:Label runat="server" ID="Priority" Visible="False"></asp:Label>
+        <asp:HyperLink runat="server" ID="TopicLink"></asp:HyperLink>
+        <asp:Label runat="server" ID="FavoriteCount"></asp:Label>
+
         <asp:Label runat="server" ID="Description" CssClass="font-italic"></asp:Label>
         <p class="card-text">
-            <YAF:UserLink runat="server" ID="topicStarterLink">
-            </YAF:UserLink>
+            Started by&nbsp;<YAF:UserLink runat="server" ID="topicStarterLink"></YAF:UserLink>
             <span class="fa-stack">
                 <i class="fa fa-calendar-day fa-stack-1x text-secondary"></i>
                 <i class="fa fa-circle fa-badge-bg fa-inverse fa-outline-inverse"></i>
@@ -45,53 +40,29 @@
                 {
                     var altMultipages = string.Format(this.GetText("GOTO_POST_PAGER"), string.Empty);
             %>
-                <span>- <%--<i class="fas fa-copy fa-fw text-secondary"></i>--%> 
-                    <%=tPager%></span>
+            <span><%=tPager%></span>
             <%
            }
             %>
         </p>
     </div>
-    <div class="col-md-2">
-        <div class="d-flex flex-row flex-md-column justify-content-between justify-content-md-start">
-            <div>
-                <YAF:LocalizedLabel ID="LocalizedLabel4" runat="server" 
-                                    LocalizedTag="REPLIES" LocalizedPage="MODERATE" />:
-                <% this.Get<HttpResponseBase>().Write(this.FormatReplies()); %>
-            </div>
-            <div>
-                <YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" 
-                                    LocalizedPage="MODERATE" LocalizedTag="VIEWS" />:
-                <% this.Get<HttpResponseBase>().Write(this.FormatViews());%>
+
+    <asp:PlaceHolder runat="server" Visible='<%# !this.TopicRow["LastMessageID"].IsNullOrEmptyDBField() %>'>
+
+        <div class="col-lg-1 col-md-1 col-sm-1 d-none d-sm-block d-sm-none d-md-block">
+            <div class="topicStatsContainer">
+                <div class="topicReplies">Replies: <%=this.FormatReplies()%></div>
+                <div class="topicViews">Views: <%=this.FormatViews()%></div>
             </div>
         </div>
-    </div>
-    <asp:PlaceHolder runat="server" Visible='<%# !this.TopicRow["LastMessageID"].IsNullOrEmptyDBField() %>'>
-    <div class="col-md-4">
-        <h6>
-            <YAF:ThemeButton runat="server" ID="GoToLastPost" 
-                             Size="Small"
-                             Icon="share-square"
-                             Type="OutlineSecondary"
-                             TextLocalizedTag="GO_LAST_POST"
-                             CssClass="mt-1 mr-1"></YAF:ThemeButton>
-            <YAF:ThemeButton runat="server" ID="GoToLastUnread" 
-                             Size="Small"
-                             Icon="book-reader"
-                             Type="OutlineSecondary"
-                             TextLocalizedTag="GO_LASTUNREAD_POST"
-                             CssClass="mt-1"></YAF:ThemeButton>
-        </h6>
-        <hr/>
-        <h6><YAF:UserLink runat="server" ID="UserLast"></YAF:UserLink>
 
-            &nbsp;<span class="fa-stack">
-                <i class="fa fa-calendar-day fa-stack-1x text-secondary"></i>
-                <i class="fa fa-circle fa-badge-bg fa-inverse fa-outline-inverse"></i>
-                <i class="fa fa-clock fa-badge text-secondary"></i>
-            </span>&nbsp;
+        <div class="col-lg-3 col-md-3 col-sm-3 col-md-4 col-12">
+            Last post by
+            <YAF:UserLink runat="server" ID="UserLast"></YAF:UserLink>
+            <br />
+            <YAF:ThemeButton runat="server" ID="GoToLastPost" Size="Small" Icon="share-square" Type="None"></YAF:ThemeButton>
+            <YAF:ThemeButton runat="server" ID="GoToLastUnread" Size="Small" Icon="book-reader" Type="None"></YAF:ThemeButton>
             <YAF:DisplayDateTime runat="server" ID="LastDate"></YAF:DisplayDateTime>
-        </h6>
-    </div>
+        </div>
     </asp:PlaceHolder>
 </div>
