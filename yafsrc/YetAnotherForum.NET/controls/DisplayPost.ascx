@@ -158,7 +158,7 @@
                         </div>
                         <span id="<%# "dvThankBox{0}".Fmt(this.DataRow["MessageID"]) %>">
                             <YAF:ThemeButton ID="Thank" runat="server"
-                                Type="None"
+                                Type="Link"
                                 Icon="thumbs-up"
                                 Visible="false"
                                 TextLocalizedTag="BUTTON_THANKS"
@@ -172,19 +172,19 @@
                             Icon="cogs" />
                         <div class="dropdown-menu" aria-labelledby='<%# this.Manage.ClientID %>'>
                             <YAF:ThemeButton ID="Edit" runat="server"
-                                Type="None"
+                                Type="Link"
                                 CssClass="dropdown-item"
                                 Icon="edit"
                                 TextLocalizedTag="BUTTON_EDIT"
                                 TitleLocalizedTag="BUTTON_EDIT_TT" />
                             <YAF:ThemeButton ID="MovePost" runat="server"
-                                Type="None"
+                                Type="Link"
                                 CssClass="dropdown-item"
                                 Icon="arrows-alt"
                                 TextLocalizedTag="BUTTON_MOVE"
                                 TitleLocalizedTag="BUTTON_MOVE_TT" />
                             <YAF:ThemeButton ID="Delete" runat="server"
-                                Type="None"
+                                Type="Link"
                                 CssClass="dropdown-item"
                                 Icon="trash"
                                 TextLocalizedTag="BUTTON_DELETE"
