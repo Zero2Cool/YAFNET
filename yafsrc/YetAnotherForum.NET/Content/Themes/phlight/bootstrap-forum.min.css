@@ -11137,6 +11137,14 @@ a.list-group-item-danger.active {
     font-size: 0.85em;
 }
 
+.phGameInfo {
+    border-top: 1px solid #e2e2e2;
+    padding: 2px 0 5px 0;
+    color: #717171;
+    text-align: center;
+    white-space: nowrap;
+}
+
 .youtube6by9 {
     max-width: 476px;
 }
