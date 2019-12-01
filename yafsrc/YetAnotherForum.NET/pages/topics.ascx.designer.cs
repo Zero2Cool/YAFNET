@@ -24,42 +24,6 @@ namespace YAF.Pages
         protected global::YAF.Web.Controls.PageLinks PageLinks;
 
         /// <summary>
-        /// SubForums control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder SubForums;
-
-        /// <summary>
-        /// CollapsibleImage control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.CollapseButton CollapsibleImage;
-
-        /// <summary>
-        /// body control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl body;
-
-        /// <summary>
-        /// ForumList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Controls.ForumList ForumList;
-
-        /// <summary>
         /// Pager control.
         /// </summary>
         /// <remarks>
@@ -96,15 +60,6 @@ namespace YAF.Pages
         protected global::System.Web.UI.WebControls.Label PageTitle;
 
         /// <summary>
-        /// NoPostsPlaceHolder control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder NoPostsPlaceHolder;
-
-        /// <summary>
         /// Announcements control.
         /// </summary>
         /// <remarks>
@@ -112,6 +67,15 @@ namespace YAF.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater Announcements;
+
+        /// <summary>
+        /// NoPostsPlaceHolder control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder NoPostsPlaceHolder;
 
         /// <summary>
         /// TopicList control.
@@ -256,6 +220,42 @@ namespace YAF.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::YAF.Web.Controls.ThemeButton NewTopic2;
+
+        /// <summary>
+        /// SubForums control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder SubForums;
+
+        /// <summary>
+        /// CollapsibleImage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.CollapseButton CollapsibleImage;
+
+        /// <summary>
+        /// body control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl body;
+
+        /// <summary>
+        /// ForumList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Controls.ForumList ForumList;
 
         /// <summary>
         /// IconLegend1 control.
