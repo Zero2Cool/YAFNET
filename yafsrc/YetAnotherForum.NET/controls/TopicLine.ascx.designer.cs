@@ -96,22 +96,13 @@ namespace YAF.Controls
         protected global::YAF.Web.Controls.DisplayDateTime StartDate;
 
         /// <summary>
-        /// LocalizedLabel4 control.
+        /// UserLast control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel4;
-
-        /// <summary>
-        /// LocalizedLabel1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel1;
+        protected global::YAF.Web.Controls.UserLink UserLast;
 
         /// <summary>
         /// GoToLastPost control.
@@ -130,15 +121,6 @@ namespace YAF.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::YAF.Web.Controls.ThemeButton GoToLastUnread;
-
-        /// <summary>
-        /// UserLast control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.UserLink UserLast;
 
         /// <summary>
         /// LastDate control.

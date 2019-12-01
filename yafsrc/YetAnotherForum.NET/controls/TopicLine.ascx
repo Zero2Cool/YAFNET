@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-3 col-sm-3 col-md-4 col-12">
+        <div class="col-lg-3 col-md-3 col-sm-3 col-md-3 col-12">
             Last post by
             <YAF:UserLink runat="server" ID="UserLast"></YAF:UserLink>
             <br />
