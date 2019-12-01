@@ -3,7 +3,7 @@
 <%@ Import Namespace="ServiceStack" %>
 <%@ Import Namespace="YAF.Core.Extensions" %>
 <%@ Register TagPrefix="YAF" TagName="ForumList" Src="../controls/ForumList.ascx" %>
-<%@ Register TagPrefix="YAF" TagName="TopicLine" Src="~/controls/TopicLine.ascx" %>
+<%@ Register TagPrefix="YAF" TagName="TopicLine" Src="../controls/TopicLine.ascx" %>
 
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
