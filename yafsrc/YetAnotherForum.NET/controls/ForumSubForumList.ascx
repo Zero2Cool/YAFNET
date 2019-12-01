@@ -7,7 +7,7 @@ Inherits="YAF.Controls.ForumSubForumList" Codebehind="ForumSubForumList.ascx.cs"
     <HeaderTemplate>
         <div class="subForumList">
 
-        <span class="font-weight-bold">
+        <span class="font-weight-bold small">
             <YAF:LocalizedLabel ID="SubForums" LocalizedTag="SUBFORUMS" runat="server"/>:
         </span>
     </HeaderTemplate>
