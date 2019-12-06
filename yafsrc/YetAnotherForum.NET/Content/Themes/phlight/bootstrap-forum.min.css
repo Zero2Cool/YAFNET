@@ -5525,6 +5525,7 @@ a.badge-secondary:focus, a.badge-secondary.focus {
 .badge-success {
     color: #fff;
     background-color: #28b62c;
+    margin-right: 3px;
 }
 
 a.badge-success:hover, a.badge-success:focus {

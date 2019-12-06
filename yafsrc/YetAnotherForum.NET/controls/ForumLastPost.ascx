@@ -5,7 +5,7 @@
     
         <div class="forumLastTopic">
             <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
-                <asp:Label runat="server" ID="NewMessage"></asp:Label>&nbsp;<asp:HyperLink ID="topicLink" runat="server"></asp:HyperLink>
+                <asp:Label runat="server" ID="NewMessage">&nbsp;</asp:Label><asp:HyperLink ID="topicLink" runat="server"></asp:HyperLink>
             </asp:PlaceHolder>
         </div>
 
