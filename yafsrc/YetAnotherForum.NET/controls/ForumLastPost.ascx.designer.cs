@@ -39,7 +39,7 @@ namespace YAF.Controls
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label NewMessage;
+        protected global::System.Web.UI.WebControls.HyperLink topicLink;
 
         /// <summary>
         /// topicLink control.
@@ -48,7 +48,16 @@ namespace YAF.Controls
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink topicLink;
+        protected global::System.Web.UI.WebControls.Label NewMessage;
+
+        /// <summary>
+        /// Info control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.ThemeButton Info;
 
         /// <summary>
         /// LastTopicImgLink control.
@@ -57,7 +66,7 @@ namespace YAF.Controls
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.ThemeButton LastTopicImgLink;
+        protected global::YAF.Web.Controls.ThemeButton LastTopicImgLink;
 
         /// <summary>
         /// ImageLastUnreadMessageLink control.
@@ -66,25 +75,7 @@ namespace YAF.Controls
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.ThemeButton ImageLastUnreadMessageLink;
-
-        /// <summary>
-        /// LastPostDate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.DisplayDateTime LastPostDate;
-
-        /// <summary>
-        /// ProfileUserLink control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.UserLink ProfileUserLink;
+        protected global::YAF.Web.Controls.ThemeButton ImageLastUnreadMessageLink;
 
         /// <summary>
         /// NoPostsPlaceHolder control.

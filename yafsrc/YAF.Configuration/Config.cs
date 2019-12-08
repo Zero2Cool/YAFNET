@@ -68,7 +68,7 @@ namespace YAF.Configuration
         public static string BoardID => GetConfigValueAsString("YAF.BoardID") ?? "1";
 
         /// <summary>
-        ///     Gets the Folder to use for board specific uploads, images, themes Example : /Boards/
+        ///     Gets the Folder to use for board specific uploads, images Example : /Boards/
         /// </summary>
         [NotNull]
         public static string BoardRoot => GetConfigValueAsString("YAF.BoardRoot") ?? string.Empty;
