@@ -7,11 +7,10 @@
             <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
                 <strong><YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>:</strong>
                 <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
+                <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label>
             </asp:PlaceHolder>
         </div>
-
-        <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label>
-
+        
         <YAF:ThemeButton runat="server" ID="Info"
                          Icon="info-circle"
                          Type="OutlineSuccess"
