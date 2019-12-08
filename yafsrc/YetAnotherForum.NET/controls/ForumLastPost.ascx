@@ -2,35 +2,45 @@
 
 <asp:PlaceHolder ID="LastPostedHolder" runat="server">
     <div class="forumLatestContainer alert-warning">
-    
+
         <div class="forumLastTopic">
             <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
-                <asp:Label runat="server" ID="NewMessage">&nbsp;</asp:Label><asp:HyperLink ID="topicLink" runat="server"></asp:HyperLink>
+                <strong><YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>:</strong>
+                <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
             </asp:PlaceHolder>
         </div>
 
-        <div class=".d-none .d-sm-block">
-            <div class="forumLastPostedBy">
-                <YAF:ThemeButton runat="server" ID="LastTopicImgLink" Size="Small" Icon="share-square" Type="None"></YAF:ThemeButton>
-                <YAF:ThemeButton runat="server" ID="ImageLastUnreadMessageLink" Size="Small" Icon="book-reader" Type="None"></YAF:ThemeButton>
+        <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label>
 
-                <YAF:DisplayDateTime ID="LastPostDate" runat="server" Format="BothTopic" />by&nbsp;<YAF:UserLink ID="ProfileUserLink" runat="server" />
-            </div>
-        </div>
-
+        <YAF:ThemeButton runat="server" ID="Info"
+                         Icon="info-circle"
+                         Type="OutlineSuccess"
+                         DataToggle="popover"
+                         Size="Small"
+                         CssClass="mt-1 mr-1 btn-xs topic-link-popover">
+        </YAF:ThemeButton>
+        <YAF:ThemeButton runat="server" ID="LastTopicImgLink"
+                         Size="Small"
+                         Icon="share-square"
+                         Type="OutlineSuccess"
+                         DataToggle="tooltip"
+                         TitleLocalizedTag="GO_LAST_POST"
+                         CssClass="mt-1 mr-1 btn-xs">
+        </YAF:ThemeButton>
+        <YAF:ThemeButton runat="server" ID="ImageLastUnreadMessageLink"
+                         Size="Small"
+                         Icon="book-reader"
+                         Type="OutlineSuccess"
+                         DataToggle="tooltip"
+                         TitleLocalizedTag="GO_LASTUNREAD_POST"
+                         CssClass="mt-1 btn-xs">
+        </YAF:ThemeButton>
     </div>
 
-  <%--  &nbsp;<span class="fa-stack">
-        <i class="fa fa-calendar-day fa-stack-1x text-secondary"></i>
-        <i class="fa fa-circle fa-badge-bg fa-inverse fa-outline-inverse"></i>
-        <i class="fa fa-clock fa-badge text-secondary"></i>
-    </span>&nbsp;
-       --%>
-    
 </asp:PlaceHolder>
 
 <asp:PlaceHolder runat="server" ID="NoPostsPlaceHolder">
     <YAF:Alert runat="server" Type="info">
-        <YAF:LocalizedLabel ID="NoPostsLabel" runat="server" LocalizedTag="NO_POSTS" />
+        <YAF:LocalizedLabel ID="NoPostsLabel" runat="server" LocalizedTag="NO_POSTS"/>
     </YAF:Alert>
 </asp:PlaceHolder>

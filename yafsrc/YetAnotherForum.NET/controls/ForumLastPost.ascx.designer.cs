@@ -33,7 +33,7 @@ namespace YAF.Controls
         protected global::System.Web.UI.WebControls.PlaceHolder TopicInPlaceHolder;
 
         /// <summary>
-        /// NewMessage control.
+        /// topicLink control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
@@ -42,7 +42,7 @@ namespace YAF.Controls
         protected global::System.Web.UI.WebControls.HyperLink topicLink;
 
         /// <summary>
-        /// topicLink control.
+        /// NewMessage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
@@ -93,6 +93,6 @@ namespace YAF.Controls
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.LocalizedLabel NoPostsLabel;
+        protected global::YAF.Web.Controls.LocalizedLabel NoPostsLabel;
     }
 }

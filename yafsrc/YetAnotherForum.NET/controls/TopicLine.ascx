@@ -60,8 +60,8 @@
             Last post by
             <YAF:UserLink runat="server" ID="UserLast"></YAF:UserLink>
             <br />
-            <YAF:ThemeButton runat="server" ID="GoToLastPost" Size="Small" Icon="share-square" Type="None"></YAF:ThemeButton>
-            <YAF:ThemeButton runat="server" ID="GoToLastUnread" Size="Small" Icon="book-reader" Type="None"></YAF:ThemeButton>
+            <YAF:ThemeButton runat="server" CssClass="mt-1 mr-1 btn-xs" ID="GoToLastPost" Size="Small" Icon="share-square" Type="OutlineSuccess"></YAF:ThemeButton>
+            <YAF:ThemeButton runat="server" CssClass="mt-1 mr-1 btn-xs" ID="GoToLastUnread" Size="Small" Icon="book-reader" Type="OutlineSuccess"></YAF:ThemeButton>
             <YAF:DisplayDateTime runat="server" ID="LastDate"></YAF:DisplayDateTime>
         </div>
     </asp:PlaceHolder>
