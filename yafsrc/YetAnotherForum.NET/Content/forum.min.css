@@ -11185,11 +11185,14 @@ span.form-check {
 .blockquote-custom {
     position: relative;
     font-size: .85rem;
+    margin: 0 30px;
+    background-color: #ECECEC;
+    border-left: 3px solid #ffb612;
 }
 
 .blockquote-custom-icon {
-    width: 50px;
-    height: 50px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -11201,8 +11204,8 @@ span.form-check {
     -ms-flex-pack: center;
     justify-content: center;
     position: absolute;
-    top: -25px;
-    left: 50px;
+    top: 5px;
+    left: 5px;
 }
 
 .popover-body-scrollable {

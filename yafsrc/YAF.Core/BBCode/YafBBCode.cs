@@ -757,13 +757,13 @@ namespace YAF.Core.BBCode
                 ruleEngine.AddRule(
                     new QuoteRegexReplaceRule(
                         OpenQuoteUserIdRegex,
-                        @"<blockquote class=""blockquote blockquote-custom bg-white p-3 mt-5 shadow rounded"">
+                        @"<blockquote class=""blockquote blockquote-custom bg-secondary p-3 mt-5 shadow rounded"">
                     <div class=""blockquote-custom-icon bg-info shadow-sm""><i class=""fa fa-quote-left text-white""></i></div>${quote}",
                         Options));
 
                 // simple open quote tag
                 var simpleOpenQuoteReplace =
-                    $@"<blockquote class=""blockquote blockquote-custom bg-white p-3 mt-5 shadow rounded"">
+                    $@"<blockquote class=""blockquote blockquote-custom bg-secondary p-3 mt-5 shadow rounded"">
                           <div class=""blockquote-custom-icon bg-info shadow-sm""><i class=""fa fa-quote-left text-white""></i></div>
                              <footer class=""blockquote-footer pt-1 mt-3""><cite>{localQuoteStr}</cite></footer><p class=""mb-0 mt-2 font-italic"">";
 
