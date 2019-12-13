@@ -5084,10 +5084,10 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     flex-direction: column;
     min-width: 0;
     word-wrap: break-word;
-    background-color: #f3f3f3;
+    background-color: #fff;
     background-clip: border-box;
-    border: 1px solid #1f7322;
-    border-radius: 0.28rem;
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem
 }
 
     .card > hr {
@@ -5137,17 +5137,8 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 .card-header {
     padding: .5rem .75rem;
     margin-bottom: 0;
-    /*background-color: rgba(0,0,0,.03);*/
-    border-bottom: 1px solid rgba(0, 0, 0, .125);
-    background: #387a36;
-    /*background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJod…EiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);*/
-    /*background: -moz-linear-gradient(top, #387a36 0, #0a480d 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0,#387a36), color-stop(100%,#0a480d));
-    background: -webkit-linear-gradient(top, #387a36 0,#0a480d 100%);
-    background: -o-linear-gradient(top, #387a36 0,#0a480d 100%);
-    background: -ms-linear-gradient(top, #387a36 0,#0a480d 100%);
-    background: linear-gradient(to bottom, #387a36 0,#0a480d 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#387a36', endColorstr='#0a480d',GradientType=0 );*/
+    background-color: rgba(0,0,0,.03);
+    border-bottom: 1px solid rgba(0,0,0,.125)
 }
 
     .card-header:first-child {
