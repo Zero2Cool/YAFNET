@@ -33,7 +33,7 @@
     --breakpoint-md: 768px;
     --breakpoint-lg: 992px;
     --breakpoint-xl: 1200px;
-    --font-family-sans-serif: font-family: Tahoma,Arial,Helvetica,sans-serif;
+    --font-family-sans-serif: Tahoma,Arial,Helvetica,sans-serif;
     --font-family-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace
 }
 
@@ -55,7 +55,7 @@ article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
 
 body {
     margin: 0;
-    font-family: font-family: Tahoma,Arial,Helvetica,sans-serif;
+    font-family: Tahoma,Arial,Helvetica,sans-serif;
     font-size: .875rem;
     font-weight: 400;
     line-height: 1.5;
@@ -490,7 +490,7 @@ hr {
     color: #999
 }
 
-    /*.blockquote-footer::before {
+/*.blockquote-footer::before {
         content: "— "
     }*/
 
@@ -11303,21 +11303,12 @@ a.list-group-item-danger.active {
     display: block
 }
 
-.bg-yellow {
-    background-color: #ffb612 !important
+/* Theme Overrides */
+.btn-outline-secondary {
+    color: #878787;
 }
 
-.subForumList {
-    border-left: 3px solid #dadada;
-    border-right: 3px solid #dadada;
-    border-top: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #f2f2f2;
-    border-radius: 7px;
-    padding: 3px 10px;
-    margin: 0 3px 7px;
-    font-size: 12pt
-}
+
 
 .forumContainer {
     padding: 3px 5px 3px 3px;
@@ -11328,8 +11319,9 @@ a.list-group-item-danger.active {
 .forumLatestContainer {
     padding: 7px;
     margin: 5px;
-    border: 1px solid #e5d8aa;
-    border-radius: 4px
+    border-radius: 4px;
+    background-color: #fcf8e3;
+    border: 1px solid #faebcc;
 }
 
 .forumTitle {
@@ -11362,7 +11354,7 @@ a.list-group-item-danger.active {
 
 .forumStatsValues {
     display: inline;
-    font-weight: 700
+    font-weight: 700;
 }
 
 .topicStatsContainer {
@@ -11370,42 +11362,33 @@ a.list-group-item-danger.active {
     width: 110px;
     -ms-border-radius: 3px;
     border-radius: 3px;
-    border: 1px solid #d0d0d0;
-    color: #4e4e4e;
+    border: 1px solid #faebcc;
+    color: #484848;
     padding: 3px 0 3px 0;
-    background: #fceabb;
-    background: -moz-linear-gradient(top,#fceabb 0,#fccd4d 50%,#f8b500 51%,#fbdf93 100%);
-    background: -webkit-linear-gradient(top,#fceabb 0,#fccd4d 50%,#f8b500 51%,#fbdf93 100%);
-    background: linear-gradient(to bottom,#fceabb 0,#fccd4d 50%,#f8b500 51%,#fbdf93 100%)
+    background: #fcf8e3;
 }
 
 .topicReplies {
     text-align: center;
-    font-weight: 700
+    font-weight: 700;
+    font-size: 10pt;
 }
 
 .topicViews {
     text-align: center;
-    font-size: .85em
+    font-size: 8pt;
 }
 
+.topicTitle a {
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+/* Packers Schedule */
 .phGameInfo {
     border-top: 1px solid #e2e2e2;
     padding: 2px 0 5px 0;
-    color: #717171;
+    color: #dedede;
     text-align: center;
-    white-space: nowrap
+    white-space: nowrap;
 }
-
-.youtube6by9 {
-    max-width: 476px
-}
-
-.btn-group-xs > .btn, .btn-xs {
-    padding: .25rem .5rem;
-    font-size: .625rem;
-    line-height: 1.5;
-    border-radius: .2rem
-}
-
- 

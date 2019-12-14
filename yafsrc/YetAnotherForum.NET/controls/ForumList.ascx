@@ -1,6 +1,7 @@
 <%@ Control Language="c#" AutoEventWireup="True" Inherits="YAF.Controls.ForumList" EnableViewState="false" CodeBehind="ForumList.ascx.cs" %>
 <%@ Import Namespace="YAF.Types.Extensions" %>
 <%@ Import Namespace="YAF.Utils.Helpers" %>
+<%@ Import Namespace="YAF.Core.Extensions" %>
 <%@ Register TagPrefix="YAF" TagName="ForumLastPost" Src="ForumLastPost.ascx" %>
 <%@ Register TagPrefix="YAF" TagName="ForumModeratorList" Src="ForumModeratorList.ascx" %>
 <%@ Register TagPrefix="YAF" TagName="ForumSubForumList" Src="ForumSubForumList.ascx" %>
@@ -19,14 +20,14 @@
                             <%# this.GetForumLink((System.Data.DataRow)Container.DataItem) %>
                         </strong>
 
-                        <asp:Label CssClass="badge badge-light" runat="server" Visible='<%# ((System.Data.DataRow)Container.DataItem)["Viewing"].ToType<int>() > 0 %>'> <%# this.GetViewing(Container.DataItem) %> </asp:Label>
+                        <asp:Label CssClass="badge badge-light" runat="server" Visible='<%# ((System.Data.DataRow)Container.DataItem)["Viewing"].ToType<int>() > 0 %>'> <%# this.GetViewing((System.Data.DataRow)Container.DataItem) %> </asp:Label>
                     </span>
 
                     <div class="forumDescription">
                         <asp:Label runat="server" ID="Description" Visible='<%# DataBinder.Eval(Container.DataItem, "[\"Description\"]").ToString().IsSet() %>'> <%# this.Page.HtmlEncode(DataBinder.Eval(Container.DataItem, "[\"Description\"]")) %> </asp:Label>
                     </div>
 
-                    <YAF:ForumSubForumList ID="SubForumList" runat="server" DataSource='<%# this.GetSubforums( (System.Data.DataRow)Container.DataItem ) %>' Visible='<%# this.HasSubforums((System.Data.DataRow)Container.DataItem) %>' />
+                    <YAF:ForumSubForumList ID="SubForumList" runat="server" DataSource='<%# this.GetSubForums((System.Data.DataRow)Container.DataItem ) %>' Visible='<%# this.HasSubForums((System.Data.DataRow)Container.DataItem) %>' />
 
                     <YAF:ForumModeratorList ID="ForumModeratorListMob" Visible="false" runat="server" />
                 </div>

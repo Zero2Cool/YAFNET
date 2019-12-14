@@ -12,7 +12,9 @@
 
         <asp:Label runat="server" ID="TopicIcon"></asp:Label>
         <asp:Label runat="server" ID="Priority" Visible="False"></asp:Label>
-        <asp:HyperLink runat="server" ID="TopicLink"></asp:HyperLink>
+        <span class="topicTitle">
+            <asp:HyperLink runat="server" ID="TopicLink"></asp:HyperLink>
+        </span>
         <asp:Label runat="server" ID="FavoriteCount"></asp:Label>
 
         <asp:Label runat="server" ID="Description" CssClass="font-italic"></asp:Label>

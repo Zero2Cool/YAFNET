@@ -8585,3 +8585,16 @@ span.form-check > label {
 .popover-body-scrollable {
   max-height: 200px;
   overflow-y: scroll; }
+
+/* YAF Overrides */
+.btn-group-xs > .btn, .btn-xs {
+    padding: .25rem .5rem;
+    font-size: .625rem;
+    line-height: 1.5;
+    border-radius: .2rem
+}
+
+.youtube6by9 {
+    max-width: 476px
+}
+
