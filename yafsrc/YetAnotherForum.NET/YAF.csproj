@@ -362,13 +362,6 @@
     <Compile Include="controls\ProfileTimeline.ascx.designer.cs">
       <DependentUpon>ProfileTimeline.ascx</DependentUpon>
     </Compile>
-    <Compile Include="controls\TopicLine.ascx.cs">
-      <DependentUpon>TopicLine.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="controls\TopicLine.ascx.designer.cs">
-      <DependentUpon>TopicLine.ascx</DependentUpon>
-    </Compile>
     <Compile Include="Dialogs\UserMedalEdit.ascx.cs">
       <DependentUpon>UserMedalEdit.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1910,7 +1903,6 @@
     <Content Include="controls\CookieConsent.ascx" />
     <Content Include="controls\EditUsersSettings.ascx" />
     <Content Include="controls\ProfileTimeline.ascx" />
-    <Content Include="controls\TopicLine.ascx" />
     <Content Include="Dialogs\UserMedalEdit.ascx" />
     <Content Include="Dialogs\GroupMedalEdit.ascx" />
     <Content Include="Dialogs\QuickReply.ascx" />
@@ -1924,7 +1916,6 @@
     <Content Include="controls\DisplayPost.ascx">
       <SubType>UserControl</SubType>
     </Content>
-    <Content Include="controls\DisplayPostFooter.ascx" />
     <Content Include="controls\EditUsersAvatar.ascx" />
     <Content Include="controls\EditUsersGroups.ascx" />
     <Content Include="controls\EditUsersInfo.ascx" />
@@ -2721,13 +2712,6 @@
     <Compile Include="controls\DisplayPost.ascx.cs">
       <DependentUpon>DisplayPost.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="controls\DisplayPostFooter.ascx.cs">
-      <DependentUpon>DisplayPostFooter.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="controls\DisplayPostFooter.ascx.designer.cs">
-      <DependentUpon>DisplayPostFooter.ascx</DependentUpon>
     </Compile>
     <Compile Include="controls\EditUsersAvatar.ascx.cs">
       <DependentUpon>EditUsersAvatar.ascx</DependentUpon>

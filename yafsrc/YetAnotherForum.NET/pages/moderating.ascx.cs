@@ -27,14 +27,15 @@ namespace YAF.Pages
     #region Using
 
     using System;
+    using System.Collections.Generic;
     using System.Data;
     using System.Linq;
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Controls;
     using YAF.Core;
     using YAF.Core.Model;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -67,6 +68,29 @@ namespace YAF.Pages
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// The On PreRender event.
+        /// </summary>
+        /// <param name="e">
+        /// the Event Arguments
+        /// </param>
+        protected override void OnPreRender([NotNull] EventArgs e)
+        {
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                "TopicStarterPopoverJs",
+                JavaScriptBlocks.TopicLinkPopoverJs(
+                    $"{this.GetText("TOPIC_STARTER")}&nbsp;...",
+                    ".topic-starter-popover"));
+
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                "TopicLinkPopoverJs",
+                JavaScriptBlocks.TopicLinkPopoverJs(
+                    $"{this.GetText("LASTPOST")}&nbsp;{this.GetText("SEARCH", "BY")} ...",
+                    ".topic-link-popover"));
+
+            base.OnPreRender(e);
+        }
 
         /// <summary>
         /// Handles the Click event of the AddUser control.
@@ -132,9 +156,7 @@ namespace YAF.Pages
         /// </param>
         protected void DeleteTopics_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            var list =
-                this.topiclist.Controls.OfType<RepeaterItem>().SelectMany(x => x.Controls.OfType<TopicLine>()).Where(
-                    x => x.IsSelected && x.TopicRowID.HasValue).ToList();
+            var list = this.GetSelectedTopics();
 
             if (!list.Any())
             {
@@ -180,9 +202,7 @@ namespace YAF.Pages
                     linkDays = ld;
                 }
 
-                var list = this.topiclist.Controls.OfType<RepeaterItem>()
-                    .SelectMany(x => x.Controls.OfType<TopicLine>()).Where(x => x.IsSelected && x.TopicRowID.HasValue)
-                    .ToList();
+                var list = this.GetSelectedTopics();
 
                 if (!list.Any())
                 {
@@ -293,20 +313,28 @@ namespace YAF.Pages
         }
 
         /// <summary>
-        /// The topic list item command.
+        /// Gets the selected topics
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void topiclist_ItemCommand([NotNull] object sender, [NotNull] RepeaterCommandEventArgs e)
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        private List<TopicContainer> GetSelectedTopics()
         {
-            switch (e.CommandName)
-            {
-                case "delete":
-                    this.GetRepository<Topic>().Delete(e.CommandArgument.ToType<int>());
-                    this.PageContext.AddLoadMessage(this.GetText("deleted"), MessageTypes.success);
-                    this.BindData();
-                    break;
-            }
+            var list = new List<TopicContainer>();
+
+            this.topiclist.Items.Cast<RepeaterItem>().ForEach(item =>
+                {
+                    var check = item.FindControlAs<CheckBox>("topicCheck");
+
+                    var topicContainer = item.FindControlAs<TopicContainer>("topicContainer");
+
+                    if (check.Checked)
+                    {
+                        list.Add(topicContainer);
+                    }
+                });
+
+            return list;
         }
 
         #endregion
