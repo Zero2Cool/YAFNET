@@ -3,7 +3,6 @@
 <%@ Import Namespace="ServiceStack" %>
 <%@ Import Namespace="YAF.Core.Extensions" %>
 <%@ Register TagPrefix="YAF" TagName="ForumList" Src="../controls/ForumList.ascx" %>
-<%@ Register TagPrefix="YAF" TagName="TopicLine" Src="../controls/TopicLine.ascx" %>
 
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
@@ -42,7 +41,7 @@
 
         <asp:Repeater ID="Announcements" runat="server">
             <ItemTemplate>
-                <YAF:TopicLine runat="server" AltLastPost="<%# this.LastPostImageTT %>" DataRow="<%# Container.DataItem %>" />
+                <%# this.CreateTopicLine((System.Data.DataRowView)Container.DataItem) %>
             </ItemTemplate>
             <SeparatorTemplate>
                 <div class="row">
@@ -79,7 +78,7 @@
 
                 <asp:Repeater ID="TopicList" runat="server">
                     <ItemTemplate>
-                        <YAF:TopicLine runat="server" AltLastPost="<%# this.LastPostImageTT %>" DataRow="<%# Container.DataItem %>" />
+                        <%# this.CreateTopicLine((System.Data.DataRowView)Container.DataItem) %>
                     </ItemTemplate>
                     <SeparatorTemplate>
                         <div class="row">
