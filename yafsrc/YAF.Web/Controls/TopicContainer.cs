@@ -273,7 +273,7 @@ namespace YAF.Web.Controls
                                        Icon = "info-circle",
                                        Type = ButtonAction.OutlineInfo,
                                        DataToggle = "popover",
-                                       CssClass = "topic-starter-popover ml-1",
+                                       CssClass = "topic-starter-popover ml-1 btn-xs",
                                        NavigateUrl = "#!"
                                    };
 
@@ -313,14 +313,17 @@ namespace YAF.Web.Controls
             writer.Write("</div>");
             writer.Write("<div class=\"col-md-2\">");
             writer.Write("<div class=\"d-flex flex-row flex-md-column justify-content-between justify-content-md-start\">");
-            writer.Write("<div>");
+            writer.Write("<div class='topicStatsContainer'>");
+            writer.Write("<div class='topicReplies'>");
             writer.Write("{0}: ", this.GetText("MODERATE", "REPLIES"));
             writer.Write(this.FormatReplies());
             writer.Write(" </div>");
-            writer.Write("<div>");
+            
+            writer.Write("<div class='topicViews'>");
             writer.Write("{0}: ", this.GetText("MODERATE", "VIEWS"));
             writer.Write(this.FormatViews());
             writer.Write("   </div>");
+            writer.Write("  </div>");
             writer.Write("  </div>");
             writer.Write(" </div>");
 
