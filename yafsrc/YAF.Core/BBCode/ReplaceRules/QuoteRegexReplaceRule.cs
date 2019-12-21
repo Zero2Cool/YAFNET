@@ -11,9 +11,7 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
-
  * http://www.apache.org/licenses/LICENSE-2.0
-
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -113,44 +111,44 @@ namespace YAF.Core.BBCode.ReplaceRules
                                          <cite>{localQuotePosted.Replace("{0}", userName)}&nbsp;<a href=""{YafBuildLink.GetLink(ForumPages.posts, "m={0}#post{0}", postId)}""><i class=""fas fa-external-link-alt""></i></a></cite></footer>
                                          <p class=""mb-0 mt-2 font-italic"">"
                                 : $@"<footer class=""blockquote-footer pt-1 mt-3"">
-                                         <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0 mt-2 font-italic"">";
+                                         <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0 mt-2"">";
                 }
                 else
                 {
                     quote =
                         $@"<footer class=""blockquote-footer pt-1 mt-3"">
-                               <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0 mt-2 font-italic"">";
+                               <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0 mt-2"">";
                 }
 
                 innerReplace.Replace("${quote}", quote);
 
                 this._variables.ForEach(
                     variable =>
+                    {
+                        var varName = variable;
+                        var handlingValue = string.Empty;
+
+                        if (varName.Contains(":"))
                         {
-                            var varName = variable;
-                            var handlingValue = string.Empty;
+                            // has handling section
+                            var tmpSplit = varName.Split(':');
+                            varName = tmpSplit[0];
+                            handlingValue = tmpSplit[1];
+                        }
 
-                            if (varName.Contains(":"))
-                            {
-                                // has handling section
-                                var tmpSplit = varName.Split(':');
-                                varName = tmpSplit[0];
-                                handlingValue = tmpSplit[1];
-                            }
+                        var value = match.Groups[varName].Value;
 
-                            var value = match.Groups[varName].Value;
+                        if (this._variableDefaults != null && value.Length == 0)
+                        {
+                            // use default instead
+                            value = this._variableDefaults[i];
+                        }
 
-                            if (this._variableDefaults != null && value.Length == 0)
-                            {
-                                // use default instead
-                                value = this._variableDefaults[i];
-                            }
-
-                            innerReplace.Replace(
-                                $"${{{varName}}}",
-                                this.ManageVariableValue(varName, value, handlingValue));
-                            i++;
-                        });
+                        innerReplace.Replace(
+                            $"${{{varName}}}",
+                            this.ManageVariableValue(varName, value, handlingValue));
+                        i++;
+                    });
 
                 innerReplace.Replace("${inner}", match.Groups["inner"].Value);
 
