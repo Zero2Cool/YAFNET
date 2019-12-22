@@ -549,7 +549,7 @@ begin
     declare @UserFlags				int
 
     -- Board
-    INSERT INTO [{databaseOwner}].[{objectQualifier}Board](Name, AllowThreaded, MembershipAppName, RolesAppName ) values(@BoardName,0, @MembershipAppName, @RolesAppName)
+    INSERT INTO [{databaseOwner}].[{objectQualifier}Board](Name, MembershipAppName, RolesAppName ) values(@BoardName,@MembershipAppName, @RolesAppName)
     SET @BoardID = SCOPE_IDENTITY()
 
     SET @TimeZone = (SELECT ISNULL([{databaseOwner}].[{objectQualifier}registry_value](N'TimeZone', @BoardID), N'Dateline Standard Time'))
@@ -784,14 +784,13 @@ BEGIN
 END
 GO
 
-create procedure [{databaseOwner}].[{objectQualifier}board_save](@BoardID int,@Name nvarchar(50), @LanguageFile nvarchar(50),@Culture varchar(10), @AllowThreaded bit) as
+create procedure [{databaseOwner}].[{objectQualifier}board_save](@BoardID int,@Name nvarchar(50), @LanguageFile nvarchar(50),@Culture varchar(10)) as
 begin
 
         EXEC [{databaseOwner}].[{objectQualifier}registry_save] 'culture', @Culture, @BoardID
         EXEC [{databaseOwner}].[{objectQualifier}registry_save] 'language', @LanguageFile, @BoardID
         update [{databaseOwner}].[{objectQualifier}Board] set
-        Name = @Name,
-        AllowThreaded = @AllowThreaded
+        Name = @Name
     where BoardID=@BoardID
     select @BoardID
 end
@@ -1687,6 +1686,7 @@ GO
 
 create procedure [{databaseOwner}].[{objectQualifier}group_delete](@GroupID int) as
 begin
+    delete from [{databaseOwner}].[{objectQualifier}GroupMedal] where GroupID = @GroupID
     delete from [{databaseOwner}].[{objectQualifier}ForumAccess] where GroupID = @GroupID
     delete from [{databaseOwner}].[{objectQualifier}UserGroup] where GroupID = @GroupID
     delete from [{databaseOwner}].[{objectQualifier}Group] where GroupID = @GroupID
@@ -3825,7 +3825,6 @@ begin
         d.[Views],
         d.ForumID,
         RankName = c.Name,
-        c.RankImage,
         c.Style as RankStyle,
         Style = case(@StyledNicks)
             when 1 then  b.UserStyle
@@ -3886,7 +3885,6 @@ create procedure [{databaseOwner}].[{objectQualifier}rank_save](
     @IsStart	bit,
     @IsLadder	bit,
     @MinPosts	int,
-    @RankImage	nvarchar(50)=null,
     @PMLimit    int,
     @Style      nvarchar(255)=null,
     @SortOrder  smallint,
@@ -3914,7 +3912,6 @@ begin
             Name = @Name,
             Flags = @Flags,
             MinPosts = @MinPosts,
-            RankImage = @RankImage,
             PMLimit = @PMLimit,
             Style = @Style,
             SortOrder = @SortOrder,
@@ -3927,8 +3924,8 @@ begin
         where RankID = @RankID
     end
     else begin
-        insert into [{databaseOwner}].[{objectQualifier}Rank](BoardID,Name,Flags,MinPosts,RankImage, PMLimit,Style,SortOrder,Description,UsrSigChars,UsrSigBBCodes,UsrSigHTMLTags,UsrAlbums,UsrAlbumImages)
-        values(@BoardID,@Name,@Flags,@MinPosts,@RankImage,@PMLimit,@Style,@SortOrder,@Description,@UsrSigChars,@UsrSigBBCodes,@UsrSigHTMLTags,@UsrAlbums,@UsrAlbumImages);
+        insert into [{databaseOwner}].[{objectQualifier}Rank](BoardID,Name,Flags,MinPosts,PMLimit,Style,SortOrder,Description,UsrSigChars,UsrSigBBCodes,UsrSigHTMLTags,UsrAlbums,UsrAlbumImages)
+        values(@BoardID,@Name,@Flags,@MinPosts,@PMLimit,@Style,@SortOrder,@Description,@UsrSigChars,@UsrSigBBCodes,@UsrSigHTMLTags,@UsrAlbums,@UsrAlbumImages);
         set @RankID = SCOPE_IDENTITY()
         -- select @RankID = RankID from [{databaseOwner}].[{objectQualifier}Rank] where RankID = @@Identity;
     end
@@ -5742,6 +5739,7 @@ begin
         a.[IsActiveExcluded],
         a.[IsDST],
         a.[IsDirty],
+        a.[Moderated],
         a.[IsFacebookUser],
         a.[IsTwitterUser],
         a.[IsGoogleUser],
@@ -5807,6 +5805,7 @@ begin
         a.[IsActiveExcluded],
         a.[IsDST],
         a.[IsDirty],
+        a.[Moderated],
         a.[IsFacebookUser],
         a.[IsTwitterUser],
         a.[IsGoogleUser],
@@ -5862,6 +5861,7 @@ begin
         a.[IsActiveExcluded],
         a.[IsDST],
         a.[IsDirty],
+        a.[Moderated],
         a.[IsFacebookUser],
         a.[IsTwitterUser],
         a.[IsGoogleUser],
@@ -5925,6 +5925,7 @@ begin
         a.[IsActiveExcluded],
         a.[IsDST],
         a.[IsDirty],
+        a.[Moderated],
         a.[IsFacebookUser],
         a.[IsTwitterUser],
         a.[IsGoogleUser],

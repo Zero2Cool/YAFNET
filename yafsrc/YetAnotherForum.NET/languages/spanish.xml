@@ -799,6 +799,8 @@
     <Resource tag="KILL_USER_CONFIRM">Delete all posts by and (optionally) ban IP addresses used by this user?</Resource>
     <Resource tag="LINK_USER_BAN">El usuario &lt;a id="usr{0}" href="{1}"&gt;{2}&lt;/a&gt; está baneado por IP</Resource>
     <Resource tag="MEMBER">Miembro</Resource>
+    <Resource tag="MODERATE">Moderate all Posts</Resource>
+    <Resource tag="MODERATE_HELP">Moderate all Posts made by the User</Resource>
     <Resource tag="MSG_GUEST_APPROVED">El usuario invitado debe ser marcado como aprobado o tu foro será inestable.</Resource>
     <Resource tag="MSG_PASS_CHANGED">Contraseña de usuario cambiada</Resource>
     <Resource tag="MSG_PASS_CHANGED_NOTI">Contraseña de usuario cambiada y notificación enviada por email.</Resource>
@@ -1527,6 +1529,8 @@
     <Resource tag="CONFIRM_DELETE">¿Eliminar esta medalla?</Resource>
     <Resource tag="DISPLAY_BOX">La imagen de la medalla será mostrada in la caja de usuario.</Resource>
     <Resource tag="DISPLAY_RIBBON">La imagen de la barra Ribbon será mostrada en la caja de usuario.</Resource>
+    <Resource tag="MOVE_DOWN">Move Down</Resource>
+    <Resource tag="MOVE_UP">Move Up</Resource>
     <Resource tag="NEW_MEDAL">Nueva medalla</Resource>
     <Resource tag="TITLE">Medallas</Resource>
   </page>

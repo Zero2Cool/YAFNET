@@ -15,59 +15,11 @@
         <YAF:ThemeButton ID="NewTopic1" runat="server" CssClass="float-right mr-1" TextLocalizedTag="BUTTON_NEWTOPIC" TitleLocalizedTag="BUTTON_NEWTOPIC_TT" OnClick="NewTopic_Click" Icon="plus" />
     </div>
 </div>
-
-<asp:Label ID="PageTitle" runat="server" Visible="false"></asp:Label>
-<% string words = PageTitle.Text;
-   string[] split = words.Split(new string[] { "-" }, 2, StringSplitOptions.None);
-%>
-
-<div class="card mb-3 mt-3">
-    <div class="card-header">
-        <a href="<%= Request.RawUrl %>"><%= split[0].ToString() %></a>
-    </div>
-
-    <div class="card-body">
-        <div class="forumDescription">
-            <%= split[1].ToString() %>
-        </div>
-    </div>
-</div>
-
-<div class="card mb-3 mt-3">
-    <div class="card-header">
-        Announcements
-    </div>
-    <div class="card-body">
-
-        <asp:Repeater ID="Announcements" runat="server">
-            <ItemTemplate>
-                <%# this.CreateTopicLine((System.Data.DataRowView)Container.DataItem) %>
-            </ItemTemplate>
-            <SeparatorTemplate>
-                <div class="row">
-                    <div class="col">
-                        <hr />
-                    </div>
-                </div>
-            </SeparatorTemplate>
-            <FooterTemplate>
-                <asp:PlaceHolder runat="server" Visible="<%# this.Announcements.Items.Count > 0 %>">
-                    <div class="row">
-                        <div class="col">
-                            <hr />
-                        </div>
-                    </div>
-                </asp:PlaceHolder>
-
-            </FooterTemplate>
-        </asp:Repeater>
-
-    </div>
-</div>
-
-<div class="card mb-3 mt-3">
+<div class="row">
+    <div class="col">
+        <div class="card mb-3 mt-3">
             <div class="card-header">
-                Topics
+                <i class="fas fa-comments fa-fw text-secondary"></i>&nbsp;<asp:Label ID="PageTitle" runat="server"></asp:Label>
             </div>
             <div class="card-body">
                 <asp:PlaceHolder runat="server" ID="NoPostsPlaceHolder">
@@ -75,7 +27,28 @@
                         <YAF:LocalizedLabel runat="server" LocalizedTag="NO_TOPICS"></YAF:LocalizedLabel>
                     </YAF:Alert>
                 </asp:PlaceHolder>
-
+                <asp:Repeater ID="Announcements" runat="server">
+                    <ItemTemplate>
+                        <%# this.CreateTopicLine((System.Data.DataRowView)Container.DataItem) %>
+                    </ItemTemplate>
+                    <SeparatorTemplate>
+                        <div class="row">
+                            <div class="col">
+                                <hr/>
+                            </div>
+                        </div>
+                    </SeparatorTemplate>
+                    <FooterTemplate>
+                        <asp:PlaceHolder runat="server" Visible="<%# this.Announcements.Items.Count > 0 %>">
+                            <div class="row">
+                                <div class="col">
+                                    <hr />
+                                </div>
+                            </div>
+                        </asp:PlaceHolder>
+                        
+                    </FooterTemplate>
+                </asp:Repeater>
                 <asp:Repeater ID="TopicList" runat="server">
                     <ItemTemplate>
                         <%# this.CreateTopicLine((System.Data.DataRowView)Container.DataItem) %>
@@ -83,7 +56,7 @@
                     <SeparatorTemplate>
                         <div class="row">
                             <div class="col">
-                                <hr class="mb-2 mt-1"/>
+                                <hr />
                             </div>
                         </div>
                     </SeparatorTemplate>

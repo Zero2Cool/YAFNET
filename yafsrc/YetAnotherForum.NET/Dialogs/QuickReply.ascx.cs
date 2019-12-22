@@ -438,6 +438,7 @@ namespace YAF.Dialogs
                     }
 
                     var url = YafBuildLink.GetLink(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
+
                     if (Config.IsRainbow)
                     {
                         YafBuildLink.Redirect(ForumPages.info, "i=1");
@@ -489,6 +490,12 @@ namespace YAF.Dialogs
         /// <returns>Returns if the forum needs to be moderated</returns>
         private bool CheckForumModerateStatus(Forum forumInfo)
         {
+            // User Moderate override
+            if (this.PageContext.Moderated)
+            {
+                return true;
+            }
+
             var forumModerated = forumInfo.Flags.BinaryAnd(ForumFlags.Flags.IsModerated);
 
             if (!forumModerated)

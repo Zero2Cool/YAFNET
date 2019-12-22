@@ -589,6 +589,7 @@ if not exists (select top 1 1 from sys.objects WHERE object_id = OBJECT_ID(N'[{d
 		[IsActiveExcluded] AS (CONVERT([bit],sign([Flags]&(16)),(0))),
 		[IsDST]	AS (CONVERT([bit],sign([Flags]&(32)),(0))),
 		[IsDirty]	AS (CONVERT([bit],sign([Flags]&(64)),(0))),
+		[Moderated]	AS (CONVERT([bit],sign([Flags]&(128)),(0))),
 		[Culture] varchar (10) default (10),
 		[IsFacebookUser][bit] NOT NULL constraint [DF_{objectQualifier}User_IsFacebookUser] default (0),
 		[IsTwitterUser][bit] NOT NULL constraint [DF_{objectQualifier}User_IsTwitterUser] default (0),
@@ -706,7 +707,6 @@ if not exists (select top 1 1 from sys.objects WHERE object_id = OBJECT_ID(N'[{d
 		BoardID			 int NOT NULL,
 		Name			 nvarchar (50) NOT NULL,
 		MinPosts		 int NULL,
-		RankImage		 nvarchar (50) NULL,
 		Flags			 int not null constraint [DF_{objectQualifier}Rank_Flags] default (0),
 	    [PMLimit]        [int] NULL,
 	    [Style]          [nvarchar](255) NULL,
@@ -763,7 +763,6 @@ begin
 	create table [{databaseOwner}].[{objectQualifier}Board](
 		BoardID			int IDENTITY (1,1) NOT NULL,
 		Name			nvarchar(50) NOT NULL,
-		AllowThreaded	bit NOT NULL,
 		MembershipAppName nvarchar(255) NULL,
 		RolesAppName nvarchar(255) NULL,
  constraint [PK_{objectQualifier}Board] PRIMARY KEY CLUSTERED 
