@@ -9,7 +9,7 @@
 
 <div class="row">
     <div class="col">
-        <YAF:ForumWelcome runat="server" ID="Welcome" />
+        <YAF:ForumWelcome runat="server" ID="Welcome" Visible="False" />
     </div>
 </div>
 
