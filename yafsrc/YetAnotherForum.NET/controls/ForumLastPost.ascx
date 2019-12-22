@@ -5,10 +5,10 @@
         
     <div class="forumLastTopic">
         <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
-            <YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
+            <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label><YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
         </asp:PlaceHolder>
         </div>
-        <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label>
+        
 
         <YAF:ThemeButton runat="server" ID="LastTopicImgLink"
                          Size="Small"
