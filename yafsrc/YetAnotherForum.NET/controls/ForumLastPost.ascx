@@ -31,7 +31,7 @@
                          Type="OutlineSecondary"
                          DataToggle="popover"
                          Size="Small"
-                         CssClass="mt-1topic-link-popover btn-xs">
+                         CssClass="mt-1 topic-link-popover btn-xs">
         </YAF:ThemeButton>
     </div>
 </asp:PlaceHolder>

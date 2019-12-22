@@ -250,7 +250,7 @@ namespace YAF.Web.Controls
                                        Icon = "info-circle",
                                        Type = ButtonAction.OutlineInfo,
                                        DataToggle = "popover",
-                                       CssClass = "topic-starter-popover ml-1",
+                                       CssClass = "topic-starter-popover ml-1 d-none",
                                        NavigateUrl = "#!",
                                        TextLocalizedTag = "TOPIC_STARTER"
             };
