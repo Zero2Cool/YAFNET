@@ -15,7 +15,7 @@
         <YAF:ThemeButton runat="server" ID="LastTopicImgLink"
                          Size="Small"
                          Icon="share-square"
-                         Type="OutlineSuccess"
+                         Type="OutlineSecondary"
                          DataToggle="tooltip"
                          TitleLocalizedTag="GO_LAST_POST"
                          CssClass="mt-1 mr-1 btn-xs">
@@ -23,7 +23,7 @@
         <YAF:ThemeButton runat="server" ID="ImageLastUnreadMessageLink"
                          Size="Small"
                          Icon="book-reader"
-                         Type="OutlineSuccess"
+                         Type="OutlineSecondary"
                          DataToggle="tooltip"
                          TitleLocalizedTag="GO_LASTUNREAD_POST"
                          CssClass="mt-1 mr-1 btn-xs">
