@@ -2548,6 +2548,8 @@
     <Content Include="Scripts\jquery.ForumExtensions.min.js">
       <DependentUpon>jquery.ForumExtensions.js</DependentUpon>
     </Content>
+    <Content Include="Scripts\jquery.pagination.js" />
+    <Content Include="Scripts\ladda.min.js" />
     <Content Include="Scripts\moment-with-locales.js" />
     <Content Include="Scripts\moment-with-locales.min.js">
       <DependentUpon>moment-with-locales.js</DependentUpon>
@@ -3093,7 +3095,6 @@
     </Content>
     <Content Include="Scripts\forum\yaf.MessageHistory.js" />
     <Content Include="Scripts\forum\yaf.Attachments.js" />
-    <Content Include="Scripts\README.md" />
     <None Include="Web References\RegisterV2\LatestVersionInformation.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
@@ -3389,7 +3390,7 @@ RD /S /Q "$(TargetDir)bin\"</PostBuildEvent>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties compilerconfig_1json__JSONSchema="" bundleconfig_1json__JSONSchema="" />
+      <UserProperties bundleconfig_1json__JSONSchema="" compilerconfig_1json__JSONSchema="" />
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
