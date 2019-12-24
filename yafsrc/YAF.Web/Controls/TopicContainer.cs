@@ -1,26 +1,26 @@
 ﻿/* Yet Another Forum.NET
- * Copyright (C) 2003-2005 Bjørnar Henden
- * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
- * https://www.yetanotherforum.net/
- * 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+* Copyright (C) 2003-2005 Bjørnar Henden
+* Copyright (C) 2006-2013 Jaben Cargman
+* Copyright (C) 2014-2019 Ingo Herbote
+* https://www.yetanotherforum.net/
+* 
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+* http://www.apache.org/licenses/LICENSE-2.0
 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied.  See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 
 namespace YAF.Web.Controls
 {
@@ -184,14 +184,14 @@ namespace YAF.Web.Controls
             }
 
             var topicLink = new HyperLink
-                                {
-                                    NavigateUrl = YafBuildLink.GetLinkNotEscaped(
+            {
+                NavigateUrl = YafBuildLink.GetLinkNotEscaped(
                                         ForumPages.posts,
                                         "t={0}",
                                         this.TopicRow["LinkTopicID"]),
-                                    Text = this.FormatTopicName(),
-                                    CssClass = "topic-starter-popover"
-                                };
+                Text = this.FormatTopicName(),
+                CssClass = "topic-starter-popover"
+            };
 
             topicLink.Attributes.Add("data-toggle", "popover");
 
@@ -206,14 +206,14 @@ namespace YAF.Web.Controls
                                                    topicStartedDateTime);
 
             var topicStarterLink = new UserLink
-                                       {
-                                           UserID = this.TopicRow["UserID"].ToType<int>(),
-                                           ReplaceName = this
+            {
+                UserID = this.TopicRow["UserID"].ToType<int>(),
+                ReplaceName = this
                                                .TopicRow[this.Get<YafBoardSettings>().EnableDisplayName
                                                              ? "StarterDisplay"
                                                              : "Starter"].ToString(),
-                                           Style = this.TopicRow["StarterStyle"].ToString()
-                                       };
+                Style = this.TopicRow["StarterStyle"].ToString()
+            };
 
             topicLink.Attributes.Add(
                 "data-content",
@@ -276,49 +276,6 @@ namespace YAF.Web.Controls
                 writer.Write("&nbsp;<div class=\"btn-group btn-group-sm mb-1\" role=\"group\" aria-label\"topic pager\">{0}</div>", pager);
             }
 
-            // Render Info Topic Starter
-            var infoTopicStarter = new ThemeButton
-                                   {
-                                       Size = ButtonSize.Small,
-                                       Icon = "info-circle",
-                                       Type = ButtonAction.OutlineInfo,
-                                       DataToggle = "popover",
-                                       CssClass = "topic-starter-popover ml-1 d-none",
-                                       NavigateUrl = "#!",
-                                       TextLocalizedTag = "TOPIC_STARTER"
-            };
-
-            var topicStartedDateTime = this.TopicRow["Posted"].ToType<DateTime>();
-
-            var formattedStartedDatetime = this.Get<YafBoardSettings>().ShowRelativeTime
-                                        ? topicStartedDateTime.ToString(
-                                            "yyyy-MM-ddTHH:mm:ssZ",
-                                            CultureInfo.InvariantCulture)
-                                        : this.Get<IDateTime>().Format(
-                                            DateTimeFormat.BothTopic,
-                                            topicStartedDateTime);
-
-            var topicStarterLink = new UserLink
-                                       {
-                                           UserID = this.TopicRow["UserID"].ToType<int>(),
-                                           ReplaceName = this
-                                               .TopicRow[this.Get<YafBoardSettings>().EnableDisplayName
-                                                             ? "StarterDisplay"
-                                                             : "Starter"].ToString(),
-                                           Style = this.TopicRow["StarterStyle"].ToString()
-                                       };
-
-            infoTopicStarter.DataContent = $@"
-                          {topicStarterLink.RenderToString()}
-                          <span class=""fa-stack"">
-                                                    <i class=""fa fa-calendar-day fa-stack-1x text-secondary""></i>
-                                                    <i class=""fa fa-circle fa-badge-bg fa-inverse fa-outline-inverse""></i>
-                                                    <i class=""fa fa-clock fa-badge text-secondary""></i>
-                                                </span>&nbsp;<span class=""popover-timeago"">{formattedStartedDatetime}</span>
-                         ";
-
-            writer.Write(infoTopicStarter.RenderToString());
-
             writer.Write(" </h5>");
 
             writer.Write("</div>");
@@ -343,17 +300,17 @@ namespace YAF.Web.Controls
                 writer.Write("<div class=\"col-md-4 text-secondary\">");
 
                 writer.Write($"{this.GetText("LASTPOST")}:&nbsp;");
-                
+
                 var infoLastPost = new ThemeButton
-                                       {
-                                           Size = ButtonSize.Small,
-                                           Icon = "info-circle",
-                                           Type = ButtonAction.OutlineInfo,
-                                           DataToggle = "popover",
-                                           CssClass = "topic-link-popover ml-1",
-                                           NavigateUrl = "#!"
-                                       };
-                                       
+                {
+                    Size = ButtonSize.Small,
+                    Icon = "info-circle",
+                    Type = ButtonAction.OutlineInfo,
+                    DataToggle = "popover",
+                    CssClass = "topic-link-popover mr-1",
+                    NavigateUrl = "#!"
+                };
+
                 var lastPostedDateTime = this.TopicRow["LastPosted"].ToType<DateTime>();
 
                 var formattedDatetime = this.Get<YafBoardSettings>().ShowRelativeTime
@@ -365,14 +322,14 @@ namespace YAF.Web.Controls
                                                 lastPostedDateTime);
 
                 var userLast = new UserLink
-                                   {
-                                       UserID = this.TopicRow["LastUserID"].ToType<int>(),
-                                       ReplaceName = this
+                {
+                    UserID = this.TopicRow["LastUserID"].ToType<int>(),
+                    ReplaceName = this
                                            .TopicRow[this.Get<YafBoardSettings>().EnableDisplayName
                                                          ? "LastUserDisplayName"
                                                          : "LastUserName"].ToString(),
-                                       Style = this.TopicRow["LastUserStyle"].ToString()
-                                   };
+                    Style = this.TopicRow["LastUserStyle"].ToString()
+                };
 
                 infoLastPost.DataContent = $@"
                           {userLast.RenderToString()}
@@ -384,38 +341,38 @@ namespace YAF.Web.Controls
                          ";
 
                 var gotoLastPost = new ThemeButton
-                                       {
-                                           NavigateUrl = YafBuildLink.GetLink(
+                {
+                    NavigateUrl = YafBuildLink.GetLink(
                                                ForumPages.posts,
                                                "m={0}#post{0}",
                                                this.TopicRow["LastMessageID"]),
-                                           Size = ButtonSize.Small,
-                                           Icon = "share-square",
-                                           Type = ButtonAction.OutlineSecondary,
-                                           TitleLocalizedTag = "GO_LAST_POST",
-                                           DataToggle = "tooltip",
-                                           CssClass = "mr-1"
-                                       };
+                    Size = ButtonSize.Small,
+                    Icon = "share-square",
+                    Type = ButtonAction.OutlineSecondary,
+                    TitleLocalizedTag = "GO_LAST_POST",
+                    DataToggle = "tooltip",
+                    CssClass = "mr-1"
+                };
 
                 var gotoLastUnread = new ThemeButton
-                                         {
-                                             NavigateUrl =
+                {
+                    NavigateUrl =
                                                  YafBuildLink.GetLink(
                                                      ForumPages.posts,
                                                      "t={0}&find=unread",
                                                      this.TopicRow["TopicID"]),
-                                             Size = ButtonSize.Small,
-                                             Icon = "book-reader",
-                                             Type = ButtonAction.OutlineSecondary,
-                                             TitleLocalizedTag = "GO_LASTUNREAD_POST",
-                                             DataToggle = "tooltip"
-                                         };
+                    Size = ButtonSize.Small,
+                    Icon = "book-reader",
+                    Type = ButtonAction.OutlineSecondary,
+                    TitleLocalizedTag = "GO_LASTUNREAD_POST",
+                    DataToggle = "tooltip"
+                };
 
                 
-                writer.Write(gotoLastPost.RenderToString());
                 writer.Write(gotoLastUnread.RenderToString());
+                writer.Write(gotoLastPost.RenderToString());
                 writer.Write(infoLastPost.RenderToString());
-                
+
                 writer.Write("</div>");
             }
 
