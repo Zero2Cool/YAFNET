@@ -432,9 +432,12 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         /// </returns>
         public static string LoadTableSorter([NotNull] string selector, [CanBeNull] string options)
         {
+            var widgets =
+                ", widgets: ['zebra', 'reflow'], widgetOptions: { reflow_className: 'ui-table-reflow',reflow_headerAttrib: 'data-name',reflow_dataAttrib: 'data-title'}";
+
             return $@"{Config.JQueryAlias}(document).ready(function() {{
                         {Config.JQueryAlias}('{selector}').tablesorter( 
-                                          {(options.IsSet() ? $"{{ theme: 'bootstrap', {options} }}" : "{{ theme: 'bootstrap' }}")} );
+                                          {(options.IsSet() ? $"{{ theme: 'bootstrap', {options}{widgets} }}" : "{{ theme: 'bootstrap'{widgets} }}")} );
                     }});";
         }
 
@@ -452,8 +455,11 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
             [CanBeNull] string options,
             [NotNull] string pagerSelector)
         {
+            var widgets =
+                ", widgets: ['zebra', 'reflow'], widgetOptions: { reflow_className: 'ui-table-reflow',reflow_headerAttrib: 'data-name',reflow_dataAttrib: 'data-title'}";
+
             return $@"{Config.JQueryAlias}(document).ready(function() {{
-                        {Config.JQueryAlias}('{selector}').tablesorter( {(options.IsSet() ? $"{{ {options},theme : 'bootstrap' }}" : "{{ theme : 'bootstrap'}}")} )
+                        {Config.JQueryAlias}('{selector}').tablesorter( {(options.IsSet() ? $"{{ {options},theme : 'bootstrap'{widgets} }}" : "{{ theme : 'bootstrap'{widgets}}}")} )
                                   .tablesorterPager({{
                                                      container: $('{pagerSelector}')
                                                      }});
@@ -1008,18 +1014,18 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         /// The title.
         /// </param>
         /// <param name="cssClass">
-        /// The css Class.
+        /// The CSS Class.
         /// </param>
         /// <returns>
         /// Returns the JS String
         /// </returns>
         [NotNull]
-        public static string TopicLinkPopoverJs([NotNull] string title, [NotNull] string cssClass)
+        public static string TopicLinkPopoverJs([NotNull] string title, [NotNull] string cssClass, [NotNull] string trigger)
         {
             return $@"{Config.JQueryAlias}('{cssClass}').popover({{
                            title: '{title}',
                            html: true,
-                           trigger: 'hover click',
+                           trigger: '{trigger}',
                            template: '<div class=""popover"" role=""tooltip""><h3 class=""popover-header""></h3><div class=""arrow""></div><div class=""popover-body""></div></div>'
                 }});
                 {Config.JQueryAlias}('{cssClass}').on('inserted.bs.popover', function () {{
@@ -1027,7 +1033,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                   {Config.JQueryAlias}(this).html(function(index, value) {{
                                           return moment(value).fromNow();
                   }});
-                  {Config.JQueryAlias}(this).removeClass('timeago');
+                  {Config.JQueryAlias}(this).removeClass('popover-timeago');
             }});
                 }})";
         }
