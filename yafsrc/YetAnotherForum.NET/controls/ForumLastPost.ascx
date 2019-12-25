@@ -7,13 +7,9 @@
             <div class="row">
                 <div class="col">
                     <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
-                        <YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
+                        <YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label> <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
                     </asp:PlaceHolder>
                 </div>
-
-                <asp:Label runat="server" ID="NewMessage"
-                           CssClass="mr-1">
-                </asp:Label>
             </div>
         </div>
         <div class="row">
