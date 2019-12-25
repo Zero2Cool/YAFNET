@@ -365,7 +365,8 @@ namespace YAF.Web.Controls
                     Icon = "book-reader",
                     Type = ButtonAction.OutlineSecondary,
                     TitleLocalizedTag = "GO_LASTUNREAD_POST",
-                    DataToggle = "tooltip"
+                    DataToggle = "tooltip",
+                    CssClass = "mr-1"
                 };
 
                 
