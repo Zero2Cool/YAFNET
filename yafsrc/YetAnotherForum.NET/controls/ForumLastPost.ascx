@@ -3,17 +3,10 @@
 <asp:PlaceHolder ID="LastPostedHolder" runat="server">
     <div class="forumLatestContainer">
         <div class="forumLastTopic">
-
-            <div class="row">
-                <div class="col">
-                    <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
+            <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
                         <YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label> <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
                     </asp:PlaceHolder>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
 
                 <YAF:ThemeButton runat="server" ID="ImageLastUnreadMessageLink"
                                  Size="Small"
@@ -41,8 +34,6 @@
                                  CssClass="mt-1 topic-link-popover btn-xs">
                 </YAF:ThemeButton>
             </div>
-        </div>
-    </div>
 
 </asp:PlaceHolder>
 
