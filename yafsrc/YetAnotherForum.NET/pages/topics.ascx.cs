@@ -1,7 +1,7 @@
 /* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  * 
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -84,18 +84,6 @@ namespace YAF.Pages
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the last post image TT.
-        /// </summary>
-        /// <value>
-        /// The last post image TT.
-        /// </value>
-        public string LastPostImageTT { get; set; }
-
-        #endregion
-
         #region Public Methods
 
         /// <summary>
@@ -144,7 +132,16 @@ namespace YAF.Pages
                 JavaScriptBlocks.TopicLinkPopoverJs(
                     $"{this.GetText("LASTPOST")}&nbsp;{this.GetText("SEARCH", "BY")} ...",
                     ".topic-link-popover",
-                    "hover click"));
+                    "focus hover"));
+
+            var iconLegend = new IconLegend().RenderToString();
+
+            // setup jQuery and DatePicker JS...
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                "TopicIconLegendPopoverJs",
+                JavaScriptBlocks.ForumIconLegendPopoverJs(
+                    iconLegend.Replace("\n", string.Empty).Replace("\r", string.Empty),
+                    "topic-icon-legend-popvover"));
 
             base.OnPreRender(e);
         }
@@ -230,8 +227,6 @@ namespace YAF.Pages
             this.ForumJumpHolder.Visible = this.Get<YafBoardSettings>().ShowForumJump
                                            && this.PageContext.Settings.LockedForum == 0;
 
-            this.LastPostImageTT = this.GetText("DEFAULT", "GO_LAST_POST");
-
             if (this.ForumSearchHolder.Visible)
             {
                 this.forumSearch.Attributes["onkeydown"] =
@@ -284,11 +279,7 @@ namespace YAF.Pages
                 YafBuildLink.AccessDenied();
             }
 
-            var dt = this.GetRepository<Forum>().List(
-                this.PageContext.PageBoardID,
-                this.PageContext.PageForumID);
-
-            this.forum = dt.FirstOrDefault();
+            this.forum = this.GetRepository<Forum>().GetById(this.PageContext.PageForumID);
 
             if (this.forum.RemoteURL.IsSet())
             {

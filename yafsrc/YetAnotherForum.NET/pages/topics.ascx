@@ -20,7 +20,7 @@
                     <i class="fas fa-comments fa-fw text-secondary"></i>&nbsp;<%= this.GetSubForumTitle()%>
                 </div>
                 <div class="card-body" id="body" runat="server">
-                    <YAF:ForumList AltLastPost="<%# this.LastPostImageTT %>" runat="server" ID="ForumList" />
+                    <YAF:ForumList runat="server" ID="ForumList" />
                 </div>
             </div>
         </div>
@@ -176,13 +176,4 @@
                              OnClick="NewTopic_Click"
                              Icon="plus"/>
     </div>
-</div>
-
-<div class="row justify-content-between">
-<div class="col-md py-3">
-    <YAF:IconLegend ID="IconLegend1" runat="server" />
-</div>
-<div class="col-md py-3">
-    <YAF:PageAccess ID="PageAccess1" runat="server" />
-</div>
 </div>

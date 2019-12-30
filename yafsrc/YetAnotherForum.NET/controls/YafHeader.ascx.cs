@@ -1,7 +1,7 @@
 /* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -194,6 +194,8 @@ namespace YAF.Controls
             {
                 link.Attributes.Add("rel", "nofollow");
             }
+
+            link.Attributes.Add("data-toggle", "tooltip");
 
             var unreadButton = new HtmlGenericControl("span");
 
@@ -449,10 +451,31 @@ namespace YAF.Controls
                 return;
             }
 
-            // My Profile
-            this.MyProfile.ToolTip = this.GetText("TOOLBAR", "MYPROFILE_TITLE");
-            this.MyProfile.NavigateUrl = YafBuildLink.GetLink(ForumPages.cp_profile);
-            this.MyProfile.Text = $"<i class=\"fa fa-address-card fa-fw\"></i>  {this.GetText("TOOLBAR", "MYPROFILE")}";
+            var unreadActivity = this.PageContext.Mention + this.PageContext.Quoted + this.PageContext.ReceivedThanks;
+
+            RenderMenuItem(
+                this.MyProfile,
+                "dropdown-item",
+                this.GetText("TOOLBAR", "MYPROFILE"),
+                this.GetText("TOOLBAR", "MYPROFILE_TITLE"),
+                YafBuildLink.GetLink(ForumPages.cp_profile),
+                false,
+                unreadActivity > 0,
+                unreadActivity.ToString(),
+                this.GetTextFormatted("TOOLBAR", "NEWPM", this.PageContext.UnreadPrivate),
+                "address-card");
+
+            RenderMenuItem(
+                this.MyActicity,
+                "dropdown-item",
+                this.GetText("TOOLBAR", "MYACTIVITY"),
+                this.GetText("TOOLBAR", "MYACTIVITY_TITLE"),
+                YafBuildLink.GetLink(ForumPages.cp_profile),
+                false,
+                false,
+                null,
+                null,
+                "stream");
 
             // My Inbox
             if (this.Get<YafBoardSettings>().AllowPrivateMessages)
@@ -528,7 +551,16 @@ namespace YAF.Controls
             // Logged in as : username
             this.LoggedInUserPanel.Visible = true;
 
-            this.UnreadPlaceHolder.Visible = this.PageContext.UnreadPrivate + this.PageContext.PendingBuddies > 0;
+            this.UserIcon.IconName = "user";
+
+            var unreadCount = this.PageContext.UnreadPrivate + this.PageContext.PendingBuddies
+                                                             + this.PageContext.Mention
+                                                             + this.PageContext.Quoted
+                                                             + this.PageContext.ReceivedThanks;
+
+            this.UnreadLabel.Text = unreadCount.ToString();
+
+            this.UnreadPlaceHolder.Visible = unreadCount > 0;
         }
 
         /// <summary>

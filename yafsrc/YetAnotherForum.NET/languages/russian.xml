@@ -357,6 +357,11 @@
     <Resource tag="TITLE">Конференция</Resource>
   </page>
   <page name="ADMIN_BOARDSETTINGS">
+    <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+    <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+    <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+    <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+    <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST">Отправлять дайджест по пользователям ежедневно:</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST_HELP">Обязательное поле: конференция должна иметь "YAF.BaseUrlMask" и "YAF.ForceScriptName" в вашем web.config чтобы дайджест работал.</Resource>
     <Resource tag="BOARD_CDN_HOSTED">Использовать внешний Google CDN файл jQuery UI CSS</Resource>
@@ -1773,6 +1778,8 @@
     <Resource tag="HEADER">Поиск пользователей</Resource>
     <Resource tag="IMPORT">Импортировать пользователя(лей)</Resource>
     <Resource tag="LAST_VISIT">Последнее посещение</Resource>
+    <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+    <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
     <Resource tag="MSG_DELETE_ADMIN">Вы не можете удалить администратора.</Resource>
     <Resource tag="MSG_DELETE_GUEST">Вы не можете удалить Гостя.</Resource>
     <Resource tag="MSG_SELF_DELETE">Вы не можете удалить себя.</Resource>
@@ -4478,6 +4485,12 @@ Spoiler Content
     </Resource>
     <Resource tag="PREVIEWTITLE">Предпросмотр:</Resource>
     <Resource tag="RECIPIENTS_PMBOX_FULL">У пользователя/пользователей {0} переполнен ящик входящих сообщений. Извините, но они не получат ваше личное сообщение до тех пор пока не освободят место.</Resource>
+    <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
+    <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
     <Resource tag="REPORTED_SUBJECT">Re: Ответ на Вашу жалобу.</Resource>
     <Resource tag="SAVE">Отправить</Resource>
     <Resource tag="SUBJECT">Тема:</Resource>
@@ -4523,6 +4536,8 @@ Spoiler Content
     <Resource tag="POLLGROUP_CLOSEDBOUND">Связанное голосование</Resource>
     <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">Не показывать результаты опроса пока он не истёк.</Resource>
     <Resource tag="POLLGROUP_LIST">Выберите существующую группу опросов:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
     <Resource tag="POLLGROUPISBOUND">Результаты Вашего голосования будут видны, когда Вы проголосуете во всех опросах.</Resource>
     <Resource tag="POLLHEADER">Создание и редактирование опроса</Resource>
     <Resource tag="POLLIMAGE_INVALID">Изображение или его путь недействительны для {0}.</Resource>
@@ -4771,6 +4786,7 @@ Spoiler Content
     <Resource tag="MEMBERS">Участники</Resource>
     <Resource tag="MINUTES">минут</Resource>
     <Resource tag="MODERATION">Права доступа</Resource>
+    <Resource tag="MONTH">month</Resource>
     <Resource tag="MSN">Пейджер MSN:</Resource>
     <Resource tag="NUMALL">{0:N2}% от всех сообщений</Resource>
     <Resource tag="NUMDAY">{0:N2} сообщений в день</Resource>
@@ -4804,6 +4820,7 @@ Spoiler Content
     <Resource tag="WEBLOG">Блог:</Resource>
     <Resource tag="WEBSITE">Домашняя страница:</Resource>
     <Resource tag="XMPP">XMPP эккаунт:</Resource>
+    <Resource tag="YEARS">Year(s)</Resource>
     <Resource tag="YIM">Пейджер Yahoo:</Resource>
   </page>
   <page name="RECOVER_PASSWORD">
@@ -6214,6 +6231,8 @@ Password: {password}
     <Resource tag="MODERATE">Модерировать</Resource>
     <Resource tag="MODERATE_NEW">({0} Need Moderating)</Resource>
     <Resource tag="MODERATE_TITLE">Посмотреть страницу модератора.</Resource>
+    <Resource tag="MYACTIVITY">My Activity</Resource>
+    <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">Альбомы</Resource>
     <Resource tag="MYALBUMS_TITLE">Посмотреть страницу альбомов.</Resource>
     <Resource tag="MYPROFILE">Мой профиль</Resource>

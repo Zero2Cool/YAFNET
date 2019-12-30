@@ -1,7 +1,7 @@
 /* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -154,7 +154,7 @@ namespace YAF.Core.UsersRoles
         }
 
         /// <summary>
-        /// The delete all unapproved.
+        /// Deletes all Unapproved Users older then Cut Off DateTime
         /// </summary>
         /// <param name="createdCutoff">
         /// The created cutoff.
@@ -188,6 +188,28 @@ namespace YAF.Core.UsersRoles
 
                 pageCount++;
             }
+        }
+
+        /// <summary>
+        /// De-active all User accounts which are not active for x years
+        /// </summary>
+        /// <param name="createdCutoff">
+        /// The created cutoff.
+        /// </param>
+        public static void LockInactiveAccounts(DateTime createdCutoff)
+        {
+            var allUsers = GetAllUsers();
+
+            // iterate through each one...
+            allUsers.Cast<MembershipUser>().Where(user => !user.IsApproved && user.LastActivityDate < createdCutoff)
+                .ForEach(
+                    user =>
+                        {
+                            // Set user to un-approve...
+                            user.IsApproved = false;
+
+                            YafContext.Current.Get<MembershipProvider>().UpdateUser(user);
+                        });
         }
 
         /// <summary>

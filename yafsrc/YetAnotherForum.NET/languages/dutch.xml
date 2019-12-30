@@ -357,6 +357,11 @@
     <Resource tag="TITLE">Boards</Resource>
   </page>
   <page name="ADMIN_BOARDSETTINGS">
+    <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+    <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+    <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+    <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+    <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST">Sta het mailen van Samenvattingen toe voor gebruikers:</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST_HELP">NB: het board moet "YAF.BaseUrlMask" en "YAF.ForceScriptName" AppSettings hebben in je web.config om Samenvattingen te laten werken.</Resource>
     <Resource tag="BOARD_CDN_HOSTED">Gebruik CDN jQuery UI CSS bestand gehost door Google?</Resource>
@@ -1785,6 +1790,8 @@
     <Resource tag="HEADER">Zoek gebruikers</Resource>
     <Resource tag="IMPORT">Importeer Gebruiker(s)</Resource>
     <Resource tag="LAST_VISIT">Laatste bezoek</Resource>
+    <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+    <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
     <Resource tag="MSG_DELETE_ADMIN">Je kunt de Beheerder niet verwijderen.</Resource>
     <Resource tag="MSG_DELETE_GUEST">Je kunt de 'Gast' gebruiker niet verwijderen.</Resource>
     <Resource tag="MSG_SELF_DELETE">Je kunt jezelf niet verwijderen..</Resource>
@@ -4469,6 +4476,12 @@ Spoiler Inhoud
 	</Resource>
     <Resource tag="PREVIEWTITLE">Voorbeeld:</Resource>
     <Resource tag="RECIPIENTS_PMBOX_FULL">Gebruiker {0} heeft een volle PM Inbox. Hij/zij moet eerst een aantal berichten verwijderen voordat je hem/haar een PM kunt sturen.</Resource>
+    <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
+    <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
     <Resource tag="REPORTED_SUBJECT">Re: Antwoord op je gerapporteerde bericht.</Resource>
     <Resource tag="SAVE">Verzenden</Resource>
     <Resource tag="SUBJECT">Onderwerp:</Resource>
@@ -4514,6 +4527,8 @@ Spoiler Inhoud
     <Resource tag="POLLGROUP_CLOSEDBOUND">Gekoppelde stemming</Resource>
     <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">Geen resultaten laten zien als de Poll nog open is</Resource>
     <Resource tag="POLLGROUP_LIST">Kies een bestaande Poll groep</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
     <Resource tag="POLLGROUPISBOUND">Je stem wordt geteld als je in alle polls hebt gestemd.</Resource>
     <Resource tag="POLLHEADER">Maak of bewerk poll</Resource>
     <Resource tag="POLLIMAGE_INVALID">Het plaatje of de locatie is ongeldig voor {0}.</Resource>
@@ -4762,6 +4777,7 @@ Spoiler Inhoud
     <Resource tag="MEMBERS">Leden</Resource>
     <Resource tag="MINUTES">minuten</Resource>
     <Resource tag="MODERATION">Moderatie</Resource>
+    <Resource tag="MONTH">month</Resource>
     <Resource tag="MSN">Live Messenger:</Resource>
     <Resource tag="NUMALL">{0:N2}% van alle berichten</Resource>
     <Resource tag="NUMDAY">{0:N2} berichten per dag</Resource>
@@ -4796,6 +4812,7 @@ Spoiler Inhoud
     <Resource tag="WEBLOG">Weblog:</Resource>
     <Resource tag="WEBSITE">Homepage:</Resource>
     <Resource tag="XMPP">XMPP Naam:</Resource>
+    <Resource tag="YEARS">Year(s)</Resource>
     <Resource tag="YIM">Yahoo Messenger:</Resource>
   </page>
   <page name="RECOVER_PASSWORD">
@@ -6207,6 +6224,8 @@ Bezoek {forumname} op {forumlink}
     <Resource tag="MODERATE">Moderatie</Resource>
     <Resource tag="MODERATE_NEW">({0} Need Moderating)</Resource>
     <Resource tag="MODERATE_TITLE">Laat de Moderatiepagina zien, waar je gerapporteerde en niet-goedgekeurde berichten kunt zien.</Resource>
+    <Resource tag="MYACTIVITY">My Activity</Resource>
+    <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">Mijn Albums</Resource>
     <Resource tag="MYALBUMS_TITLE">Laat de Album-pagina met al je albums zien.</Resource>
     <Resource tag="MYPROFILE">Profiel</Resource>

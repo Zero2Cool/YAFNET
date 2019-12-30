@@ -1,7 +1,7 @@
 ﻿/* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  * 
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -324,6 +324,8 @@ namespace YAF.Pages
                 // to the given message id "p"
                 var isQuoting = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("q") == "1";
 
+                var isReport = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("report") == "1";
+
                 // get quoted message
                 var row =
                     this.GetRepository<PMessage>().ListAsDataTable(
@@ -384,6 +386,40 @@ namespace YAF.Pages
 
                 // we don't want any whitespaces at the beginning of message
                 this._editor.Text = body.TrimStart();
+
+                if (isReport)
+                {
+                    var users = this.GetRepository<User>().UserList(
+                        YafContext.Current.PageBoardID,
+                        null,
+                        true,
+                        null,
+                        null,
+                        null).ToList();
+
+                    var hostUser = users.FirstOrDefault(u => u.IsHostAdmin > 0);
+
+                    if (hostUser != null)
+                    {
+                        this.To.Text = this.Get<YafBoardSettings>().EnableDisplayName
+                                           ? hostUser.DisplayName
+                                           : hostUser.Name;
+
+                        this.PmSubjectTextBox.Text = this.GetTextFormatted("REPORT_SUBJECT", displayName);
+
+                        var bodyReport = row["Body"].ToString();
+
+                        // Quote the original message
+                        bodyReport = this.GetTextFormatted("REPORT_BODY", bodyReport);
+
+                        // we don't want any whitespaces at the beginning of message
+                        this._editor.Text = bodyReport.TrimStart();
+                    }
+                    else
+                    {
+                        YafBuildLink.AccessDenied();
+                    }
+                }
             }
             else if (this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u").IsSet()
                      && this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("r").IsSet())
