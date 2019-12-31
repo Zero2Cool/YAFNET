@@ -150,7 +150,7 @@ namespace YAF.Pages
         /// Gets the sub forum title.
         /// </summary>
         /// <returns>The get sub forum title.</returns>
-            protected string GetSubForumTitle()
+        protected string GetSubForumTitle()
         {
             return this.GetTextFormatted("SUBFORUMS", this.HtmlEncode(this.PageContext.PageForumName));
         }

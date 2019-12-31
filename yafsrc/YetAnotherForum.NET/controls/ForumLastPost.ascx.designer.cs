@@ -51,13 +51,13 @@ namespace YAF.Controls
         protected global::System.Web.UI.WebControls.HyperLink topicLink;
 
         /// <summary>
-        /// ImageLastUnreadMessageLink control.
+        /// Info control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Web.Controls.ThemeButton ImageLastUnreadMessageLink;
+        protected global::YAF.Web.Controls.ThemeButton Info;
 
         /// <summary>
         /// ImageLastUnreadMessageLink control.

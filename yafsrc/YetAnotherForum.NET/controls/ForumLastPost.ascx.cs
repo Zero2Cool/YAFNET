@@ -124,17 +124,17 @@ namespace YAF.Controls
 
                 // Last Topic User
                 var lastUserLink = new UserLink
-                                       {
-                                           UserID = this.DataRow["LastUserID"].ToType<int>(),
-                                           Style = this.Get<YafBoardSettings>().UseStyledNicks
+                {
+                    UserID = this.DataRow["LastUserID"].ToType<int>(),
+                    Style = this.Get<YafBoardSettings>().UseStyledNicks
                                                        ? this.Get<IStyleTransform>().DecodeStyleByString(
                                                            this.DataRow["Style"].ToString())
                                                        : string.Empty,
-                                           ReplaceName = this
+                    ReplaceName = this
                                                .DataRow[this.Get<YafBoardSettings>().EnableDisplayName
                                                             ? "LastUserDisplayName"
                                                             : "LastUser"].ToString()
-                                       };
+                };
 
                 this.LastTopicImgLink.NavigateUrl = YafBuildLink.GetLinkNotEscaped(
                     ForumPages.posts, "m={0}#post{0}", this.DataRow["LastMessageID"]);

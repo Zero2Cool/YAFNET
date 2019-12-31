@@ -773,7 +773,7 @@ namespace YAF.Core.BBCode
                               <i class=""fa fa-quote-left fa-sm text-white""></i>
                           </div>
                           <footer class=""blockquote-footer pt-1 mt-3""><cite>{localQuoteStr}</cite></footer>
-                          <p class=""mb-0 mt-2 font-italic"">";
+                          <p class=""mb-0 mt-2"">";
 
                 ruleEngine.AddRule(
                     new SimpleRegexReplaceRule(OpenQuoteRegex, simpleOpenQuoteReplace, Options) { RuleRank = 62 });

@@ -1,14 +1,30 @@
 <%@ Control Language="C#" AutoEventWireup="true" EnableViewState="false" Inherits="YAF.Controls.ForumLastPost" CodeBehind="ForumLastPost.ascx.cs" %>
 
 <asp:PlaceHolder ID="LastPostedHolder" runat="server">
-    <div class="forumLatestContainer">
-        <div class="forumLastTopic">
+    <div class="row">
+        <div class="col">
+            <asp:Label runat="server" ID="NewMessage" 
+                       CssClass="mr-1"></asp:Label>
             <asp:PlaceHolder ID="TopicInPlaceHolder" runat="server">
-                        <YAF:LocalizedLabel runat="server" LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: <asp:Label runat="server" ID="NewMessage" CssClass="mr-1"></asp:Label> <asp:HyperLink ID="topicLink" runat="server" CssClass="mr-1"></asp:HyperLink>
-                    </asp:PlaceHolder>
-                </div>
-
-                <YAF:ThemeButton runat="server" ID="ImageLastUnreadMessageLink"
+                <YAF:LocalizedLabel runat="server" 
+                                    LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: 
+                <asp:HyperLink ID="topicLink" runat="server"></asp:HyperLink>
+            </asp:PlaceHolder>
+            <YAF:ThemeButton runat="server" ID="Info"
+                             Icon="info-circle"
+                             IconColor="text-info"
+                             IconCssClass="fas fa-lg"
+                             Type="Link"
+                             DataToggle="popover"
+                             Size="Small"
+                             CssClass="topic-link-popover">
+            </YAF:ThemeButton>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="btn-group" role="group">
+                <YAF:ThemeButton runat="server" ID="ImageLastUnreadMessageLink" 
                                  Size="Small"
                                  Icon="book-reader"
                                  Type="OutlineSecondary"
@@ -23,11 +39,12 @@
                                  TitleLocalizedTag="GO_LAST_POST">
                 </YAF:ThemeButton>
             </div>
-
+        </div>
+    </div>
 </asp:PlaceHolder>
 
 <asp:PlaceHolder runat="server" ID="NoPostsPlaceHolder">
     <YAF:Alert runat="server" Type="info">
-        <YAF:LocalizedLabel ID="NoPostsLabel" runat="server" LocalizedTag="NO_POSTS"/>
+        <YAF:LocalizedLabel ID="NoPostsLabel" runat="server" LocalizedTag="NO_POSTS" />
     </YAF:Alert>
 </asp:PlaceHolder>
