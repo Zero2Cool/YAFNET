@@ -357,6 +357,11 @@
     <Resource tag="TITLE">Boards</Resource>
   </page>
   <page name="ADMIN_BOARDSETTINGS">
+    <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+    <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+    <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+    <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+    <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST">Tägliche E-Mail Zusammenfassung(Digest) für Benutzer Erlauben</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST_HELP">Erforderlich: Board muss die Werte "YAF.BaseUrl Mask" und "YAF.Force ScriptName" in den AppSettings definiert in Ihrer web.config, haben damit die Zusammenfassung (Digest) funktioniert.</Resource>
     <Resource tag="BOARD_CDN_HOSTED">Google Hosted CDN jQuery UI CSS Datei verwenden?</Resource>
@@ -1775,6 +1780,8 @@
     <Resource tag="HEADER">Benutzer suchen</Resource>
     <Resource tag="IMPORT">Benuter Importieren</Resource>
     <Resource tag="LAST_VISIT">Letzter Besuch</Resource>
+    <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+    <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
     <Resource tag="MSG_DELETE_ADMIN">Sie können den Admin nicht löschen</Resource>
     <Resource tag="MSG_DELETE_GUEST">Sie können den Gast nicht löschen</Resource>
     <Resource tag="MSG_SELF_DELETE">Sie können sich nicht selber löschen.</Resource>
@@ -4443,6 +4450,12 @@ Spoiler Content
     </Resource>
     <Resource tag="PREVIEWTITLE">Vorschau:</Resource>
     <Resource tag="RECIPIENTS_PMBOX_FULL">Du wolltest eine Nachricht an einen Benutzer mit einem vollen Posteingang schicken. Der Benutzer muss zuerst seinen Posteingang leeren, bevor wieder neue Nachrichten empfangen werden können.</Resource>
+    <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
+    <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
     <Resource tag="REPORTED_SUBJECT">Re: Antworten auf diesen Beitragsbericht.</Resource>
     <Resource tag="SAVE">Absenden</Resource>
     <Resource tag="SUBJECT">Betreff:</Resource>
@@ -4488,6 +4501,8 @@ Spoiler Content
     <Resource tag="POLLGROUP_CLOSEDBOUND">Keine Resultate zeigen wenn die Gruppe offen ist.</Resource>
     <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">Keine Resultate zeigen wenn die Gruppe offen zum Abstimmen ist</Resource>
     <Resource tag="POLLGROUP_LIST">Wählen Sie eine Gruppe:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
     <Resource tag="POLLGROUPISBOUND">Ihre Stimme wird gezählt, wenn Sie an allen Umfragen teilgenommen haben.</Resource>
     <Resource tag="POLLHEADER">Erstellen oder Umfrage bearbeiten</Resource>
     <Resource tag="POLLIMAGE_INVALID">Das Bild oder der Pfad ist für (0) ist ungültig.</Resource>
@@ -4736,6 +4751,7 @@ Spoiler Content
     <Resource tag="MEMBERS">Mitglieder</Resource>
     <Resource tag="MINUTES">Minuten</Resource>
     <Resource tag="MODERATION">Moderation</Resource>
+    <Resource tag="MONTH">month</Resource>
     <Resource tag="MSN">MSN-Messenger:</Resource>
     <Resource tag="NUMALL">{0:N2}% aller Beiträge</Resource>
     <Resource tag="NUMDAY">{0:N2} Beiträge pro Tag</Resource>
@@ -4769,6 +4785,7 @@ Spoiler Content
     <Resource tag="WEBLOG">Web-Blog:</Resource>
     <Resource tag="WEBSITE">Webseite:</Resource>
     <Resource tag="XMPP">Jabber Name:</Resource>
+    <Resource tag="YEARS">Year(s)</Resource>
     <Resource tag="YIM">Yahoo!-Messenger:</Resource>
   </page>
   <page name="RECOVER_PASSWORD">
@@ -6178,6 +6195,8 @@ Der Bestätigungscode lautet
     <Resource tag="MODERATE">Moderieren</Resource>
     <Resource tag="MODERATE_NEW">({0} Need Moderating)</Resource>
     <Resource tag="MODERATE_TITLE">Öffnet die Moderieren Seite wo sie alle Unbestätigten und gemeldeten Beiträge ansehen können.</Resource>
+    <Resource tag="MYACTIVITY">My Activity</Resource>
+    <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">Meine Alben</Resource>
     <Resource tag="MYALBUMS_TITLE">Öffnet die Alben Seite mit ihren Alben.</Resource>
     <Resource tag="MYPROFILE">Mein Profil</Resource>

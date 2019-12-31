@@ -357,6 +357,11 @@
     <Resource tag="TITLE">تابلو ها</Resource>
   </page>
   <page name="ADMIN_BOARDSETTINGS">
+    <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+    <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+    <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+    <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+    <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST">ارسال نامه خلاصه شده به کاربران روزی یک  بار :</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST_HELP">الزامی : تابلو می بایست تعریف های YAF.Base UrlMask و YAF.ForceScriptName را در قسمت AppSetting در فایل Web.Config داشته باشد.</Resource>
     <Resource tag="BOARD_CDN_HOSTED">از فایل CSS , JQuery موجود در CDN گوگل استفاده شود؟</Resource>
@@ -1803,6 +1808,8 @@
     <Resource tag="HEADER">جستجوی کاربر</Resource>
     <Resource tag="IMPORT">درون‌ریزی کاربر (ها)</Resource>
     <Resource tag="LAST_VISIT">آخرین بازدید </Resource>
+    <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+    <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
     <Resource tag="MSG_DELETE_ADMIN">شما نمی توانید مدیریت را حذف کنید.</Resource>
     <Resource tag="MSG_DELETE_GUEST">میهمان را نمی توان حذف کرد.</Resource>
     <Resource tag="MSG_SELF_DELETE">شما نمی توانید خودتان را حذف کنید.</Resource>
@@ -4551,6 +4558,12 @@
     <Resource tag="PMLIMIT_ALL">شما دارای {0} پیغام می باشید که شامل {1} پیغام ورودی , {2} پیغام خروجی و {3} پیغام در آرشیو از مجموع {4} پیغام مجاز می باشد.{5} درصد ظرفیت صندوق شما پر شده است.</Resource>
     <Resource tag="PREVIEWTITLE">پیش نمایش:</Resource>
     <Resource tag="RECIPIENTS_PMBOX_FULL">صندوق پیامهای کاربری که مایل به ارسال پیام به او هستید پر شده است.کاربر فوق باید قبل از دریافت پیغام جدید صندوق خود را تخلیه کند.</Resource>
+    <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
+    <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
     <Resource tag="REPORTED_SUBJECT">پاسخ درباره گزارش شما</Resource>
     <Resource tag="SAVE">ارسال</Resource>
     <Resource tag="SUBJECT">موضوع:</Resource>
@@ -4596,6 +4609,8 @@
     <Resource tag="POLLGROUP_CLOSEDBOUND">محدودیت رای</Resource>
     <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">در صورت عدم انقضای نظر سنجی نتایج را نمایش نده.</Resource>
     <Resource tag="POLLGROUP_LIST">گروه نظر سنجی را انتخاب کنید:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
     <Resource tag="POLLGROUPISBOUND">رای شما زمانی شمارش خواهشد شد که در تمام نظر سنجی ها رای داده ابشید.</Resource>
     <Resource tag="POLLHEADER">ساخت یا ویرایش نظر سنجی</Resource>
     <Resource tag="POLLIMAGE_INVALID">تصویر یا مسیر آن برای {0} نا معتبر است</Resource>
@@ -4844,6 +4859,7 @@
     <Resource tag="MEMBERS">اعضا</Resource>
     <Resource tag="MINUTES">دقیقه</Resource>
     <Resource tag="MODERATION">نظارت</Resource>
+    <Resource tag="MONTH">month</Resource>
     <Resource tag="MSN">مسنجر MSN:</Resource>
     <Resource tag="NUMALL">{0:N2}% از تمام ارسال‌ها</Resource>
     <Resource tag="NUMDAY">{0:N2} ارسال در روز</Resource>
@@ -4877,6 +4893,7 @@
     <Resource tag="WEBLOG">وبلاگ:</Resource>
     <Resource tag="WEBSITE">صفحه خانگی:</Resource>
     <Resource tag="XMPP">نام XMPP:</Resource>
+    <Resource tag="YEARS">Year(s)</Resource>
     <Resource tag="YIM">مسنجر یاهو:</Resource>
   </page>
   <page name="RECOVER_PASSWORD">
@@ -6265,6 +6282,8 @@
     <Resource tag="MODERATE">مدیریت</Resource>
     <Resource tag="MODERATE_NEW">({0} Need Moderating)</Resource>
     <Resource tag="MODERATE_TITLE">نمایش صفحه مدیر زمانی که می توانید موضوعات گزارش شده و تائید نشده را ببینید</Resource>
+    <Resource tag="MYACTIVITY">My Activity</Resource>
+    <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">آلبوم‌های من</Resource>
     <Resource tag="MYALBUMS_TITLE">نمایش صفحه آلبوم ها برای نمایش تمام آلبوم ها</Resource>
     <Resource tag="MYPROFILE">پروفایل من</Resource>

@@ -1,7 +1,7 @@
 /* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  * 
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -890,7 +890,6 @@ namespace YAF.Controls
                 // we don't display warnings row if no info
                 if (notificationString.IsSet())
                 {
-                    item.FindControlRecursiveAs<PlaceHolder>("PollInfoTr").Visible = true;
                     var pn = item.FindControlRecursiveAs<Label>("PollNotification");
                     pn.Text = notificationString;
                     pn.Visible = true;
@@ -906,8 +905,9 @@ namespace YAF.Controls
             if (this._groupNotificationString.IsSet())
             {
                 // we don't display warnings row if no info
-                item.FindControlRecursiveAs<PlaceHolder>("PollInfoTr").Visible = true;
+                item.FindControlRecursiveAs<PlaceHolder>("PollGroupInfoTr").Visible = true;
                 var pgn = item.FindControlRecursiveAs<Label>("PollGroupNotification");
+
                 pgn.Text = this._groupNotificationString;
                 pgn.Visible = true;
             }

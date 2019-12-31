@@ -1,7 +1,7 @@
 /* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  * 
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -212,27 +212,6 @@ namespace YAF.Core
         public DateTime LastPendingBuddies => this.Page["LastPendingBuddies"].ToString().IsNotSet()
                                                   ? DateTimeHelper.SqlDbMinTime()
                                                   : Convert.ToDateTime(this.Page["LastPendingBuddies"]);
-
-        /// <summary>
-        /// The last received thanks.
-        /// </summary>
-        public int LastReceivedThanks => this.Page["LastReceivedThanks"].ToString().IsNotSet()
-                                            ? 0
-                                            : this.Page["LastReceivedThanks"].ToType<int>();
-
-        /// <summary>
-        /// The last mention.
-        /// </summary>
-        public int LastMention => this.Page["LastMention"].ToString().IsNotSet()
-                                            ? 0
-                                            : this.Page["LastMention"].ToType<int>();
-
-        /// <summary>
-        /// The last quoted.
-        /// </summary>
-        public int LastQuoted => this.Page["LastQuoted"].ToString().IsNotSet()
-                                      ? 0
-                                      : this.Page["LastQuoted"].ToType<int>();
 
         /// <summary>
         ///   Gets LastUnreadPm.

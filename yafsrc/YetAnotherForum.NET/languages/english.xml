@@ -356,7 +356,12 @@
   <Resource tag="TITLE">Boards</Resource>
  </page>
  <page name="ADMIN_BOARDSETTINGS">
-  <Resource tag="BOARD_ALLOW_DIGEST">Allow Digest Email Sending for Users:</Resource>
+   <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+   <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+   <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+   <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+   <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
+   <Resource tag="BOARD_ALLOW_DIGEST">Allow Digest Email Sending for Users:</Resource>
   <Resource tag="BOARD_ALLOW_DIGEST_HELP">NOTE: board must have "YAF.BaseUrlMask" and "YAF.ForceScriptName" AppSettings defined in your web.config for digest to function.</Resource>
   <Resource tag="BOARD_CDN_HOSTED">Use Google Hosted CDN jQuery UI CSS File?</Resource>
   <Resource tag="BOARD_CDN_HOSTED_HELP">You can use the Google Hosted CSS Files, or instead use internal.</Resource>
@@ -1799,6 +1804,8 @@
   <Resource tag="HEADER">Search Users</Resource>
   <Resource tag="IMPORT">Import User(s)</Resource>
   <Resource tag="LAST_VISIT">Last Visit</Resource>
+   <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+   <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
   <Resource tag="MSG_DELETE_ADMIN">You can't delete the Admin.</Resource>
   <Resource tag="MSG_DELETE_GUEST">You can't delete the Guest.</Resource>
   <Resource tag="MSG_SELF_DELETE">You can't delete yourself.</Resource>
@@ -2730,8 +2737,8 @@
   <Resource tag="ERROR_HOVERCARD">Sorry, no data found or something went wrong.</Resource>
   <Resource tag="ERROR_TWIT_HOVERCARD">Invalid username or you have exceeded Twitter request limit.&lt;br/&gt;&lt;small&gt;Please note, Twitter only allows 150 requests per hour.&lt;/small&gt;.</Resource>
   <Resource tag="FORUM">Forum</Resource>
-  <Resource tag="GO_LAST_POST">Go to last post</Resource>
-  <Resource tag="GO_LASTUNREAD_POST">Go to first unread</Resource>
+  <Resource tag="GO_LAST_POST">Got to the newest Posting in the topic</Resource>
+  <Resource tag="GO_LASTUNREAD_POST">Go to first unread Posting in the topic</Resource>
   <Resource tag="IN">in {0}</Resource>
   <Resource tag="INFORMATION">Information</Resource>
   <Resource tag="LAST_VISIT">Your last visit: {0}.</Resource>
@@ -4303,6 +4310,12 @@
   <Resource tag="PREVIEWTITLE">Preview:</Resource>
   <Resource tag="RECIPIENTS_PMBOX_FULL">User {0} has a full Private Message Inbox. Sorry, they will not receive your PM until they free up space.</Resource>
   <Resource tag="REPORTED_SUBJECT">Re: Reply to you post report.</Resource>
+   <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
+   <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
   <Resource tag="SAVE">Post</Resource>
   <Resource tag="SUBJECT">Subject:</Resource>
   <Resource tag="TITLE">Post a Private Message</Resource>
@@ -4347,6 +4360,8 @@
   <Resource tag="POLLGROUP_CLOSEDBOUND">Bound voting</Resource>
   <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">Don't show results, if the poll didn't expire.</Resource>
   <Resource tag="POLLGROUP_LIST">Choose an existing poll group:</Resource>
+   <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+   <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
   <Resource tag="POLLGROUPISBOUND">Your vote will be counted when you've voted in all the polls.</Resource>
   <Resource tag="POLLHEADER">Create Or Edit Poll</Resource>
   <Resource tag="POLLIMAGE_INVALID">The image or its path is invalid for {0}.</Resource>
@@ -4594,6 +4609,8 @@
   <Resource tag="MEDALS">Medals:</Resource>
   <Resource tag="MEMBERS">Members</Resource>
   <Resource tag="MINUTES">minutes</Resource>
+   <Resource tag="MONTH">month</Resource>
+   <Resource tag="YEARS">Year(s)</Resource>
   <Resource tag="MODERATION">Moderation</Resource>
   <Resource tag="MSN">MSN Messenger:</Resource>
   <Resource tag="NUMALL">{0:N2}% of all post</Resource>
@@ -5914,7 +5931,9 @@ Visit {forumname} at {forumlink}
   <Resource tag="MODERATE_TITLE">Shows the Moderate Page where you can view unapproved and reported Posts..</Resource>
   <Resource tag="MYALBUMS">My Albums</Resource>
   <Resource tag="MYALBUMS_TITLE">Shows the Albums Page which shows all your albums.</Resource>
-  <Resource tag="MYPROFILE">My Profile</Resource>
+  <Resource tag="MYPROFILE">My Account</Resource>
+   <Resource tag="MYACTIVITY">My Activity</Resource>
+   <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
   <Resource tag="MYPROFILE_TITLE">Shows the User Control Panel.</Resource>
   <Resource tag="MYTOPICS">My Topics</Resource>
   <Resource tag="MYTOPICS_TITLE">Shows the Active and Favorite Topics.</Resource>esource>

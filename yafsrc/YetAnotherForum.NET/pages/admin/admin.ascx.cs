@@ -1,7 +1,7 @@
 /* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -126,16 +126,6 @@ namespace YAF.Pages.Admin
 
                     break;
                 case "delete":
-                    var daysValue =
-                        this.PageContext.CurrentForumPage.FindControlRecursiveAs<TextBox>("DaysOld").Text.Trim();
-                    if (!ValidationHelper.IsValidInt(daysValue))
-                    {
-                        this.PageContext.AddLoadMessage(
-                            this.GetText("ADMIN_ADMIN", "MSG_VALID_DAYS"),
-                            MessageTypes.warning);
-                        return;
-                    }
-
                     if (!Config.IsAnyPortal)
                     {
                         UserMembershipHelper.DeleteUser(e.CommandArgument.ToType<int>());
@@ -166,8 +156,11 @@ namespace YAF.Pages.Admin
                     {
                         UserMembershipHelper.DeleteAllUnapproved(DateTime.UtcNow.AddDays(-daysValueAll.ToType<int>()));
                     }
+                    else
+                    {
+                        this.GetRepository<User>().DeleteOld(this.PageContext.PageBoardID, daysValueAll.ToType<int>());
+                    }
 
-                    this.GetRepository<User>().DeleteOld(this.PageContext.PageBoardID, daysValueAll.ToType<int>());
                     this.BindData();
                     break;
                 case "approveall":

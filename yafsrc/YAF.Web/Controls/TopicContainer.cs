@@ -1,18 +1,18 @@
 ﻿/* Yet Another Forum.NET
-* Copyright (C) 2003-2005 Bjørnar Henden
-* Copyright (C) 2006-2013 Jaben Cargman
-* Copyright (C) 2014-2019 Ingo Herbote
-* https://www.yetanotherforum.net/
-* 
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
+ * Copyright (C) 2003-2005 Bjørnar Henden
+ * Copyright (C) 2006-2013 Jaben Cargman
+ * Copyright (C) 2014-2020 Ingo Herbote
+ * https://www.yetanotherforum.net/
+ * 
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
 
-* http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
 * Unless required by applicable law or agreed to in writing,
 * software distributed under the License is distributed on an
@@ -48,20 +48,6 @@ namespace YAF.Web.Controls
     [ToolboxData("<{0}:TopicContainer runat=server></{0}:TopicContainer>")]
     public class TopicContainer : BaseControl
     {
-        #region Constants and Fields
-
-        /// <summary>
-        ///   The last post tooltip string.
-        /// </summary>
-        private string altLastPost;
-
-        /// <summary>
-        ///   The first unread post tooltip string.
-        /// </summary>
-        private string altFirstUnreadPost;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -72,28 +58,6 @@ namespace YAF.Web.Controls
             get => this.ViewState["AllowSelection"] != null && this.ViewState["AllowSelection"].ToType<bool>();
 
             set => this.ViewState["AllowSelection"] = value;
-        }
-
-        /// <summary>
-        ///   Gets or sets Alt.
-        /// </summary>
-        [NotNull]
-        public string AltLastPost
-        {
-            get => this.altLastPost.IsNotSet() ? string.Empty : this.altLastPost;
-
-            set => this.altLastPost = value;
-        }
-
-        /// <summary>
-        ///   Gets or sets Alt Unread Post.
-        /// </summary>
-        [NotNull]
-        public string AltLastUnreadPost
-        {
-            get => this.altFirstUnreadPost.IsNotSet() ? string.Empty : this.altFirstUnreadPost;
-
-            set => this.altFirstUnreadPost = value;
         }
 
         /// <summary>
@@ -174,7 +138,8 @@ namespace YAF.Web.Controls
                 writer.Write("<h5>");
             }
 
-            writer.Write($"<span class=\"fa-stack fa-1x\">{this.GetTopicImage(this.TopicRow, lastRead)}</span>");
+            writer.Write($@"<a tabindex=""0"" class=""topic-icon-legend-popvover"" role=""button"" data-toggle=""popover"" href=""#!"">
+                                <span class=""fa-stack fa-1x\"">{this.GetTopicImage(this.TopicRow, lastRead)}</span></a>");
 
             var priorityMessage = this.GetPriorityMessage(this.TopicRow);
 
@@ -225,23 +190,8 @@ namespace YAF.Web.Controls
                                                 </span>&nbsp;<span class=""popover-timeago"">{formattedStartedDatetime}</span>
                          ");
 
-            /*if (this.TopicRow["Description"].ToString().IsSet())
-            {
-                topicLink.ToolTip = this.Get<IBadWordReplace>().Replace(this.HtmlEncode(this.TopicRow["Description"]));
-            }*/
-
             if (!this.TopicRow["LastMessageID"].IsNullOrEmptyDBField())
             {
-                if (this.AltLastPost.IsNotSet())
-                {
-                    this.AltLastPost = this.GetText("DEFAULT", "GO_LAST_POST");
-                }
-
-                if (this.AltLastUnreadPost.IsNotSet())
-                {
-                    this.AltLastUnreadPost = this.GetText("DEFAULT", "GO_LASTUNREAD_POST");
-                }
-
                 if (this.TopicRow["LastPosted"].ToType<DateTime>() > lastRead)
                 {
                     writer.Write("<span class=\"badge badge-success\">{0}</span>&nbsp;", this.GetText("NEW_POSTS"));
@@ -299,17 +249,19 @@ namespace YAF.Web.Controls
             {
                 writer.Write("<div class=\"col-md-4 text-secondary\">");
 
-                writer.Write($"{this.GetText("LASTPOST")}:&nbsp;");
+                writer.Write($"{this.GetText("LASTPOST")}:");
 
                 var infoLastPost = new ThemeButton
-                {
-                    Size = ButtonSize.Small,
-                    Icon = "info-circle",
-                    Type = ButtonAction.OutlineInfo,
-                    DataToggle = "popover",
-                    CssClass = "topic-link-popover mr-1",
-                    NavigateUrl = "#!"
-                };
+                                       {
+                                           Size = ButtonSize.Small,
+                                           Icon = "info-circle",
+                                           IconCssClass = "fas fa-lg",
+                                           IconColor = "text-info",
+                                           Type = ButtonAction.Link,
+                                           DataToggle = "popover",
+                                           CssClass = "topic-link-popover",
+                                           NavigateUrl = "#!"
+                                       };
 
                 var lastPostedDateTime = this.TopicRow["LastPosted"].ToType<DateTime>();
 
@@ -340,18 +292,28 @@ namespace YAF.Web.Controls
                                                 </span>&nbsp;<span class=""popover-timeago"">{formattedDatetime}</span>
                          ";
 
+                infoLastPost.TextLocalizedTag = "by";
+                infoLastPost.TextLocalizedPage = "DEFAULT";
+                infoLastPost.ParamText0 = this
+                    .TopicRow[this.Get<YafBoardSettings>().EnableDisplayName
+                                  ? "LastUserDisplayName"
+                                  : "LastUserName"].ToString();
+
+                writer.Write(infoLastPost.RenderToString());
+
                 var gotoLastPost = new ThemeButton
-                {
-                    NavigateUrl = YafBuildLink.GetLink(
-                                               ForumPages.posts,
-                                               "m={0}#post{0}",
-                                               this.TopicRow["LastMessageID"]),
-                    Size = ButtonSize.Small,
-                    Icon = "share-square",
-                    Type = ButtonAction.OutlineSecondary,
-                    TitleLocalizedTag = "GO_LAST_POST",
-                    DataToggle = "tooltip",
-                    CssClass = "mr-1"
+                                       {
+                                           NavigateUrl =
+                                               YafBuildLink.GetLink(
+                                                   ForumPages.posts,
+                                                   "m={0}#post{0}",
+                                                   this.TopicRow["LastMessageID"]),
+                                           Size = ButtonSize.Small,
+                                           Icon = "share-square",
+                                           Type = ButtonAction.OutlineSecondary,
+                                           TitleLocalizedTag = "GO_LAST_POST",
+                                           DataToggle = "tooltip",
+                                           CssClass = "mr-1"
                 };
 
                 var gotoLastUnread = new ThemeButton
@@ -369,11 +331,11 @@ namespace YAF.Web.Controls
                     CssClass = "mr-1"
                 };
 
-                
+                writer.Write(@"<div class=""btn-group"" role=""group"">");
                 writer.Write(gotoLastUnread.RenderToString());
                 writer.Write(gotoLastPost.RenderToString());
-                writer.Write(infoLastPost.RenderToString());
-
+                writer.Write("</div>");
+                
                 writer.Write("</div>");
             }
 

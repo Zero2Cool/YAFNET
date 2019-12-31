@@ -1,7 +1,7 @@
 /* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  * 
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -55,11 +55,6 @@ namespace YAF.Controls
         #region Constants and Fields
 
         /// <summary>
-        ///   The Go to last post Image ToolTip.
-        /// </summary>
-        private string altLastPost;
-
-        /// <summary>
         /// The Data Source
         /// </summary>
         private IEnumerable dataSource;
@@ -67,17 +62,6 @@ namespace YAF.Controls
         #endregion
 
         #region Properties
-
-        /// <summary>
-        ///   Gets or sets Alt.
-        /// </summary>
-        [NotNull]
-        public string AltLastPost
-        {
-            get => this.altLastPost.IsNotSet() ? string.Empty : this.altLastPost;
-
-            set => this.altLastPost = value;
-        }
 
         /// <summary>
         ///   Gets or sets DataSource.
@@ -435,16 +419,6 @@ namespace YAF.Controls
         }
 
         /// <summary>
-        /// Handles the Load event of the Page control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
-        {
-            this.AltLastPost = this.GetText("DEFAULT", "GO_LAST_POST");
-        }
-
-        /// <summary>
         /// The On PreRender event.
         /// </summary>
         /// <param name="e">
@@ -459,7 +433,8 @@ namespace YAF.Controls
             this.PageContext.PageElements.RegisterJsBlockStartup(
                 "ForumIconLegendPopoverJs",
                 JavaScriptBlocks.ForumIconLegendPopoverJs(
-                    iconLegend.Replace("\n", string.Empty).Replace("\r", string.Empty)));
+                    iconLegend.Replace("\n", string.Empty).Replace("\r", string.Empty),
+                    "forum-icon-legend-popvover"));
 
             base.OnPreRender(e);
         }

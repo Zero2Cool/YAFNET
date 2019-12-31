@@ -357,6 +357,11 @@
     <Resource tag="TITLE">Boards</Resource>
   </page>
   <page name="ADMIN_BOARDSETTINGS">
+    <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+    <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+    <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+    <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+    <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST">Allow Digest Email Sending for Users Once Daily:</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST_HELP">Reqired: board must have "YAF.BaseUrlMask" and "YAF.ForceScriptName" AppSettings defined in your web.config for digest to work.</Resource>
     <Resource tag="BOARD_CDN_HOSTED">Use Google Hosted CDN jQuery UI CSS File?</Resource>
@@ -1790,6 +1795,8 @@
     <Resource tag="HEADER">Search Users</Resource>
     <Resource tag="IMPORT">Import User(s)</Resource>
     <Resource tag="LAST_VISIT">Last Visit</Resource>
+    <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+    <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
     <Resource tag="MSG_DELETE_ADMIN">You can't delete the Admin.</Resource>
     <Resource tag="MSG_DELETE_GUEST">You can't delete the Guest.</Resource>
     <Resource tag="MSG_SELF_DELETE">You can't delete yourself.</Resource>
@@ -4511,6 +4518,12 @@ Spoiler Content
     </Resource>
     <Resource tag="PREVIEWTITLE">Eelvaade:</Resource>
     <Resource tag="RECIPIENTS_PMBOX_FULL">Kasutajal {0} on privaatsõnumite postkast täis.</Resource>
+    <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
+    <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
     <Resource tag="REPORTED_SUBJECT">Re: Vastus postituse raportile.</Resource>
     <Resource tag="SAVE">Saada</Resource>
     <Resource tag="SUBJECT">Pealkiri:</Resource>
@@ -4558,6 +4571,8 @@ Spoiler Content
     <Resource tag="POLLGROUP_CLOSEDBOUND">Seotud hääletamine</Resource>
     <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">Ära näita tulemusi, kui grupp on avatud hääletamiseks</Resource>
     <Resource tag="POLLGROUP_LIST">Valige olemasolev küsitlusegrupp:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
     <Resource tag="POLLGROUPISBOUND">Teie häält arvestatakse, kui olete hääletanud kõikides küsitlustes.</Resource>
     <Resource tag="POLLHEADER">Lisa või muuda küsitlust</Resource>
     <Resource tag="POLLIMAGE_INVALID">Pilt või selle teekond on kehtetu {0}.</Resource>
@@ -4809,6 +4824,7 @@ Spoiler Content
     <Resource tag="MEMBERS">Liikmed</Resource>
     <Resource tag="MINUTES">minutid</Resource>
     <Resource tag="MODERATION">Modereerimine</Resource>
+    <Resource tag="MONTH">month</Resource>
     <Resource tag="MSN">MSN Messenger:</Resource>
     <Resource tag="NUMALL">{0:N2}% postituste koguarvust</Resource>
     <Resource tag="NUMDAY">{0:N2} postitust päevas</Resource>
@@ -4842,6 +4858,7 @@ Spoiler Content
     <Resource tag="WEBLOG">Ajaveeb:</Resource>
     <Resource tag="WEBSITE">Kodulehekülg:</Resource>
     <Resource tag="XMPP">XMPP nimi:</Resource>
+    <Resource tag="YEARS">Year(s)</Resource>
     <Resource tag="YIM">Yahoo Messenger:</Resource>
   </page>
   <page name="RECOVER_PASSWORD">
@@ -6252,6 +6269,8 @@ Külastage {forumname} aadressil {forumlink}
     <Resource tag="MODERATE">Modereeri</Resource>
     <Resource tag="MODERATE_NEW">({0} Need Moderating)</Resource>
     <Resource tag="MODERATE_TITLE">Shows the Moderate Page where you can view unapproved and reported Posts..</Resource>
+    <Resource tag="MYACTIVITY">My Activity</Resource>
+    <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">Minu albumid</Resource>
     <Resource tag="MYALBUMS_TITLE">Shows the Albums Page which shows all your albums.</Resource>
     <Resource tag="MYPROFILE">Minu profiil</Resource>

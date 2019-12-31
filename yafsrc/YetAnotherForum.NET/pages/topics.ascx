@@ -7,8 +7,26 @@
 
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
-
-<div class="row align-items-center justify-content-between">
+<asp:PlaceHolder runat="server" ID="SubForums" Visible="false">
+    <div class="row">
+        <div class="col">
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center">
+                    <YAF:CollapseButton ID="CollapsibleImage" runat="server"
+                                        PanelID='<%# "forumPanel{0}".Fmt(this.PageContext.PageForumID) %>'
+                                        AttachedControlID="body" 
+                                        CssClass="pl-0">
+                    </YAF:CollapseButton>
+                    <i class="fas fa-comments fa-fw text-secondary"></i>&nbsp;<%= this.GetSubForumTitle()%>
+                </div>
+                <div class="card-body" id="body" runat="server">
+                    <YAF:ForumList runat="server" ID="ForumList" />
+                </div>
+            </div>
+        </div>
+    </div>
+</asp:PlaceHolder>
+<div class="row mb-3 align-items-center justify-content-between">
     <div class="col-md-6">
         <YAF:Pager runat="server" ID="Pager" UsePostBack="False" />
     </div>
@@ -157,44 +175,15 @@
         <YAF:Pager ID="PagerBottom" runat="server" LinkedPager="Pager" UsePostBack="False" />
     </div>
     <div class="col-md-6 mt-1 mt-md-0">
-        <YAF:ThemeButton ID="moderate2" runat="server"
-            CssClass="float-right mr-1"
-            TextLocalizedTag="BUTTON_MODERATE" TitleLocalizedTag="BUTTON_MODERATE_TT"
-            Type="Secondary"
-            Icon="tasks" />
-        <YAF:ThemeButton ID="NewTopic2" runat="server"
-            CssClass="float-right mr-1"
-            TextLocalizedTag="BUTTON_NEWTOPIC" TitleLocalizedTag="BUTTON_NEWTOPIC_TT"
-            OnClick="NewTopic_Click"
-            Icon="plus" />
-    </div>
-</div>
-
-<asp:PlaceHolder runat="server" ID="SubForums" Visible="false">
-    <div class="row">
-        <div class="col">
-            <div class="card mb-3">
-                <div class="card-header d-flex align-items-center">
-                    <YAF:CollapseButton ID="CollapsibleImage" runat="server"
-                        PanelID='<%# "forumPanel{0}".Fmt(this.PageContext.PageForumID) %>'
-                        AttachedControlID="body"
-                        CssClass="pl-0">
-                    </YAF:CollapseButton>
-                    <i class="fas fa-comments fa-fw text-secondary"></i>&nbsp;<%= this.GetSubForumTitle()%>
-                </div>
-                <div class="card-body" id="body" runat="server">
-                    <YAF:ForumList AltLastPost="<%# this.LastPostImageTT %>" runat="server" ID="ForumList" />
-                </div>
-            </div>
-        </div>
-    </div>
-</asp:PlaceHolder>
-
-<div class="row justify-content-between">
-    <div class="col-md py-3">
-        <YAF:IconLegend ID="IconLegend1" runat="server" />
-    </div>
-    <div class="col-md py-3">
-        <YAF:PageAccess ID="PageAccess1" runat="server" />
+            <YAF:ThemeButton ID="moderate2" runat="server" 
+                             CssClass="float-right mr-1"
+                             TextLocalizedTag="BUTTON_MODERATE" TitleLocalizedTag="BUTTON_MODERATE_TT"
+                             Type="Secondary"
+                             Icon="tasks"/>
+            <YAF:ThemeButton ID="NewTopic2" runat="server" 
+                             CssClass="float-right mr-1"
+                             TextLocalizedTag="BUTTON_NEWTOPIC" TitleLocalizedTag="BUTTON_NEWTOPIC_TT" 
+                             OnClick="NewTopic_Click"
+                             Icon="plus"/>
     </div>
 </div>

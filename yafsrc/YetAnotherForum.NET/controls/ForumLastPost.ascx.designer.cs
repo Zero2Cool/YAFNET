@@ -24,15 +24,6 @@ namespace YAF.Controls
         protected global::System.Web.UI.WebControls.PlaceHolder LastPostedHolder;
 
         /// <summary>
-        /// TopicInPlaceHolder control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder TopicInPlaceHolder;
-
-        /// <summary>
         /// NewMessage control.
         /// </summary>
         /// <remarks>
@@ -40,6 +31,15 @@ namespace YAF.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label NewMessage;
+
+        /// <summary>
+        /// TopicInPlaceHolder control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder TopicInPlaceHolder;
 
         /// <summary>
         /// topicLink control.
@@ -60,6 +60,15 @@ namespace YAF.Controls
         protected global::YAF.Web.Controls.ThemeButton ImageLastUnreadMessageLink;
 
         /// <summary>
+        /// ImageLastUnreadMessageLink control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.ThemeButton ImageLastUnreadMessageLink;
+
+        /// <summary>
         /// LastTopicImgLink control.
         /// </summary>
         /// <remarks>
@@ -67,15 +76,6 @@ namespace YAF.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::YAF.Web.Controls.ThemeButton LastTopicImgLink;
-
-        /// <summary>
-        /// Info control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.ThemeButton Info;
 
         /// <summary>
         /// NoPostsPlaceHolder control.

@@ -357,6 +357,11 @@
     <Resource tag="TITLE">Boards</Resource>
   </page>
   <page name="ADMIN_BOARDSETTINGS">
+    <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+    <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+    <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+    <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+    <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST">Allow Digest Email Sending for Users Once Daily:</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST_HELP">Reqired: board must have "YAF.BaseUrlMask" and "YAF.ForceScriptName" AppSettings defined in your web.config for digest to work.</Resource>
     <Resource tag="BOARD_CDN_HOSTED">Use Google Hosted CDN jQuery UI CSS File?</Resource>
@@ -1790,6 +1795,8 @@
     <Resource tag="HEADER">Search Users</Resource>
     <Resource tag="IMPORT">Import User(s)</Resource>
     <Resource tag="LAST_VISIT">Last Visit</Resource>
+    <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+    <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
     <Resource tag="MSG_DELETE_ADMIN">You can't delete the Admin.</Resource>
     <Resource tag="MSG_DELETE_GUEST">You can't delete the Guest.</Resource>
     <Resource tag="MSG_SELF_DELETE">You can't delete yourself.</Resource>
@@ -4512,6 +4519,12 @@ Spoiler Content
     </Resource>
     <Resource tag="PREVIEWTITLE">Aperçu :</Resource>
     <Resource tag="RECIPIENTS_PMBOX_FULL">La boite de réception de l'utilisateur {0} est pleine. Désolé, mais il ne recevra pas votre message privé tant qu'il n'aura pas libéré de l'espace.</Resource>
+    <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
+    <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
     <Resource tag="REPORTED_SUBJECT">Re: Réponse à votre rapport de message.</Resource>
     <Resource tag="SAVE">Envoyer</Resource>
     <Resource tag="SUBJECT">Sujet :</Resource>
@@ -4560,6 +4573,8 @@ Spoiler Content
     <Resource tag="POLLGROUP_CLOSEDBOUND">Don't show results if group is open</Resource>
     <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">Don't show results if the poll didn't expire</Resource>
     <Resource tag="POLLGROUP_LIST">Choose an existing poll group:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
     <Resource tag="POLLGROUPISBOUND">Your vote will be counted when you'll vote in all the polls.</Resource>
     <Resource tag="POLLHEADER">Create Or Edit Poll</Resource>
     <Resource tag="POLLIMAGE_INVALID">The image or its path is invalid for {0}.</Resource>
@@ -4811,6 +4826,7 @@ Spoiler Content
     <Resource tag="MEMBERS">Membres</Resource>
     <Resource tag="MINUTES">minutes</Resource>
     <Resource tag="MODERATION">Moderation</Resource>
+    <Resource tag="MONTH">month</Resource>
     <Resource tag="MSN">MSN Messenger&amp;nbsp;:</Resource>
     <Resource tag="NUMALL">{0:N2}% de tous les messages</Resource>
     <Resource tag="NUMDAY">{0:N2} messages par jour</Resource>
@@ -4844,6 +4860,7 @@ Spoiler Content
     <Resource tag="WEBLOG">Weblog&amp;nbsp;:</Resource>
     <Resource tag="WEBSITE">Page d'accueil&amp;nbsp;:</Resource>
     <Resource tag="XMPP">XMPP Name:</Resource>
+    <Resource tag="YEARS">Year(s)</Resource>
     <Resource tag="YIM">Yahoo Messenger&amp;nbsp;:</Resource>
   </page>
   <page name="RECOVER_PASSWORD">
@@ -6254,6 +6271,8 @@ Visitez {forumname} à l'adresse {forumlink}
     <Resource tag="MODERATE">Modérer</Resource>
     <Resource tag="MODERATE_NEW">({0} Need Moderating)</Resource>
     <Resource tag="MODERATE_TITLE">Shows the Moderate Page where you can view unapproved and reported Posts..</Resource>
+    <Resource tag="MYACTIVITY">My Activity</Resource>
+    <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">Mes albums</Resource>
     <Resource tag="MYALBUMS_TITLE">Shows the Albums Page which shows all your albums.</Resource>
     <Resource tag="MYPROFILE">Mon Profil</Resource>

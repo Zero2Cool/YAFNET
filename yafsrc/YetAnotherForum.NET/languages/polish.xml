@@ -357,6 +357,11 @@
     <Resource tag="TITLE">Fora</Resource>
   </page>
   <page name="ADMIN_BOARDSETTINGS">
+    <Resource tag="ANNOUNCEMENT_CURRENT">Current Announcement visible until</Resource>
+    <Resource tag="ANNOUNCEMENT_MESSAGE">Announcement Message:</Resource>
+    <Resource tag="ANNOUNCEMENT_TITLE">Board Announcement</Resource>
+    <Resource tag="ANNOUNCEMENT_TYPE">Type:</Resource>
+    <Resource tag="ANNOUNCEMENT_UNTIL">Announcement visible for...</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST">Pozwól Digest wysyłać e-maile do użytkowników:</Resource>
     <Resource tag="BOARD_ALLOW_DIGEST_HELP">Informacja: Forum musi mieć "YAF.BaseUrlMask" i 'YAF.ForceScriptName" zdefiniowane w "AppSettings" w Twoim pliku web.config, aby Digest działał.</Resource>
     <Resource tag="BOARD_CDN_HOSTED">Używać plików jQuery UI CSS hostowanych przez Google?</Resource>
@@ -1785,6 +1790,8 @@
     <Resource tag="HEADER">Search Users</Resource>
     <Resource tag="IMPORT">Import User(s)</Resource>
     <Resource tag="LAST_VISIT">Last Visit</Resource>
+    <Resource tag="LOCK_INACTIVE">Lock inactive accounts</Resource>
+    <Resource tag="LOCK_INACTIVE_HELP">Lock inactive accounts older then x years. This will not delete there content (like posted messages)</Resource>
     <Resource tag="MSG_DELETE_ADMIN">You can't delete the Admin.</Resource>
     <Resource tag="MSG_DELETE_GUEST">You can't delete the Guest.</Resource>
     <Resource tag="MSG_SELF_DELETE">You can't delete yourself.</Resource>
@@ -4488,6 +4495,12 @@ Spoiler Content
     </Resource>
     <Resource tag="PREVIEWTITLE">Podgląd:</Resource>
     <Resource tag="RECIPIENTS_PMBOX_FULL">Użytkownik {0} ma pełną skrzynkę odbiorczą. Nie dostaną wiadomości od Ciebie, dopóki nie usuną nieco starych waidomości.</Resource>
+    <Resource tag="REPORT_BODY">I would like to Report the Message: 
+
+  {0} 
+     
+  for the following Reason...</Resource>
+    <Resource tag="REPORT_SUBJECT">Report a Private Message from User: {0}</Resource>
     <Resource tag="REPORTED_SUBJECT">Re: Odpowiedź na zgłoszenie posta.</Resource>
     <Resource tag="SAVE">Wyślij</Resource>
     <Resource tag="SUBJECT">Temat:</Resource>
@@ -4533,6 +4546,8 @@ Spoiler Content
     <Resource tag="POLLGROUP_CLOSEDBOUND">Zamknięte rezultaty</Resource>
     <Resource tag="POLLGROUP_CLOSEDBOUND_WARN">Nie pokazuje rezultatów ankiety, dopóki ankieta nie wygaśnie</Resource>
     <Resource tag="POLLGROUP_LIST">Wybierz istniejącą grupę ankiet:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD">Board Poll:</Resource>
+    <Resource tag="POLLGROUP_LIST_BOARD_HELP">Choose an existing poll as board Poll</Resource>
     <Resource tag="POLLGROUPISBOUND">Twój głos zostanie policzony, jeżeli zagłosujesz we wszystkich ankietach.</Resource>
     <Resource tag="POLLHEADER">Dodaj lub edytuj ankietę</Resource>
     <Resource tag="POLLIMAGE_INVALID">Obraz, lub jego ścieżka jest błędna dla {0}.</Resource>
@@ -4781,6 +4796,7 @@ Spoiler Content
     <Resource tag="MEMBERS">Członkowie</Resource>
     <Resource tag="MINUTES">minut</Resource>
     <Resource tag="MODERATION">Moderowanie</Resource>
+    <Resource tag="MONTH">month</Resource>
     <Resource tag="MSN">MSN Messenger:</Resource>
     <Resource tag="NUMALL">{0:N2}% wszystkich postów</Resource>
     <Resource tag="NUMDAY">{0:N2} postów na dzień</Resource>
@@ -4814,6 +4830,7 @@ Spoiler Content
     <Resource tag="WEBLOG">Weblog:</Resource>
     <Resource tag="WEBSITE">Strona Domowa:</Resource>
     <Resource tag="XMPP">Konto XMPP:</Resource>
+    <Resource tag="YEARS">Year(s)</Resource>
     <Resource tag="YIM">Yahoo Messenger:</Resource>
   </page>
   <page name="RECOVER_PASSWORD">
@@ -6224,6 +6241,8 @@ Visit {forumname} at {forumlink}
     <Resource tag="MODERATE">Moderuj</Resource>
     <Resource tag="MODERATE_NEW">({0} Need Moderating)</Resource>
     <Resource tag="MODERATE_TITLE">Pokazuje stronę moderacyjną, na której możesz znaleźć listę niezaakceptowanych i zgłoszonych postów...</Resource>
+    <Resource tag="MYACTIVITY">My Activity</Resource>
+    <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">Moje albumy</Resource>
     <Resource tag="MYALBUMS_TITLE">Pokazuje stronę z listą Twoich albumów.</Resource>
     <Resource tag="MYPROFILE">Mój Profil</Resource>

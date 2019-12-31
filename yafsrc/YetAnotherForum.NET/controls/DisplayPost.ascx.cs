@@ -1,7 +1,7 @@
 ﻿/* Yet Another Forum.NET
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
- * Copyright (C) 2014-2019 Ingo Herbote
+ * Copyright (C) 2014-2020 Ingo Herbote
  * https://www.yetanotherforum.net/
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -12,7 +12,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -620,12 +620,10 @@ namespace YAF.Controls
 
             if (this.Edit.Visible || this.Delete.Visible || this.MovePost.Visible)
             {
-                this.Manage.Visible = true;
                 this.ManageDropPlaceHolder.Visible = true;
             }
             else
             {
-                this.Manage.Visible = false;
                 this.ManageDropPlaceHolder.Visible = false;
             }
 
@@ -699,7 +697,7 @@ namespace YAF.Controls
             if (this.ReportPost.Visible == false && this.MarkAsAnswer.Visible == false
                                                  && this.ReportPost.Visible == false
                                                  && this.ThanksDataLiteral.Visible == false
-                                                 && this.Thank.Visible == false && this.Manage.Visible == false
+                                                 && this.Thank.Visible == false && this.ManageDropPlaceHolder.Visible == false
                                                  && this.Quote.Visible == false && this.MultiQuote.Visible == false)
             {
                this.Footer.Visible = false;
