@@ -1409,6 +1409,7 @@
     <Resource tag="SHOW_RENDERTIME_HELP">Enable or disable display of page generation text at the bottom of the page.</Resource>
     <Resource tag="SHOW_RSS_LINKS">Show RSS Links:</Resource>
     <Resource tag="SHOW_RSS_LINKS_HELP">Enable or disable display of RSS links throughout the forum.</Resource>
+    <Resource tag="SHOW_SCROLL">Show Scroll Back to Top Button</Resource>
     <Resource tag="SHOW_SHOUTBOX">Show Shoutbox:</Resource>
     <Resource tag="SHOW_SHOUTBOX_HELP">Enable or disable display of the Shoutbox (Chat Module) in the forum page.</Resource>
     <Resource tag="SHOW_SIMILARTOPICS">Show Similar Topics:</Resource>
@@ -2636,14 +2637,19 @@
     <Resource tag="CONFIRM_DELETE">Kustutada kõik valitud sõnumid?</Resource>
     <Resource tag="CONFIRM_DELETEALL">Kustutada kõik sõnumid?</Resource>
     <Resource tag="DATE">Kuupäev</Resource>
+    <Resource tag="DATE_ASC">Date asc</Resource>
+    <Resource tag="DATE_DESC">Date desc</Resource>
     <Resource tag="DELETEALL">Kustuta kõik</Resource>
     <Resource tag="DELETESELECTED">Kustuta valitud</Resource>
     <Resource tag="EXPORTALL">Ekspordi kõik</Resource>
     <Resource tag="EXPORTFORMAT">Ekspordi formaat:</Resource>
     <Resource tag="EXPORTSELECTED">Ekspordi valitud</Resource>
     <Resource tag="FROM">Kellelt</Resource>
+    <Resource tag="FROM_ASC">From A-Z</Resource>
+    <Resource tag="FROM_DESC">From Z-A</Resource>
     <Resource tag="INBOX">Postkast</Resource>
     <Resource tag="MARK_ALL_ASREAD">Märgi kõik loetuks</Resource>
+    <Resource tag="MARK_ASREAD">Mark As Read</Resource>
     <Resource tag="MSG_ARCHIVED">Sõnum arhiveeriti.</Resource>
     <Resource tag="MSG_ARCHIVED+">{0} sõnumit arhiveeriti.</Resource>
     <Resource tag="MSG_DELETED">Sõnum kustutati.</Resource>
@@ -2655,6 +2661,8 @@
     <Resource tag="POSTED">Postitatud:</Resource>
     <Resource tag="SENTITEMS">Saadetud</Resource>
     <Resource tag="SUBJECT">Pealkiri</Resource>
+    <Resource tag="SUBJECT_ASC">Subject A-Z</Resource>
+    <Resource tag="SUBJECT_DESC">Subject Z-A</Resource>
     <Resource tag="TITLE">Privaatsõnumid</Resource>
     <Resource tag="TO">Kellele</Resource>
   </page>

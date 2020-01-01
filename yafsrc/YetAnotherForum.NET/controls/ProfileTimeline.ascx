@@ -4,7 +4,7 @@
 <YAF:Pager ID="PagerTop" runat="server" OnPageChange="PagerTop_PageChange" />
 
 
-<asp:Repeater runat="server" ID="ActivityStream" OnItemDataBound="ActivityStream_OnItemDataBound">
+<asp:Repeater runat="server" ID="ActivityStream" OnItemDataBound="ActivityStream_OnItemDataBound" OnItemCommand="ActivityStream_OnItemCommand">
     <HeaderTemplate>
         <div class="container">
     </HeaderTemplate>
@@ -26,7 +26,7 @@
             </div>
             <div class="col py-2">
                 <asp:Panel runat="server" ID="Card">
-                    <div class="card-body">
+                    <div class="card-body py-2">
                         <div class="float-right text-muted">
                             <YAF:DisplayDateTime id="DisplayDateTime" runat="server">
                             </YAF:DisplayDateTime>
@@ -34,9 +34,15 @@
                         <h4 class="card-title">
                             <asp:Literal runat="server" ID="Title"></asp:Literal>
                         </h4>
-                        <p>
-                            <asp:PlaceHolder runat="server" ID="Message"></asp:PlaceHolder>
-                        </p>
+                        <asp:PlaceHolder runat="server" ID="Message"></asp:PlaceHolder>
+                        <YAF:ThemeButton runat="server" ID="MarkRead"
+                                         Type="Secondary"
+                                         Size="Small"
+                                         TextLocalizedTag="MARK_ASREAD"
+                                         CommandName="read"
+                                         Icon="glasses"
+                                         Visible="False">
+                        </YAF:ThemeButton>
                     </div>
                 </asp:Panel>
             </div>
@@ -47,3 +53,15 @@
     </FooterTemplate>
 </asp:Repeater>
 <YAF:Pager ID="PagerBottom" runat="server" LinkedPager="PagerTop" />
+
+<div class="row">
+    <div class="col">
+        <div class="btn-group float-right" role="group" aria-label="Tools">
+            <YAF:ThemeButton runat="server" OnClick="MarkAll_Click" ID="MarkAll"
+                             TextLocalizedTag="MARK_ALL_ASREAD" TextLocalizedPage="DEFAULT"
+                             Type="Secondary"
+                             Size="Small"
+                             Icon="glasses"/>
+        </div>
+    </div>
+</div>

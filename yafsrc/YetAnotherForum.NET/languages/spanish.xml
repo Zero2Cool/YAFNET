@@ -1417,6 +1417,7 @@
     <Resource tag="SHOW_RENDERTIME_HELP">Activar o desactivar el mostrar el texto de generación de página en la parte de abajo de la misma.</Resource>
     <Resource tag="SHOW_RSS_LINKS">Mostrar enlaces RSS:</Resource>
     <Resource tag="SHOW_RSS_LINKS_HELP">Activar o desactivar el mostrar enlaces RSS a lo largo del foro.</Resource>
+    <Resource tag="SHOW_SCROLL">Show Scroll Back to Top Button</Resource>
     <Resource tag="SHOW_SHOUTBOX">Mostrar chat:</Resource>
     <Resource tag="SHOW_SHOUTBOX_HELP">Activar o desactivar el mostrar el chat en la página del foro.</Resource>
     <Resource tag="SHOW_SIMILARTOPICS">Show Similar Topics:</Resource>
@@ -2645,14 +2646,19 @@
     <Resource tag="CONFIRM_DELETE">¿Elimiar todos los mensajes seleccionados?</Resource>
     <Resource tag="CONFIRM_DELETEALL">¿Eliminar todos los mensajes?</Resource>
     <Resource tag="DATE">Fecha</Resource>
+    <Resource tag="DATE_ASC">Date asc</Resource>
+    <Resource tag="DATE_DESC">Date desc</Resource>
     <Resource tag="DELETEALL">Eliminar todo</Resource>
     <Resource tag="DELETESELECTED">Eliminar seleccionado</Resource>
     <Resource tag="EXPORTALL">Exportar todo</Resource>
     <Resource tag="EXPORTFORMAT">Formato de exportaciónt:</Resource>
     <Resource tag="EXPORTSELECTED">Seleccionados para exportar</Resource>
     <Resource tag="FROM">De</Resource>
+    <Resource tag="FROM_ASC">From A-Z</Resource>
+    <Resource tag="FROM_DESC">From Z-A</Resource>
     <Resource tag="INBOX">Bandeja de entrada</Resource>
     <Resource tag="MARK_ALL_ASREAD">Marcar todos como leídos</Resource>
+    <Resource tag="MARK_ASREAD">Mark As Read</Resource>
     <Resource tag="MSG_ARCHIVED">Mensaje archivado.</Resource>
     <Resource tag="MSG_ARCHIVED+">{0} mensajes archivados.</Resource>
     <Resource tag="MSG_DELETED">Mensaje eliminado.</Resource>
@@ -2664,6 +2670,8 @@
     <Resource tag="POSTED">Publicado:</Resource>
     <Resource tag="SENTITEMS">Mensajes enviados</Resource>
     <Resource tag="SUBJECT">Asunto</Resource>
+    <Resource tag="SUBJECT_ASC">Subject A-Z</Resource>
+    <Resource tag="SUBJECT_DESC">Subject Z-A</Resource>
     <Resource tag="TITLE">Mensajes privado</Resource>
     <Resource tag="TO">Para</Resource>
   </page>

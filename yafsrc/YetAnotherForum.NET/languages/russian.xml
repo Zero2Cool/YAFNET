@@ -1405,6 +1405,7 @@
     <Resource tag="SHOW_RENDERTIME_HELP">Включить отображение времени генерации страницы в подвале форума.</Resource>
     <Resource tag="SHOW_RSS_LINKS">Показывать ссылки RSS:</Resource>
     <Resource tag="SHOW_RSS_LINKS_HELP">Разрешить ссылки RSS. Вы также должны установить разрешения для каждой ленты</Resource>
+    <Resource tag="SHOW_SCROLL">Show Scroll Back to Top Button</Resource>
     <Resource tag="SHOW_SHOUTBOX">Включить чат:</Resource>
     <Resource tag="SHOW_SHOUTBOX_HELP">Включить чат на главной странице форума.</Resource>
     <Resource tag="SHOW_SIMILARTOPICS">Show Similar Topics:</Resource>
@@ -2623,14 +2624,19 @@
     <Resource tag="CONFIRM_DELETE">Вы действительно желаете удалить все выбранные сообщения?</Resource>
     <Resource tag="CONFIRM_DELETEALL">Вы действительно желаете удалить все сообщения?</Resource>
     <Resource tag="DATE">Дата</Resource>
+    <Resource tag="DATE_ASC">Date asc</Resource>
+    <Resource tag="DATE_DESC">Date desc</Resource>
     <Resource tag="DELETEALL">Удалить всё</Resource>
     <Resource tag="DELETESELECTED">Удалить выбранное</Resource>
     <Resource tag="EXPORTALL">Экспортировать всё</Resource>
     <Resource tag="EXPORTFORMAT">Формат экспорта:</Resource>
     <Resource tag="EXPORTSELECTED">Экспортировать выбранное</Resource>
     <Resource tag="FROM">От</Resource>
+    <Resource tag="FROM_ASC">From A-Z</Resource>
+    <Resource tag="FROM_DESC">From Z-A</Resource>
     <Resource tag="INBOX">Входящие</Resource>
     <Resource tag="MARK_ALL_ASREAD">Отметить все как прочитанные</Resource>
+    <Resource tag="MARK_ASREAD">Mark As Read</Resource>
     <Resource tag="MSG_ARCHIVED">Сообщение отправлено в архив.</Resource>
     <Resource tag="MSG_ARCHIVED+">Было отправлено в архив {0} сообщений.</Resource>
     <Resource tag="MSG_DELETED">Сообщение было удалено.</Resource>
@@ -2642,6 +2648,8 @@
     <Resource tag="POSTED">Отправлено:</Resource>
     <Resource tag="SENTITEMS">Отправленные</Resource>
     <Resource tag="SUBJECT">Тема</Resource>
+    <Resource tag="SUBJECT_ASC">Subject A-Z</Resource>
+    <Resource tag="SUBJECT_DESC">Subject Z-A</Resource>
     <Resource tag="TITLE">Личные сообщения</Resource>
     <Resource tag="TO">Кому</Resource>
   </page>

@@ -1409,6 +1409,7 @@
     <Resource tag="SHOW_RENDERTIME_HELP">Enable or disable display of page generation text at the bottom of the page.</Resource>
     <Resource tag="SHOW_RSS_LINKS">Show RSS Links:</Resource>
     <Resource tag="SHOW_RSS_LINKS_HELP">Enable or disable display of RSS links throughout the forum.</Resource>
+    <Resource tag="SHOW_SCROLL">Show Scroll Back to Top Button</Resource>
     <Resource tag="SHOW_SHOUTBOX">Show Shoutbox:</Resource>
     <Resource tag="SHOW_SHOUTBOX_HELP">Enable or disable display of the Shoutbox (Chat Module) in the forum page.</Resource>
     <Resource tag="SHOW_SIMILARTOPICS">Show Similar Topics:</Resource>
@@ -2639,14 +2640,19 @@
     <Resource tag="CONFIRM_DELETE">Seçilenleri silmek istiyor musunuz?</Resource>
     <Resource tag="CONFIRM_DELETEALL">Hepsini silmek istiyor musunuz?</Resource>
     <Resource tag="DATE">Tarih</Resource>
+    <Resource tag="DATE_ASC">Date asc</Resource>
+    <Resource tag="DATE_DESC">Date desc</Resource>
     <Resource tag="DELETEALL">Hepsini sil</Resource>
     <Resource tag="DELETESELECTED">Seçileni sil</Resource>
     <Resource tag="EXPORTALL">Tümünü Dışarı Aktar</Resource>
     <Resource tag="EXPORTFORMAT">Formatı Dışarı Aktar:</Resource>
     <Resource tag="EXPORTSELECTED">Seçiliyi Dışarı Aktar</Resource>
     <Resource tag="FROM">Kimden</Resource>
+    <Resource tag="FROM_ASC">From A-Z</Resource>
+    <Resource tag="FROM_DESC">From Z-A</Resource>
     <Resource tag="INBOX">Gelen Kutusu</Resource>
     <Resource tag="MARK_ALL_ASREAD">Hepsini Okundu Olarak İşaretle</Resource>
+    <Resource tag="MARK_ASREAD">Mark As Read</Resource>
     <Resource tag="MSG_ARCHIVED">Mesaj arşivlendi</Resource>
     <Resource tag="MSG_ARCHIVED+">{0} mesaj arşivlendi</Resource>
     <Resource tag="MSG_DELETED">Mesaj silindi.</Resource>
@@ -2658,6 +2664,8 @@
     <Resource tag="POSTED">Gönderildi:</Resource>
     <Resource tag="SENTITEMS">Giden Kutusu</Resource>
     <Resource tag="SUBJECT">Konu</Resource>
+    <Resource tag="SUBJECT_ASC">Subject A-Z</Resource>
+    <Resource tag="SUBJECT_DESC">Subject Z-A</Resource>
     <Resource tag="TITLE">Özel Mesajlar</Resource>
     <Resource tag="TO">Kime</Resource>
   </page>

@@ -1409,6 +1409,7 @@
     <Resource tag="SHOW_RENDERTIME_HELP">Enable or disable display of page generation text at the bottom of the page.</Resource>
     <Resource tag="SHOW_RSS_LINKS">Show RSS Links:</Resource>
     <Resource tag="SHOW_RSS_LINKS_HELP">Enable or disable display of RSS links throughout the forum.</Resource>
+    <Resource tag="SHOW_SCROLL">Show Scroll Back to Top Button</Resource>
     <Resource tag="SHOW_SHOUTBOX">Show Shoutbox:</Resource>
     <Resource tag="SHOW_SHOUTBOX_HELP">Enable or disable display of the Shoutbox (Chat Module) in the forum page.</Resource>
     <Resource tag="SHOW_SIMILARTOPICS">Show Similar Topics:</Resource>
@@ -2639,14 +2640,19 @@
     <Resource tag="CONFIRM_DELETE">Slet alle valgte beskeder?</Resource>
     <Resource tag="CONFIRM_DELETEALL">Slet alle beskeder?</Resource>
     <Resource tag="DATE">Dato</Resource>
+    <Resource tag="DATE_ASC">Date asc</Resource>
+    <Resource tag="DATE_DESC">Date desc</Resource>
     <Resource tag="DELETEALL">Slet alle</Resource>
     <Resource tag="DELETESELECTED">Slet valgte</Resource>
     <Resource tag="EXPORTALL">Export All</Resource>
     <Resource tag="EXPORTFORMAT">Export Format:</Resource>
     <Resource tag="EXPORTSELECTED">Export Selected</Resource>
     <Resource tag="FROM">Fra</Resource>
+    <Resource tag="FROM_ASC">From A-Z</Resource>
+    <Resource tag="FROM_DESC">From Z-A</Resource>
     <Resource tag="INBOX">Indbakke</Resource>
     <Resource tag="MARK_ALL_ASREAD">Marker alle som læst</Resource>
+    <Resource tag="MARK_ASREAD">Mark As Read</Resource>
     <Resource tag="MSG_ARCHIVED">Besked var arkiveret.</Resource>
     <Resource tag="MSG_ARCHIVED+">{0} besked blev arkiveret.</Resource>
     <Resource tag="MSG_DELETED">Besked blev slettet.</Resource>
@@ -2658,6 +2664,8 @@
     <Resource tag="POSTED">Sendt:</Resource>
     <Resource tag="SENTITEMS">Sendt post</Resource>
     <Resource tag="SUBJECT">Emne</Resource>
+    <Resource tag="SUBJECT_ASC">Subject A-Z</Resource>
+    <Resource tag="SUBJECT_DESC">Subject Z-A</Resource>
     <Resource tag="TITLE">Private beskeder</Resource>
     <Resource tag="TO">Til</Resource>
   </page>
