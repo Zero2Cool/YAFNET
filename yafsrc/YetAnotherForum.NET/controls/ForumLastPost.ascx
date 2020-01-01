@@ -1,6 +1,9 @@
 <%@ Control Language="C#" AutoEventWireup="true" EnableViewState="false" Inherits="YAF.Controls.ForumLastPost" CodeBehind="ForumLastPost.ascx.cs" %>
 
 <asp:PlaceHolder ID="LastPostedHolder" runat="server">
+    <div class="forumLatestContainer">
+    <div class="forumLastTopic">
+
     <div class="row">
         <div class="col">
             <asp:Label runat="server" ID="NewMessage" 
@@ -10,16 +13,9 @@
                                     LocalizedTag="LASTPOST"></YAF:LocalizedLabel>: 
                 <asp:HyperLink ID="topicLink" runat="server"></asp:HyperLink>
             </asp:PlaceHolder>
-            <YAF:ThemeButton runat="server" ID="Info"
-                             Icon="info-circle"
-                             IconColor="text-info"
-                             IconCssClass="fas fa-lg"
-                             Type="Link"
-                             DataToggle="popover"
-                             Size="Small"
-                             CssClass="topic-link-popover">
-            </YAF:ThemeButton>
+
         </div>
+    </div>
     </div>
     <div class="row">
         <div class="col">
@@ -38,8 +34,18 @@
                                  DataToggle="tooltip"
                                  TitleLocalizedTag="GO_LAST_POST">
                 </YAF:ThemeButton>
+                <YAF:ThemeButton runat="server" ID="Info"
+                                 Icon="info-circle"
+                                 IconColor="text-info"
+                                 IconCssClass="fas fa-lg"
+                                 Type="Link"
+                                 DataToggle="popover"
+                                 Size="Small"
+                                 CssClass="topic-link-popover">
+                </YAF:ThemeButton>
             </div>
         </div>
+    </div>
     </div>
 </asp:PlaceHolder>
 
