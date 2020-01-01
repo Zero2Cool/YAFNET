@@ -1409,6 +1409,7 @@
     <Resource tag="SHOW_RENDERTIME_HELP">Enable or disable display of page generation text at the bottom of the page.</Resource>
     <Resource tag="SHOW_RSS_LINKS">Show RSS Links:</Resource>
     <Resource tag="SHOW_RSS_LINKS_HELP">Enable or disable display of RSS links throughout the forum.</Resource>
+    <Resource tag="SHOW_SCROLL">Show Scroll Back to Top Button</Resource>
     <Resource tag="SHOW_SHOUTBOX">Show Shoutbox:</Resource>
     <Resource tag="SHOW_SHOUTBOX_HELP">Enable or disable display of the Shoutbox (Chat Module) in the forum page.</Resource>
     <Resource tag="SHOW_SIMILARTOPICS">Show Similar Topics:</Resource>
@@ -2639,14 +2640,19 @@
     <Resource tag="CONFIRM_DELETE">删除所有选中的信息?</Resource>
     <Resource tag="CONFIRM_DELETEALL">删除所有信息?</Resource>
     <Resource tag="DATE">日期</Resource>
+    <Resource tag="DATE_ASC">Date asc</Resource>
+    <Resource tag="DATE_DESC">Date desc</Resource>
     <Resource tag="DELETEALL">删除全部</Resource>
     <Resource tag="DELETESELECTED">删除选择</Resource>
     <Resource tag="EXPORTALL">导出全部</Resource>
     <Resource tag="EXPORTFORMAT">导出格式:</Resource>
     <Resource tag="EXPORTSELECTED">导出选中部分</Resource>
     <Resource tag="FROM">发信人</Resource>
+    <Resource tag="FROM_ASC">From A-Z</Resource>
+    <Resource tag="FROM_DESC">From Z-A</Resource>
     <Resource tag="INBOX">收件箱</Resource>
     <Resource tag="MARK_ALL_ASREAD">标记所有为已读</Resource>
+    <Resource tag="MARK_ASREAD">Mark As Read</Resource>
     <Resource tag="MSG_ARCHIVED">信息已经激活.</Resource>
     <Resource tag="MSG_ARCHIVED+">{0} 信息已经存档.</Resource>
     <Resource tag="MSG_DELETED">信息已经删除.</Resource>
@@ -2658,6 +2664,8 @@
     <Resource tag="POSTED">Posted:</Resource>
     <Resource tag="SENTITEMS">Sent Items</Resource>
     <Resource tag="SUBJECT">主题</Resource>
+    <Resource tag="SUBJECT_ASC">Subject A-Z</Resource>
+    <Resource tag="SUBJECT_DESC">Subject Z-A</Resource>
     <Resource tag="TITLE">私信</Resource>
     <Resource tag="TO">To</Resource>
   </page>
