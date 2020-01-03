@@ -49,7 +49,6 @@ namespace YAF.Controls
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
-    using YAF.Web.Controls;
 
     #endregion
 
@@ -150,7 +149,7 @@ namespace YAF.Controls
         }
 
         /// <summary>
-        /// Sort By Date
+        /// Sort By Date descending
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
@@ -319,7 +318,7 @@ namespace YAF.Controls
         }
 
         /// <summary>
-        /// The from link_ click.
+        /// sort by name ascending
         /// </summary>
         /// <param name="sender">
         /// The source of the event.
@@ -332,6 +331,15 @@ namespace YAF.Controls
             this.BindData();
         }
 
+        /// <summary>
+        /// sort by name descending
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
         protected void FromLinkDesc_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
             this.SetSort(this.View == PmView.Outbox ? "ToUser" : "FromUser", false);
@@ -355,19 +363,6 @@ namespace YAF.Controls
         }
 
         /// <summary>
-        /// Gets the localized <paramref name="text"/>.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="page">The resource page.</param>
-        /// <returns>
-        /// The get localized text.
-        /// </returns>
-        protected string GetLocalizedText([NotNull] string text, string page)
-        {
-            return this.HtmlEncode(page.IsSet() ? this.GetText(page, text) : this.GetText(text));
-        }
-
-        /// <summary>
         /// Gets the message link.
         /// </summary>
         /// <param name="messageId">The message id.</param>
@@ -381,17 +376,6 @@ namespace YAF.Controls
                 "pm={0}&v={1}",
                 messageId,
                 PmViewConverter.ToQueryStringParam(this.View));
-        }
-
-        /// <summary>
-        /// Gets the message user header.
-        /// </summary>
-        /// <returns>
-        /// The get message user header.
-        /// </returns>
-        protected string GetMessageUserHeader()
-        {
-            return this.GetLocalizedText(this.View == PmView.Outbox ? "to" : "from", "CP_PM");
         }
 
         /// <summary>
@@ -657,6 +641,10 @@ namespace YAF.Controls
                 }
 
                 dv.Sort = $"{this.ViewState["SortField"]} {(this.ViewState["SortAsc"].ToType<bool>() ? "asc" : "desc")}";
+
+                var dataRows = dv.Cast<DataRowView>().Skip(this.PagerTop.CurrentPageIndex * this.PagerTop.PageSize)
+                    .Take(this.PagerTop.PageSize);
+
                 this.PagerTop.Count = dv.Count;
 
                 if (dv.Count > 0)
@@ -682,13 +670,8 @@ namespace YAF.Controls
 
                 this.PagerTop.PageSize = 10;
 
-                this.Messages.DataSource = dv;
+                this.Messages.DataSource = dataRows;
                 this.Messages.DataBind();
-
-
-                //this.MessagesView.PageIndex = this.PagerTop.CurrentPageIndex;
-                //this.MessagesView.DataSource = dv;
-                //this.MessagesView.DataBind();
             }
 
             this.Stats_Renew();
