@@ -11,7 +11,7 @@ namespace YAF.Pages
 {
 
 
-    public partial class forum
+    public partial class cp_deleteaccount
     {
 
         /// <summary>
@@ -24,57 +24,66 @@ namespace YAF.Pages
         protected global::YAF.Web.Controls.PageLinks PageLinks;
 
         /// <summary>
-        /// Welcome control.
+        /// LocalizedLabel11 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Controls.ForumWelcome Welcome;
+        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel11;
 
         /// <summary>
-        /// PollList control.
+        /// ProfileMenu1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Controls.PollList PollList;
+        protected global::YAF.Web.Controls.ProfileMenu ProfileMenu1;
 
         /// <summary>
-        /// ForumCategoryList control.
+        /// LocalizedLabel12 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Controls.ForumCategoryList ForumCategoryList;
+        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel12;
 
         /// <summary>
-        /// ActiveDiscussions control.
+        /// LocalizedLabel200 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Controls.ForumActiveDiscussion ActiveDiscussions;
+        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel200;
 
         /// <summary>
-        /// ForumStats control.
+        /// Options control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Controls.ForumStatsUsers ForumStats;
+        protected global::System.Web.UI.WebControls.RadioButtonList Options;
 
         /// <summary>
-        /// ForumStatistics control.
+        /// DeleteUser control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::YAF.Controls.ForumStatistics ForumStatistics;
+        protected global::YAF.Web.Controls.ThemeButton DeleteUser;
+
+        /// <summary>
+        /// Cancel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.ThemeButton Cancel;
     }
 }
