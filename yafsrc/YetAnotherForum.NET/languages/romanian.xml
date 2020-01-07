@@ -944,6 +944,10 @@
     <Resource tag="AKISMET_KEY">Akismet API Key:</Resource>
     <Resource tag="AKISMET_KEY_DOWN">Sign Up here</Resource>
     <Resource tag="AKISMET_KEY_HELP">To Use the Akismet comment SPAM Service you need an API Key &lt;a href="https://akismet.com/signup/"&gt;Sign Up here&lt;a&gt;.</Resource>
+    <Resource tag="ALBUM_IMAGE_SIZE">Max Album Image File Size</Resource>
+    <Resource tag="ALBUM_IMAGE_SIZE_HELP">Maximum size of uploaded album image files. Leave empty for no limit.</Resource>
+    <Resource tag="ALBUM_IMAGES_PER_PAGE">Album Images Per Page:</Resource>
+    <Resource tag="ALBUM_IMAGES_PER_PAGE_HELP">Number of Album Images to show per page.</Resource>
     <Resource tag="ALBUMS_PER_PAGE">Albums Per Page:</Resource>
     <Resource tag="ALBUMS_PER_PAGE_HELP">Number of albums to show per page.</Resource>
     <Resource tag="ALL_USERS">All Users</Resource>
@@ -2695,6 +2699,7 @@
     <Resource tag="GIVEN_THANKS_MSG">Given Thanks to {0} in the Topic {1}</Resource>
     <Resource tag="GROUPS">Esti membru in aceste grupuri:</Resource>
     <Resource tag="INBOX">Primite</Resource>
+    <Resource tag="ITEMS">Show Items</Resource>
     <Resource tag="JOINED">Esti membru din</Resource>
     <Resource tag="MESSENGER">Messenger:</Resource>
     <Resource tag="NEW_MESSAGE">Nou mesaj</Resource>
@@ -2705,6 +2710,7 @@
     <Resource tag="SENTITEMS">Trimise</Resource>
     <Resource tag="SIGNATURE">Semnatura</Resource>
     <Resource tag="SUBSCRIPTIONS">Subscrieri</Resource>
+    <Resource tag="UNREAD_ONLY">Show only unread Activity</Resource>
     <Resource tag="VIEW_PROFILE">View Profile</Resource>
     <Resource tag="WAS_MENTIONED">Was Mentioned</Resource>
     <Resource tag="WAS_MENTIONED_MSG">Was Mentioned by {0} in the Topic {1}</Resource>

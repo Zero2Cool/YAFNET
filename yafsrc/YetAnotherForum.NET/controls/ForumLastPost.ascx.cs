@@ -33,7 +33,6 @@ namespace YAF.Controls
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
     using YAF.Core.Utilities;
-    using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
@@ -48,18 +47,6 @@ namespace YAF.Controls
     /// </summary>
     public partial class ForumLastPost : BaseUserControl
     {
-        #region Constructors and Destructors
-
-        /// <summary>
-        ///   Initializes a new instance of the <see cref = "ForumLastPost" /> class.
-        /// </summary>
-        public ForumLastPost()
-        {
-            this.PreRender += this.ForumLastPost_PreRender;
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -72,12 +59,13 @@ namespace YAF.Controls
         #region Methods
 
         /// <summary>
-        /// Handles the PreRender event of the ForumLastPost control.
+        /// Handles the PreRender event
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void ForumLastPost_PreRender([NotNull] object sender, [NotNull] EventArgs e)
+        protected override void OnPreRender(EventArgs e)
         {
+            base.OnPreRender(e);
+
             if (this.DataRow == null)
             {
                 return;
@@ -190,7 +178,6 @@ namespace YAF.Controls
                 this.NoPostsPlaceHolder.Visible = true;
             }
         }
-
         #endregion
     }
 }

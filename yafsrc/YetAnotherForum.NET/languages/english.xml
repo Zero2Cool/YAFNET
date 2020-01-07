@@ -962,6 +962,10 @@
   <Resource tag="AKISMET_KEY">Akismet API Key:</Resource>
   <Resource tag="AKISMET_KEY_HELP">To Use the Akismet comment SPAM Service you need an API Key</Resource>
   <Resource tag="AKISMET_KEY_DOWN">Sign Up here</Resource>
+   <Resource tag="ALBUM_IMAGE_SIZE">Max Album Image File Size</Resource>
+   <Resource tag="ALBUM_IMAGE_SIZE_HELP">Maximum size of uploaded album image files. Leave empty for no limit.</Resource>
+   <Resource tag="ALBUM_IMAGES_PER_PAGE">Album Images Per Page:</Resource>
+   <Resource tag="ALBUM_IMAGES_PER_PAGE_HELP">Number of Album Images to show per page.</Resource>
   <Resource tag="ALBUMS_PER_PAGE">Albums Per Page:</Resource>
   <Resource tag="ALBUMS_PER_PAGE_HELP">Number of albums to show per page.</Resource>
   <Resource tag="ALL_USERS">All Users</Resource>
@@ -2681,6 +2685,7 @@
   <Resource tag="EDIT_SIGNATURE">Edit Signature</Resource>
   <Resource tag="GROUPS">You are a member of these groups:</Resource>
   <Resource tag="INBOX">Inbox</Resource>
+   <Resource tag="ITEMS">Show Items</Resource>
   <Resource tag="JOINED">You have been a member since:</Resource>
   <Resource tag="MESSENGER">Messenger:</Resource>
   <Resource tag="NEW_MESSAGE">New Message</Resource>
@@ -2689,6 +2694,7 @@
   <Resource tag="SENTITEMS">Sent Items</Resource>
   <Resource tag="SIGNATURE">Signature</Resource>
   <Resource tag="SUBSCRIPTIONS">Email Notification Preferences</Resource>
+   <Resource tag="UNREAD_ONLY">Show only unread Activity</Resource>
   <Resource tag="VIEW_PROFILE">View Profile</Resource>
   <Resource tag="YOUR_ACCOUNT">Your Account</Resource>
   <Resource tag="YOUR_EMAIL">Your email address:</Resource>

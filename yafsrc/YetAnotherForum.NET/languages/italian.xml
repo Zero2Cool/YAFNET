@@ -940,6 +940,10 @@
     <Resource tag="AKISMET_KEY">Akismet API Key:</Resource>
     <Resource tag="AKISMET_KEY_DOWN">Sign Up here</Resource>
     <Resource tag="AKISMET_KEY_HELP">To Use the Akismet comment SPAM Service you need an API Key &lt;a href="https://akismet.com/signup/"&gt;Sign Up here&lt;a&gt;.</Resource>
+    <Resource tag="ALBUM_IMAGE_SIZE">Max Album Image File Size</Resource>
+    <Resource tag="ALBUM_IMAGE_SIZE_HELP">Maximum size of uploaded album image files. Leave empty for no limit.</Resource>
+    <Resource tag="ALBUM_IMAGES_PER_PAGE">Album Images Per Page:</Resource>
+    <Resource tag="ALBUM_IMAGES_PER_PAGE_HELP">Number of Album Images to show per page.</Resource>
     <Resource tag="ALBUMS_PER_PAGE">Albums Per Page:</Resource>
     <Resource tag="ALBUMS_PER_PAGE_HELP">Number of albums to show per page.</Resource>
     <Resource tag="ALL_USERS">All Users</Resource>
@@ -2695,6 +2699,7 @@
     <Resource tag="GIVEN_THANKS_MSG">Given Thanks to {0} in the Topic {1}</Resource>
     <Resource tag="GROUPS">Tu sei membro di questi gruppi:</Resource>
     <Resource tag="INBOX">In arrivo</Resource>
+    <Resource tag="ITEMS">Show Items</Resource>
     <Resource tag="JOINED">Iscritto:</Resource>
     <Resource tag="MESSENGER">Messaggi privati</Resource>
     <Resource tag="NEW_MESSAGE">Nuovo messaggio</Resource>
@@ -2705,6 +2710,7 @@
     <Resource tag="SENTITEMS">Inviati</Resource>
     <Resource tag="SIGNATURE">Firma</Resource>
     <Resource tag="SUBSCRIPTIONS">Notifiche</Resource>
+    <Resource tag="UNREAD_ONLY">Show only unread Activity</Resource>
     <Resource tag="VIEW_PROFILE">Mostra profilo</Resource>
     <Resource tag="WAS_MENTIONED">Was Mentioned</Resource>
     <Resource tag="WAS_MENTIONED_MSG">Was Mentioned by {0} in the Topic {1}</Resource>
