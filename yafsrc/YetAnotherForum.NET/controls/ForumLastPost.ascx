@@ -34,18 +34,8 @@
                                  DataToggle="tooltip"
                                  TitleLocalizedTag="GO_LAST_POST">
                 </YAF:ThemeButton>
-                <YAF:ThemeButton runat="server" ID="Info"
-                                 Icon="info-circle"
-                                 IconColor="text-info"
-                                 IconCssClass="fas fa-lg"
-                                 Type="Link"
-                                 DataToggle="popover"
-                                 Size="Small"
-                                 CssClass="topic-link-popover">
-                </YAF:ThemeButton>
             </div>
         </div>
-    </div>
     </div>
 </asp:PlaceHolder>
 
