@@ -79,9 +79,9 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (this.User == null || !this.Get<YafBoardSettings>().AllowEmailSending)
+            if (this.User == null || !this.Get<BoardSettings>().AllowEmailSending)
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             if (this.IsPostBack)
@@ -95,13 +95,13 @@ namespace YAF.Pages
             if (user == null)
             {
                 // No such user exists
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
             else
             {
                 if (user.IsApproved == false)
                 {
-                    YafBuildLink.AccessDenied();
+                    BuildLink.AccessDenied();
                 }
 
                 var displayName = UserMembershipHelper.GetDisplayNameFromID(this.UserId);
@@ -109,8 +109,8 @@ namespace YAF.Pages
                 this.PageLinks.AddRoot();
                 this.PageLinks.AddLink(
                     this.PageContext.BoardSettings.EnableDisplayName ? displayName : user.UserName,
-                    YafBuildLink.GetLink(
-                        ForumPages.profile,
+                    BuildLink.GetLink(
+                        ForumPages.Profile,
                         "u={0}&name={1}",
                         this.UserId,
                         this.PageContext.BoardSettings.EnableDisplayName ? displayName : user.UserName));
@@ -139,7 +139,7 @@ namespace YAF.Pages
                     this.Body.Text.Trim());
 
                 // redirect to profile page...
-                YafBuildLink.Redirect(ForumPages.profile, false, "u={0}", this.UserId);
+                BuildLink.Redirect(ForumPages.Profile, false, "u={0}", this.UserId);
             }
             catch (Exception x)
             {

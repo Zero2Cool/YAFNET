@@ -92,12 +92,12 @@ namespace YAF.Controls
                 var lastPostedDateTime = this.DataRow["LastPosted"].ToType<DateTime>();
 
                 // Topic Link
-                this.topicLink.NavigateUrl = YafBuildLink.GetLinkNotEscaped(
+                this.topicLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
                     ForumPages.posts, "t={0}", this.DataRow["LastTopicID"]);
 
                 this.topicLink.ToolTip = this.GetText("COMMON", "VIEW_TOPIC");
 
-                var styles = this.Get<YafBoardSettings>().UseStyledTopicTitles
+                var styles = this.Get<BoardSettings>().UseStyledTopicTitles
                                  ? this.Get<IStyleTransform>().DecodeStyleByString(
                                      this.DataRow["LastTopicStyles"].ToString())
                                  : string.Empty;
@@ -114,20 +114,20 @@ namespace YAF.Controls
                 var lastUserLink = new UserLink
                 {
                     UserID = this.DataRow["LastUserID"].ToType<int>(),
-                    Style = this.Get<YafBoardSettings>().UseStyledNicks
+                    Style = this.Get<BoardSettings>().UseStyledNicks
                                                        ? this.Get<IStyleTransform>().DecodeStyleByString(
                                                            this.DataRow["Style"].ToString())
                                                        : string.Empty,
                     ReplaceName = this
-                                               .DataRow[this.Get<YafBoardSettings>().EnableDisplayName
+                                               .DataRow[this.Get<BoardSettings>().EnableDisplayName
                                                             ? "LastUserDisplayName"
                                                             : "LastUser"].ToString()
                 };
 
-                this.LastTopicImgLink.NavigateUrl = YafBuildLink.GetLinkNotEscaped(
+                this.LastTopicImgLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
                     ForumPages.posts, "m={0}#post{0}", this.DataRow["LastMessageID"]);
 
-                this.ImageLastUnreadMessageLink.NavigateUrl = YafBuildLink.GetLinkNotEscaped(
+                this.ImageLastUnreadMessageLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
                     ForumPages.posts, "t={0}&find=unread", this.DataRow["LastTopicID"]);
 
                 var lastRead =
@@ -137,7 +137,7 @@ namespace YAF.Controls
                         this.DataRow["LastForumAccess"].ToType<DateTime?>(),
                         this.DataRow["LastTopicAccess"].ToType<DateTime?>());
 
-                var formattedDatetime = this.Get<YafBoardSettings>().ShowRelativeTime
+                var formattedDatetime = this.Get<BoardSettings>().ShowRelativeTime
                                             ? lastPostedDateTime.ToString(
                                                 "yyyy-MM-ddTHH:mm:ssZ",
                                                 CultureInfo.InvariantCulture)
@@ -145,18 +145,20 @@ namespace YAF.Controls
                                                 DateTimeFormat.BothTopic,
                                                 lastPostedDateTime);
 
+                var span = this.Get<BoardSettings>().ShowRelativeTime ? @"<span class=""popover-timeago"">" : "<span>";
+
                 this.Info.DataContent = $@"
                           {lastUserLink.RenderToString()}
                           <span class=""fa-stack"">
                                                     <i class=""fa fa-calendar-day fa-stack-1x text-secondary""></i>
                                                     <i class=""fa fa-circle fa-badge-bg fa-inverse fa-outline-inverse""></i>
                                                     <i class=""fa fa-clock fa-badge text-secondary""></i>
-                                                </span>&nbsp;<span class=""popover-timeago"">{formattedDatetime}</span>
+                                                </span>&nbsp;{span}{formattedDatetime}</span>
                          ";
 
                 this.Info.Text = string.Format(
                     this.GetText("Default", "BY"),
-                    this.DataRow[this.Get<YafBoardSettings>().EnableDisplayName ? "LastUserDisplayName" : "LastUser"]);
+                    this.DataRow[this.Get<BoardSettings>().EnableDisplayName ? "LastUserDisplayName" : "LastUser"]);
 
                 if (this.DataRow["LastPosted"].ToType<DateTime>() > lastRead)
                 {

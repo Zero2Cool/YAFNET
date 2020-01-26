@@ -106,7 +106,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot()
-                .AddLink(this.GetText("ADMIN_ADMIN", "Administration"), YafBuildLink.GetLink(ForumPages.admin_admin))
+                .AddLink(this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.admin_admin))
                 .AddLink(this.GetText("ADMIN_SPAMWORDS", "TITLE"));
 
             this.Page.Header.Title =
@@ -150,7 +150,7 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void BindData()
         {
-            this.PagerTop.PageSize = this.Get<YafBoardSettings>().MemberListPageSize;
+            this.PagerTop.PageSize = this.Get<BoardSettings>().MemberListPageSize;
 
             var searchText = this.SearchInput.Text.Trim();
 

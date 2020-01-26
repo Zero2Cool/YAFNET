@@ -37,6 +37,7 @@ namespace YAF.Web.Controls
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -48,21 +49,7 @@ namespace YAF.Web.Controls
     using YAF.Utils;
     using YAF.Web.EventsArgs;
 
-#endregion
-
-    /// <summary>
-    /// EventArgs class for the YafBeforeForumPageLoad event
-    /// </summary>
-    public class YafBeforeForumPageLoad : EventArgs
-    {
-    }
-
-    /// <summary>
-    /// EventArgs class for the YafForumPageReady event -- created for future options
-    /// </summary>
-    public class YafAfterForumPageLoad : EventArgs
-    {
-    }
+    #endregion
 
     /// <summary>
     /// The YAF Forum Control
@@ -86,9 +73,9 @@ namespace YAF.Web.Controls
         ///   The _topControl.
         /// </summary>
         private PlaceHolder topControl;
-        
+
         #endregion
-        
+
         #region Constructors and Destructors
 
         /// <summary>
@@ -109,7 +96,7 @@ namespace YAF.Web.Controls
                         module.Init();
                     });
         }
-        
+
         #endregion
 
         #region Public Events
@@ -117,19 +104,19 @@ namespace YAF.Web.Controls
         /// <summary>
         ///   The after forum page load.
         /// </summary>
-        public event EventHandler<YafAfterForumPageLoad> AfterForumPageLoad;
+        public event EventHandler<AfterForumPageLoad> AfterForumPageLoad;
 
         /// <summary>
         ///   The before forum page load.
         /// </summary>
-        public event EventHandler<YafBeforeForumPageLoad> BeforeForumPageLoad;
+        public event EventHandler<BeforeForumPageLoad> BeforeForumPageLoad;
 
         /// <summary>
         ///   The page title set.
         /// </summary>
         public event EventHandler<ForumPageTitleArgs> PageTitleSet;
 
-#endregion
+        #endregion
 
         #region Public Properties
 
@@ -138,9 +125,9 @@ namespace YAF.Web.Controls
         /// </summary>
         public int BoardID
         {
-            get => YafControlSettings.Current.BoardID;
+            get => ControlSettings.Current.BoardID;
 
-            set => YafControlSettings.Current.BoardID = value;
+            set => ControlSettings.Current.BoardID = value;
         }
 
         /// <summary>
@@ -148,9 +135,9 @@ namespace YAF.Web.Controls
         /// </summary>
         public int CategoryID
         {
-            get => YafControlSettings.Current.CategoryID;
+            get => ControlSettings.Current.CategoryID;
 
-            set => YafControlSettings.Current.CategoryID = value;
+            set => ControlSettings.Current.CategoryID = value;
         }
 
         /// <summary>
@@ -168,9 +155,9 @@ namespace YAF.Web.Controls
         /// </summary>
         public int LockedForum
         {
-            get => YafControlSettings.Current.LockedForum;
+            get => ControlSettings.Current.LockedForum;
 
-            set => YafControlSettings.Current.LockedForum = value;
+            set => ControlSettings.Current.LockedForum = value;
         }
 
         /// <summary>
@@ -193,9 +180,9 @@ namespace YAF.Web.Controls
         /// </summary>
         public IServiceLocator ServiceLocator => YafContext.Current.ServiceLocator;
 
-#endregion
+        #endregion
 
-#region Public Methods and Operators
+        #region Public Methods and Operators
 
         /// <summary>
         /// Called when the forum control sets it's Page Title
@@ -211,9 +198,9 @@ namespace YAF.Web.Controls
             this.PageTitleSet?.Invoke(this, e);
         }
 
-#endregion
+        #endregion
 
-#region Methods
+        #region Methods
 
         /// <summary>
         /// The on unload.
@@ -264,9 +251,9 @@ namespace YAF.Web.Controls
 
             if (yafScriptManager != null)
             {
-                yafScriptManager.EnableCdn = this.Get<YafBoardSettings>().ScriptManagerScriptsCDNHosted;
-                yafScriptManager.EnableScriptLocalization = !this.Get<YafBoardSettings>().ScriptManagerScriptsCDNHosted;
-                yafScriptManager.EnableCdnFallback = this.Get<YafBoardSettings>().ScriptManagerScriptsCDNHosted;
+                yafScriptManager.EnableCdn = this.Get<BoardSettings>().ScriptManagerScriptsCDNHosted;
+                yafScriptManager.EnableScriptLocalization = !this.Get<BoardSettings>().ScriptManagerScriptsCDNHosted;
+                yafScriptManager.EnableCdnFallback = this.Get<BoardSettings>().ScriptManagerScriptsCDNHosted;
 
                 return;
             }
@@ -276,10 +263,10 @@ namespace YAF.Web.Controls
                                    {
                                        ID = "YafScriptManager",
                                        EnablePartialRendering = true,
-                                       EnableCdn = this.Get<YafBoardSettings>().ScriptManagerScriptsCDNHosted,
-                                       EnableCdnFallback = this.Get<YafBoardSettings>().ScriptManagerScriptsCDNHosted,
+                                       EnableCdn = this.Get<BoardSettings>().ScriptManagerScriptsCDNHosted,
+                                       EnableCdnFallback = this.Get<BoardSettings>().ScriptManagerScriptsCDNHosted,
                                        EnableScriptLocalization =
-                                           !this.Get<YafBoardSettings>().ScriptManagerScriptsCDNHosted
+                                           !this.Get<BoardSettings>().ScriptManagerScriptsCDNHosted
                                    };
 
             this.Controls.Add(yafScriptManager);
@@ -294,7 +281,7 @@ namespace YAF.Web.Controls
         protected override void OnLoad(EventArgs e)
         {
             // context is ready to be loaded, call the before page load event...
-            this.BeforeForumPageLoad?.Invoke(this, new YafBeforeForumPageLoad());
+            this.BeforeForumPageLoad?.Invoke(this, new BeforeForumPageLoad());
 
             // add the forum header control...
             this.topControl = new PlaceHolder();
@@ -307,7 +294,7 @@ namespace YAF.Web.Controls
             {
                 this.currentForumPage = (ForumPage)this.LoadControl(src);
 
-                this.Header = this.LoadControl($"{YafForumInfo.ForumServerFileRoot}controls/YafHeader.ascx");
+                this.Header = this.LoadControl($"{BoardInfo.ForumServerFileRoot}controls/Header.ascx");
 
                 this.Footer = new Footer();
             }
@@ -336,12 +323,11 @@ namespace YAF.Web.Controls
             // Add the LoginBox to Control, if used and User is Guest
             if (YafContext.Current.IsGuest && !Config.IsAnyPortal && Config.AllowLoginAndLogoff)
             {
-                this.Controls.Add(
-                    this.LoadControl($"{YafForumInfo.ForumServerFileRoot}Dialogs/LoginBox.ascx"));
+                this.Controls.Add(this.LoadControl($"{BoardInfo.ForumServerFileRoot}Dialogs/LoginBox.ascx"));
             }
 
             this.NotificationBox = (BaseUserControl)this.LoadControl(
-                $"{YafForumInfo.ForumServerFileRoot}Dialogs/DialogBox.ascx");
+                $"{BoardInfo.ForumServerFileRoot}Dialogs/DialogBox.ascx");
 
             this.currentForumPage.Notification = this.NotificationBox;
 
@@ -356,17 +342,15 @@ namespace YAF.Web.Controls
             }
 
             // Add image gallery dialog
-            this.Controls.Add(
-                this.LoadControl($"{YafForumInfo.ForumServerFileRoot}Dialogs/ImageGallery.ascx"));
+            this.Controls.Add(this.LoadControl($"{BoardInfo.ForumServerFileRoot}Dialogs/ImageGallery.ascx"));
 
             var cookieName = "YAF-AcceptCookies";
 
             if (YafContext.Current.Get<HttpRequestBase>().Cookies[cookieName] == null
-                && this.Get<YafBoardSettings>().ShowCookieConsent && !Config.IsAnyPortal)
+                && this.Get<BoardSettings>().ShowCookieConsent && !Config.IsAnyPortal)
             {
                 // Add cookie consent
-                this.Controls.Add(
-                    this.LoadControl($"{YafForumInfo.ForumServerFileRoot}controls/CookieConsent.ascx"));
+                this.Controls.Add(this.LoadControl($"{BoardInfo.ForumServerFileRoot}controls/CookieConsent.ascx"));
             }
 
             // Add smart Scroll
@@ -375,14 +359,14 @@ namespace YAF.Web.Controls
                 this.Controls.Add(new SmartScroller());
             }
 
-            if (this.Get<YafBoardSettings>().ShowScrollBackToTopButton)
+            if (this.Get<BoardSettings>().ShowScrollBackToTopButton)
             {
                 // Add Scroll top button
-                this.Controls.Add(this.LoadControl($"{YafForumInfo.ForumServerFileRoot}controls/ScrollTop.ascx"));
+                this.Controls.Add(this.LoadControl($"{BoardInfo.ForumServerFileRoot}controls/ScrollTop.ascx"));
             }
 
             // load plugins/functionality modules
-            this.AfterForumPageLoad?.Invoke(this, new YafAfterForumPageLoad());
+            this.AfterForumPageLoad?.Invoke(this, new AfterForumPageLoad());
 
             base.OnLoad(e);
         }
@@ -407,7 +391,7 @@ namespace YAF.Web.Controls
                 @"YAF.NET is not setup properly. Please add the <add name=""YafTaskModule"" type=""YAF.Core.YafTaskModule, YAF.Core"" /> to the <modules> section of your web.config file.";
 
             // go immediately to the error page.
-            HttpContext.Current.Response.Redirect($"{YafForumInfo.ForumClientFileRoot}error.aspx");
+            HttpContext.Current.Response.Redirect($"{BoardInfo.ForumClientFileRoot}error.aspx");
 
 #endif
         }
@@ -437,9 +421,9 @@ namespace YAF.Web.Controls
 
             /*if (!this.IsValidForLockedForum(this._page))
             {
-            /  YafBuildLink.Redirect(ForumPages.topics, "f={0}", this.LockedForum);
+            /  BuildLink.Redirect(ForumPages.topics, "f={0}", this.LockedForum);
             }*/
-            string[] src = { $"{YafForumInfo.ForumServerFileRoot}pages/{this.page.PageName}.ascx" };
+            string[] src = { $"{BoardInfo.ForumServerFileRoot}pages/{this.page.PageName}.ascx" };
 
             var replacementPaths = new List<string> { "moderate", "admin", "help" };
 
@@ -449,6 +433,6 @@ namespace YAF.Web.Controls
             return src[0];
         }
 
-#endregion
+        #endregion
     }
 }

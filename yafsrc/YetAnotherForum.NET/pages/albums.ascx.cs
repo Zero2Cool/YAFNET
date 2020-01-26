@@ -67,14 +67,14 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (!this.Get<YafBoardSettings>().EnableAlbum)
+            if (!this.Get<BoardSettings>().EnableAlbum)
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             if (!this.Get<HttpRequestBase>().QueryString.Exists("u"))
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             var user = UserMembershipHelper.GetMembershipUserById(
@@ -83,12 +83,12 @@ namespace YAF.Pages
             if (user == null)
             {
                 // No such user exists
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             if (user.IsApproved == false)
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             var displayName = UserMembershipHelper.GetDisplayNameFromID(
@@ -98,13 +98,13 @@ namespace YAF.Pages
             this.PageLinks.Clear();
             this.PageLinks.AddRoot();
             this.PageLinks.AddLink(
-                this.Get<YafBoardSettings>().EnableDisplayName
+                this.Get<BoardSettings>().EnableDisplayName
                     ? displayName
                     : UserMembershipHelper.GetUserNameFromID(
                         Security.StringToLongOrRedirect(
                             this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"))),
-                YafBuildLink.GetLink(
-                    ForumPages.profile,
+                BuildLink.GetLink(
+                    ForumPages.Profile,
                     "u={0}",
                     this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u")));
             this.PageLinks.AddLink(this.GetText("ALBUMS"), string.Empty);

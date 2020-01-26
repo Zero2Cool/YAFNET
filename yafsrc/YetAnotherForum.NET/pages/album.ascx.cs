@@ -68,15 +68,15 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (!this.Get<YafBoardSettings>().EnableAlbum)
+            if (!this.Get<BoardSettings>().EnableAlbum)
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             if (!this.Get<HttpRequestBase>().QueryString.Exists("u")
                 || !this.Get<HttpRequestBase>().QueryString.Exists("a"))
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             var userId =
@@ -91,8 +91,8 @@ namespace YAF.Pages
             this.PageLinks.AddRoot();
             this.PageLinks.AddLink(
                 displayName,
-                YafBuildLink.GetLink(ForumPages.profile, "u={0}&name={1}", userId, displayName));
-            this.PageLinks.AddLink(this.GetText("ALBUMS"), YafBuildLink.GetLink(ForumPages.albums, "u={0}", userId));
+                BuildLink.GetLink(ForumPages.Profile, "u={0}&name={1}", userId, displayName));
+            this.PageLinks.AddLink(this.GetText("ALBUMS"), BuildLink.GetLink(ForumPages.albums, "u={0}", userId));
             this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
 
             // Set the title text.
@@ -112,7 +112,7 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Back_Click(object sender, EventArgs e)
         {
-            YafBuildLink.Redirect(
+            BuildLink.Redirect(
                 ForumPages.albums,
                 "u={0}",
                 this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));

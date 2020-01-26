@@ -30,6 +30,7 @@ namespace YAF.Dialogs
     using System.Data;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Web.Security;
 
     using YAF.Configuration;
@@ -125,7 +126,7 @@ namespace YAF.Dialogs
                     string.Format(this.GetText("ADMIN_USERS_IMPORT", "IMPORT_FAILED"), x.Message), MessageTypes.danger);
             }
 
-            YafBuildLink.Redirect(ForumPages.admin_users);
+            BuildLink.Redirect(ForumPages.admin_users);
         }
 
         /// <summary>
@@ -171,14 +172,15 @@ namespace YAF.Dialogs
 
                 var streamReader = new StreamReader(inputStream);
 
-                var headers = streamReader.ReadLine().Split(',');
+                var headers = streamReader.ReadLine()?.Split(',');
 
                 headers.ForEach(header => usersTable.Columns.Add(header));
 
                 while (streamReader.Peek() >= 0)
                 {
                     var dr = usersTable.NewRow();
-                    dr.ItemArray = streamReader.ReadLine().Split(',');
+                    var regex = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
+                    dr.ItemArray = regex.Split(streamReader.ReadLine());
 
                     usersTable.Rows.Add(dr);
                 }
@@ -240,7 +242,7 @@ namespace YAF.Dialogs
                 this.Get<MembershipProvider>().RequiresQuestionAndAnswer ? securityAnswer : null,
                 true,
                 null,
-                out var status);
+                out _);
 
             // setup initial roles (if any) for this user
             RoleMembershipHelper.SetupUserRoles(YafContext.Current.PageBoardID, (string)row["Name"]);
@@ -395,7 +397,7 @@ namespace YAF.Dialogs
                 int.TryParse((string)row["Timezone"], out timeZone);
             }
 
-            var autoWatchTopicsEnabled = this.Get<YafBoardSettings>().DefaultNotificationSetting
+            var autoWatchTopicsEnabled = this.Get<BoardSettings>().DefaultNotificationSetting
                                          == UserNotificationSetting.TopicsIPostToOrSubscribeTo;
 
             this.GetRepository<User>().Save(
@@ -411,10 +413,9 @@ namespace YAF.Dialogs
                 row.Table.Columns.Contains("TextEditor") ? row["TextEditor"] : null,
                 null,
                 null,
-                this.Get<YafBoardSettings>().DefaultNotificationSetting,
+                this.Get<BoardSettings>().DefaultNotificationSetting,
                 autoWatchTopicsEnabled,
                 isDst,
-                null,
                 null);
 
             // save the settings...
@@ -422,8 +423,8 @@ namespace YAF.Dialogs
                 userId,
                 true,
                 autoWatchTopicsEnabled,
-                this.Get<YafBoardSettings>().DefaultNotificationSetting,
-                this.Get<YafBoardSettings>().DefaultSendDigestEmail);
+                this.Get<BoardSettings>().DefaultNotificationSetting,
+                this.Get<BoardSettings>().DefaultSendDigestEmail);
 
             importCount++;
 

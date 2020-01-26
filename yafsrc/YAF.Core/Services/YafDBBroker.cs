@@ -64,7 +64,7 @@ namespace YAF.Core.Services
         /// <param name="dbFunction">The database function.</param>
         public YafDbBroker(
             IServiceLocator serviceLocator,
-            YafBoardSettings boardSettings,
+            BoardSettings boardSettings,
             HttpSessionStateBase httpSessionState,
             IDataCache dataCache,
             IDbFunction dbFunction)
@@ -86,7 +86,7 @@ namespace YAF.Core.Services
         /// <value>
         /// The board settings.
         /// </value>
-        public YafBoardSettings BoardSettings { get; set; }
+        public BoardSettings BoardSettings { get; set; }
 
         /// <summary>
         ///     Gets or sets DataCache.
@@ -260,14 +260,14 @@ namespace YAF.Core.Services
                 {
                     // make sure this only has the category desired in the dataset
                     foreach (
-                        var row in
-                            categoryTable.AsEnumerable().Where(row => row.Field<int>("CategoryID") != categoryID))
-                    {
-                        // delete it...
-                        row.Delete();
-                    }
+                         var row in
+                             categoryTable.AsEnumerable().Where(row => row.Field<int>("CategoryID") != categoryID))
+                     {
+                         // delete it...
+                         row.Delete();
+                     }
 
-                    categoryTable.AcceptChanges();
+                     categoryTable.AcceptChanges();
                 }
 
                 var forum = this.GetRepository<Forum>().ListReadAsDataTable(
@@ -401,17 +401,6 @@ namespace YAF.Core.Services
         }
 
         /// <summary>
-        ///     The get latest topics by User.
-        /// </summary>
-        /// <param name="numberOfPosts"> The number of posts. </param>
-        /// <param name="userId"> The user id. </param>
-        /// <returns> Returns List with Latest Topics. </returns>
-        public DataTable GetLatestTopics(int numberOfPosts, int userId)
-        {
-            return this.GetLatestTopics(numberOfPosts, userId, "Style");
-        }
-
-        /// <summary>
         ///     The get latest topics.
         /// </summary>
         /// <param name="numberOfPosts"> The number of posts. </param>
@@ -450,7 +439,7 @@ namespace YAF.Core.Services
                         moderator.TableName = "Moderator";
                         return moderator;
                     },
-                TimeSpan.FromMinutes(this.Get<YafBoardSettings>().BoardModeratorsCacheTimeout));
+                TimeSpan.FromMinutes(this.Get<BoardSettings>().BoardModeratorsCacheTimeout));
         }
 
         /// <summary>
@@ -482,26 +471,20 @@ namespace YAF.Core.Services
         /// <returns> The get simple forum topic. </returns>
         public List<SimpleForum> GetSimpleForumTopic(int boardId, int userId, DateTime timeFrame, int maxCount)
         {
-            var forumData =
-                this.DbFunction.GetAsDataTable(cdb => cdb.forum_listall(boardId, userId))
-                    .SelectTypedList(
-                        x => new SimpleForum { ForumID = x.Field<int>("ForumID"), Name = x.Field<string>("Forum") })
-                    .ToList();
+            var forumData = this.GetRepository<Forum>().ListAll(boardId, userId).AsEnumerable()
+                .Select(x => new SimpleForum { ForumID = x.Item1.ID, Name = x.Item1.Name }).ToList();
 
             if (forumData.Any())
             {
                 // If the user is not logged in (Active Access Table is empty), we need to make sure the Active Access Tables are set
                 this.GetRepository<ActiveAccess>().PageAccessAsDataTable(boardId, userId, false);
 
-                forumData =
-                    this.DbFunction.GetAsDataTable(cdb => cdb.forum_listall(boardId, userId))
-                        .SelectTypedList(
-                            x => new SimpleForum { ForumID = x.Field<int>("ForumID"), Name = x.Field<string>("Forum") })
-                        .ToList();
+                forumData = this.GetRepository<Forum>().ListAll(boardId, userId).AsEnumerable()
+                    .Select(x => new SimpleForum { ForumID = x.Item1.ID, Name = x.Item1.Name }).ToList();
             }
 
             // get topics for all forums...
-            foreach (var forum in forumData)
+            forumData.ForEach(forum =>
             {
                 var forum1 = forum;
 
@@ -523,7 +506,7 @@ namespace YAF.Core.Services
                     topics.Where(x => x.Field<DateTime>("LastPosted") >= timeFrame)
                         .Select(x => this.LoadSimpleTopic(x, forum1))
                         .ToList();
-            }
+            });
 
             return forumData;
         }

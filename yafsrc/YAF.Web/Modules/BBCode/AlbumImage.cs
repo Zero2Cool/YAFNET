@@ -48,14 +48,14 @@ namespace YAF.Modules.BBCode
 
             sb.AppendFormat(
                 @"<a href=""{0}resource.ashx?image={1}"" class=""attachedImage"" data-gallery title=""{1}"">",
-                YafForumInfo.ForumClientFileRoot,
+                BoardInfo.ForumClientFileRoot,
                 this.Parameters["inner"]);
 
             sb.AppendFormat(
                 @"<img src=""{0}resource.ashx?imgprv={1}"" class=""img-user-posted img-thumbnail"" style=""max-width:auto;max-height:{2}px"" alt=""{1}"" />",
-                YafForumInfo.ForumClientFileRoot,
+                BoardInfo.ForumClientFileRoot,
                 this.Parameters["inner"],
-                this.Get<YafBoardSettings>().ImageThumbnailMaxHeight);
+                this.Get<BoardSettings>().ImageThumbnailMaxHeight);
 
             sb.Append("</a>");
 

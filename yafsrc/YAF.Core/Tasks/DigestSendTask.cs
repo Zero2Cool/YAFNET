@@ -29,6 +29,8 @@ namespace YAF.Core.Tasks
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Web;
 
     using YAF.Configuration;
     using YAF.Core.Model;
@@ -152,31 +154,31 @@ namespace YAF.Core.Tasks
 
                 boardIds.ForEach(
                     boardId =>
-                    {
-                        var boardSettings = new YafLoadBoardSettings(boardId);
-
-                        if (!IsTimeToSendDigestForBoard(boardSettings))
                         {
-                            return;
-                        }
+                            var boardSettings = new YafLoadBoardSettings(boardId);
 
-                        // get users with digest enabled...
-                        var usersWithDigest = this.GetRepository<User>()
-                            .FindUserTyped(false, boardId, dailyDigest: true).Where(
-                                x => x.IsGuest != null && !x.IsGuest.Value && (x.IsApproved ?? false));
+                            if (!IsTimeToSendDigestForBoard(boardSettings))
+                            {
+                                return;
+                            }
 
-                        var typedUserFinds = usersWithDigest as IList<User> ?? usersWithDigest.ToList();
+                            // get users with digest enabled...
+                            var usersWithDigest = this.GetRepository<User>()
+                                .FindUserTyped(false, boardId, dailyDigest: true).Where(
+                                    x => x.IsGuest != null && !x.IsGuest.Value && (x.IsApproved ?? false));
 
-                        if (typedUserFinds.Any())
-                        {
-                            // start sending...
-                            this.SendDigestToUsers(typedUserFinds, boardSettings);
-                        }
-                        else
-                        {
-                            this.Get<ILogger>().Info("no user found");
-                        }
-                    });
+                            var typedUserFinds = usersWithDigest as IList<User> ?? usersWithDigest.ToList();
+
+                            if (typedUserFinds.Any())
+                            {
+                                // start sending...
+                                this.SendDigestToUsers(typedUserFinds, boardSettings);
+                            }
+                            else
+                            {
+                                this.Get<ILogger>().Info("no user found");
+                            }
+                        });
             }
             catch (Exception ex)
             {
@@ -189,15 +191,17 @@ namespace YAF.Core.Tasks
         /// </summary>
         /// <param name="usersWithDigest">The users with digest.</param>
         /// <param name="boardSettings">The board settings.</param>
-        private void SendDigestToUsers(
-            IEnumerable<User> usersWithDigest,
-            YafBoardSettings boardSettings)
+        private void SendDigestToUsers(IEnumerable<User> usersWithDigest, BoardSettings boardSettings)
         {
             var usersSendCount = 0;
 
-            usersWithDigest.ForEach(
+            var currentContext = HttpContext.Current;
+
+            usersWithDigest.AsParallel().ForAll(
                 user =>
                     {
+                        HttpContext.Current = currentContext;
+
                         try
                         {
                             var digestHtml = this.Get<IDigest>().GetDigestHtml(user.ID, boardSettings);
@@ -219,20 +223,27 @@ namespace YAF.Core.Tasks
                                 return;
                             }
 
+                            var subject = Regex.Match(digestHtml, "<title>(.*?)</title>", RegexOptions.Singleline)
+                                .Groups[1].Value.Trim();
+
                             // send the digest...
                             this.Get<IDigest>().SendDigest(
+                                subject.Trim(),
                                 digestHtml,
                                 boardSettings.Name,
                                 boardSettings.ForumEmail,
                                 membershipUser.Email,
-                                user.DisplayName,
-                                true);
+                                user.DisplayName);
 
                             usersSendCount++;
                         }
                         catch (Exception e)
                         {
                             this.Get<ILogger>().Error(e, $"Error In Creating Digest for User {user.ID}");
+                        }
+                        finally
+                        {
+                            HttpContext.Current = null;
                         }
                     });
 

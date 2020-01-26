@@ -14,74 +14,62 @@
                                   IconType="text-secondary"></YAF:Icon>
                         <YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" 
                                             LocalizedTag="ACTIVITY"
-                                            LocalizedPage="CP_PROFILE" />
+                                            LocalizedPage="ACCOUNT" />
                     </div>
                     <div class="col-md-2 mt-1">
                         <div class="btn-group dropleft" role="group" aria-label="Filters">
-                    <YAF:ThemeButton runat="server"
+                            <YAF:ThemeButton runat="server"
                                      CssClass="dropdown-toggle"
                                      DataToggle="dropdown"
                                      Type="Secondary"
                                      Icon="filter"
                                      TextLocalizedTag="FILTER_DROPDOWN"
                                      TextLocalizedPage="ADMIN_USERS"></YAF:ThemeButton>
-                        
-                    <div class="dropdown-menu">
-                        <div class="px-3 py-1">
-                            <div class="form-group">
-                                <div class="custom-control custom-switch">
-                                    <asp:CheckBox runat="server" ID="CreatedTopic" 
-                                                  Checked="True"/>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <asp:CheckBox runat="server" ID="CreatedReply" 
-                                                  Checked="True"/>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <asp:CheckBox runat="server" ID="WasMentioned" 
-                                                  Checked="True"/>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <asp:CheckBox runat="server" ID="ReceivedThanks" 
-                                                  Checked="True"/>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <asp:CheckBox runat="server" ID="GivenThanks" 
-                                                  Checked="True"/>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <asp:CheckBox runat="server" ID="WasQuoted" 
-                                                  Checked="True"/>
+                            <div class="dropdown-menu">
+                                <div class="px-3 py-1">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <asp:CheckBox runat="server" ID="CreatedTopic" 
+                                                          Checked="True"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <asp:CheckBox runat="server" ID="CreatedReply" 
+                                                          Checked="True"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <asp:CheckBox runat="server" ID="GivenThanks" 
+                                                          Checked="True"/>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                    <YAF:ThemeButton runat="server" ID="Update"
+                                                     OnClick="UpdateFilterClick"
+                                                     TextLocalizedTag="UPDATE"
+                                                     Size="Small"
+                                                     Icon="sync">
+                                    </YAF:ThemeButton>
+                                    &nbsp;
+                                    <YAF:ThemeButton ID="Reset" runat="server"
+                                                     OnClick="ResetClick"
+                                                     TextLocalizedTag="CLEAR"
+                                                     Type="Secondary"
+                                                     Size="Small"
+                                                     Icon="trash">
+                                    </YAF:ThemeButton>
                                 </div>
                             </div>
-                            <hr />
-                            <div class="form-group">
-                                <div class="custom-control custom-switch">
-                                    <asp:CheckBox runat="server" ID="UnreadOnly"/>
-                                </div>
-                            </div>
-                            <YAF:ThemeButton runat="server" ID="Update"
-                                             OnClick="UpdateFilterClick"
-                                             TextLocalizedTag="UPDATE"
-                                             Size="Small"
-                                             Icon="sync">
-                            </YAF:ThemeButton>
-                            &nbsp;
-                            <YAF:ThemeButton ID="Reset" runat="server"
-                                             OnClick="ResetClick"
-                                             TextLocalizedTag="CLEAR"
-                                             Type="Secondary"
-                                             Size="Small"
-                                             Icon="trash">
-                            </YAF:ThemeButton>
                         </div>
-                    </div>
-                </div>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <asp:Repeater runat="server" ID="ActivityStream" OnItemDataBound="ActivityStream_OnItemDataBound" OnItemCommand="ActivityStream_OnItemCommand">
+                <asp:Repeater runat="server" ID="ActivityStream" 
+                              OnItemDataBound="ActivityStream_OnItemDataBound" 
+                              OnItemCommand="ActivityStream_OnItemCommand">
                     <HeaderTemplate>
                         <div class="container">
                     </HeaderTemplate>
@@ -109,19 +97,16 @@
                                                 <asp:Literal runat="server" ID="Title"></asp:Literal>
                                             </h5>
                                             <small class="d-none d-md-block">
+                                                <YAF:Icon runat="server" 
+                                                          IconName="calendar-day"
+                                                          IconType="text-secondary"
+                                                          IconNameBadge="clock" 
+                                                          IconBadgeType="text-secondary"></YAF:Icon>
                                                 <YAF:DisplayDateTime id="DisplayDateTime" runat="server">
                                                 </YAF:DisplayDateTime>
                                             </small>
                                         </div>
                                         <asp:PlaceHolder runat="server" ID="Message"></asp:PlaceHolder>
-                                        <YAF:ThemeButton runat="server" ID="MarkRead"
-                                                         Type="Secondary"
-                                                         Size="Small"
-                                                         TextLocalizedTag="MARK_ASREAD"
-                                                         CommandName="read"
-                                                         Icon="glasses"
-                                                         Visible="False">
-                                        </YAF:ThemeButton>
                                     </div>
                                 </asp:Panel>
                             </div>
@@ -133,41 +118,26 @@
                 </asp:Repeater>
             </div>
             <div class="card-footer">
-                <div class="row justify-content-between">
-                    <div class="col-md-3">
-                        <div class="input-group mb-1">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                    <YAF:LocalizedLabel ID="SinceLabel" runat="server"
-                                                        LocalizedTag="ITEMS"/>:
-                                </div>
-                            </div>
-                            <asp:DropDownList ID="PageSize" runat="server" 
-                                              AutoPostBack="True"
-                                              OnSelectedIndexChanged="PageSizeSelectedIndexChanged" 
-                                              CssClass="select2-select custom-select">
-                                <asp:ListItem Text="5" Value="5" Selected="True" />
-                                <asp:ListItem Text="10" Value="10" />
-                                <asp:ListItem Text="20" Value="20" />
-                                <asp:ListItem Text="30" Value="30" />
-                                <asp:ListItem Text="40" Value="40" />
-                                <asp:ListItem Text="50" Value="50" />
-                            </asp:DropDownList>
+                <div class="input-group col-md-4">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">
+                            <YAF:LocalizedLabel ID="SinceLabel" runat="server"
+                                                LocalizedTag="ITEMS"/>:
+                        </div>
+                    </div>
+                    <asp:DropDownList ID="PageSize" runat="server" 
+                                      AutoPostBack="True"
+                                      OnSelectedIndexChanged="PageSizeSelectedIndexChanged" 
+                                      CssClass="select2-select custom-select">
+                        <asp:ListItem Text="5" Value="5" Selected="True" />
+                        <asp:ListItem Text="10" Value="10" />
+                        <asp:ListItem Text="20" Value="20" />
+                        <asp:ListItem Text="30" Value="30" />
+                        <asp:ListItem Text="40" Value="40" />
+                        <asp:ListItem Text="50" Value="50" />
+                    </asp:DropDownList>
                             
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="btn-group" role="group" aria-label="Tools">
-                            <YAF:ThemeButton runat="server" OnClick="MarkAll_Click" ID="MarkAll"
-                                             TextLocalizedTag="MARK_ALL_ASREAD" TextLocalizedPage="DEFAULT"
-                                             Type="Secondary"
-                                             Size="Small"
-                                             Icon="glasses"/>
-                        </div>
-                    </div>
                 </div>
-                
-                
             </div>
         </div>
         <YAF:Pager ID="PagerBottom" runat="server" LinkedPager="PagerTop" />

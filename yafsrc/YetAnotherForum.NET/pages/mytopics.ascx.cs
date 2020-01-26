@@ -32,7 +32,10 @@ namespace YAF.Pages
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
+    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Utils.Helpers;
+    using YAF.Web.Controls;
     using YAF.Web.Extensions;
 
     #endregion
@@ -40,7 +43,7 @@ namespace YAF.Pages
     /// <summary>
     /// The my topics page.
     /// </summary>
-    public partial class mytopics : ForumPage
+    public partial class MyTopics : ForumPageRegistered
     {
         /// <summary>
         /// Indicates if the Active Tab was loaded
@@ -70,9 +73,9 @@ namespace YAF.Pages
         #region Constructors and Destructors
 
         /// <summary>
-        ///   Initializes a new instance of the mytopics class.
+        /// Initializes a new instance of the <see cref="MyTopics"/> class.
         /// </summary>
-        public mytopics()
+        public MyTopics()
             : base("MYTOPICS")
         {
         }
@@ -131,6 +134,14 @@ namespace YAF.Pages
                     this.hidLastTab.ClientID,
                     this.Page.ClientScript.GetPostBackEventReference(this.ChangeTab, string.Empty)));
 
+            var iconLegend = new IconLegend().RenderToString();
+
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                "TopicIconLegendPopoverJs",
+                JavaScriptBlocks.ForumIconLegendPopoverJs(
+                    iconLegend.ToJsString(),
+                    "topic-icon-legend-popvover"));
+
             base.OnPreRender(e);
         }
 
@@ -156,17 +167,14 @@ namespace YAF.Pages
             this.UserTopicsTabContent.Visible = !this.PageContext.IsGuest;
 
             this.UnreadTopicsTabTitle.Visible = !this.PageContext.IsGuest &&
-                                                this.Get<YafBoardSettings>().UseReadTrackingByDatabase;
+                                                this.Get<BoardSettings>().UseReadTrackingByDatabase;
             this.UnreadTopicsTabContent.Visible = !this.PageContext.IsGuest &&
-                                                  this.Get<YafBoardSettings>().UseReadTrackingByDatabase;
+                                                  this.Get<BoardSettings>().UseReadTrackingByDatabase;
 
             this.PageLinks.AddRoot();
 
             this.PageLinks.AddLink(
                 this.PageContext.IsGuest ? this.GetText("GUESTTITLE") : this.GetText("MEMBERTITLE"), string.Empty);
-
-            this.ForumJumpHolder.Visible = this.Get<YafBoardSettings>().ShowForumJump &&
-                                           this.PageContext.Settings.LockedForum == 0;
         }
 
         #endregion
@@ -221,7 +229,7 @@ namespace YAF.Pages
 
                         if (this.UserTopicsTabTitle.Visible)
                         {
-                            this.MyTopics.DataBind();
+                            this.MyTopicsTopics.DataBind();
                             this.FavoriteTopics.DataBind();
                         }
 
@@ -240,7 +248,7 @@ namespace YAF.Pages
 
                         if (this.UserTopicsTabTitle.Visible)
                         {
-                            this.MyTopics.DataBind();
+                            this.MyTopicsTopics.DataBind();
                             this.FavoriteTopics.DataBind();
                         }
 
@@ -252,7 +260,7 @@ namespace YAF.Pages
 
                     if (!this.mytopicsLoaded)
                     {
-                        this.MyTopics.BindData();
+                        this.MyTopicsTopics.BindData();
 
                         this.ActiveTopics.DataBind();
                         this.UnansweredTopics.DataBind();
@@ -270,7 +278,7 @@ namespace YAF.Pages
                     }
                     else
                     {
-                        this.MyTopics.DataBind();
+                        this.MyTopicsTopics.DataBind();
 
                         this.ActiveTopics.DataBind();
                         this.UnansweredTopics.DataBind();
@@ -301,7 +309,7 @@ namespace YAF.Pages
 
                         if (this.UserTopicsTabTitle.Visible)
                         {
-                            this.MyTopics.DataBind();
+                            this.MyTopicsTopics.DataBind();
                         }
 
                         this.favoriteLoaded = true;
@@ -321,7 +329,7 @@ namespace YAF.Pages
 
                         if (this.UserTopicsTabTitle.Visible)
                         {
-                            this.MyTopics.DataBind();
+                            this.MyTopicsTopics.DataBind();
                             this.FavoriteTopics.DataBind();
                         }
 

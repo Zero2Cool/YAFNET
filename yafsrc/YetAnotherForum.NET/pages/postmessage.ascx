@@ -29,7 +29,7 @@
                     </asp:Label>
                     <asp:PlaceHolder ID="PreviewCell" runat="server">
                         <YAF:Alert Type="light" runat="server">
-                            <YAF:MessagePost ID="PreviewMessagePost" runat="server" />
+                            <YAF:MessagePost ID="PreviewMessagePost" runat="server"/>
                         </YAF:Alert>
                     </asp:PlaceHolder>
                 </asp:PlaceHolder>
@@ -44,7 +44,7 @@
                             autocomplete="off" />
                     </div>
                     <div id="SearchResultsPlaceholder"
-                        data-url='<%=YafForumInfo.ForumClientFileRoot %>'
+                        data-url='<%=BoardInfo.ForumClientFileRoot %>'
                         data-userid='<%= YafContext.Current.PageUserID %>'>
                     </div>
                 </asp:PlaceHolder>

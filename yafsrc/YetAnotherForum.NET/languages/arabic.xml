@@ -76,20 +76,20 @@
     <Resource tag="ATTACHMENTS">معالجة المرفقات</Resource>
     <Resource tag="AVATAR">عرض الرموز</Resource>
     <Resource tag="COOKIES">Views the cookie policy page</Resource>
-    <Resource tag="CP_BLOCKOPTIONS">Edits his Ignored users and block option</Resource>
-    <Resource tag="CP_CHANGEPASSWORD">تغيير كلمة المرور</Resource>
-    <Resource tag="CP_DELETEACCOUNT">User deletes his account</Resource>
-    <Resource tag="CP_EDITALBUMIMAGES">تعديل صور الألبوم</Resource>
-    <Resource tag="CP_EDITAVATAR">تعديل الرمز</Resource>
-    <Resource tag="CP_EDITBUDDIES">تعديل  قائمة لاصدقاء </Resource>
-    <Resource tag="CP_EDITPROFILE">تعديل الملف الشخصي</Resource>
-    <Resource tag="CP_EDITSETTINGS">Edit the user settings</Resource>
-    <Resource tag="CP_MESSAGE">تعديل صفحة الرسائل</Resource>
-    <Resource tag="CP_PM">اظهار  الرسائل  الخاصة </Resource>
-    <Resource tag="CP_PROFILE">عرض اعدادت الملف الشخصي</Resource>
+    <Resource tag="BLOCK_OPTIONS">Edits his Ignored users and block option</Resource>
+    <Resource tag="CHANGE_PASSWORD">تغيير كلمة المرور</Resource>
+    <Resource tag="DELETE_ACCOUNT">User deletes his account</Resource>
+    <Resource tag="EDIT_ALBUMIMAGES">تعديل صور الألبوم</Resource>
+    <Resource tag="EDIT_AVATAR">تعديل الرمز</Resource>
+    <Resource tag="FRIENDS">تعديل  قائمة لاصدقاء </Resource>
+    <Resource tag="EDIT_PROFILE">تعديل الملف الشخصي</Resource>
+    <Resource tag="EDIT_SETTINGS">Edit the user settings</Resource>
+    <Resource tag="MESSAGE">تعديل صفحة الرسائل</Resource>
+    <Resource tag="PM">اظهار  الرسائل  الخاصة </Resource>
+    <Resource tag="ACCOUNT">عرض اعدادت الملف الشخصي</Resource>
     <Resource tag="CP_PROFILE_OFUSER">عرض الملف الشخصي للمستخدم</Resource>
-    <Resource tag="CP_SIGNATURE">تعديل التوقيع</Resource>
-    <Resource tag="CP_SUBSCRIPTIONS">تعديل الاشتراكات</Resource>
+    <Resource tag="EDIT_SIGNATURE">تعديل التوقيع</Resource>
+    <Resource tag="SUBSCRIPTIONS">تعديل الاشتراكات</Resource>
     <Resource tag="DELETEMESSAGE">حذف الرسالة</Resource>
     <Resource tag="EMAILTOPIC">موضوع الرسائل</Resource>
     <Resource tag="ERROR">الذهاب  الى صفحة الخطا</Resource>
@@ -2468,7 +2468,7 @@
     <Resource tag="ZM">Zambia</Resource>
     <Resource tag="ZW">Zimbabwe</Resource>
   </page>
-  <page name="CP_BLOCKOPTIONS">
+  <page name="BLOCK_OPTIONS">
     <Resource tag="BLOCK_BUDDYS">Block Friend Requests</Resource>
     <Resource tag="BLOCK_BUDDYS">Block Private Messages</Resource>
     <Resource tag="BLOCK_EMAILS">Block E-Mails</Resource>
@@ -2480,7 +2480,7 @@
     <Resource tag="SELECT_OPTIONS">Options to Block other Users from Contacting you...</Resource>
     <Resource tag="TITLE">User Block Options &amp; Ignored Users</Resource>
   </page>
-  <page name="CP_CHANGEPASSWORD">
+  <page name="CHANGE_PASSWORD">
     <Resource tag="CHANGE_BUTTON">تقدم</Resource>
     <Resource tag="CHANGE_SUCCESS">تم تغيير كلمة المرور بنجاح</Resource>
     <Resource tag="CONFIRM_PASSWORD"> :تأكيد كلمة المرور الجديدة</Resource>
@@ -2506,7 +2506,7 @@
     <Resource tag="TITLE">تغيير كلمة المرور</Resource>
     <Resource tag="TITLE_SECURITY">Change Security Question and Answer</Resource>
   </page>
-  <page name="CP_DELETEACCOUNT">
+  <page name="DELETE_ACCOUNT">
     <Resource tag="CONFIRM">Are you absolutely sure you want to do this?</Resource>
     <Resource tag="OPTION_DELETE_TEXT">This will delete your account permanently! All your content will be deleted. After that your account can not be restored</Resource>
     <Resource tag="OPTION_DELETE_TITLE">Delete your Account (permanently)</Resource>
@@ -2515,7 +2515,7 @@
     <Resource tag="OPTIONS_TITLE">You have the option to...</Resource>
     <Resource tag="TITLE">Delete Your {0} Account</Resource>
   </page>
-  <page name="CP_EDITALBUMIMAGES">
+  <page name="EDIT_ALBUMIMAGES">
     <Resource tag="ALBUM_TITLE">العنوان </Resource>
     <Resource tag="ALBUMS">ألبومات </Resource>
     <Resource tag="ALBUMS_COUNT_LIMIT">لا يمكن انشاء اكتر من {0} البومات .</Resource>
@@ -2528,7 +2528,7 @@
     <Resource tag="SELECT_FILE">Select an Image File ('.jpg', '.gif', '.png' or '.bmp') you want to upload.</Resource>
     <Resource tag="TITLE">إضافة \تعديل البوم</Resource>
   </page>
-  <page name="CP_EDITAVATAR">
+  <page name="EDIT_AVATAR">
     <Resource tag="AVATAR">صورة الشخصية</Resource>
     <Resource tag="AVATARCURRENT">الصورة الشخصية الحالية</Resource>
     <Resource tag="AVATARDELETE">ازالة الصورة الشخصية</Resource>
@@ -2549,7 +2549,7 @@
     <Resource tag="WARN_SIZE">حجم الصورة {0}x{1} بكسل</Resource>
     <Resource tag="WARN_TOOBIG">لا يمكن أن تكون أبعاد الصورة أكبر من {0}x{1} بكسل.</Resource>
   </page>
-  <page name="CP_EDITBUDDIES">
+  <page name="FRIENDS">
     <Resource tag="APPROVE">موافقة </Resource>
     <Resource tag="APPROVE_ADD">الموافقة على إضافة</Resource>
     <Resource tag="APPROVE_ADD_ALL">الموافقة على الجميع </Resource>
@@ -2572,8 +2572,9 @@
     <Resource tag="YOUR_BUDDYLIST">الاصدقاء</Resource>
     <Resource tag="YOUR_REQUESTS">مراسلاتك</Resource>
   </page>
-  <page name="CP_EDITPROFILE">
+  <page name="EDIT_PROFILE">
     <Resource tag="ABOUTYOU">معلومات شخصية</Resource>
+    <Resource tag="ACTIVITY">Enable Activity Stream (If checked you get Notifications for Mentions, Quotes and Thanks.</Resource>
     <Resource tag="AIM">Your AIM Name:</Resource>
     <Resource tag="AUTOWATCH_TOPICS_NOTIFICATION">Watch every topic in which you have made a post and receive email notifications of activities in those topics?</Resource>
     <Resource tag="BAD_EMAIL">لقد قمت بادخال عنوان بريد الكتروني غير قانوني</Resource>
@@ -2629,16 +2630,16 @@
     <Resource tag="XMPP">Your Jabber ID:</Resource>
     <Resource tag="YIM">Your Yahoo ID:</Resource>
   </page>
-  <page name="CP_EDITSETTINGS">
+  <page name="EDIT_SETTINGS">
     <Resource tag="TITLE">Edit Settings</Resource>
   </page>
-  <page name="CP_MESSAGE">
+  <page name="MESSAGE">
     <Resource tag="INBOX">الصندوق الوارد</Resource>
     <Resource tag="MSG_DELETED">تم ازالة الرسالة</Resource>
     <Resource tag="POSTED">:تم المشاركة </Resource>
     <Resource tag="SENTITEMS">العناصر المرسلة</Resource>
   </page>
-  <page name="CP_PM">
+  <page name="PM">
     <Resource tag="ARCHIVE">الأرشيف</Resource>
     <Resource tag="ARCHIVEALL">أرشفة كافة</Resource>
     <Resource tag="ARCHIVESELECTED">اختيار الأرشيف</Resource>
@@ -2677,7 +2678,7 @@
     <Resource tag="TO_ASC">To A-Z</Resource>
     <Resource tag="TO_DESC">To Z-A</Resource>
   </page>
-  <page name="CP_PROFILE">
+  <page name="ACCOUNT">
     <Resource tag="ACTIVITY">Your Activity</Resource>
     <Resource tag="ARCHIVE">الأرشيف</Resource>
     <Resource tag="CHANGE_PASSWORD">تغيير كلمة المرور</Resource>
@@ -2714,10 +2715,11 @@
     <Resource tag="WAS_QUOTED_MSG">Was Quoted by {0} in the Topic {1}</Resource>
     <Resource tag="YOUR_ACCOUNT">حسابك</Resource>
     <Resource tag="YOUR_EMAIL">:عنوان بريدك الالكتروني</Resource>
+    <Resource tag="YOUR_NOTIFIY">Your Notifications</Resource>
     <Resource tag="YOUR_USERDISPLAYNAME">اسمك:</Resource>
     <Resource tag="YOUR_USERNAME">:اسم المستخدم الخاص بك</Resource>
   </page>
-  <page name="CP_SIGNATURE">
+  <page name="EDIT_SIGNATURE">
     <Resource tag="BBCODE_ALLOWEDALL">Your signature can contain any BBCode.</Resource>
     <Resource tag="BBCODE_ALLOWEDLIST">You can use the following BBCodes: {0}.</Resource>
     <Resource tag="BBCODE_FORBIDDEN">التوقيع يجب ان  يحتوي على  BBCodes.</Resource>
@@ -2733,7 +2735,7 @@
     <Resource tag="SIGNATURE_PREVIEW">Signature Preview</Resource>
     <Resource tag="TITLE">تعديل التوقيع</Resource>
   </page>
-  <page name="CP_SUBSCRIPTIONS">
+  <page name="SUBSCRIPTIONS">
     <Resource tag="ALLTOPICS">Notification for [b]all posts on all topics[/b]</Resource>
     <Resource tag="DAILY_DIGEST">Receive once daily digest/summary of activity?</Resource>
     <Resource tag="FORUM">المنتدى</Resource>
@@ -4663,7 +4665,7 @@ p&gt;هذا الرابط يجلب لك صفحة التي تطلب منك ادخ�
     <Resource tag="EDITED">تعديل</Resource>
     <Resource tag="EDITED_BY_MOD">بواسطة مشرف</Resource>
     <Resource tag="EDITED_BY_USER">بواسطة عضو</Resource>
-    <Resource tag="EDITUSER">Edit</Resource>
+    <Resource tag="EDITUSER">Edit User</Resource>
     <Resource tag="EMAIL">البريد الالكتروني</Resource>
     <Resource tag="EMAIL_TITLE">Send {0} an Email</Resource>
     <Resource tag="EMAILTOPIC">البريد الالكتروني  لهذه المشركة</Resource>
@@ -6286,8 +6288,12 @@ Visit {forumname} at {forumlink}
     <Resource tag="MYACTIVITY_TITLE">Shows your activity and Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYALBUMS">ألبوماتي</Resource>
     <Resource tag="MYALBUMS_TITLE">Shows the Albums Page which shows all your albums.</Resource>
+    <Resource tag="MYNOTIFY">My Notifications</Resource>
+    <Resource tag="MYNOTIFY_TITLE">Shows your unread Received Thanks, Mentions and Quotes.</Resource>
     <Resource tag="MYPROFILE">الملف الشخصي</Resource>
     <Resource tag="MYPROFILE_TITLE">Shows the User Control Panel.</Resource>
+    <Resource tag="MYSETTINGS">My Settings</Resource>
+    <Resource tag="MYSETTINGs_TITLE">Edit your user details and settings.</Resource>
     <Resource tag="MYTOPICS">مواضيعي</Resource>
     <Resource tag="MYTOPICS_TITLE">Shows the Active and Favorite Topics.</Resource>
     <Resource tag="NEWPM">({0} غيرمقروء)</Resource>

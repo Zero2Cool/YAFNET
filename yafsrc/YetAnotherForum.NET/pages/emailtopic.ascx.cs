@@ -72,7 +72,7 @@ namespace YAF.Pages
             if (!this.Get<HttpRequestBase>().QueryString.Exists("t") || !this.PageContext.ForumReadAccess
                 || !this.PageContext.BoardSettings.AllowEmailTopic)
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             if (this.IsPostBack)
@@ -82,25 +82,25 @@ namespace YAF.Pages
 
             if (this.PageContext.Settings.LockedForum == 0)
             {
-                this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, YafBuildLink.GetLink(ForumPages.forum));
+                this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, BuildLink.GetLink(ForumPages.forum));
                 this.PageLinks.AddLink(
                     this.PageContext.PageCategoryName,
-                    YafBuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+                    BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
             }
 
             this.PageLinks.AddForum(this.PageContext.PageForumID);
             this.PageLinks.AddLink(
                 this.PageContext.PageTopicName,
-                YafBuildLink.GetLink(ForumPages.posts, "t={0}", this.PageContext.PageTopicID));
+                BuildLink.GetLink(ForumPages.posts, "t={0}", this.PageContext.PageTopicID));
 
             this.Subject.Text = this.PageContext.PageTopicName;
 
-            var emailTopic = new YafTemplateEmail
+            var emailTopic = new TemplateEmail
                                  {
                                      TemplateParams =
                                          {
                                              ["{link}"] =
-                                             YafBuildLink.GetLinkNotEscaped(
+                                             BuildLink.GetLinkNotEscaped(
                                                  ForumPages.posts,
                                                  true,
                                                  "t={0}",
@@ -127,15 +127,15 @@ namespace YAF.Pages
 
             try
             {
-                var emailTopic = new YafTemplateEmail("EMAILTOPIC")
+                var emailTopic = new TemplateEmail("EMAILTOPIC")
                                      {
                                          TemplateParams = { ["{message}"] = this.Message.Text.Trim() }
                                      };
 
                 // send a change email message...
-                emailTopic.SendEmail(new MailAddress(this.EmailAddress.Text.Trim()), this.Subject.Text.Trim(), false);
+                emailTopic.SendEmail(new MailAddress(this.EmailAddress.Text.Trim()), this.Subject.Text.Trim());
 
-                YafBuildLink.Redirect(ForumPages.posts, "t={0}", this.PageContext.PageTopicID);
+                BuildLink.Redirect(ForumPages.posts, "t={0}", this.PageContext.PageTopicID);
             }
             catch (Exception x)
             {
