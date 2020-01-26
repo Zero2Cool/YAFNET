@@ -26,6 +26,7 @@ namespace YAF.Types.Interfaces
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Web;
 
     /// <summary>
     /// The Localization interface.
@@ -213,8 +214,10 @@ namespace YAF.Types.Interfaces
         /// Formats a localized string -- but verifies the parameter count matches
         /// </summary>
         /// <param name="text">
+        /// The text.
         /// </param>
         /// <param name="args">
+        /// The args.
         /// </param>
         /// <returns>
         /// The get text formatted.

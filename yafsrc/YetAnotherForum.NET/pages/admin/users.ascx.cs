@@ -46,6 +46,7 @@ namespace YAF.Pages.Admin
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
+    using YAF.Types.Flags;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
     using YAF.Utils;
@@ -69,7 +70,7 @@ namespace YAF.Pages.Admin
         public void NewUserClick([NotNull] object sender, [NotNull] EventArgs e)
         {
             // redirect to create new user page
-            YafBuildLink.Redirect(ForumPages.admin_reguser);
+            BuildLink.Redirect(ForumPages.admin_reguser);
         }
 
         /// <summary>
@@ -84,7 +85,7 @@ namespace YAF.Pages.Admin
                 case "edit":
 
                     // we are going to edit user - redirect to edit page
-                    YafBuildLink.Redirect(ForumPages.admin_edituser, "u={0}", e.CommandArgument);
+                    BuildLink.Redirect(ForumPages.admin_edituser, "u={0}", e.CommandArgument);
                     break;
                 case "delete":
 
@@ -160,7 +161,7 @@ namespace YAF.Pages.Admin
         public void Reset_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
             // re-direct to self.
-            YafBuildLink.Redirect(ForumPages.admin_users);
+            BuildLink.Redirect(ForumPages.admin_users);
         }
 
         /// <summary>
@@ -200,15 +201,16 @@ namespace YAF.Pages.Admin
         /// <summary>
         /// The get is user disabled label.
         /// </summary>
-        /// <param name="userName">
-        /// The user name.
+        /// <param name="userFlag">
+        /// The user Flag.
         /// </param>
         /// <returns>
         /// The <see cref="string"/>.
         /// </returns>
-        protected string GetIsUserDisabledLabel(string userName)
+        protected string GetIsUserDisabledLabel(object userFlag)
         {
-            return UserMembershipHelper.GetUser(userName).IsApproved
+            var flag = new UserFlags((int)userFlag);
+            return flag.IsApproved
                        ? string.Empty
                        : $@"<span class=""badge badge-warning"">{this.GetText("DISABLED")}</span>";
         }
@@ -244,7 +246,7 @@ namespace YAF.Pages.Admin
             // link to administration index
             this.PageLinks.AddLink(
                 this.GetText("ADMIN_ADMIN", "Administration"),
-                YafBuildLink.GetLink(ForumPages.admin_admin));
+                BuildLink.GetLink(ForumPages.admin_admin));
 
             // current page label (no link)
             this.PageLinks.AddLink(this.GetText("ADMIN_USERS", "TITLE"), string.Empty);
@@ -258,7 +260,7 @@ namespace YAF.Pages.Admin
         /// </summary>
         protected void InitSinceDropdown()
         {
-            var lastVisit = this.Get<IYafSession>().LastVisit;
+            var lastVisit = this.Get<ISession>().LastVisit;
 
             // value 0, for since last visit
             this.Since.Items.Add(
@@ -383,7 +385,7 @@ namespace YAF.Pages.Admin
             this.UpdateStatusTimer.Enabled = false;
 
             // done here...
-            YafBuildLink.Redirect(ForumPages.admin_users);
+            BuildLink.Redirect(ForumPages.admin_users);
         }
 
         /// <summary>
@@ -445,7 +447,7 @@ namespace YAF.Pages.Admin
             // we want to filter topics since last visit
             if (sinceValue == 0)
             {
-                sinceDate = this.Get<IYafSession>().LastVisit ?? DateTime.UtcNow;
+                sinceDate = this.Get<ISession>().LastVisit ?? DateTime.UtcNow;
             }
 
             // we are going to page results

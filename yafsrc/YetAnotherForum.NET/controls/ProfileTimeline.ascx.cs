@@ -82,19 +82,14 @@ namespace YAF.Controls
         {
             this.CreatedTopic.Text = this.GetText("CREATED_TOPIC");
             this.CreatedReply.Text = this.GetText("CREATED_REPLY");
-            this.WasMentioned.Text = this.GetText("WAS_MENTIONED");
-            this.ReceivedThanks.Text = this.GetText("RECEIVED_THANKS");
             this.GivenThanks.Text = this.GetText("GIVEN_THANKS");
-            this.WasQuoted.Text = this.GetText("WAS_QUOTED");
-
-            this.UnreadOnly.Text = this.GetText("UNREAD_ONLY");
 
             if (this.IsPostBack)
             {
                 return;
             }
 
-            var previousPageSize = this.Get<IYafSession>().UserActivityPageSize;
+            var previousPageSize = this.Get<ISession>().UserActivityPageSize;
 
             if (previousPageSize.HasValue)
             {
@@ -170,7 +165,7 @@ namespace YAF.Controls
             var topicLink = new ThemeButton
                                 {
                                     NavigateUrl =
-                                        YafBuildLink.GetLink(
+                                        BuildLink.GetLink(
                                             ForumPages.posts,
                                             "m={0}#post{0}",
                                             activity.MessageID.Value),
@@ -181,16 +176,16 @@ namespace YAF.Controls
 
             if (activity.ActivityFlags.CreatedTopic)
             {
-                topicLink.NavigateUrl = YafBuildLink.GetLink(ForumPages.posts, "t={0}", activity.TopicID.Value);
+                topicLink.NavigateUrl = BuildLink.GetLink(ForumPages.posts, "t={0}", activity.TopicID.Value);
 
-                title.Text = this.GetText("CP_PROFILE", "CREATED_TOPIC");
+                title.Text = this.GetText("ACCOUNT", "CREATED_TOPIC");
                 icon = "comment";
                 message = this.GetTextFormatted("CREATED_TOPIC_MSG", topicLink.RenderToString());
             }
 
             if (activity.ActivityFlags.CreatedReply)
             {
-                title.Text = this.GetText("CP_PROFILE", "CREATED_REPLY");
+                title.Text = this.GetText("ACCOUNT", "CREATED_REPLY");
                 icon = "comment";
                 message = this.GetTextFormatted("CREATED_REPLY_MSG", topicLink.RenderToString());
             }
@@ -199,46 +194,10 @@ namespace YAF.Controls
             {
                 var userLink = new UserLink { UserID = activity.FromUserID.Value };
 
-                title.Text = this.GetText("CP_PROFILE", "GIVEN_THANKS");
+                title.Text = this.GetText("ACCOUNT", "GIVEN_THANKS");
                 icon = "heart";
                 message = this.GetTextFormatted(
                     "GIVEN_THANKS_MSG",
-                    userLink.RenderToString(),
-                    topicLink.RenderToString());
-            }
-
-            if (activity.ActivityFlags.ReceivedThanks)
-            {
-                var userLink = new UserLink { UserID = activity.FromUserID.Value };
-
-                title.Text = this.GetText("CP_PROFILE", "RECEIVED_THANKS");
-                icon = "heart";
-                message = this.GetTextFormatted(
-                    "RECEIVED_THANKS_MSG",
-                    userLink.RenderToString(),
-                    topicLink.RenderToString());
-            }
-
-            if (activity.ActivityFlags.WasMentioned)
-            {
-                var userLink = new UserLink { UserID = activity.FromUserID.Value };
-
-                title.Text = this.GetText("CP_PROFILE", "WAS_MENTIONED");
-                icon = "at";
-                message = this.GetTextFormatted(
-                    "WAS_MENTIONED_MSG",
-                    userLink.RenderToString(),
-                    topicLink.RenderToString());
-            }
-
-            if (activity.ActivityFlags.WasQuoted)
-            {
-                var userLink = new UserLink { UserID = activity.FromUserID.Value };
-
-                title.Text = this.GetText("CP_PROFILE", "WAS_QUOTED");
-                icon = "quote-left";
-                message = this.GetTextFormatted(
-                    "WAS_QUOTED_MSG",
                     userLink.RenderToString(),
                     topicLink.RenderToString());
             }
@@ -342,11 +301,8 @@ namespace YAF.Controls
         {
             this.CreatedTopic.Checked = true;
             this.CreatedReply.Checked = true;
-            this.WasMentioned.Checked = true;
-            this.ReceivedThanks.Checked = true;
             this.GivenThanks.Checked = true;
-            this.WasQuoted.Checked = true;
-
+            
             this.BindData();
         }
 
@@ -361,7 +317,7 @@ namespace YAF.Controls
         /// </param>
         protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
         {
-            this.Get<IYafSession>().UserActivityPageSize = this.PageSize.SelectedValue.ToType<int>();
+            this.Get<ISession>().UserActivityPageSize = this.PageSize.SelectedValue.ToType<int>();
 
             this.BindData();
         }
@@ -373,7 +329,7 @@ namespace YAF.Controls
         {
             this.PagerTop.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
-            var stream = this.GetRepository<Activity>().Get(x => x.UserID == this.PageContext.PageUserID);
+            var stream = this.GetRepository<Activity>().Get(x => x.UserID == this.PageContext.PageUserID && !x.FromUserID.HasValue);
 
             if (!this.CreatedTopic.Checked)
             {
@@ -385,29 +341,9 @@ namespace YAF.Controls
                 stream.RemoveAll(a => a.CreatedReply);
             }
 
-            if (!this.WasMentioned.Checked)
-            {
-                stream.RemoveAll(a => a.WasMentioned);
-            }
-
-            if (!this.ReceivedThanks.Checked)
-            {
-                stream.RemoveAll(a => a.ReceivedThanks);
-            }
-
             if (!this.GivenThanks.Checked)
             {
                 stream.RemoveAll(a => a.GivenThanks);
-            }
-
-            if (!this.WasQuoted.Checked)
-            {
-                stream.RemoveAll(a => a.WasQuoted);
-            }
-
-            if (this.UnreadOnly.Checked)
-            { 
-                stream = stream.Where(a => a.Notification).ToList();
             }
 
             var paged = stream.OrderByDescending(item => item.ID)

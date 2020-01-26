@@ -162,7 +162,7 @@ namespace YAF.Core
         /// <summary>
         ///   Gets ForumURL.
         /// </summary>
-        public string ForumURL => YafBuildLink.GetLink(ForumPages.forum, true);
+        public string ForumURL => BuildLink.GetLink(ForumPages.forum, true);
 
         /// <summary>
         ///   Gets or sets a value indicating whether Is Admin Page.
@@ -421,7 +421,7 @@ namespace YAF.Core
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private void ForumPage_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (this.Get<YafBoardSettings>().DoUrlReferrerSecurityCheck)
+            if (this.Get<BoardSettings>().DoUrlReferrerSecurityCheck)
             {
                 Security.CheckRequestValidity(this.Request);
             }

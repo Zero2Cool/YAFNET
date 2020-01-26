@@ -28,6 +28,8 @@ namespace YAF.Pages.Admin
     using System;
     using System.Data;
     using System.Linq;
+    using System.Net.Mail;
+    using System.Threading.Tasks;
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
@@ -71,10 +73,10 @@ namespace YAF.Pages.Admin
         /// </summary>
         protected override void CreatePageLinks()
         {
-            this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, YafBuildLink.GetLink(ForumPages.forum));
+            this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, BuildLink.GetLink(ForumPages.forum));
             this.PageLinks.AddLink(
                 this.GetText("ADMIN_ADMIN", "Administration"),
-                YafBuildLink.GetLink(ForumPages.admin_admin));
+                BuildLink.GetLink(ForumPages.admin_admin));
             this.PageLinks.AddLink(this.GetText("ADMIN_MAIL", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -105,15 +107,20 @@ namespace YAF.Pages.Admin
             {
                 using (var dt = this.GetRepository<User>().EmailsAsDataTable(this.PageContext.PageBoardID, groupId))
                 {
-                    dt.Rows.Cast<DataRow>().ForEach(
+                    Parallel.ForEach(
+                        dt.Rows.Cast<DataRow>(),
                         row =>
                             {
-                                // Wes - Changed to use queue to improve scalability
-                                this.GetRepository<Mail>().Create(
-                                    this.Get<YafBoardSettings>().ForumEmail,
-                                    this.Get<YafBoardSettings>().Name,
-                                    row["Email"].ToType<string>(),
-                                    null,
+                                var from = new MailAddress(
+                                    this.Get<BoardSettings>().ForumEmail,
+                                    this.Get<BoardSettings>().Name);
+
+                                var to = new MailAddress(row.Field<string>("Email"));
+
+                                this.Get<ISendMail>().Send(
+                                    from,
+                                    to,
+                                    from,
                                     this.Subject.Text.Trim(),
                                     this.Body.Text.Trim(),
                                     null);
@@ -167,7 +174,7 @@ namespace YAF.Pages.Admin
 
             this.TestSubject.Text = this.GetText("TEST_SUBJECT");
             this.TestBody.Text = this.GetText("TEST_BODY");
-            this.TestFromEmail.Text = this.Get<YafBoardSettings>().ForumEmail;
+            this.TestFromEmail.Text = this.Get<BoardSettings>().ForumEmail;
         }
 
         #endregion

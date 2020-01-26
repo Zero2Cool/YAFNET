@@ -190,8 +190,8 @@ namespace YAF.Controls
         /// </returns>
         protected bool CanCreatePoll()
         {
-            return this.PollNumber < this.Get<YafBoardSettings>().AllowedPollNumber
-                   && this.Get<YafBoardSettings>().AllowedPollChoiceNumber > 0 && this.HasOwnerExistingGroupAccess()
+            return this.PollNumber < this.Get<BoardSettings>().AllowedPollNumber
+                   && this.Get<BoardSettings>().AllowedPollChoiceNumber > 0 && this.HasOwnerExistingGroupAccess()
                    && this.PollGroupId >= 0;
         }
 
@@ -205,7 +205,7 @@ namespace YAF.Controls
         protected bool CanEditPoll([NotNull] object pollId)
         {
             // The host admin can forbid a user to change poll after first vote to avoid fakes.    
-            if (!this.Get<YafBoardSettings>().AllowPollChangesAfterFirstVote)
+            if (!this.Get<BoardSettings>().AllowPollChangesAfterFirstVote)
             {
                 // Only if show buttons are enabled user can edit poll 
                 return this.ShowButtons && (this.PageContext.IsAdmin || this.PageContext.ForumModeratorAccess
@@ -232,7 +232,7 @@ namespace YAF.Controls
         {
             var hasNoVotes = !this._dtPollAllChoices.Rows.Cast<DataRow>().Any(dr => dr["Votes"].ToType<int>() > 0);
 
-            if (!this.Get<YafBoardSettings>().AllowPollChangesAfterFirstVote)
+            if (!this.Get<BoardSettings>().AllowPollChangesAfterFirstVote)
             {
                 return this.ShowButtons && (this.PageContext.IsAdmin || this.PageContext.ForumModeratorAccess
                                                                      || this.PageContext.PageUserID
@@ -293,7 +293,7 @@ namespace YAF.Controls
         /// </returns>
         protected bool CanRemovePollCompletely([NotNull] object pollId)
         {
-            if (!this.Get<YafBoardSettings>().AllowPollChangesAfterFirstVote)
+            if (!this.Get<BoardSettings>().AllowPollChangesAfterFirstVote)
             {
                 return this.ShowButtons && (this.PageContext.IsAdmin || this.PageContext.ForumModeratorAccess
                                                                      || this.PageContext.PageUserID
@@ -472,7 +472,7 @@ namespace YAF.Controls
             }
 
             // voting is not tied to IP and they are a guest...
-            if (this.PageContext.IsGuest && !this.Get<YafBoardSettings>().PollVoteTiedToIP)
+            if (this.PageContext.IsGuest && !this.Get<BoardSettings>().PollVoteTiedToIP)
             {
                 hasVote = false;
                 return true;
@@ -564,12 +564,12 @@ namespace YAF.Controls
         {
             if (e.CommandName == "new" && this.PageContext.ForumVoteAccess)
             {
-                YafBuildLink.Redirect(ForumPages.polledit, "{0}", this.ParamsToSend());
+                BuildLink.Redirect(ForumPages.polledit, "{0}", this.ParamsToSend());
             }
 
             if (e.CommandName == "edit" && this.PageContext.ForumVoteAccess)
             {
-                YafBuildLink.Redirect(
+                BuildLink.Redirect(
                     ForumPages.polledit,
                     "{0}&p={1}",
                     this.ParamsToSend(),
@@ -673,7 +673,7 @@ namespace YAF.Controls
                 pollChoiceList.ChoiceId = choicePId;
 
                 // If guest are not allowed to view options we don't render them
-                pollChoiceList.Visible = !(!cvote && !this.Get<YafBoardSettings>().AllowGuestsViewPollOptions
+                pollChoiceList.Visible = !(!cvote && !this.Get<BoardSettings>().AllowGuestsViewPollOptions
                                                   && this.PageContext.IsGuest);
 
                 var isClosedBound = false;
@@ -831,7 +831,7 @@ namespace YAF.Controls
                 {
                     if (!cvote)
                     {
-                        if (!this.Get<YafBoardSettings>().AllowGuestsViewPollOptions)
+                        if (!this.Get<BoardSettings>().AllowGuestsViewPollOptions)
                         {
                             notificationString += $" {this.GetText("POLLEDIT", "POLLOPTIONSHIDDEN_GUEST")}";
                         }
@@ -1002,7 +1002,7 @@ namespace YAF.Controls
             var cpr = this.CreatePoll1;
 
             // ChangePollShowStatus(true);
-            cpr.NavigateUrl = YafBuildLink.GetLinkNotEscaped(ForumPages.polledit, "{0}", this.ParamsToSend());
+            cpr.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.polledit, "{0}", this.ParamsToSend());
             cpr.DataBind();
             cpr.Visible = true;
             this.NewPollRow.Visible = true;
@@ -1079,7 +1079,7 @@ namespace YAF.Controls
                 object userId = null;
                 object remoteIp = null;
 
-                if (this.Get<YafBoardSettings>().PollVoteTiedToIP)
+                if (this.Get<BoardSettings>().PollVoteTiedToIP)
                 {
                     remoteIp = IPHelper.IPStringToLong(this.Get<HttpRequestBase>().GetUserRealIPAddress()).ToString();
                 }
@@ -1146,7 +1146,7 @@ namespace YAF.Controls
         /// </returns>
         private bool HasOwnerExistingGroupAccess()
         {
-            if (this.Get<YafBoardSettings>().AllowedPollChoiceNumber <= 0)
+            if (this.Get<BoardSettings>().AllowedPollChoiceNumber <= 0)
             {
                 return false;
             }
@@ -1363,7 +1363,7 @@ namespace YAF.Controls
                 case ForumPages.posts:
                     if (this.TopicId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.posts, "t={0}", this.TopicId);
+                        BuildLink.Redirect(ForumPages.posts, "t={0}", this.TopicId);
                     }
 
                     break;
@@ -1372,13 +1372,13 @@ namespace YAF.Controls
                     // This is a poll on the board main page
                     if (this.BoardId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.forum);
+                        BuildLink.Redirect(ForumPages.forum);
                     }
 
                     // This is a poll in a category list 
                     if (this.CategoryId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.forum, "c={0}", this.CategoryId);
+                        BuildLink.Redirect(ForumPages.forum, "c={0}", this.CategoryId);
                     }
 
                     break;
@@ -1387,14 +1387,14 @@ namespace YAF.Controls
                     // this is a poll in forums topic view
                     if (this.ForumId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.topics, "f={0}", this.ForumId);
+                        BuildLink.Redirect(ForumPages.topics, "f={0}", this.ForumId);
                     }
 
                     break;
                 case ForumPages.postmessage:
                     if (this.EditMessageId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.postmessage, "m={0}", this.EditMessageId);
+                        BuildLink.Redirect(ForumPages.postmessage, "m={0}", this.EditMessageId);
                     }
 
                     break;
@@ -1403,7 +1403,7 @@ namespace YAF.Controls
                     // This is a poll on edit forum page
                     if (this.EditForumId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.admin_editforum, "f={0}", this.ForumId);
+                        BuildLink.Redirect(ForumPages.admin_editforum, "f={0}", this.ForumId);
                     }
 
                     break;
@@ -1412,7 +1412,7 @@ namespace YAF.Controls
                     // this is a poll on edit category page
                     if (this.EditCategoryId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.admin_editcategory, "c={0}", this.EditCategoryId);
+                        BuildLink.Redirect(ForumPages.admin_editcategory, "c={0}", this.EditCategoryId);
                     }
 
                     break;
@@ -1421,12 +1421,12 @@ namespace YAF.Controls
                     // this is a poll on edit board page
                     if (this.EditBoardId > 0)
                     {
-                        YafBuildLink.Redirect(ForumPages.admin_editboard, "b={0}", this.EditBoardId);
+                        BuildLink.Redirect(ForumPages.admin_editboard, "b={0}", this.EditBoardId);
                     }
 
                     break;
                 default:
-                    YafBuildLink.RedirectInfoPage(InfoMessage.Invalid);
+                    BuildLink.RedirectInfoPage(InfoMessage.Invalid);
                     break;
             }
         }

@@ -387,7 +387,7 @@ namespace YAF.Install
             UpdateStatusLabel(this.lblPermissionApp, DirectoryHasWritePermission(this.Server.MapPath("~/")) ? 2 : 0);
             UpdateStatusLabel(
                 this.lblPermissionUpload,
-                DirectoryHasWritePermission(this.Server.MapPath(YafBoardFolders.Current.Uploads)) ? 2 : 0);
+                DirectoryHasWritePermission(this.Server.MapPath(BoardFolders.Current.Uploads)) ? 2 : 0);
         }
 
         /// <summary>
@@ -451,7 +451,7 @@ namespace YAF.Install
             // done here...
             try
             {
-                this.Get<HttpResponseBase>().Redirect(YafBuildLink.GetLink(ForumPages.forum));
+                this.Get<HttpResponseBase>().Redirect(BuildLink.GetLink(ForumPages.forum));
             }
             catch (Exception)
             {
@@ -692,7 +692,7 @@ namespace YAF.Install
                         this.CurrentVersionName.Text = version < 0
                                                            ? "New"
                                                            : $"{versionName} ({version})";
-                        this.UpgradeVersionName.Text = $"{YafForumInfo.AppVersionName} ({YafForumInfo.AppVersion})";
+                        this.UpgradeVersionName.Text = $"{BoardInfo.AppVersionName} ({BoardInfo.AppVersion})";
                     }
                     else
                     {
@@ -1106,7 +1106,7 @@ namespace YAF.Install
                 if (!this.IsConfigPasswordSet)
                 {
                     // fake the board settings
-                    YafContext.Current.BoardSettings = new YafBoardSettings();
+                    YafContext.Current.BoardSettings = new BoardSettings();
                 }
 
                 this.TimeZones.DataSource = StaticDataHelper.TimeZones();

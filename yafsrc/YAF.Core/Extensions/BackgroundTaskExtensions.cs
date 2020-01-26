@@ -23,8 +23,8 @@
  */
 namespace YAF.Core.Extensions
 {
-    using YAF.Core.Tasks;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Tasks;
 
     /// <summary>
     /// Extensions for the <see cref="IBackgroundTask"/> interface

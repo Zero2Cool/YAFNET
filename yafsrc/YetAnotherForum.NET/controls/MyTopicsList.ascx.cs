@@ -42,7 +42,6 @@ namespace YAF.Controls
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Web.Controls;
 
@@ -56,11 +55,6 @@ namespace YAF.Controls
         /* Data Fields */
 
         #region Constants and Fields
-
-        /// <summary>
-        ///   The _last forum name.
-        /// </summary>
-        private string lastForumName = string.Empty;
 
         /// <summary>
         ///   default since date is now
@@ -84,7 +78,7 @@ namespace YAF.Controls
         /// <summary>
         ///   Gets or sets a value indicating whether Auto Data bind.
         /// </summary>
-        public bool AutoDatabind { get; set; }
+        public bool AutoDataBind { get; set; }
 
         /// <summary>
         ///   Gets or sets Determines what is the current mode of the control.
@@ -136,7 +130,7 @@ namespace YAF.Controls
             // we want to filter topics since last visit
             if (this.sinceValue == 0)
             {
-                this.sinceDate = this.Get<IYafSession>().LastVisit ?? DateTime.UtcNow;
+                this.sinceDate = this.Get<ISession>().LastVisit ?? DateTime.UtcNow;
 
                 if (this.CurrentMode.Equals(TopicListMode.Unread))
                 {
@@ -157,7 +151,7 @@ namespace YAF.Controls
             DataTable topicList = null;
 
             // set the page size here
-            var basePageSize = this.Get<YafBoardSettings>().MyTopicsListPageSize;
+            var basePageSize = this.Get<BoardSettings>().MyTopicsListPageSize;
             this.PagerTop.PageSize = basePageSize;
 
             // page index in db which is returned back  is +1 based!
@@ -179,8 +173,8 @@ namespace YAF.Controls
                         DateTime.UtcNow,
                         currentPageIndex,
                         basePageSize,
-                        this.Get<YafBoardSettings>().UseStyledNicks,
-                        this.Get<YafBoardSettings>().UseReadTrackingByDatabase);
+                        this.Get<BoardSettings>().UseStyledNicks,
+                        this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.Unanswered:
                     this.Title.LocalizedTag = "UnansweredTopics";
@@ -193,8 +187,8 @@ namespace YAF.Controls
                         DateTime.UtcNow,
                         currentPageIndex,
                         basePageSize,
-                        this.Get<YafBoardSettings>().UseStyledNicks,
-                        this.Get<YafBoardSettings>().UseReadTrackingByDatabase);
+                        this.Get<BoardSettings>().UseStyledNicks,
+                        this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.Unread:
                     this.Title.LocalizedTag = "UnreadTopics";
@@ -207,8 +201,8 @@ namespace YAF.Controls
                         DateTime.UtcNow,
                         currentPageIndex,
                         basePageSize,
-                        this.Get<YafBoardSettings>().UseStyledNicks,
-                        this.Get<YafBoardSettings>().UseReadTrackingByDatabase);
+                        this.Get<BoardSettings>().UseStyledNicks,
+                        this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.User:
                     this.Title.LocalizedTag = "MyTopics";
@@ -221,8 +215,8 @@ namespace YAF.Controls
                         DateTime.UtcNow,
                         currentPageIndex,
                         basePageSize,
-                        this.Get<YafBoardSettings>().UseStyledNicks,
-                        this.Get<YafBoardSettings>().UseReadTrackingByDatabase);
+                        this.Get<BoardSettings>().UseStyledNicks,
+                        this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.Favorite:
                     this.Title.LocalizedTag = "FavoriteTopics";
@@ -236,8 +230,8 @@ namespace YAF.Controls
                         DateTime.UtcNow,
                         currentPageIndex,
                         basePageSize,
-                        this.Get<YafBoardSettings>().UseStyledNicks,
-                        this.Get<YafBoardSettings>().UseReadTrackingByDatabase);
+                        this.Get<BoardSettings>().UseStyledNicks,
+                        this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
             }
 
@@ -259,16 +253,15 @@ namespace YAF.Controls
 
             var topicsNew = topicList.Copy();
 
-            foreach (var thisTableRow in topicsNew.Rows.Cast<DataRow>().Where(
-                thisTableRow => thisTableRow["LastPosted"] != DBNull.Value
-                                && thisTableRow["LastPosted"].ToType<DateTime>() <= this.sinceDate))
-            {
-                thisTableRow.Delete();
-            }
+            topicsNew.Rows.Cast<DataRow>()
+                .Where(
+                    thisTableRow => thisTableRow["LastPosted"] != DBNull.Value
+                                    && thisTableRow["LastPosted"].ToType<DateTime>() <= this.sinceDate)
+                .ForEach(thisTableRow => thisTableRow.Delete());
 
             // styled nicks
             topicsNew.AcceptChanges();
-            if (this.Get<YafBoardSettings>().UseStyledNicks)
+            if (this.Get<BoardSettings>().UseStyledNicks)
             {
                 this.Get<IStyleTransform>().DecodeStyleByTable(
                     topicsNew,
@@ -306,7 +299,7 @@ namespace YAF.Controls
         /// </summary>
         protected void InitSinceDropdown()
         {
-            var lastVisit = this.Get<IYafSession>().LastVisit;
+            var lastVisit = this.Get<ISession>().LastVisit;
 
             // value 0, for since last visit
             this.Since.Items.Add(
@@ -348,10 +341,8 @@ namespace YAF.Controls
                 return;
             }
 
-            foreach (DataRow row in this.topics.Rows)
-            {
-                this.Get<IReadTrackCurrentUser>().SetTopicRead(row["TopicID"].ToType<int>());
-            }
+            this.topics.Rows.Cast<DataRow>().ForEach(
+                row => this.Get<IReadTrackCurrentUser>().SetTopicRead(row.Field<int>("TopicID")));
 
             // Rebind
             this.BindData();
@@ -370,30 +361,34 @@ namespace YAF.Controls
 
                 int? previousSince = null;
 
+                this.Footer.Visible = true;
+
                 switch (this.CurrentMode)
                 {
                     case TopicListMode.User:
-                        previousSince = this.Get<IYafSession>().UserTopicSince;
+                        previousSince = this.Get<ISession>().UserTopicSince;
                         this.Since.Items.Add(new ListItem(this.GetText("show_all"), "9999"));
                         this.Since.SelectedIndex = this.Since.Items.Count - 1;
                         break;
                     case TopicListMode.Unread:
-                        previousSince = this.Get<IYafSession>().UnreadTopicSince;
+                        previousSince = this.Get<ISession>().UnreadTopicSince;
                         this.Since.Items.Clear();
                         this.Since.Items.Add(new ListItem(this.GetText("SHOW_UNREAD_ONLY"), "0"));
                         this.Since.SelectedIndex = 0;
+
+                        this.Footer.Visible = false;
                         break;
                     case TopicListMode.Active:
-                        previousSince = this.Get<IYafSession>().ActiveTopicSince;
+                        previousSince = this.Get<ISession>().ActiveTopicSince;
                         this.Since.SelectedIndex = 0;
                         break;
                     case TopicListMode.Unanswered:
-                        previousSince = this.Get<IYafSession>().UnansweredTopicSince;
+                        previousSince = this.Get<ISession>().UnansweredTopicSince;
                         this.Since.Items.Add(new ListItem(this.GetText("show_all"), "9999"));
                         this.Since.SelectedIndex = 2;
                         break;
                     case TopicListMode.Favorite:
-                        previousSince = this.Get<IYafSession>().FavoriteTopicSince;
+                        previousSince = this.Get<ISession>().FavoriteTopicSince;
                         this.Since.Items.Add(new ListItem(this.GetText("show_all"), "9999"));
                         this.Since.SelectedIndex = 2;
                         break;
@@ -413,7 +408,7 @@ namespace YAF.Controls
                 }
             }
 
-            if (this.AutoDatabind)
+            if (this.AutoDataBind)
             {
                 this.BindData();
             }
@@ -443,19 +438,19 @@ namespace YAF.Controls
             switch (this.CurrentMode)
             {
                 case TopicListMode.User:
-                    this.Get<IYafSession>().UserTopicSince = this.Since.SelectedValue.ToType<int>();
+                    this.Get<ISession>().UserTopicSince = this.Since.SelectedValue.ToType<int>();
                     break;
                 case TopicListMode.Unread:
-                    this.Get<IYafSession>().UnreadTopicSince = this.Since.SelectedValue.ToType<int>();
+                    this.Get<ISession>().UnreadTopicSince = this.Since.SelectedValue.ToType<int>();
                     break;
                 case TopicListMode.Active:
-                    this.Get<IYafSession>().ActiveTopicSince = this.Since.SelectedValue.ToType<int>();
+                    this.Get<ISession>().ActiveTopicSince = this.Since.SelectedValue.ToType<int>();
                     break;
                 case TopicListMode.Unanswered:
-                    this.Get<IYafSession>().UnansweredTopicSince = this.Since.SelectedValue.ToType<int>();
+                    this.Get<ISession>().UnansweredTopicSince = this.Since.SelectedValue.ToType<int>();
                     break;
                 case TopicListMode.Favorite:
-                    this.Get<IYafSession>().FavoriteTopicSince = this.Since.SelectedValue.ToType<int>();
+                    this.Get<ISession>().FavoriteTopicSince = this.Since.SelectedValue.ToType<int>();
                     break;
             }
 
@@ -484,11 +479,11 @@ namespace YAF.Controls
         /// </summary>
         private void BindFeeds()
         {
-            var accessActive = this.Get<IPermissions>().Check(this.Get<YafBoardSettings>().ActiveTopicFeedAccess);
-            var accessFavorite = this.Get<IPermissions>().Check(this.Get<YafBoardSettings>().FavoriteTopicFeedAccess);
+            var accessActive = this.Get<IPermissions>().Check(this.Get<BoardSettings>().ActiveTopicFeedAccess);
+            var accessFavorite = this.Get<IPermissions>().Check(this.Get<BoardSettings>().FavoriteTopicFeedAccess);
 
             // RSS link setup 
-            if (!this.Get<YafBoardSettings>().ShowRSSLink)
+            if (!this.Get<BoardSettings>().ShowRSSLink)
             {
                 return;
             }

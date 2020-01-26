@@ -157,11 +157,6 @@ namespace YAF.Types.Constants
             public const string TaskModule = "YafTaskModule";
 
             /// <summary>
-            ///   The user boxes.
-            /// </summary>
-            public const string UserBoxes = "UserBoxes";
-
-            /// <summary>
             ///   The user buddies.
             /// </summary>
             public const string UserBuddies = "UserBuddies{0}";
@@ -209,11 +204,10 @@ namespace YAF.Types.Constants
         /// </summary>
         public struct ForumRebuild
         {
-            public static readonly string[] BlockingTaskNames = {
-                                                                    "BoardDeleteTask", "BoardCreateTask",
-                                                                    "ForumDeleteTask", "ForumSaveTask",
-                                                                    "CategoryDeleteTask", "CategorySaveTask"
-                                                                };
+            public static readonly string[] BlockingTaskNames =
+                {
+                    "ForumDeleteTask"
+                };
         }
     }
 }

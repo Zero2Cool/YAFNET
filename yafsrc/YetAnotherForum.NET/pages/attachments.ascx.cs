@@ -51,14 +51,14 @@ namespace YAF.Pages
     /// <summary>
     /// The attachments Page Class.
     /// </summary>
-    public partial class attachments : ForumPage
+    public partial class Attachments : ForumPage
     {
         #region Constructors and Destructors
 
         /// <summary>
-        ///   Initializes a new instance of the <see cref = "attachments" /> class.
+        ///   Initializes a new instance of the <see cref = "Attachments" /> class.
         /// </summary>
-        public attachments()
+        public Attachments()
             : base("ATTACHMENTS")
         {
         }
@@ -74,7 +74,7 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Back_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            YafBuildLink.Redirect(ForumPages.cp_profile);
+            BuildLink.Redirect(ForumPages.Account);
         }
 
         /// <summary>
@@ -125,10 +125,10 @@ namespace YAF.Pages
                                   ? UserMembershipHelper.GetDisplayNameFromID(this.PageContext.PageUserID)
                                   : UserMembershipHelper.GetUserNameFromID(this.PageContext.PageUserID);
             this.PageLinks.Clear();
-            this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, YafBuildLink.GetLink(ForumPages.forum));
+            this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, BuildLink.GetLink(ForumPages.forum));
             this.PageLinks.AddLink(
                 displayName,
-                YafBuildLink.GetLink(ForumPages.profile, "u={0}", this.PageContext.PageUserID, displayName));
+                BuildLink.GetLink(ForumPages.Profile, "u={0}", this.PageContext.PageUserID, displayName));
             this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
 
             this.Back.TextLocalizedTag = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("t").IsNotSet()
@@ -150,7 +150,7 @@ namespace YAF.Pages
             var fileName = attach.FileName;
             var isImage = fileName.IsImageName();
             var url =
-                $"{YafForumInfo.ForumClientFileRoot}resource.ashx?i={attach.ID}&b={this.PageContext.PageBoardID}&editor=true";
+                $"{BoardInfo.ForumClientFileRoot}resource.ashx?i={attach.ID}&b={this.PageContext.PageBoardID}&editor=true";
 
             return isImage
                        ? $"<img src=\"{url}\" alt=\"{fileName}\" title=\"{fileName}\" data-url=\"{url}\"style=\"max-width:30px\" />"
@@ -183,7 +183,7 @@ namespace YAF.Pages
         /// </summary>
         private void BindData()
         {
-            this.PagerTop.PageSize = this.Get<YafBoardSettings>().MemberListPageSize;
+            this.PagerTop.PageSize = this.Get<BoardSettings>().MemberListPageSize;
 
             var dt = this.GetRepository<Attachment>().GetPaged(
                 a => a.UserID == this.PageContext.PageUserID,

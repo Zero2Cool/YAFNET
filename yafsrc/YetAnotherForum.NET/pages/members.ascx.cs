@@ -41,7 +41,6 @@ namespace YAF.Pages
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Web.Extensions;
@@ -95,7 +94,7 @@ namespace YAF.Pages
         public void Reset_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
             // re-direct to self.
-            YafBuildLink.Redirect(ForumPages.members);
+            BuildLink.Redirect(ForumPages.members);
         }
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace YAF.Pages
             var avatarUrl = this.Get<IAvatars>().GetAvatarUrlForUser(userId, avatarString, hasAvatarImage, email);
 
             return avatarUrl.IsNotSet()
-                       ? $"{YafForumInfo.ForumClientFileRoot}images/noavatar.svg"
+                       ? $"{BoardInfo.ForumClientFileRoot}images/noavatar.svg"
                        : avatarUrl;
         }
 
@@ -156,7 +155,7 @@ namespace YAF.Pages
                 true,
                 this.Group.SelectedIndex <= 0 ? null : this.Group.SelectedValue,
                 this.Ranks.SelectedIndex <= 0 ? null : this.Ranks.SelectedValue,
-                this.Get<YafBoardSettings>().UseStyledNicks,
+                this.Get<BoardSettings>().UseStyledNicks,
                 lastUserId,
                 literals,
                 specialSymbol,
@@ -171,7 +170,7 @@ namespace YAF.Pages
                 this.NumPostsTB.Text.Trim().IsSet() ? this.NumPostsTB.Text.Trim().ToType<int>() : 0,
                 this.NumPostDDL.SelectedIndex < 0 ? 3 : this.NumPostsTB.Text.Trim().IsSet() ? this.NumPostDDL.SelectedValue.ToType<int>() : 0);
 
-            if (this.Get<YafBoardSettings>().UseStyledNicks)
+            if (this.Get<BoardSettings>().UseStyledNicks)
             {
                 this.Get<IStyleTransform>().DecodeStyleByTable(this.userListDataTable);
             }
@@ -212,31 +211,6 @@ namespace YAF.Pages
             this.ViewState["SortLastVisitField"] = 0;
 
             this.PageLinks.AddRoot().AddLink(this.GetText("TITLE"));
-
-            using (var dt = this.Get<IDbFunction>()
-                .GetAsDataTable(cdb => cdb.group_list(this.PageContext.PageBoardID, null)))
-            {
-                // add empty item for no filtering
-                var newRow = dt.NewRow();
-                newRow["Name"] = this.GetText("ALL");
-                newRow["GroupID"] = DBNull.Value;
-                dt.Rows.InsertAt(newRow, 0);
-
-                var guestRows = dt.Select("Name='Guests'");
-
-                if (guestRows.Length > 0)
-                {
-                    guestRows.ForEach(row => row.Delete());
-                }
-
-                // commits the deletes to the table
-                dt.AcceptChanges();
-
-                this.Group.DataSource = dt;
-                this.Group.DataTextField = "Name";
-                this.Group.DataValueField = "GroupID";
-                this.Group.DataBind();
-            }
 
             this.NumPostDDL.Items.Add(new ListItem(this.GetText("MEMBERS", "NUMPOSTSEQUAL"), "1"));
             this.NumPostDDL.Items.Add(new ListItem(this.GetText("MEMBERS", "NUMPOSTSLESSOREQUAL"), "2"));
@@ -488,7 +462,7 @@ namespace YAF.Pages
         /// </summary>
         private void BindData()
         {
-            this.Pager.PageSize = this.Get<YafBoardSettings>().MemberListPageSize;
+            this.Pager.PageSize = this.Get<BoardSettings>().MemberListPageSize;
             var selectedCharLetter = this.AlphaSort1.CurrentLetter;
 
             // get the user list...

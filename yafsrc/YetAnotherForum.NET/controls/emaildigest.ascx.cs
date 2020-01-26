@@ -129,7 +129,7 @@ namespace YAF.Controls
         /// <value>
         /// The board settings.
         /// </value>
-        public YafBoardSettings BoardSettings { get; set; }
+        public BoardSettings BoardSettings { get; set; }
 
         /// <summary>
         ///   Gets NewTopics.
@@ -196,7 +196,7 @@ namespace YAF.Controls
         {
             if (this.languageFile.IsSet() && this.localization == null)
             {
-                this.localization = new YafLocalization();
+                this.localization = new Localization();
                 this.localization.LoadTranslation(this.languageFile);
             }
             else if (this.localization == null)
@@ -327,11 +327,11 @@ namespace YAF.Controls
                 this.BoardSettings.AllowUserTheme,
                 this.BoardSettings.Theme);
 
-            var subject = this.GetTextFormatted("SUBJECT", this.BoardSettings.Name);
+            var subject = string.Format(this.GetText("SUBJECT"), this.BoardSettings.Name);
 
             this.YafHead.Controls.Add(
                 ControlHelper.MakeCssIncludeControl(
-                    YafForumInfo.GetURLToContentThemes(theme.CombineWith("bootstrap-forum.min.css"))));
+                    BoardInfo.GetURLToContentThemes(theme.CombineWith("bootstrap-forum.min.css"))));
 
             if (subject.IsSet())
             {

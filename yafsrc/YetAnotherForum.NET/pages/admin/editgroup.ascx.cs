@@ -95,7 +95,7 @@ namespace YAF.Pages.Admin
         protected void CancelClick([NotNull] object sender, [NotNull] EventArgs e)
         {
             // go back to roles administration
-            YafBuildLink.Redirect(ForumPages.admin_groups);
+            BuildLink.Redirect(ForumPages.admin_groups);
         }
 
         /// <summary>
@@ -104,16 +104,16 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             // forum index
-            this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, YafBuildLink.GetLink(ForumPages.forum));
+            this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, BuildLink.GetLink(ForumPages.forum));
 
             // admin index
             this.PageLinks.AddLink(
                 this.GetText("ADMIN_ADMIN", "Administration"),
-                YafBuildLink.GetLink(ForumPages.admin_admin));
+                BuildLink.GetLink(ForumPages.admin_admin));
 
             this.PageLinks.AddLink(
                 this.GetText("ADMIN_GROUPS", "TITLE"),
-                YafBuildLink.GetLink(ForumPages.admin_groups));
+                BuildLink.GetLink(ForumPages.admin_groups));
 
             // current page label (no link)
             this.PageLinks.AddLink(this.GetText("ADMIN_EDITGROUP", "TITLE"), string.Empty);
@@ -148,9 +148,8 @@ namespace YAF.Pages.Admin
             this.NewGroupRow.Visible = false;
 
             // get data about edited role
-            var row = this.GetRepository<Group>().List(
-                this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("i"),
-                this.PageContext.PageBoardID).FirstOrDefault();
+            var row = this.GetRepository<Group>().GetById(
+                this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("i"));
 
             // get role flags
             var flags = row.GroupFlags;
@@ -341,7 +340,7 @@ namespace YAF.Pages.Admin
                         item.FindControlAs<DropDownList>("AccessmaskID").SelectedValue.ToType<int>());
                 }
 
-                YafBuildLink.Redirect(ForumPages.admin_groups);
+                BuildLink.Redirect(ForumPages.admin_groups);
             }
 
             // remove caching in case something got updated...
@@ -355,7 +354,7 @@ namespace YAF.Pages.Admin
             this.Get<IDataCache>().Remove(Constants.Cache.GroupRankStyles);
 
             // Done, redirect to role editing page
-            YafBuildLink.Redirect(ForumPages.admin_editgroup, "i={0}", roleId);
+            BuildLink.Redirect(ForumPages.admin_editgroup, "i={0}", roleId);
         }
 
         /// <summary>

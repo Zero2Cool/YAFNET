@@ -164,12 +164,12 @@ namespace YAF.Pages
             // the rest is the password...
             var password = body.Substring(0, body.IndexOf('\n'));
 
-            var subject = this.GetTextFormatted("PASSWORDRETRIEVAL_EMAIL_SUBJECT", this.Get<YafBoardSettings>().Name);
+            var subject = this.GetTextFormatted("PASSWORDRETRIEVAL_EMAIL_SUBJECT", this.Get<BoardSettings>().Name);
 
             var userIpAddress = this.Get<HttpRequestBase>().GetUserRealIPAddress();
 
             // get the e-mail ready from the real template.
-            var passwordRetrieval = new YafTemplateEmail("PASSWORDRETRIEVAL")
+            var passwordRetrieval = new TemplateEmail("PASSWORDRETRIEVAL")
                                         {
                                             TemplateParams =
                                                 {
@@ -179,7 +179,7 @@ namespace YAF.Pages
                                                 }
                                         };
 
-            passwordRetrieval.SendEmail(e.Message.To[0], subject, true);
+            passwordRetrieval.SendEmail(e.Message.To[0], subject);
 
             // log password reset attempt
             this.Logger.Log(
@@ -235,7 +235,7 @@ namespace YAF.Pages
             else
             {
                 // Standard user name login
-                if (this.Get<YafBoardSettings>().EnableDisplayName)
+                if (this.Get<BoardSettings>().EnableDisplayName)
                 {
                     // Display name login
                     var id = this.Get<IUserDisplayName>().GetId(this.PasswordRecovery1.UserName);
@@ -264,7 +264,7 @@ namespace YAF.Pages
                 return;
             }
 
-            if (this.Get<YafBoardSettings>().EmailVerification)
+            if (this.Get<BoardSettings>().EmailVerification)
             {
                 // get the hash from the db associated with this user...
                 var checkTyped = this.GetRepository<CheckEmail>().ListTyped(user.Email).FirstOrDefault();
@@ -272,22 +272,22 @@ namespace YAF.Pages
                 if (checkTyped != null)
                 {
                     // re-send verification email instead of lost password...
-                    var verifyEmail = new YafTemplateEmail("VERIFYEMAIL");
+                    var verifyEmail = new TemplateEmail("VERIFYEMAIL");
 
                     var subject = this.GetTextFormatted(
                         "VERIFICATION_EMAIL_SUBJECT",
-                        this.Get<YafBoardSettings>().Name);
+                        this.Get<BoardSettings>().Name);
 
-                    verifyEmail.TemplateParams["{link}"] = YafBuildLink.GetLinkNotEscaped(
+                    verifyEmail.TemplateParams["{link}"] = BuildLink.GetLinkNotEscaped(
                         ForumPages.approve,
                         true,
                         "k={0}",
                         checkTyped.Hash);
                     verifyEmail.TemplateParams["{key}"] = checkTyped.Hash;
-                    verifyEmail.TemplateParams["{forumname}"] = this.Get<YafBoardSettings>().Name;
-                    verifyEmail.TemplateParams["{forumlink}"] = $"{YafForumInfo.ForumURL}";
+                    verifyEmail.TemplateParams["{forumname}"] = this.Get<BoardSettings>().Name;
+                    verifyEmail.TemplateParams["{forumlink}"] = $"{BoardInfo.ForumURL}";
 
-                    verifyEmail.SendEmail(new MailAddress(user.Email, user.UserName), subject, true);
+                    verifyEmail.SendEmail(new MailAddress(user.Email, user.UserName), subject);
 
                     this.PageContext.LoadMessage.AddSession(
                         this.GetTextFormatted("ACCOUNT_NOT_APPROVED_VERIFICATION", user.Email),
@@ -304,7 +304,7 @@ namespace YAF.Pages
             e.Cancel = true;
 
             // nothing they can do here... redirect to login...
-            YafBuildLink.Redirect(ForumPages.login);
+            BuildLink.Redirect(ForumPages.login);
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace YAF.Pages
         /// </param>
         protected void SubmitButton_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            YafBuildLink.Redirect(ForumPages.login);
+            BuildLink.Redirect(ForumPages.login);
         }
 
         #endregion
