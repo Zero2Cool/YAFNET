@@ -92,7 +92,7 @@ namespace YAF.Core.Services
         private SearcherManager searcherManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="YafSearch" /> class.
+        /// Initializes a new instance of the <see cref="Services.YafSearch" /> class.
         /// </summary>
         /// <param name="serviceLocator">The service locator.</param>
         public YafSearch([NotNull] IServiceLocator serviceLocator)
@@ -517,7 +517,7 @@ namespace YAF.Core.Services
                        {
                            Topic = doc.Get("Topic"),
                            TopicId = doc.Get("TopicId").ToType<int>(),
-                           TopicUrl = YafBuildLink.GetLink(ForumPages.posts, "t={0}", doc.Get("TopicId").ToType<int>()),
+                           TopicUrl = BuildLink.GetLink(ForumPages.posts, "t={0}", doc.Get("TopicId").ToType<int>()),
                            Posted =
                                doc.Get("Posted").ToType<DateTime>().ToString(
                                    "yyyy-MM-ddTHH:mm:ssZ",
@@ -526,6 +526,7 @@ namespace YAF.Core.Services
                            UserName = doc.Get("Author"),
                            UserDisplayName = doc.Get("AuthorDisplay"),
                            ForumName = doc.Get("ForumName"),
+                           ForumUrl = BuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
                            UserStyle = doc.Get("AuthorStyle")
                        };
         }
@@ -695,13 +696,13 @@ namespace YAF.Core.Services
                            Topic = topic.IsSet() ? topic : doc.Get("Topic"),
                            ForumId = doc.Get("ForumId").ToType<int>(),
                            Description = doc.Get("Description"),
-                           TopicUrl = YafBuildLink.GetLink(ForumPages.posts, "t={0}", doc.Get("TopicId").ToType<int>()),
+                           TopicUrl = BuildLink.GetLink(ForumPages.posts, "t={0}", doc.Get("TopicId").ToType<int>()),
                            MessageUrl =
-                               YafBuildLink.GetLink(
+                               BuildLink.GetLink(
                                    ForumPages.posts,
                                    "m={0}#post{0}",
                                    doc.Get("MessageId").ToType<int>()),
-                           ForumUrl = YafBuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
+                           ForumUrl = BuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
                            UserDisplayName = doc.Get("AuthorDisplay"),
                            ForumName = doc.Get("ForumName"),
                            UserStyle = doc.Get("AuthorStyle")
@@ -782,7 +783,7 @@ namespace YAF.Core.Services
                 return new List<SearchMessage>();
             }
 
-            var hitsLimit = this.Get<YafBoardSettings>().ReturnSearchMax;
+            var hitsLimit = this.Get<BoardSettings>().ReturnSearchMax;
 
             // 0 => Lucene error;
             if (hitsLimit == 0)
@@ -828,7 +829,7 @@ namespace YAF.Core.Services
                     new[]
                         {
                             "Message", "Topic",
-                            this.Get<YafBoardSettings>().EnableDisplayName ? "AuthorDisplay" : "Author"
+                            this.Get<BoardSettings>().EnableDisplayName ? "AuthorDisplay" : "Author"
                         },
                     analyzer);
 
@@ -883,7 +884,7 @@ namespace YAF.Core.Services
                 return new List<SearchMessage>();
             }
 
-            var hitsLimit = this.Get<YafBoardSettings>().ReturnSearchMax;
+            var hitsLimit = this.Get<BoardSettings>().ReturnSearchMax;
 
             var parser = new QueryParser(MatchVersion, searchField, this.standardAnalyzer);
             var query = ParseQuery(searchQuery, parser);

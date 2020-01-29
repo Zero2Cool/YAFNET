@@ -79,12 +79,12 @@ namespace YAF.Pages
         /// </param>
         protected void Accept_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (!this.Get<YafBoardSettings>().UseSSLToRegister)
+            if (!this.Get<BoardSettings>().UseSSLToRegister)
             {
-                YafBuildLink.Redirect(ForumPages.register);
+                BuildLink.Redirect(ForumPages.register);
             }
 
-            this.Get<HttpResponseBase>().Redirect(YafBuildLink.GetLink(ForumPages.register, true).Replace("http:", "https:"));
+            this.Get<HttpResponseBase>().Redirect(BuildLink.GetLink(ForumPages.register, true).Replace("http:", "https:"));
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace YAF.Pages
         /// </param>
         protected void Cancel_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            YafBuildLink.Redirect(ForumPages.forum);
+            BuildLink.Redirect(ForumPages.forum);
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace YAF.Pages
 
             this.RulesText.Param0 = Config.GDPRControllerAddress.IsSet()
                                         ? Config.GDPRControllerAddress
-                                        : this.Get<YafBoardSettings>().ForumEmail;
+                                        : this.Get<BoardSettings>().ForumEmail;
 
             this.Accept.Visible = this.PageContext.IsGuest;
             this.Cancel.Visible = this.PageContext.IsGuest;

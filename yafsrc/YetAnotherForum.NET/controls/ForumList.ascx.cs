@@ -183,9 +183,9 @@ namespace YAF.Controls
                                 ? row["Description"].ToString()
                                 : this.GetText("COMMON", "VIEW_FORUM");
 
-                output = row["RemoteURL"] != DBNull.Value
+                output = row["RemoteURL"] != DBNull.Value && row["RemoteURL"].ToString().IsSet()
                              ? $"<a href=\"{row["RemoteURL"]}\" title=\"{this.GetText("COMMON", "VIEW_FORUM")}\" target=\"_blank\">{this.Page.HtmlEncode(output)}&nbsp;<i class=\"fas fa-external-link-alt fa-fw\"></i></a>"
-                             : $"<a href=\"{YafBuildLink.GetLink(ForumPages.topics, "f={0}&name={1}", forumID, output)}\" data-toggle=\"tooltip\" title=\"{title}\">{this.Page.HtmlEncode(output)}</a>";
+                             : $"<a href=\"{BuildLink.GetLink(ForumPages.topics, "f={0}&name={1}", forumID, output)}\" data-toggle=\"tooltip\" title=\"{title}\">{this.Page.HtmlEncode(output)}</a>";
             }
             else
             {
@@ -274,7 +274,7 @@ namespace YAF.Controls
                 if (forumImage != null)
                 {
                     forumImage.ImageUrl =
-                        $"{YafForumInfo.ForumClientFileRoot}{YafBoardFolders.Current.Forums}/{row["ImageUrl"]}";
+                        $"{BoardInfo.ForumClientFileRoot}{BoardFolders.Current.Forums}/{row["ImageUrl"]}";
 
                     // Highlight custom icon images and add tool tips to them. 
                     try
@@ -307,7 +307,7 @@ namespace YAF.Controls
                 }
             }
 
-            if (!this.Get<YafBoardSettings>().ShowModeratorList)
+            if (!this.Get<BoardSettings>().ShowModeratorList)
             {
                 return;
             }
@@ -379,7 +379,7 @@ namespace YAF.Controls
 
             this.SubDataSource.Rows.Cast<DataRow>()
                 .Where(dataRow => row["ForumID"].ToType<int>() == dataRow["ParentID"].ToType<int>())
-                .Where(subRow => arrayList.Count < this.Get<YafBoardSettings>().SubForumsInForumList)
+                .Where(subRow => arrayList.Count < this.Get<BoardSettings>().SubForumsInForumList)
                 .ForEach(value => arrayList.Add(value));
 
             this.SubDataSource.AcceptChanges();
@@ -426,14 +426,14 @@ namespace YAF.Controls
         /// </param>
         protected override void OnPreRender([NotNull] EventArgs e)
         {
-            var iconLegend = this.LoadControl($"{YafForumInfo.ForumServerFileRoot}controls/ForumIconLegend.ascx")
+            var iconLegend = this.LoadControl($"{BoardInfo.ForumServerFileRoot}controls/ForumIconLegend.ascx")
                 .RenderToString();
 
             // setup jQuery and DatePicker JS...
             this.PageContext.PageElements.RegisterJsBlockStartup(
                 "ForumIconLegendPopoverJs",
                 JavaScriptBlocks.ForumIconLegendPopoverJs(
-                    iconLegend.Replace("\n", string.Empty).Replace("\r", string.Empty),
+                    iconLegend.ToJsString(),
                     "forum-icon-legend-popvover"));
 
             base.OnPreRender(e);

@@ -105,7 +105,7 @@ namespace YAF.Core.Helpers
         /// </returns>
         public static DataTable Country(string forceLanguage)
         {
-            var localization = new YafLocalization();
+            var localization = new Localization();
             localization.LoadTranslation(forceLanguage);
 
             return Country(localization);
@@ -173,7 +173,7 @@ namespace YAF.Core.Helpers
 
                 // Get all language files info
                 var dir = new DirectoryInfo(
-                    YafContext.Current.Get<HttpRequestBase>().MapPath($"{YafForumInfo.ForumServerFileRoot}languages"));
+                    YafContext.Current.Get<HttpRequestBase>().MapPath($"{BoardInfo.ForumServerFileRoot}languages"));
                 var files = dir.GetFiles("*.xml");
 
                 // Create an array with tags
@@ -247,7 +247,7 @@ namespace YAF.Core.Helpers
 
             // Get all language files info
             var dir = new DirectoryInfo(
-                YafContext.Current.Get<HttpRequestBase>().MapPath($"{YafForumInfo.ForumServerFileRoot}languages"));
+                YafContext.Current.Get<HttpRequestBase>().MapPath($"{BoardInfo.ForumServerFileRoot}languages"));
             var files = dir.GetFiles(fileName);
 
             if (files.Length <= 0)
@@ -292,7 +292,7 @@ namespace YAF.Core.Helpers
                 dt.Columns.Add("FileName", typeof(string));
 
                 var dir = new DirectoryInfo(
-                    YafContext.Current.Get<HttpRequestBase>().MapPath($"{YafForumInfo.ForumServerFileRoot}languages"));
+                    YafContext.Current.Get<HttpRequestBase>().MapPath($"{BoardInfo.ForumServerFileRoot}languages"));
                 var files = dir.GetFiles("*.xml");
 
                 files.ForEach(
@@ -326,7 +326,7 @@ namespace YAF.Core.Helpers
         {
             var dir = new DirectoryInfo(
                 YafContext.Current.Get<HttpRequestBase>().MapPath(
-                    $"{YafForumInfo.ForumServerFileRoot}/Content/Themes"));
+                    $"{BoardInfo.ForumServerFileRoot}/Content/Themes"));
 
             return dir.GetDirectories().Select(folder => folder.Name).ToList();
         }

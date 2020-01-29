@@ -121,7 +121,7 @@ namespace YAF.Web.Editors
                           {{
             data: function(q) {{
                 if (q && q.length > 3) {{
-                    return {Config.JQueryAlias}.getJSON(""{YafForumInfo.ForumClientFileRoot}resource.ashx?users="" + q);
+                    return {Config.JQueryAlias}.getJSON(""{BoardInfo.ForumClientFileRoot}resource.ashx?users="" + q);
                            }}
                           }},
                           map: function(user)
@@ -142,12 +142,12 @@ namespace YAF.Web.Editors
                     "autoUpload",
                     JavaScriptBlocks.FileAutoUploadLoadJs(
                         string.Join("|", extensions.Select(ext => ext.Extension)),
-                        this.Get<YafBoardSettings>().MaxFileSize,
-                        $"{YafForumInfo.ForumClientFileRoot}YafUploader.ashx",
+                        this.Get<BoardSettings>().MaxFileSize,
+                        $"{BoardInfo.ForumClientFileRoot}YafUploader.ashx",
                         this.PageContext.PageForumID,
                         this.PageContext.PageBoardID,
-                        this.Get<YafBoardSettings>().ImageAttachmentResizeWidth,
-                        this.Get<YafBoardSettings>().ImageAttachmentResizeHeight));
+                        this.Get<BoardSettings>().ImageAttachmentResizeWidth,
+                        this.Get<BoardSettings>().ImageAttachmentResizeHeight));
             }
 
             // register custom YafBBCode javascript (if there is any)
@@ -263,7 +263,7 @@ namespace YAF.Web.Editors
 
             RenderButton(writer, "setStyle('img','')", this.GetText("COMMON", "TT_IMAGE"), "image");
 
-            if (this.Get<YafBoardSettings>().EnableAlbum && this.PageContext.UsrAlbums > 0
+            if (this.Get<BoardSettings>().EnableAlbum && this.PageContext.UsrAlbums > 0
                                                          && this.PageContext.NumAlbums > 0
                                                          && !this.PageContext.CurrentForumPage.IsAdminPage)
             {

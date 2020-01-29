@@ -367,27 +367,6 @@ if not exists (select top 1 1 from sys.objects WHERE object_id = OBJECT_ID(N'[{d
 	)
 GO
 
-if not exists (select top 1 1 from sys.objects WHERE object_id = OBJECT_ID(N'[{databaseOwner}].[{objectQualifier}Mail]') and type in (N'U'))
-	create table [{databaseOwner}].[{objectQualifier}Mail](
-		[MailID] [int] IDENTITY(1,1) NOT NULL,
-		[FromUser] [nvarchar](255) NOT NULL,
-		[FromUserName] [nvarchar](255) NULL,
-		[ToUser] [nvarchar](255) NOT NULL,
-		[ToUserName] [nvarchar](255) NULL,
-		[Created] [datetime] NOT NULL,
-		[Subject] [nvarchar](100) NOT NULL,
-		[Body] [nvarchar](max) NOT NULL,
-		[BodyHtml] [nvarchar](max) NULL,
-		[SendTries] [int] NOT NULL constraint [DF_{objectQualifier}Mail_SendTries]  default (0),
-		[SendAttempt] [datetime] NULL,
-		[ProcessID] [int] NULL,
- constraint [PK_{objectQualifier}Mail] PRIMARY KEY CLUSTERED 
-(
-	[MailID] ASC
-)WITH (STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF)
-	)
-GO
-
 if not exists (select top 1 1 from sys.objects WHERE object_id = OBJECT_ID(N'[{databaseOwner}].[{objectQualifier}Message]') and type in (N'U'))
 	create table [{databaseOwner}].[{objectQualifier}Message](
 		MessageID		    int IDENTITY (1,1) NOT NULL,
@@ -590,6 +569,7 @@ if not exists (select top 1 1 from sys.objects WHERE object_id = OBJECT_ID(N'[{d
 		[IsDST]	AS (CONVERT([bit],sign([Flags]&(32)),(0))),
 		[IsDirty]	AS (CONVERT([bit],sign([Flags]&(64)),(0))),
 		[Moderated]	AS (CONVERT([bit],sign([Flags]&(128)),(0))),
+		[Activity] [bit] NOT NULL constraint [DF_{objectQualifier}User_Activity] default (1),
 		[Culture] varchar (10) default (10),
 		[IsFacebookUser][bit] NOT NULL constraint [DF_{objectQualifier}User_IsFacebookUser] default (0),
 		[IsTwitterUser][bit] NOT NULL constraint [DF_{objectQualifier}User_IsTwitterUser] default (0),

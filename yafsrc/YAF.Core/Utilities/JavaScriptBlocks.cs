@@ -83,7 +83,7 @@ namespace YAF.Core.Utilities
                     multiQuoteButton.ButtonCssClass = {Config.JQueryAlias}('#' + button.id).parent('span').attr('class');
  
                 {Config.JQueryAlias}.ajax({{
-                    url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/MultiQuote/HandleMultiQuote',
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/MultiQuote/HandleMultiQuote',
                     type: 'POST',
                     contentType: 'application/json;charset=utf-8',
                     data: JSON.stringify(multiQuoteButton),
@@ -108,7 +108,7 @@ namespace YAF.Core.Utilities
             $@"function changeAlbumTitle(albumId, txtTitleId){{
                      var newTitleTxt = {Config.JQueryAlias}('#' + txtTitleId).val();
             {Config.JQueryAlias}.ajax({{
-                    url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeAlbumTitle',
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeAlbumTitle',
                     type: 'POST',
                     contentType: 'application/json;charset=utf-8',
                     data: JSON.stringify({{ AlbumId: albumId, NewTitle: newTitleTxt  }}),
@@ -131,7 +131,7 @@ namespace YAF.Core.Utilities
             $@"function changeImageCaption(imageID, txtTitleId){{
                         var newImgTitleTxt = {Config.JQueryAlias}('#' + txtTitleId).val();
               {Config.JQueryAlias}.ajax({{
-                    url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeImageCaption',
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeImageCaption',
                     type: 'POST',
                     contentType: 'application/json;charset=utf-8',
                     data: JSON.stringify({{ ImageId: imageID, NewCaption: newImgTitleTxt  }}),
@@ -154,7 +154,7 @@ namespace YAF.Core.Utilities
             
 		     moment.locale('{(YafContext.Current.CultureUser.IsSet()
                                   ? YafContext.Current.CultureUser.Substring(0, 2)
-                                  : YafContext.Current.Get<YafBoardSettings>().Culture.Substring(0, 2))}');
+                                  : YafContext.Current.Get<BoardSettings>().Culture.Substring(0, 2))}');
 
              {Config.JQueryAlias}('abbr.timeago').each(function() {{
                   {Config.JQueryAlias}(this).html(function(index, value) {{
@@ -540,7 +540,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         {
             return $@"function addFavoriteTopic(topicID){{ 
             {Config.JQueryAlias}.ajax({{
-                    url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/FavoriteTopic/AddFavoriteTopic/' + topicID,
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/FavoriteTopic/AddFavoriteTopic/' + topicID,
                     type: 'POST',
                     contentType: 'application/json;charset=utf-8',
                     success: function(response) {{
@@ -570,7 +570,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         {
             return $@"function removeFavoriteTopic(topicID){{ 
             {Config.JQueryAlias}.ajax({{
-                    url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/FavoriteTopic/RemoveFavoriteTopic/' + topicID,
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/FavoriteTopic/RemoveFavoriteTopic/' + topicID,
                     type: 'POST',
                     contentType: 'application/json;charset=utf-8',
                     success: function(response) {{
@@ -600,7 +600,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         {
             return $@"function addThanks(messageID){{ 
             {Config.JQueryAlias}.ajax({{
-                    url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/ThankYou/AddThanks/' + messageID,
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/ThankYou/AddThanks/' + messageID,
                     type: 'POST',
                     contentType: 'application/json;charset=utf-8',
                     success: function(response) {{
@@ -633,7 +633,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         {
             return $@"function removeThanks(messageID){{ 
             $.ajax({{
-                    url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/ThankYou/RemoveThanks/' + messageID,
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/ThankYou/RemoveThanks/' + messageID,
                     type: 'POST',
                     contentType: 'application/json;charset=utf-8',
                     success: function(response) {{
@@ -708,7 +708,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                     forumID: '{forumId}',
                     boardID: '{boardId}',
                     userID: '{YafContext.Current.PageUserID}',
-                    uploadFolder: '{YafBoardFolders.Current.Uploads}',
+                    uploadFolder: '{BoardFolders.Current.Uploads}',
                     allowedUpload: true
                 }},
                 dropZone: {Config.JQueryAlias}('.BBCodeEditor'),
@@ -785,7 +785,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                     forumID: '{forumId}',
                     boardID: '{boardId}',
                     userID: '{YafContext.Current.PageUserID}',
-                    uploadFolder: '{YafBoardFolders.Current.Uploads}',
+                    uploadFolder: '{BoardFolders.Current.Uploads}',
                     allowedUpload: true
                 }},
                 dropZone: {Config.JQueryAlias}('#UploadDialog')
@@ -830,7 +830,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         {
             return $@"{Config.JQueryAlias}('.TopicsSelect2Menu').select2({{
             ajax: {{
-                url: '{YafForumInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Topic/GetTopics',
+                url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Topic/GetTopics',
                 type: 'POST',
                 dataType: 'json',
                 minimumInputLength: 0,
@@ -1015,8 +1015,8 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         {
             return $@"{Config.JQueryAlias}('.{cssClass}').popover({{
                            html: true,
-                           content: '{content}',
-                           trigger: 'focus hover'
+                           content: ""{content}"",
+                           trigger: ""focus hover""
                     }});";
         }
 

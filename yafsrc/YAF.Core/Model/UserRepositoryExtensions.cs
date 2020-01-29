@@ -333,6 +333,14 @@ namespace YAF.Core.Model
             repository.DbFunction.Scalar.user_deleteold(BoardID: boardID, Days: days, UTCTIMESTAMP: DateTime.UtcNow);
         }
 
+        public static DataTable WatchMailListAsDataTable(
+            this IRepository<User> repository,
+            [NotNull] int topicId,
+            [NotNull] int userId)
+        {
+            return repository.DbFunction.GetData.mail_list(TopicID: topicId, UserID: userId, UTCTIMESTAMP: DateTime.UtcNow);
+        }
+
         /// <summary>
         /// The user_emails.
         /// </summary>
@@ -816,14 +824,8 @@ namespace YAF.Core.Model
             [NotNull] object autoWatchTopics,
             [NotNull] object dSTUser,
             [NotNull] object hideUser,
-            [NotNull] object notificationType,
-            [CanBeNull] DateTime? utcTimeStamp = null)
+            [NotNull] object notificationType)
         {
-            if (utcTimeStamp == null)
-            {
-                utcTimeStamp = DateTime.UtcNow;
-            }
-
             repository.DbFunction.Scalar.user_save(
                 UserID: userID,
                 BoardID: boardID,
@@ -841,7 +843,7 @@ namespace YAF.Core.Model
                 DSTUser: dSTUser,
                 HideUser: hideUser,
                 NotificationType: notificationType,
-                UTCTIMESTAMP: utcTimeStamp);
+                UTCTIMESTAMP: DateTime.UtcNow);
         }
 
         /// <summary>

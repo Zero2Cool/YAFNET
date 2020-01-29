@@ -181,16 +181,18 @@
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1 text-break">
                                         <img src="<%# this.GetAvatarUrlFileName(this.Eval("UserID").ToType<int>(), this.Eval("Avatar").ToString(), this.Eval("AvatarImage").ToString().IsSet(), this.Eval("Email").ToString()) %>" alt="<%# this.HtmlEncode(DataBinder.Eval(Container.DataItem,"Name").ToString()) %>"
-                                             title="<%# this.HtmlEncode(this.Eval(this.Get<YafBoardSettings>().EnableDisplayName ? "DisplayName" : "Name").ToString()) %>" 
+                                             title="<%# this.HtmlEncode(this.Eval(this.Get<BoardSettings>().EnableDisplayName ? "DisplayName" : "Name").ToString()) %>" 
                                              class="rounded img-fluid" />
                                         <YAF:UserLink ID="UserProfileLink" runat="server" 
                                                       IsGuest="False" 
-                                                      ReplaceName='<%# this.Eval(this.Get<YafBoardSettings>().EnableDisplayName ? "DisplayName" : "Name").ToString() %>' 
+                                                      ReplaceName='<%# this.Eval(this.Get<BoardSettings>().EnableDisplayName ? "DisplayName" : "Name").ToString() %>' 
                                                       UserID='<%# this.Eval("UserID").ToType<int>() %>'
                                                       Style='<%# this.Eval("Style") %>' />
                                     </h5>
                                     <small class="d-none d-md-block">
-                                        <strong><YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" LocalizedTag="JOINED" />:</strong>
+                                        <strong><YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" 
+                                                                    LocalizedTag="JOINED"
+                                                                    LocalizedPage="POSTS"/>:</strong>
                                         <%# this.Get<IDateTime>().FormatDateLong((DateTime)((System.Data.DataRowView)Container.DataItem)["Joined"]) %>
                                     </small>
                                 </div>

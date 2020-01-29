@@ -82,7 +82,7 @@ namespace YAF.Pages
         {
             if (this.User == null)
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             if (!this.IsPostBack)
@@ -93,21 +93,21 @@ namespace YAF.Pages
                 if (userHe == null)
                 {
                     // No such user exists
-                    YafBuildLink.AccessDenied();
+                    BuildLink.AccessDenied();
                 }
 
                 if (userHe.IsApproved == false)
                 {
-                    YafBuildLink.AccessDenied();
+                    BuildLink.AccessDenied();
                 }
 
                 var displayNameHe = UserMembershipHelper.GetDisplayNameFromID(this.UserID);
 
-                this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, YafBuildLink.GetLink(ForumPages.forum));
+                this.PageLinks.AddLink(this.PageContext.BoardSettings.Name, BuildLink.GetLink(ForumPages.forum));
                 this.PageLinks.AddLink(
                     this.PageContext.BoardSettings.EnableDisplayName ? displayNameHe : userHe.UserName,
-                    YafBuildLink.GetLink(
-                        ForumPages.profile,
+                    BuildLink.GetLink(
+                        ForumPages.Profile,
                         "u={0}&name={1}",
                         this.UserID,
                         this.PageContext.BoardSettings.EnableDisplayName ? displayNameHe : userHe.UserName));
@@ -122,7 +122,7 @@ namespace YAF.Pages
                 {
                     if (userHe == null)
                     {
-                        YafBuildLink.AccessDenied( /*No such user exists*/);
+                        BuildLink.AccessDenied( /*No such user exists*/);
                     }
 
                     // Data for current page user

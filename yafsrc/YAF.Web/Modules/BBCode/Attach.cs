@@ -59,7 +59,7 @@ namespace YAF.Modules.BBCode
                 return;
             }
 
-            if (this.PageContext.ForumPageType == ForumPages.profile
+            if (this.PageContext.ForumPageType == ForumPages.Profile
                 || this.PageContext.ForumPageType == ForumPages.forum)
             {
                 writer.Write(@"<i class=""fa fa-file fa-fw""></i>&nbsp;{0}", attachment.FileName);
@@ -72,7 +72,7 @@ namespace YAF.Modules.BBCode
 
             // verify it's not too large to display
             // Ederon : 02/17/2009 - made it board setting
-            if (attachment.Bytes.ToType<int>() <= this.Get<YafBoardSettings>().PictureAttachmentDisplayTreshold)
+            if (attachment.Bytes.ToType<int>() <= this.Get<BoardSettings>().PictureAttachmentDisplayTreshold)
             {
                 // is it an image file?
                 showImage = filename.IsImageName();
@@ -93,16 +93,16 @@ namespace YAF.Modules.BBCode
             {
                 // user has rights to download, show him image
                 writer.Write(
-                    !this.Get<YafBoardSettings>().EnableImageAttachmentResize
+                    !this.Get<BoardSettings>().EnableImageAttachmentResize
                                 ? @"<img src=""{0}resource.ashx?a={1}&b={3}"" alt=""{2}"" class=""img-user-posted img-thumbnail"" style=""max-width:auto;max-height:{4}px"" />"
                                 : @"<a href=""{0}resource.ashx?i={1}&b={3}"" class=""attachedImage"" title=""{2}""  data-gallery>
                                             <img src=""{0}resource.ashx?p={1}&b={3}"" alt=""{2}"" class=""img-user-posted img-thumbnail"" style=""max-width:auto;max-height:{4}px"" />
                                         </a>",
-                    YafForumInfo.ForumClientFileRoot,
+                    BoardInfo.ForumClientFileRoot,
                     attachment.ID,
                     this.HtmlEncode(attachment.FileName),
                     this.PageContext.PageBoardID,
-                    this.Get<YafBoardSettings>().ImageThumbnailMaxHeight);
+                    this.Get<BoardSettings>().ImageThumbnailMaxHeight);
             }
             else
             {
@@ -113,7 +113,7 @@ namespace YAF.Modules.BBCode
                     @"<i class=""fa fa-file fa-fw""></i>&nbsp;
                          <a class=""attachedImageLink {{html:false,image:false,video:false}}"" href=""{0}resource.ashx?a={1}&b={4}"">{2}</a> 
                          <span class=""attachmentinfo"">{3}</span>",
-                    YafForumInfo.ForumClientFileRoot,
+                    BoardInfo.ForumClientFileRoot,
                     attachment.ID,
                     attachment.FileName,
                     this.GetTextFormatted("ATTACHMENTINFO", kb, attachment.Downloads),
@@ -129,7 +129,7 @@ namespace YAF.Modules.BBCode
         /// </returns>
         private bool UserHasDownloadAccess()
         {
-            if (this.PageContext.ForumPageType == ForumPages.cp_message || this.PageContext.ForumPageType == ForumPages.pmessage)
+            if (this.PageContext.ForumPageType == ForumPages.Message || this.PageContext.ForumPageType == ForumPages.pmessage)
             {
                 return true;
             }

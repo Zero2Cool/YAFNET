@@ -74,7 +74,7 @@ namespace YAF.Controls
                                         {
                                             TextLocalizedTag = "LOGIN_CONNECT",
                                             TextLocalizedPage = "TOOLBAR",
-                                            ParamText0 = this.Get<YafBoardSettings>().Name,
+                                            ParamText0 = this.Get<BoardSettings>().Name,
                                             TitleLocalizedTag = "LOGIN",
                                             TitleLocalizedPage = "TOOLBAR",
                                             Type = ButtonAction.Link,
@@ -88,7 +88,7 @@ namespace YAF.Controls
                     isLoginAllowed = true;
                 }
 
-                if (!this.Get<YafBoardSettings>().DisableRegistrations)
+                if (!this.Get<BoardSettings>().DisableRegistrations)
                 {
                     // show register link
                     var registerLink = new ThemeButton
@@ -100,11 +100,11 @@ namespace YAF.Controls
                                                Type = ButtonAction.Link,
                                                Icon = "user-plus",
                                                NavigateUrl =
-                                                   this.Get<YafBoardSettings>().ShowRulesForRegistration
-                                                       ? YafBuildLink.GetLink(ForumPages.rules)
-                                                       : !this.Get<YafBoardSettings>().UseSSLToRegister
-                                                           ? YafBuildLink.GetLink(ForumPages.register)
-                                                           : YafBuildLink.GetLink(
+                                                   this.Get<BoardSettings>().ShowRulesForRegistration
+                                                       ? BuildLink.GetLink(ForumPages.rules)
+                                                       : !this.Get<BoardSettings>().UseSSLToRegister
+                                                           ? BuildLink.GetLink(ForumPages.register)
+                                                           : BuildLink.GetLink(
                                                                ForumPages.register,
                                                                true).Replace("http:", "https:")
                                            };
@@ -130,7 +130,7 @@ namespace YAF.Controls
                     return;
                 }
 
-                if (this.Get<YafBoardSettings>().AllowSingleSignOn
+                if (this.Get<BoardSettings>().AllowSingleSignOn
                     && (Config.FacebookAPIKey.IsSet() || Config.TwitterConsumerKey.IsSet()
                         || Config.GoogleClientID.IsSet()))
                 {
@@ -198,7 +198,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void FacebookFormClick(object sender, EventArgs e)
         {
-            YafBuildLink.Redirect(ForumPages.login, "auth={0}", "facebook");
+            BuildLink.Redirect(ForumPages.login, "auth={0}", "facebook");
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void TwitterFormClick(object sender, EventArgs e)
         {
-            YafBuildLink.Redirect(ForumPages.login, "auth={0}", "twitter");
+            BuildLink.Redirect(ForumPages.login, "auth={0}", "twitter");
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void GoogleFormClick(object sender, EventArgs e)
         {
-            YafBuildLink.Redirect(ForumPages.login, "auth={0}", "google");
+            BuildLink.Redirect(ForumPages.login, "auth={0}", "google");
         }
 
         #endregion

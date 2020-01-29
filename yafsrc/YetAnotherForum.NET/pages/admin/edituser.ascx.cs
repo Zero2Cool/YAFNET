@@ -116,7 +116,7 @@ namespace YAF.Pages.Admin
             if (!this.PageContext.IsHostAdmin && this.IsUserHostAdmin(userRow))
             {
                 // user is not host admin and is attempted to edit host admin account...
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             if (this.IsPostBack)
@@ -124,7 +124,7 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            var userName = this.HtmlEncode(this.Get<YafBoardSettings>().EnableDisplayName
+            var userName = this.HtmlEncode(this.Get<BoardSettings>().EnableDisplayName
                                ? userRow["DisplayName"].ToString()
                                : userRow["Name"].ToString());
 
@@ -159,9 +159,9 @@ namespace YAF.Pages.Admin
         {
             this.PageLinks.AddRoot();
             this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"), YafBuildLink.GetLink(ForumPages.admin_admin));
+                this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.admin_admin));
 
-            this.PageLinks.AddLink(this.GetText("ADMIN_USERS", "TITLE"), YafBuildLink.GetLink(ForumPages.admin_users));
+            this.PageLinks.AddLink(this.GetText("ADMIN_USERS", "TITLE"), BuildLink.GetLink(ForumPages.admin_users));
         }
 
         #endregion

@@ -100,7 +100,7 @@ namespace YAF.Pages
         {
             var row = (DataRow)o;
             return
-                $"<strong>{this.GetText("postedby")}: {(this.Get<YafBoardSettings>().EnableDisplayName ? row["DisplayName"] : row["UserName"])}</strong> - {this.Get<IDateTime>().FormatDateTime((DateTime)row["Posted"])}";
+                $"<strong>{this.GetText("postedby")}: {(this.Get<BoardSettings>().EnableDisplayName ? row["DisplayName"] : row["UserName"])}</strong> - {this.Get<IDateTime>().FormatDateTime((DateTime)row["Posted"])}";
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace YAF.Pages
         {
             if (!this.Get<HttpRequestBase>().QueryString.Exists("t") || !this.PageContext.ForumReadAccess)
             {
-                YafBuildLink.AccessDenied();
+                BuildLink.AccessDenied();
             }
 
             this.ShowToolBar = false;
@@ -131,21 +131,21 @@ namespace YAF.Pages
                 this.PageLinks.AddRoot();
                 this.PageLinks.AddLink(
                     this.PageContext.PageCategoryName,
-                    YafBuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+                    BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
             }
 
             this.PageLinks.AddForum(this.PageContext.PageForumID);
             this.PageLinks.AddLink(
-                this.PageContext.PageTopicName, YafBuildLink.GetLink(ForumPages.posts, "t={0}", this.PageContext.PageTopicID));
+                this.PageContext.PageTopicName, BuildLink.GetLink(ForumPages.posts, "t={0}", this.PageContext.PageTopicID));
             var showDeleted = false;
             var userId = 0;
-            if (this.Get<YafBoardSettings>().ShowDeletedMessagesToAll)
+            if (this.Get<BoardSettings>().ShowDeletedMessagesToAll)
             {
                 showDeleted = true;
             }
 
-            if (!showDeleted && (this.Get<YafBoardSettings>().ShowDeletedMessages &&
-                                 !this.Get<YafBoardSettings>().ShowDeletedMessagesToAll
+            if (!showDeleted && (this.Get<BoardSettings>().ShowDeletedMessages &&
+                                 !this.Get<BoardSettings>().ShowDeletedMessagesToAll
                                  || this.PageContext.IsAdmin ||
                                  this.PageContext.ForumModeratorAccess))
             {
