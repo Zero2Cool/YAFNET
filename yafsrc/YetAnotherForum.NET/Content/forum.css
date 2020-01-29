@@ -8616,6 +8616,12 @@ span.form-check > label {
   max-height: 200px;
   overflow-y: scroll; }
 
+.unread {
+    position: absolute;
+    top: 8px;
+    left: 16px;
+}
+
 /* YAF Overrides */
 .btn-group-xs > .btn, .btn-xs {
     padding: .25rem .5rem;
@@ -8629,7 +8635,4 @@ span.form-check > label {
 }
 
 
-.unread {
-  position: absolute;
-  top: 8px;
-  left: 16px; }
+
