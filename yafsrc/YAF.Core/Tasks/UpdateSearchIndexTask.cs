@@ -51,7 +51,6 @@ namespace YAF.Core.Tasks
         public UpdateSearchIndexTask()
         {
             // set interval values...
-            this.RunPeriodMs = 3600000;
             this.StartDelayMs = 30000;
         }
 
@@ -82,12 +81,12 @@ namespace YAF.Core.Tasks
                     return;
                 }
 
+                var forums = this.GetRepository<Forum>().List(YafContext.Current.PageBoardID, null);
+
                 if (!IsTimeToUpdateSearchIndex())
                 {
                     return;
                 }
-
-                var forums = this.GetRepository<Forum>().List(YafContext.Current.PageBoardID, null);
 
                 forums.ForEach(
                     forum =>
@@ -125,6 +124,19 @@ namespace YAF.Core.Tasks
             var boardSettings = (YafLoadBoardSettings)YafContext.Current.Get<BoardSettings>();
             var lastSend = DateTime.MinValue;
             var sendEveryXHours = boardSettings.UpdateSearchIndexEveryXHours;
+
+            if (boardSettings.ForceUpdateSearchIndex)
+            {
+                boardSettings.LastSearchIndexUpdated = DateTime.Now.ToString(CultureInfo.InvariantCulture);
+                boardSettings.ForceUpdateSearchIndex = false;
+
+                boardSettings.SaveRegistry();
+
+                // reload all settings from the DB
+                YafContext.Current.BoardSettings = null;
+
+                return true;
+            }
 
             if (boardSettings.LastSearchIndexUpdated.IsSet())
             {
