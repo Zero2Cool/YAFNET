@@ -39,6 +39,7 @@ namespace YAF.Core.Services
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
+    using YAF.Types.Extensions.Data;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
@@ -259,13 +260,12 @@ namespace YAF.Core.Services
                 if (categoryID.HasValue)
                 {
                     // make sure this only has the category desired in the dataset
-                    foreach (
-                         var row in
-                             categoryTable.AsEnumerable().Where(row => row.Field<int>("CategoryID") != categoryID))
-                     {
-                         // delete it...
-                         row.Delete();
-                     }
+                    categoryTable.AsEnumerable().Where(row => row.Field<int>("CategoryID") != categoryID).ForEach(
+                        row =>
+                            {
+                                // delete it...
+                                row.Delete();
+                            });
 
                      categoryTable.AcceptChanges();
                 }

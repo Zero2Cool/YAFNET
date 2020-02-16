@@ -39,7 +39,7 @@ namespace YAF.Modules.BBCode
     /// <summary>
     /// The Attachment BB Code Module.
     /// </summary>
-    public class Attach : YafBBCodeControl
+    public class Attach : BBCodeControl
     {
         /// <summary>
         /// Render The Album Image as Link with Image
@@ -129,7 +129,7 @@ namespace YAF.Modules.BBCode
         /// </returns>
         private bool UserHasDownloadAccess()
         {
-            if (this.PageContext.ForumPageType == ForumPages.Message || this.PageContext.ForumPageType == ForumPages.pmessage)
+            if (this.PageContext.ForumPageType == ForumPages.PrivateMessage || this.PageContext.ForumPageType == ForumPages.PostPrivateMessage)
             {
                 return true;
             }

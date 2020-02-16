@@ -143,7 +143,7 @@ namespace YAF.Web.Editors
                     JavaScriptBlocks.FileAutoUploadLoadJs(
                         string.Join("|", extensions.Select(ext => ext.Extension)),
                         this.Get<BoardSettings>().MaxFileSize,
-                        $"{BoardInfo.ForumClientFileRoot}YafUploader.ashx",
+                        $"{BoardInfo.ForumClientFileRoot}FileUploader.ashx",
                         this.PageContext.PageForumID,
                         this.PageContext.PageBoardID,
                         this.Get<BoardSettings>().ImageAttachmentResizeWidth,
@@ -444,8 +444,6 @@ namespace YAF.Web.Editors
             writer.Write("</div></div>");
 
             writer.Write("<div class=\"btn-group mt-1\" role =\"group\">");
-
-            RenderButton(writer, "SaveMessage()", this.GetText("COMMON", "TT_SAVE"), "save");
 
             writer.Write("</div>");
 

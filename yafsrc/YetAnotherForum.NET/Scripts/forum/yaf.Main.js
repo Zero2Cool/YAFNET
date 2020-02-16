@@ -1,14 +1,5 @@
 // Generic Functions
 jQuery(document).ready(function () {
-
-    $("#Tags").select2({
-        tags: true,
-        tokenSeparators: [',', ' '],
-        theme: "bootstrap4",
-        dropdownAutoWidth: true
-    });
-
-
     // Main Menu
     $(".dropdown-menu a.dropdown-toggle").on("click", function () {
 		var $el = $(this);
@@ -31,15 +22,6 @@ jQuery(document).ready(function () {
 
 		return false;
 	});
-    // Cookie alert
-    if (!getCookie("YAF-AcceptCookies")) {
-        $(".cookiealert").addClass("show");
-    }
-
-    $(".acceptcookies").click(function () {
-        setCookie("YAF-AcceptCookies", true, 180);
-        $(".cookiealert").removeClass("show");
-    });
 
     // Numeric Spinner Inputs
     jQuery("input[type='number']").TouchSpin({

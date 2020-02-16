@@ -28,6 +28,7 @@ namespace YAF.Core
 
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
 
@@ -36,16 +37,17 @@ namespace YAF.Core
 
     using YAF.Core.BaseModules;
     using YAF.Core.Extensions;
-    using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+
+    using Module = Autofac.Module;
 
     #endregion
 
     /// <summary>
     /// The base module.
     /// </summary>
-    public abstract class BaseModule : IModule, IHaveComponentRegistry, IHaveSortOrder
+    public abstract class BaseModule : Module, IHaveSortOrder
     {
         #region Static Fields
 
@@ -67,14 +69,13 @@ namespace YAF.Core
                 .Concat(
                     AppDomain.CurrentDomain.GetAssemblies().Where(
                         a => a.FullName.StartsWith("Autofac") && a.FullName.StartsWith("FarsiLibrary")
+                                                              && a.FullName.StartsWith("YAF.Lucene.NET")
                                                               && a.FullName.StartsWith("ServiceStack.")))
                 .Except(new[] { Assembly.GetExecutingAssembly() }).Where(a => !a.IsDynamic).Distinct()
                 .OrderByDescending(x => x.GetAssemblySortOrder()).ToArray();
 #if DEBUG
-            foreach (var s in ExtensionAssemblies)
-            {
-                System.Diagnostics.Debug.WriteLine("Extension Assembly: {0}", s);
-            }
+
+            ExtensionAssemblies.ForEach(s => Debug.WriteLine("Extension Assembly: {0}", s));
 
 #endif
         }
@@ -82,11 +83,6 @@ namespace YAF.Core
         #endregion
 
         #region Public Properties
-
-        /// <summary>
-        ///     Gets or sets ComponentRegistry.
-        /// </summary>
-        public IComponentRegistry ComponentRegistry { get; set; }
 
         /// <summary>
         /// Gets the sort order.
@@ -98,42 +94,27 @@ namespace YAF.Core
 
         #endregion
 
-        #region Public Methods and Operators
-
-        /// <summary>
-        ///     Apply the module to the component registry.
-        /// </summary>
-        /// <param name="componentRegistry">
-        ///     Component registry to apply configuration to.
-        /// </param>
-        public virtual void Configure([NotNull] IComponentRegistry componentRegistry)
-        {
-            CodeContracts.VerifyNotNull(componentRegistry, "componentRegistry");
-
-            this.ComponentRegistry = componentRegistry;
-
-            var builder = new ContainerBuilder();
-            this.Load(builder);
-            this.UpdateRegistry(builder);
-        }
-
-        #endregion
-
         #region Methods
-
-        /// <summary>
-        /// Loads the specified builder.
-        /// </summary>
-        /// <param name="builder">The builder.</param>
-        protected abstract void Load(ContainerBuilder builder);
 
         /// <summary>
         /// Registers the base modules.
         /// </summary>
-        /// <typeparam name="TModule">The type of the module.</typeparam>
-        /// <param name="assemblies">The assemblies.</param>
-        /// <param name="exclude">The exclude.</param>
-        protected virtual void RegisterBaseModules<TModule>(Assembly[] assemblies, IEnumerable<Type> exclude = null)
+        /// <typeparam name="TModule">
+        /// The type of the module.
+        /// </typeparam>
+        /// <param name="builder">
+        /// The builder.
+        /// </param>
+        /// <param name="assemblies">
+        /// The assemblies.
+        /// </param>
+        /// <param name="exclude">
+        /// The exclude.
+        /// </param>
+        protected virtual void RegisterBaseModules<TModule>(
+            ContainerBuilder builder,
+            Assembly[] assemblies,
+            IEnumerable<Type> exclude = null)
             where TModule : IModule
         {
             var moduleFinder = new ContainerBuilder();
@@ -143,16 +124,12 @@ namespace YAF.Core
             moduleFinder.RegisterAssemblyTypes(assemblies)
                 .Where(t => typeof(TModule).IsAssignableFrom(t) && !excludeList.Contains(t)).As<IModule>();
 
-            var builder = new ContainerBuilder();
-
             using (var moduleContainer = moduleFinder.Build())
             {
                 var modules = moduleContainer.Resolve<IEnumerable<IModule>>().ByOptionalSortOrder().ToList();
 
                 modules.ForEach(module => builder.RegisterModule(module));
             }
-
-            this.UpdateRegistry(builder);
         }
 
         #endregion
