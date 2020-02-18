@@ -61,7 +61,7 @@ namespace YAF.Web.Controls
         ///   <c>true</c> if suspended; otherwise, <c>false</c>.
         /// </value>
         [NotNull]
-        public DateTime? Suspended { get; set; }
+        public System.DateTime? Suspended { get; set; }
 
         #endregion
 
@@ -82,10 +82,10 @@ namespace YAF.Web.Controls
 
             var activeUsers = this.Get<IDataCache>().GetOrSet(
                 Constants.Cache.UsersOnlineStatus,
-                () => this.Get<YafDbBroker>().GetActiveList(
+                () => this.Get<DataBroker>().GetActiveList(
                     false,
-                    YafContext.Current.BoardSettings.ShowCrawlersInActiveList),
-                TimeSpan.FromMilliseconds(YafContext.Current.BoardSettings.OnlineStatusCacheTimeout));
+                    BoardContext.Current.BoardSettings.ShowCrawlersInActiveList),
+                TimeSpan.FromMilliseconds(BoardContext.Current.BoardSettings.OnlineStatusCacheTimeout));
 
             output.BeginRender();
             output.WriteBeginTag(HtmlTextWriterTag.Span.ToString());

@@ -47,7 +47,7 @@ namespace YAF.Core.Controllers
         /// <summary>
         ///   Gets ServiceLocator.
         /// </summary>
-        public IServiceLocator ServiceLocator => YafContext.Current.ServiceLocator;
+        public IServiceLocator ServiceLocator => BoardContext.Current.ServiceLocator;
 
         #endregion
 
@@ -80,7 +80,6 @@ namespace YAF.Core.Controllers
                 messageId,
                 this.Get<BoardSettings>().EnableDisplayName);
 
-
             this.Get<IActivityStream>().AddThanksReceivedToStream(message.UserID, message.TopicID, messageId, fromUserId);
             this.Get<IActivityStream>().AddThanksGivenToStream(fromUserId, message.TopicID, messageId, message.UserID);
 
@@ -109,12 +108,12 @@ namespace YAF.Core.Controllers
         public IHttpActionResult RemoveThanks([NotNull] int messageId)
         {
             var username = this.GetRepository<Thanks>().RemoveMessageThanks(
-                YafContext.Current.PageUserID,
+                BoardContext.Current.PageUserID,
                 messageId,
                 this.Get<BoardSettings>().EnableDisplayName);
 
             this.GetRepository<Activity>()
-                .Delete(a => a.MessageID == messageId && (a.Flags == 1024 || a.Flags == 4096));
+                .Delete(a => a.MessageID == messageId && (a.Flags == 1024 || a.Flags == 2048));
 
             return this.Ok(
                 this.Get<IThankYou>().CreateThankYou(username, "BUTTON_THANKS", "BUTTON_THANKS_TT", messageId));

@@ -351,7 +351,7 @@ namespace YAF.Pages
         /// </summary>
         private void BindData()
         {
-            var ds = this.Get<YafDbBroker>().BoardLayout(
+            var ds = this.Get<DataBroker>().BoardLayout(
                 this.PageContext.PageBoardID,
                 this.PageContext.PageUserID,
                 this.PageContext.PageCategoryID,
@@ -382,7 +382,7 @@ namespace YAF.Pages
                 this.PageContext.PageForumID,
                 userId,
                 null,
-                DateTime.UtcNow,
+                System.DateTime.UtcNow,
                 0,
                 10,
                 this.Get<BoardSettings>().UseStyledNicks,
@@ -407,7 +407,7 @@ namespace YAF.Pages
                     this.PageContext.PageForumID,
                     userId,
                     DateTimeHelper.SqlDbMinTime(),
-                    DateTime.UtcNow,
+                    System.DateTime.UtcNow,
                     pagerCurrentPageIndex,
                     baseSize,
                     this.Get<BoardSettings>().UseStyledNicks,
@@ -422,13 +422,13 @@ namespace YAF.Pages
             {
                 int[] days = { 1, 2, 7, 14, 31, 2 * 31, 6 * 31, 356 };
 
-                var date = DateTime.UtcNow.AddDays(-days[this.showTopicListSelected]);
+                var date = System.DateTime.UtcNow.AddDays(-days[this.showTopicListSelected]);
 
                 topicList = this.GetRepository<Topic>().ListAsDataTable(
                     this.PageContext.PageForumID,
                     userId,
                     date,
-                    DateTime.UtcNow,
+                    System.DateTime.UtcNow,
                     pagerCurrentPageIndex,
                     baseSize,
                     this.Get<BoardSettings>().UseStyledNicks,

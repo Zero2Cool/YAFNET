@@ -108,8 +108,8 @@ namespace YAF.Controls
                 var topicsFlattened = this.forumData.SelectMany(x => x.Topics);
 
                 return topicsFlattened.Where(
-                    t => t.LastPostDate > DateTime.Now.AddHours(this.topicHours)
-                         && t.CreatedDate < DateTime.Now.AddHours(this.topicHours)).GroupBy(x => x.Forum);
+                    t => t.LastPostDate > System.DateTime.Now.AddHours(this.topicHours)
+                         && t.CreatedDate < System.DateTime.Now.AddHours(this.topicHours)).GroupBy(x => x.Forum);
             }
         }
 
@@ -142,7 +142,7 @@ namespace YAF.Controls
                 // flatten...
                 var topicsFlattened = this.forumData.SelectMany(x => x.Topics);
 
-                return topicsFlattened.Where(t => t.CreatedDate > DateTime.Now.AddHours(this.topicHours)).OrderByDescending(x => x.LastPostDate)
+                return topicsFlattened.Where(t => t.CreatedDate > System.DateTime.Now.AddHours(this.topicHours)).OrderByDescending(x => x.LastPostDate)
                     .GroupBy(x => x.Forum);
             }
         }
@@ -251,8 +251,8 @@ namespace YAF.Controls
 
             if (HttpContext.Current != null)
             {
-                this.BoardSettings = YafContext.Current.BoardSettings.BoardID.Equals(this.BoardID)
-                                         ? YafContext.Current.BoardSettings
+                this.BoardSettings = BoardContext.Current.BoardSettings.BoardID.Equals(this.BoardID)
+                                         ? BoardContext.Current.BoardSettings
                                          : new YafLoadBoardSettings(this.BoardID);
             }
             else
@@ -297,10 +297,10 @@ namespace YAF.Controls
             // get topic hours...
             this.topicHours = -this.BoardSettings.DigestSendEveryXHours;
 
-            this.forumData = this.Get<YafDbBroker>().GetSimpleForumTopic(
+            this.forumData = this.Get<DataBroker>().GetSimpleForumTopic(
                 this.BoardID,
                 this.CurrentUserID,
-                DateTime.Now.AddHours(this.topicHours),
+                System.DateTime.Now.AddHours(this.topicHours),
                 9999);
 
             if (!this.NewTopics.Any() && !this.ActiveTopics.Any())
