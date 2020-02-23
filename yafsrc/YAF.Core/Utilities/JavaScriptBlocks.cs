@@ -98,6 +98,41 @@ namespace YAF.Core.Utilities
         }}";
 
         /// <summary>
+        /// Gets Board Tags JavaScript
+        /// </summary>
+        /// <param name="inputId">
+        /// The input Id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        [NotNull]
+        public static string GetBoardTagsJs(string inputId) =>
+            $@" $(""#{inputId}"").tagsinput({{
+        typeahead: {{
+            source: function () {{
+                var ajaxUrl = ""{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Tags/GetBoardTags"";
+                return $.ajax({{
+                    url: ajaxUrl,
+                    type: 'POST',
+                    dataType: 'JSON',
+                   // data: 'query=' + query,
+                    success: function (data) {{
+                        return data;
+                    }}
+                }});
+            }}
+        }},
+        freeInput: true
+    }});
+
+    $(""input"").on('itemAdded', function (event) {{
+        setTimeout(function () {{
+            $("">input[type=text]"", "".bootstrap-tagsinput"").val("""");
+        }}, 1);
+    }});";
+
+        /// <summary>
         ///   Gets the script for changing the album title.
         /// </summary>
         /// <returns>
@@ -152,9 +187,9 @@ namespace YAF.Core.Utilities
             $@" if( typeof(CKEDITOR) == 'undefined') {{
             function loadTimeAgo() {{
             
-		     moment.locale('{(YafContext.Current.CultureUser.IsSet()
-                                  ? YafContext.Current.CultureUser.Substring(0, 2)
-                                  : YafContext.Current.Get<BoardSettings>().Culture.Substring(0, 2))}');
+		     moment.locale('{(BoardContext.Current.CultureUser.IsSet()
+                                  ? BoardContext.Current.CultureUser.Substring(0, 2)
+                                  : BoardContext.Current.Get<BoardSettings>().Culture.Substring(0, 2))}');
 
              {Config.JQueryAlias}('abbr.timeago').each(function() {{
                   {Config.JQueryAlias}(this).html(function(index, value) {{
@@ -707,7 +742,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                 formData: {{
                     forumID: '{forumId}',
                     boardID: '{boardId}',
-                    userID: '{YafContext.Current.PageUserID}',
+                    userID: '{BoardContext.Current.PageUserID}',
                     uploadFolder: '{BoardFolders.Current.Uploads}',
                     allowedUpload: true
                 }},
@@ -784,7 +819,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                 formData: {{
                     forumID: '{forumId}',
                     boardID: '{boardId}',
-                    userID: '{YafContext.Current.PageUserID}',
+                    userID: '{BoardContext.Current.PageUserID}',
                     uploadFolder: '{BoardFolders.Current.Uploads}',
                     allowedUpload: true
                 }},
@@ -868,7 +903,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
             theme: 'bootstrap4',
             allowClear: true,
             cache: true,
-            {YafContext.Current.Get<ILocalization>().GetText("SELECT_LOCALE_JS")}
+            {BoardContext.Current.Get<ILocalization>().GetText("SELECT_LOCALE_JS")}
         }});";
         }
 

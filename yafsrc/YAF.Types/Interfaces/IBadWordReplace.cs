@@ -26,6 +26,8 @@ namespace YAF.Types.Interfaces
   using System;
   using System.Collections.Generic;
 
+  using YAF.Types.Objects;
+
   public interface IBadWordReplace
   {
     /// <summary>

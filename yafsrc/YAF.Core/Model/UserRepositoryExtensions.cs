@@ -29,11 +29,15 @@ namespace YAF.Core.Model
     using System.Data;
     using System.Data.SqlClient;
     using System.IO;
+    using System.Linq;
+
+    using ServiceStack.OrmLite;
 
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
+    using YAF.Types.Extensions.Data;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
     using YAF.Types.Objects;
@@ -333,6 +337,21 @@ namespace YAF.Core.Model
             repository.DbFunction.Scalar.user_deleteold(BoardID: boardID, Days: days, UTCTIMESTAMP: DateTime.UtcNow);
         }
 
+        /// <summary>
+        /// The watch mail list as data table.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="topicId">
+        /// The topic id.
+        /// </param>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="DataTable"/>.
+        /// </returns>
         public static DataTable WatchMailListAsDataTable(
             this IRepository<User> repository,
             [NotNull] int topicId,
@@ -676,7 +695,7 @@ namespace YAF.Core.Model
             [NotNull] int numPosts,
             [NotNull] int numPostCompare)
         {
-            return repository.DbFunction.GetData.user_listmembers(
+             return repository.DbFunction.GetData.user_listmembers(
                 BoardID: boardId,
                 UserID: userId,
                 Approved: approved,
@@ -1222,6 +1241,30 @@ namespace YAF.Core.Model
             CodeContracts.VerifyNotNull(repository, "repository");
 
             repository.UpdateOnly(() => new User { BlockFlags = flags }, u => u.ID == userId);
+        }
+
+        /// <summary>
+        /// Gets if User is Suspended
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="User"/>.
+        /// </returns>
+        public static DateTime? GetSuspended(this IRepository<User> repository, int userId)
+        {
+            CodeContracts.VerifyNotNull(repository, "repository");
+
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<User>();
+
+            expression.Where<User>(u => u.ID == userId).Select(u => u.Suspended);
+
+            return repository.DbAccess.Execute(
+                db => db.Connection.ColumnDistinct<DateTime?>(expression).FirstOrDefault());
         }
     }
 }

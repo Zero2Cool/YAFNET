@@ -281,7 +281,7 @@ namespace YAF.Web.Controls
                 {
                     outText.AppendFormat(
                         @"<a href=""{0}"" id=""topicid_{1}""  title=""{2}"" runat=""server""> {3} </a>",
-                        BuildLink.GetLink(ForumPages.posts, "t={0}", this.TopicID),
+                        BuildLink.GetLink(ForumPages.Posts, "t={0}", this.TopicID),
                         this.UserID,
                         this.GetText("COMMON", "VIEW_TOPIC"),
                         HttpUtility.HtmlEncode(this.TopicName));
@@ -339,12 +339,12 @@ namespace YAF.Web.Controls
                                     ? this.GetText("ACTIVELOCATION", "FORUMFROMCATEGORY")
                                     : this.GetText("ACTIVELOCATION", "MAINPAGE"));
                         }
-                        else if (!YafContext.Current.IsAdmin && forumPageName.ToUpper().Contains("MODERATE_"))
+                        else if (!BoardContext.Current.IsAdmin && forumPageName.ToUpper().Contains("MODERATE_"))
                         {
                             // We shouldn't show moderators activity to all users but admins
                             outText.Append(this.GetText("ACTIVELOCATION", "MODERATE"));
                         }
-                        else if (!YafContext.Current.IsHostAdmin && forumPageName.ToUpper().Contains("ADMIN_"))
+                        else if (!BoardContext.Current.IsHostAdmin && forumPageName.ToUpper().Contains("ADMIN_"))
                         {
                             // We shouldn't show admin activity to all users 
                             outText.Append(this.GetText("ACTIVELOCATION", "ADMINTASK"));
@@ -437,7 +437,7 @@ namespace YAF.Web.Controls
                     outstring.Append(this.GetText("ACTIVELOCATION", "ALBUM"));
                     outstring.AppendFormat(
                         @"<a href=""{0}"" id=""uiseralbumid_{1}"" runat=""server""> {2} </a>",
-                        BuildLink.GetLink(ForumPages.album, "a={0}", albumID),
+                        BuildLink.GetLink(ForumPages.Album, "a={0}", albumID),
                         userID + this.PageContext.PageUserID,
                         HttpUtility.HtmlEncode(albumName));
                     outstring.Append(this.GetText("ACTIVELOCATION", "ALBUM_OFUSER"));
@@ -452,7 +452,7 @@ namespace YAF.Web.Controls
                     outstring.Append(this.GetText("ACTIVELOCATION", "ALBUM_OWN"));
                     outstring.AppendFormat(
                         @"<a href=""{0}"" id=""uiseralbumid_{1}"" runat=""server""> {2} </a>",
-                        BuildLink.GetLink(ForumPages.album, "a={0}", albumID),
+                        BuildLink.GetLink(ForumPages.Album, "a={0}", albumID),
                         userID + this.PageContext.PageUserID,
                         HttpUtility.HtmlEncode(albumName));
                 }

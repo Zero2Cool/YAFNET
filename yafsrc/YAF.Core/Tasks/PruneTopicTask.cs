@@ -26,6 +26,7 @@ namespace YAF.Core.Tasks
     using System;
 
     using YAF.Core.Model;
+    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
 
@@ -74,12 +75,12 @@ namespace YAF.Core.Tasks
         /// </returns>
         public static bool Start(int boardId, int forumId, int days, bool permDelete)
         {
-            if (YafContext.Current.Get<ITaskModuleManager>() == null)
+            if (BoardContext.Current.Get<ITaskModuleManager>() == null)
             {
                 return false;
             }
 
-            YafContext.Current.Get<ITaskModuleManager>().StartTask(
+            BoardContext.Current.Get<ITaskModuleManager>().StartTask(
                 TaskName,
                 () => new PruneTopicTask { Data = boardId, ForumId = forumId, Days = days, PermDelete = permDelete });
 

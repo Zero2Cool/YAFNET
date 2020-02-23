@@ -25,6 +25,7 @@
 namespace YAF.Web.Extensions
 {
     using System.Data;
+    using System.Linq;
 
     using YAF.Configuration;
     using YAF.Core;
@@ -106,21 +107,22 @@ namespace YAF.Web.Extensions
         {
             CodeContracts.VerifyNotNull(pageLinks, "pageLinks");
 
-            using (var links = YafContext.Current.GetRepository<Forum>().ListPathAsDataTable(forumId))
+            using (var links = BoardContext.Current.GetRepository<Forum>().ListPathAsDataTable(forumId))
             {
-                foreach (DataRow row in links.Rows)
-                {
-                    if (noForumLink && row["ForumID"].ToType<int>() == forumId)
-                    {
-                        pageLinks.AddLink(row["Name"].ToString(), string.Empty);
-                    }
-                    else
-                    {
-                        pageLinks.AddLink(
-                            row["Name"].ToString(),
-                            BuildLink.GetLink(ForumPages.topics, "f={0}", row["ForumID"]));
-                    }
-                }
+                links.Rows.Cast<DataRow>().ForEach(
+                    row =>
+                        {
+                            if (noForumLink && row["ForumID"].ToType<int>() == forumId)
+                            {
+                                pageLinks.AddLink(row["Name"].ToString(), string.Empty);
+                            }
+                            else
+                            {
+                                pageLinks.AddLink(
+                                    row["Name"].ToString(),
+                                    BuildLink.GetLink(ForumPages.topics, "f={0}", row["ForumID"]));
+                            }
+                        });
             }
 
             return pageLinks;

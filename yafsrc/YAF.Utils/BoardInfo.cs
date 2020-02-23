@@ -29,6 +29,7 @@ namespace YAF.Utils
     using System.Linq;
     using System.Text;
     using System.Web;
+
     using YAF.Configuration;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -87,7 +88,7 @@ namespace YAF.Utils
         /// <summary>
         /// Gets the Current YAF Database Version
         /// </summary>
-        public static int AppVersion => 74;
+        public static int AppVersion => 75;
 
         /// <summary>
         /// Gets the Current YAF Application Version
@@ -101,18 +102,18 @@ namespace YAF.Utils
                 const byte Build = 1;
                 const byte Sub = 0;
 
-                const ReleaseType ReleaseType = ReleaseType.BETA;
+                const ReleaseType ReleaseType = ReleaseType.Regular;
                 const byte ReleaseNumber = 0;
 
                 var list = new List<int>
-                                      {
-                                          Major,
-                                          Minor,
-                                          Build,
-                                          Sub,
-                                          ReleaseType.ToType<int>(),
-                                          ReleaseNumber
-                                      };
+                               {
+                                   Major,
+                                   Minor,
+                                   Build,
+                                   Sub,
+                                   ReleaseType.ToType<int>(),
+                                   ReleaseNumber
+                               };
 
                 return list.SelectMany(BitConverter.GetBytes).ToArray();
             }
@@ -121,7 +122,7 @@ namespace YAF.Utils
         /// <summary>
         /// Gets the Current YAF Build Date
         /// </summary>
-        public static DateTime AppVersionDate => new DateTime(2020, 01, 26, 02, 30, 00);
+        public static DateTime AppVersionDate => new DateTime(2020, 02, 23, 03, 30, 00);
 
         /// <summary>
         /// Creates a string that is the YAF Application Version from a long value

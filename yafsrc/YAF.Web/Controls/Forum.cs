@@ -2,7 +2,7 @@
  * Copyright (C) 2003-2005 Bjørnar Henden
  * Copyright (C) 2006-2013 Jaben Cargman
  * Copyright (C) 2014-2020 Ingo Herbote
- * http://www.yetanotherforum.net/
+ * https://www.yetanotherforum.net/
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -83,7 +83,7 @@ namespace YAF.Web.Controls
         /// </summary>
         public Forum()
         {
-            // validate YafTaskModule is running...
+            // validate TaskModule is running...
             TaskModuleRunning();
 
             // init the modules and run them immediately...
@@ -168,17 +168,17 @@ namespace YAF.Web.Controls
         /// <summary>
         ///   Gets UserID for the current User (Read Only)
         /// </summary>
-        public int PageUserID => YafContext.Current.PageUserID;
+        public int PageUserID => BoardContext.Current.PageUserID;
 
         /// <summary>
         ///   Gets UserName for the current User (Read Only)
         /// </summary>
-        public string PageUserName => YafContext.Current.User == null ? "Guest" : YafContext.Current.User.UserName;
+        public string PageUserName => BoardContext.Current.User == null ? "Guest" : BoardContext.Current.User.UserName;
 
         /// <summary>
         ///   Gets ServiceLocator.
         /// </summary>
-        public IServiceLocator ServiceLocator => YafContext.Current.ServiceLocator;
+        public IServiceLocator ServiceLocator => BoardContext.Current.ServiceLocator;
 
         #endregion
 
@@ -212,8 +212,8 @@ namespace YAF.Web.Controls
         {
             base.OnUnload(e);
 
-            // make sure the YafContext is disposed of...
-            YafContext.Current.Dispose();
+            // make sure the BoardContext is disposed of...
+            BoardContext.Current.Dispose();
         }
 
         /// <summary>
@@ -311,17 +311,17 @@ namespace YAF.Web.Controls
             // only show header if show toolbar is enabled
             this.currentForumPage.ForumHeader.Visible = this.currentForumPage.ShowToolBar;
 
-            // set the YafContext ForumPage...
-            YafContext.Current.CurrentForumPage = this.currentForumPage;
+            // set the BoardContext ForumPage...
+            BoardContext.Current.CurrentForumPage = this.currentForumPage;
 
             // add the header control before the page rendering...
-            if (YafContext.Current.Settings.LockedForum == 0)
+            if (BoardContext.Current.Settings.LockedForum == 0)
             {
                 this.Controls.AddAt(1, this.Header);
             }
 
             // Add the LoginBox to Control, if used and User is Guest
-            if (YafContext.Current.IsGuest && !Config.IsAnyPortal && Config.AllowLoginAndLogoff)
+            if (BoardContext.Current.IsGuest && !Config.IsAnyPortal && Config.AllowLoginAndLogoff)
             {
                 this.Controls.Add(this.LoadControl($"{BoardInfo.ForumServerFileRoot}Dialogs/LoginBox.ascx"));
             }
@@ -336,7 +336,7 @@ namespace YAF.Web.Controls
             this.Controls.Add(this.currentForumPage);
 
             // add the footer control after the page...
-            if (YafContext.Current.Settings.LockedForum == 0)
+            if (BoardContext.Current.Settings.LockedForum == 0)
             {
                 this.Controls.Add(this.Footer);
             }
@@ -346,7 +346,7 @@ namespace YAF.Web.Controls
 
             var cookieName = "YAF-AcceptCookies";
 
-            if (YafContext.Current.Get<HttpRequestBase>().Cookies[cookieName] == null
+            if (BoardContext.Current.Get<HttpRequestBase>().Cookies[cookieName] == null
                 && this.Get<BoardSettings>().ShowCookieConsent && !Config.IsAnyPortal)
             {
                 // Add cookie consent
@@ -382,13 +382,13 @@ namespace YAF.Web.Controls
             }
 
 #if DEBUG
-            throw new YafTaskModuleNotRegisteredException(
-                @"YAF.NET is not setup properly. Please add the <add name=""YafTaskModule"" type=""YAF.Core.YafTaskModule, YAF.Core"" /> to the <modules> section of your web.config file.");
+            throw new TaskModuleNotRegisteredException(
+                @"YAF.NET is not setup properly. Please add the <add name=""TaskModule"" type=""YAF.Core.TaskModule, YAF.Core"" /> to the <modules> section of your web.config file.");
 #else
 
             // YAF is not setup properly...
             HttpContext.Current.Session["StartupException"] =
-                @"YAF.NET is not setup properly. Please add the <add name=""YafTaskModule"" type=""YAF.Core.YafTaskModule, YAF.Core"" /> to the <modules> section of your web.config file.";
+                @"YAF.NET is not setup properly. Please add the <add name=""TaskModule"" type=""YAF.Core.TaskModule, YAF.Core"" /> to the <modules> section of your web.config file.";
 
             // go immediately to the error page.
             HttpContext.Current.Response.Redirect($"{BoardInfo.ForumClientFileRoot}error.aspx");

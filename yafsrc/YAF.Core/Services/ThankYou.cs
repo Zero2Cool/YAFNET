@@ -24,8 +24,6 @@
 
 namespace YAF.Core.Services
 {
-    using System.Data;
-    using System.Linq;
     using System.Text;
     using System.Web;
 
@@ -35,7 +33,6 @@ namespace YAF.Core.Services
     using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
-    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
     using YAF.Types.Objects;
@@ -76,9 +73,9 @@ namespace YAF.Core.Services
             return new ThankYouInfo
                        {
                            MessageID = messageId,
-                           ThanksInfo = YafContext.Current.Get<IThankYou>().ThanksInfo(username, messageId),
-                           Text = YafContext.Current.Get<ILocalization>().GetText("BUTTON", textTag),
-                           Title = YafContext.Current.Get<ILocalization>().GetText("BUTTON", titleTag)
+                           ThanksInfo = BoardContext.Current.Get<IThankYou>().ThanksInfo(username, messageId),
+                           Text = BoardContext.Current.Get<ILocalization>().GetText("BUTTON", textTag),
+                           Title = BoardContext.Current.Get<ILocalization>().GetText("BUTTON", titleTag)
                        };
         }
 
@@ -97,7 +94,7 @@ namespace YAF.Core.Services
         /// </returns>
         public string ThanksInfo([NotNull] string username, int messageId)
         {
-            var thanksNumber = YafContext.Current.GetRepository<Thanks>().Count(t => t.MessageID == messageId);
+            var thanksNumber = BoardContext.Current.GetRepository<Thanks>().Count(t => t.MessageID == messageId);
 
             if (thanksNumber == 0)
             {
@@ -105,20 +102,20 @@ namespace YAF.Core.Services
             }
 
             var displayName = username;
-            if (YafContext.Current.Get<BoardSettings>().EnableDisplayName)
+            if (BoardContext.Current.Get<BoardSettings>().EnableDisplayName)
             {
                 // get the user's display name.
                 var mu = UserMembershipHelper.GetMembershipUserByName(username);
                 if (mu != null)
                 {
-                    displayName = YafContext.Current.Get<IUserDisplayName>().GetName(
+                    displayName = BoardContext.Current.Get<IUserDisplayName>().GetName(
                         UserMembershipHelper.GetUserIDFromProviderUserKey(mu.ProviderUserKey));
                 }
             }
 
-            displayName = YafContext.Current.Get<HttpServerUtilityBase>().HtmlEncode(displayName);
+            displayName = BoardContext.Current.Get<HttpServerUtilityBase>().HtmlEncode(displayName);
 
-            var thanksText = YafContext.Current.Get<ILocalization>()
+            var thanksText = BoardContext.Current.Get<ILocalization>()
                 .GetTextFormatted("THANKSINFO", thanksNumber, displayName);
 
             var thanks = GetThanks(messageId);
@@ -148,38 +145,38 @@ namespace YAF.Core.Services
         {
             var filler = new StringBuilder();
 
-            using (var dt = YafContext.Current.GetRepository<Thanks>().MessageGetThanksAsDataTable(messageId))
-            {
-                filler.Append("<ol>");
-                
-                dt.Rows.Cast<DataRow>().ForEach(dr =>
-                {
-                    var name = YafContext.Current.Get<BoardSettings>().EnableDisplayName
-                                   ? YafContext.Current.Get<HttpServerUtilityBase>()
-                                       .HtmlEncode(dr["DisplayName"].ToString())
-                                   : YafContext.Current.Get<HttpServerUtilityBase>().HtmlEncode(dr["Name"].ToString());
+            var thanks = BoardContext.Current.GetRepository<Thanks>().MessageGetThanksList(messageId);
 
-                    // vzrus: quick fix for the incorrect link. URL rewriting don't work :(
-                    filler.AppendFormat(
-                        @"<li class=""list-inline-item""><a id=""{0}"" href=""{1}""><u>{2}</u></a>",
-                        dr["UserID"],
-                        BuildLink.GetLink(ForumPages.Profile, "u={0}&name={1}", dr["UserID"], name),
-                        name);
+            filler.Append("<ol>");
 
-                    if (YafContext.Current.Get<BoardSettings>().ShowThanksDate)
+            thanks.ForEach(
+                dr =>
                     {
+                        var name = BoardContext.Current.Get<BoardSettings>().EnableDisplayName
+                                       ? BoardContext.Current.Get<HttpServerUtilityBase>()
+                                           .HtmlEncode(dr.Item2.DisplayName)
+                                       : BoardContext.Current.Get<HttpServerUtilityBase>().HtmlEncode(dr.Item2.Name);
+
+                        // vzrus: quick fix for the incorrect link. URL rewriting don't work :(
                         filler.AppendFormat(
-                            " {0}",
-                            YafContext.Current.Get<ILocalization>().GetTextFormatted(
-                                "ONDATE",
-                                YafContext.Current.Get<IDateTime>().FormatDateShort(dr["ThanksDate"])));
-                    }
+                            @"<li class=""list-inline-item""><a id=""{0}"" href=""{1}""><u>{2}</u></a>",
+                            dr.Item2.ID,
+                            BuildLink.GetLink(ForumPages.Profile, "u={0}&name={1}", dr.Item2.ID, name),
+                            name);
 
-                    filler.Append("</li>");
-                });
+                        if (BoardContext.Current.Get<BoardSettings>().ShowThanksDate)
+                        {
+                            filler.AppendFormat(
+                                " {0}",
+                                BoardContext.Current.Get<ILocalization>().GetTextFormatted(
+                                    "ONDATE",
+                                    BoardContext.Current.Get<IDateTime>().FormatDateShort(dr.Item1.ThanksDate)));
+                        }
 
-                filler.Append("</ol>");
-            }
+                        filler.Append("</li>");
+                    });
+
+            filler.Append("</ol>");
 
             return filler.ToString();
         }

@@ -39,7 +39,6 @@ namespace YAF.Core.Services
     using YAF.Core;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
-    using YAF.Core.Services.Localization;
     using YAF.Core.Services.Startup;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -47,7 +46,6 @@ namespace YAF.Core.Services
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
     using YAF.Types.Objects;
-    using YAF.Utils;
 
     #endregion
 
@@ -57,13 +55,10 @@ namespace YAF.Core.Services
     public class Album : IAlbum, IHaveServiceLocator
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Buddys"/> class.
+        /// Initializes a new instance of the <see cref="Album"/> class.
         /// </summary>
         /// <param name="serviceLocator">
         /// The service locator.
-        /// </param>
-        /// <param name="dbBroker">
-        /// The DB broker.
         /// </param>
         public Album([NotNull] IServiceLocator serviceLocator)
         {
@@ -84,63 +79,63 @@ namespace YAF.Core.Services
         /// <summary>
         /// Deletes the specified album/image.
         /// </summary>
-        /// <param name="upDir">
-        /// The Upload dir.
+        /// <param name="uploadFolder">
+        /// The Upload folder.
         /// </param>
         /// <param name="albumId">
         /// The album id.
         /// </param>
-        /// <param name="userID">
+        /// <param name="userId">
         /// The user id.
         /// </param>
-        /// <param name="imageID">
+        /// <param name="imageId">
         /// The image id.
         /// </param>
         public void AlbumImageDelete(
-            [NotNull] object upDir,
-            [CanBeNull] object albumId,
-            int userID,
-            [NotNull] object imageID)
+            [NotNull] string uploadFolder,
+            [CanBeNull] int? albumId,
+            int userId,
+            [NotNull] int? imageId)
         {
-            if (albumId != null)
+            if (albumId.HasValue)
             {
-                var albums = YafContext.Current.GetRepository<UserAlbumImage>().List(albumId.ToType<int>());
+                var albums = BoardContext.Current.GetRepository<UserAlbumImage>().List(albumId.Value);
 
                 albums.ForEach(
                     dr =>
                     {
-                        var fullName = $"{upDir}/{userID}.{albumId}.{dr.FileName}.yafalbum";
+                        var fullName = $"{uploadFolder}/{userId}.{albumId}.{dr.FileName}.yafalbum";
                         var file = new FileInfo(fullName);
 
                         try
                         {
-                            if (file.Exists)
+                            if (!file.Exists)
                             {
-                                File.SetAttributes(fullName, FileAttributes.Normal);
-                                File.Delete(fullName);
+                                return;
                             }
+
+                            File.SetAttributes(fullName, FileAttributes.Normal);
+                            File.Delete(fullName);
                         }
                         finally
                         {
-                            var imageId = dr.ID;
-                            YafContext.Current.GetRepository<UserAlbumImage>().DeleteById(imageId);
-                            YafContext.Current.GetRepository<UserAlbum>().DeleteCover(imageId);
+                            var imageIdDelete = dr.ID;
+                            BoardContext.Current.GetRepository<UserAlbumImage>().DeleteById(imageIdDelete);
+                            BoardContext.Current.GetRepository<UserAlbum>().DeleteCover(imageIdDelete);
                         }
                     });
                 
+                BoardContext.Current.GetRepository<UserAlbumImage>().Delete(a => a.AlbumID == albumId.ToType<int>());
 
-                YafContext.Current.GetRepository<UserAlbumImage>().Delete(a => a.AlbumID == albumId.ToType<int>());
-
-                YafContext.Current.GetRepository<UserAlbum>().Delete(a => a.ID == albumId.ToType<int>());
+                BoardContext.Current.GetRepository<UserAlbum>().Delete(a => a.ID == albumId.ToType<int>());
             }
             else
             {
-                var dt = YafContext.Current.GetRepository<UserAlbumImage>().ListImage(imageID.ToType<int>())
-                    .FirstOrDefault();
+                var image = BoardContext.Current.GetRepository<UserAlbumImage>().GetImage(imageId.Value);
 
-                var fileName = dt.Item1.FileName;
-                var imgAlbumId = dt.Item1.AlbumID.ToString();
-                var fullName = $"{upDir}/{userID}.{imgAlbumId}.{fileName}.yafalbum";
+                var fileName = image.Item1.FileName;
+                var imgAlbumId = image.Item1.AlbumID.ToString();
+                var fullName = $"{uploadFolder}/{userId}.{imgAlbumId}.{fileName}.yafalbum";
                 var file = new FileInfo(fullName);
 
                 try
@@ -153,9 +148,8 @@ namespace YAF.Core.Services
                 }
                 finally
                 {
-                    var imageId = imageID.ToType<int>();
-                    YafContext.Current.GetRepository<UserAlbumImage>().DeleteById(imageId);
-                    YafContext.Current.GetRepository<UserAlbum>().DeleteCover(imageId);
+                    BoardContext.Current.GetRepository<UserAlbumImage>().DeleteById(imageId.Value);
+                    BoardContext.Current.GetRepository<UserAlbum>().DeleteCover(imageId.Value);
                 }
             }
         }
@@ -174,18 +168,18 @@ namespace YAF.Core.Services
         /// </returns>
         public ReturnClass ChangeAlbumTitle(int albumId, [NotNull] string newTitle)
         {
-            // load the DB so YafContext can work...
+            // load the DB so BoardContext can work...
             CodeContracts.VerifyNotNull(newTitle, "newTitle");
 
-            YafContext.Current.Get<StartupInitializeDb>().Run();
+            BoardContext.Current.Get<StartupInitializeDb>().Run();
 
             // newTitle = System.Web.HttpUtility.HtmlEncode(newTitle);
-            YafContext.Current.GetRepository<UserAlbum>().UpdateTitle(albumId, newTitle);
+            BoardContext.Current.GetRepository<UserAlbum>().UpdateTitle(albumId, newTitle);
 
             var returnObject = new ReturnClass { NewTitle = newTitle };
 
             returnObject.NewTitle = newTitle == string.Empty
-                                        ? YafContext.Current.Get<ILocalization>().GetText("ALBUM", "ALBUM_CHANGE_TITLE")
+                                        ? BoardContext.Current.Get<ILocalization>().GetText("ALBUM", "ALBUM_CHANGE_TITLE")
                                         : newTitle;
             returnObject.Id = $"0{albumId.ToString()}";
             return returnObject;
@@ -205,17 +199,17 @@ namespace YAF.Core.Services
         /// </returns>
         public ReturnClass ChangeImageCaption(int imageId, [NotNull] string newCaption)
         {
-            // load the DB so YafContext can work...
+            // load the DB so BoardContext can work...
             CodeContracts.VerifyNotNull(newCaption, "newCaption");
 
-            YafContext.Current.Get<StartupInitializeDb>().Run();
+            BoardContext.Current.Get<StartupInitializeDb>().Run();
 
             // newCaption = System.Web.HttpUtility.HtmlEncode(newCaption);
-            YafContext.Current.GetRepository<UserAlbumImage>().UpdateCaption(imageId, newCaption);
+            BoardContext.Current.GetRepository<UserAlbumImage>().UpdateCaption(imageId, newCaption);
             var returnObject = new ReturnClass { NewTitle = newCaption };
 
             returnObject.NewTitle = newCaption == string.Empty
-                                        ? YafContext.Current.Get<ILocalization>().GetText(
+                                        ? BoardContext.Current.Get<ILocalization>().GetText(
                                             "ALBUM",
                                             "ALBUM_IMAGE_CHANGE_CAPTION")
                                         : newCaption;
@@ -231,69 +225,63 @@ namespace YAF.Core.Services
         /// <param name="previewCropped">if set to <c>true</c> [preview cropped].</param>
         public void GetAlbumImagePreview([NotNull] HttpContext context, string localizationFile, bool previewCropped)
         {
-            var eTag =
+            var etag =
                 $@"""{context.Request.QueryString.GetFirstOrDefault("imgprv")}{localizationFile.GetHashCode()}""";
 
             try
             {
                 // ImageID
-                var dt = this.GetRepository<UserAlbumImage>()
-                    .ListImage(context.Request.QueryString.GetFirstOrDefaultAs<int>("imgprv"));
+                var image = this.GetRepository<UserAlbumImage>()
+                    .GetImage(context.Request.QueryString.GetFirstOrDefaultAs<int>("imgprv"));
 
-                foreach (var row in dt)
+                var data = new MemoryStream();
+
+                var uploadFolder = BoardFolders.Current.Uploads;
+
+                var oldFileName = context.Server.MapPath(
+                    $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}");
+                var newFileName = context.Server.MapPath(
+                    $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}.yafalbum");
+
+                // use the new fileName (with extension) if it exists...
+                var fileName = File.Exists(newFileName) ? newFileName : oldFileName;
+
+                using (var input = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    var data = new MemoryStream();
-
-                    var sUpDir = BoardFolders.Current.Uploads;
-
-                    var oldFileName = context.Server.MapPath(
-                        $"{sUpDir}/{row.Item2.UserID}.{row.Item1.AlbumID}.{row.Item1.FileName}");
-                    var newFileName = context.Server.MapPath(
-                        $"{sUpDir}/{row.Item2.UserID}.{row.Item1.AlbumID}.{row.Item1.FileName}.yafalbum");
-
-                    // use the new fileName (with extension) if it exists...
-                    var fileName = File.Exists(newFileName) ? newFileName : oldFileName;
-
-                    using (var input = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        var buffer = new byte[input.Length];
-                        input.Read(buffer, 0, buffer.Length);
-                        data.Write(buffer, 0, buffer.Length);
-                        input.Close();
-                    }
-
-                    // reset position...
-                    data.Position = 0;
-
-                    var ms = GetAlbumOrAttachmentImageResized(
-                        data,
-                        this.Get<BoardSettings>().ImageAttachmentResizeWidth,
-                        this.Get<BoardSettings>().ImageAttachmentResizeHeight,
-                        previewCropped,
-                        row.Item1.Downloads.ToType<int>(),
-                        localizationFile,
-                        "POSTS");
-
-                    context.Response.ContentType = "image/png";
-
-                    // output stream...
-                    context.Response.OutputStream.Write(ms.ToArray(), 0, ms.Length.ToType<int>());
-                    context.Response.Cache.SetCacheability(HttpCacheability.Public);
-                    context.Response.Cache.SetExpires(DateTime.UtcNow.AddHours(2));
-                    context.Response.Cache.SetLastModified(DateTime.UtcNow);
-                    context.Response.Cache.SetETag(eTag);
-
-                    data.Dispose();
-                    ms.Dispose();
-
-                    break;
-
+                    var buffer = new byte[input.Length];
+                    input.Read(buffer, 0, buffer.Length);
+                    data.Write(buffer, 0, buffer.Length);
+                    input.Close();
                 }
+
+                // reset position...
+                data.Position = 0;
+
+                var ms = GetAlbumOrAttachmentImageResized(
+                    data,
+                    this.Get<BoardSettings>().ImageAttachmentResizeWidth,
+                    this.Get<BoardSettings>().ImageAttachmentResizeHeight,
+                    previewCropped,
+                    image.Item1.Downloads.ToType<int>(),
+                    localizationFile,
+                    "POSTS");
+
+                context.Response.ContentType = "image/png";
+
+                // output stream...
+                context.Response.OutputStream.Write(ms.ToArray(), 0, ms.Length.ToType<int>());
+                context.Response.Cache.SetCacheability(HttpCacheability.Public);
+                context.Response.Cache.SetExpires(System.DateTime.UtcNow.AddHours(2));
+                context.Response.Cache.SetLastModified(System.DateTime.UtcNow);
+                context.Response.Cache.SetETag(etag);
+
+                data.Dispose();
+                ms.Dispose();
             }
             catch (Exception x)
             {
                 this.Get<ILogger>().Log(
-                    YafContext.Current.PageUserID,
+                    BoardContext.Current.PageUserID,
                     this,
                     $"URL: {context.Request.Url}<br />Referer URL: {(context.Request.UrlReferrer != null ? context.Request.UrlReferrer.AbsoluteUri : string.Empty)}<br />Exception: {x}",
                     EventLogTypes.Information);
@@ -310,7 +298,7 @@ namespace YAF.Core.Services
         /// <param name="previewCropped">if set to <c>true</c> [preview cropped].</param>
         public void GetAlbumCover([NotNull] HttpContext context, string localizationFile, bool previewCropped)
         {
-            var eTag = $@"""{context.Request.QueryString.GetFirstOrDefault("cover")}{localizationFile.GetHashCode()}""";
+            var etag = $@"""{context.Request.QueryString.GetFirstOrDefault("cover")}{localizationFile.GetHashCode()}""";
 
             try
             {
@@ -319,23 +307,38 @@ namespace YAF.Core.Services
                 var data = new MemoryStream();
                 if (context.Request.QueryString.GetFirstOrDefault("cover") == "0")
                 {
-                    fileName = context.Server.MapPath($"{BoardInfo.ForumClientFileRoot}/images/noCover.png");
+                    var album = this.GetRepository<UserAlbumImage>().List(context.Request.QueryString.GetFirstOrDefaultAs<int>("album"));
+
+                    var random = new Random();
+
+                    if (album != null && album.Any())
+                    {
+                        var image = this.GetRepository<UserAlbumImage>().GetImage(album[random.Next(album.Count)].ID);
+
+                        var uploadFolder = BoardFolders.Current.Uploads;
+
+                        var oldFileName = context.Server.MapPath(
+                            $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}");
+                        var newFileName = context.Server.MapPath(
+                            $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}.yafalbum");
+
+                        // use the new fileName (with extension) if it exists...
+                        fileName = File.Exists(newFileName) ? newFileName : oldFileName;
+                    }
                 }
                 else
                 {
-                    var dt = this.GetRepository<UserAlbumImage>()
-                        .ListImage(context.Request.QueryString.GetFirstOrDefaultAs<int>("cover"));
+                    var image = this.GetRepository<UserAlbumImage>()
+                        .GetImage(context.Request.QueryString.GetFirstOrDefaultAs<int>("cover"));
 
-
-                    if (dt.Any())
+                    if (image != null)
                     {
-                        var row = dt.FirstOrDefault();
-                        var sUpDir = BoardFolders.Current.Uploads;
+                        var uploadFolder = BoardFolders.Current.Uploads;
 
                         var oldFileName = context.Server.MapPath(
-                            $"{sUpDir}/{row.Item2.UserID}.{row.Item1.AlbumID}.{row.Item1.FileName}");
+                            $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}");
                         var newFileName = context.Server.MapPath(
-                            $"{sUpDir}/{row.Item2.UserID}.{row.Item1.AlbumID}.{row.Item1.FileName}.yafalbum");
+                            $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}.yafalbum");
 
                         // use the new fileName (with extension) if it exists...
                         fileName = File.Exists(newFileName) ? newFileName : oldFileName;
@@ -368,16 +371,16 @@ namespace YAF.Core.Services
                 // output stream...
                 context.Response.OutputStream.Write(ms.ToArray(), 0, ms.Length.ToType<int>());
                 context.Response.Cache.SetCacheability(HttpCacheability.Public);
-                context.Response.Cache.SetExpires(DateTime.UtcNow.AddHours(2));
-                context.Response.Cache.SetLastModified(DateTime.UtcNow);
-                context.Response.Cache.SetETag(eTag);
+                context.Response.Cache.SetExpires(System.DateTime.UtcNow.AddHours(2));
+                context.Response.Cache.SetLastModified(System.DateTime.UtcNow);
+                context.Response.Cache.SetETag(etag);
 
                 data.Dispose();
                 ms.Dispose();
             }
             catch (Exception x)
             {
-                this.Get<ILogger>().Log(YafContext.Current.PageUserID, this, x, EventLogTypes.Information);
+                this.Get<ILogger>().Log(BoardContext.Current.PageUserID, this, x, EventLogTypes.Information);
                 context.Response.Write(
                     "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
             }
@@ -394,56 +397,48 @@ namespace YAF.Core.Services
             try
             {
                 // ImageID
-                var dt = this.GetRepository<UserAlbumImage>()
-                    .ListImage(context.Request.QueryString.GetFirstOrDefaultAs<int>("image"));
+                var image = this.GetRepository<UserAlbumImage>()
+                    .GetImage(context.Request.QueryString.GetFirstOrDefaultAs<int>("image"));
 
-                foreach (var row in dt)
+                byte[] data;
+
+                var uploadFolder = BoardFolders.Current.Uploads;
+
+                var oldFileName = context.Server.MapPath(
+                    $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}");
+                var newFileName = context.Server.MapPath(
+                    $"{uploadFolder}/{image.Item2.UserID}.{image.Item1.AlbumID}.{image.Item1.FileName}.yafalbum");
+
+                // use the new fileName (with extension) if it exists...
+                var fileName = File.Exists(newFileName) ? newFileName : oldFileName;
+
+                using (var input = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    byte[] data;
+                    data = new byte[input.Length];
+                    input.Read(data, 0, data.Length);
+                    input.Close();
+                }
 
-                    var sUpDir = BoardFolders.Current.Uploads;
+                context.Response.ContentType = image.Item1.ContentType;
 
-                    var oldFileName = context.Server.MapPath(
-                        $"{sUpDir}/{row.Item2.UserID}.{row.Item1.AlbumID}.{row.Item1.FileName}");
-                    var newFileName = context.Server.MapPath(
-                        $"{sUpDir}/{row.Item2.UserID}.{row.Item1.AlbumID}.{row.Item1.FileName}.yafalbum");
+                if (context.Response.ContentType.Contains("text"))
+                {
+                    context.Response.Write(
+                        "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
+                }
+                else
+                {
+                    context.Response.OutputStream.Write(data, 0, data.Length);
 
-                    // use the new fileName (with extension) if it exists...
-                    var fileName = File.Exists(newFileName) ? newFileName : oldFileName;
-
-                    using (var input = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        data = new byte[input.Length];
-                        input.Read(data, 0, data.Length);
-                        input.Close();
-                    }
-
-                    context.Response.ContentType = row.Item1.ContentType;
-
-                    if (context.Response.ContentType.Contains("text"))
-                    {
-                        context.Response.Write(
-                            "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
-                    }
-                    else
-                    {
-                        // context.Response.Cache.SetCacheability(HttpCacheability.Public);
-                        // context.Response.Cache.SetETag(eTag);
-                        context.Response.OutputStream.Write(data, 0, data.Length);
-
-                        // add a download count...
-                        this.GetRepository<UserAlbumImage>().IncrementDownload(
-                            context.Request.QueryString.GetFirstOrDefaultAs<int>("image"));
-                    }
-
-                    break;
-
+                    // add a download count...
+                    this.GetRepository<UserAlbumImage>().IncrementDownload(
+                        context.Request.QueryString.GetFirstOrDefaultAs<int>("image"));
                 }
             }
             catch (Exception x)
             {
                 this.Get<ILogger>().Log(
-                    YafContext.Current.PageUserID,
+                    BoardContext.Current.PageUserID,
                     this,
                     $"URL: {context.Request.Url}<br />Referer URL: {(context.Request.UrlReferrer != null ? context.Request.UrlReferrer.AbsoluteUri : string.Empty)}<br />Exception: {x}",
                     EventLogTypes.Information);
@@ -454,7 +449,7 @@ namespace YAF.Core.Services
         }
 
         /// <summary>
-        /// Gest the Preview Image as Response
+        /// Gets the Preview Image as Response
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="localizationFile">The localization file.</param>
@@ -475,7 +470,7 @@ namespace YAF.Core.Services
 
                 var boardID = context.Request.QueryString.Exists("b")
                                   ? context.Request.QueryString.GetFirstOrDefaultAs<int>("b")
-                                  : YafContext.Current.BoardSettings.BoardID;
+                                  : BoardContext.Current.BoardSettings.BoardID;
 
                 if (!this.Get<IPermissions>().CheckAccessRights(boardID, attachment.MessageID))
                 {
@@ -553,8 +548,8 @@ namespace YAF.Core.Services
                 // output stream...
                 context.Response.OutputStream.Write(ms.ToArray(), 0, ms.Length.ToType<int>());
                 context.Response.Cache.SetCacheability(HttpCacheability.Public);
-                context.Response.Cache.SetExpires(DateTime.UtcNow.AddHours(2));
-                context.Response.Cache.SetLastModified(DateTime.UtcNow);
+                context.Response.Cache.SetExpires(System.DateTime.UtcNow.AddHours(2));
+                context.Response.Cache.SetLastModified(System.DateTime.UtcNow);
                 context.Response.Cache.SetETag(etag);
 
                 data.Dispose();
@@ -563,7 +558,7 @@ namespace YAF.Core.Services
             catch (Exception x)
             {
                 this.Get<ILogger>().Log(
-                    YafContext.Current.PageUserID,
+                    BoardContext.Current.PageUserID,
                     this,
                     $"URL: {context.Request.Url}<br />Referer URL: {(context.Request.UrlReferrer != null ? context.Request.UrlReferrer.AbsoluteUri : string.Empty)}<br />Exception: {x}",
                     EventLogTypes.Information);

@@ -34,6 +34,7 @@ namespace YAF.Data.MsSql.Functions
     using YAF.Types;
     using YAF.Types.Attributes;
     using YAF.Types.Extensions;
+    using YAF.Types.Extensions.Data;
     using YAF.Types.Interfaces.Data;
 
     /// <summary>
@@ -128,7 +129,6 @@ namespace YAF.Data.MsSql.Functions
 
             return true;
         }
-
 
         #endregion
 

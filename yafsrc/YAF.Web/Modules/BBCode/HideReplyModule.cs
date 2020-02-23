@@ -36,7 +36,7 @@ namespace YAF.Modules.BBCode
     /// <summary>
     /// Hide Reply BBCode Module
     /// </summary>
-    public class HideReplyModule : YafBBCodeControl
+    public class HideReplyModule : BBCodeControl
     {
         /// <summary>
         /// The render.
@@ -67,15 +67,15 @@ namespace YAF.Modules.BBCode
 
             var shownContent = $"<div class=\"alert alert-warning\" role=\"alert\">{description}</div>";
 
-            if (YafContext.Current.IsAdmin)
+            if (BoardContext.Current.IsAdmin)
             {
                 writer.Write(hiddenContent);
                 return;
             }
 
-            var userId = YafContext.Current.CurrentUserData.UserID;
+            var userId = BoardContext.Current.CurrentUserData.UserID;
 
-            if (YafContext.Current.IsGuest)
+            if (BoardContext.Current.IsGuest)
             {
                 writer.Write(shownContentGuest);
                 return;

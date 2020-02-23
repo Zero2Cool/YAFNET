@@ -35,7 +35,6 @@ namespace YAF.Web.Controls
     using YAF.Core.Services;
     using YAF.Types;
     using YAF.Types.Constants;
-    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
 
     #endregion
@@ -53,12 +52,7 @@ namespace YAF.Web.Controls
         /// <value>
         /// The user identifier.
         /// </value>
-        public int UserId
-        {
-            get => this.ViewState["UserId"].ToType<int>();
-
-            set => this.ViewState["UserId"] = value;
-        }
+        public int UserId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UserLink"/> is suspended.
@@ -67,12 +61,7 @@ namespace YAF.Web.Controls
         ///   <c>true</c> if suspended; otherwise, <c>false</c>.
         /// </value>
         [NotNull]
-        public DateTime? Suspended
-        {
-            get => this.ViewState["Suspended"].ToType<DateTime?>();
-
-            set => this.ViewState["Suspended"] = value;
-        }
+        public System.DateTime? Suspended { get; set; }
 
         #endregion
 
@@ -93,10 +82,10 @@ namespace YAF.Web.Controls
 
             var activeUsers = this.Get<IDataCache>().GetOrSet(
                 Constants.Cache.UsersOnlineStatus,
-                () => this.Get<YafDbBroker>().GetActiveList(
+                () => this.Get<DataBroker>().GetActiveList(
                     false,
-                    YafContext.Current.BoardSettings.ShowCrawlersInActiveList),
-                TimeSpan.FromMilliseconds(YafContext.Current.BoardSettings.OnlineStatusCacheTimeout));
+                    BoardContext.Current.BoardSettings.ShowCrawlersInActiveList),
+                TimeSpan.FromMilliseconds(BoardContext.Current.BoardSettings.OnlineStatusCacheTimeout));
 
             output.BeginRender();
             output.WriteBeginTag(HtmlTextWriterTag.Span.ToString());

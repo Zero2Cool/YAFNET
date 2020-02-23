@@ -29,6 +29,7 @@ namespace YAF.Classes
 
     using YAF.Core;
     using YAF.RegisterV2;
+    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Utils;
 
@@ -40,7 +41,7 @@ namespace YAF.Classes
         /// <summary>
         /// Gets ServiceLocator.
         /// </summary>
-        public IServiceLocator ServiceLocator => YafContext.Current.ServiceLocator;
+        public IServiceLocator ServiceLocator => BoardContext.Current.ServiceLocator;
 
         /// <summary>
         /// Gets the latest version information.

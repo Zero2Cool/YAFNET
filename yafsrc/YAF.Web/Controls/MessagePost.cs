@@ -246,7 +246,7 @@ namespace YAF.Web.Controls
 
             var messageHistoryButton =
                 $@"<hr />
-                   <p class=""mb-0""><a href=""{BuildLink.GetLink(ForumPages.messagehistory, "m={0}", messageId.ToType<int>())}"" class=""btn btn-secondary btn-sm mr-1"">
+                   <p class=""mb-0""><a href=""{BuildLink.GetLink(ForumPages.MessageHistory, "m={0}", messageId.ToType<int>())}"" class=""btn btn-secondary btn-sm mr-1"">
                          <i class=""fa fa-history fa-fw""></i>{this.GetText("MESSAGEHISTORY", "TITLE")}
                       </a></p>";
 
@@ -276,7 +276,7 @@ namespace YAF.Web.Controls
                           <span aria-hidden=""true"">&times;</span>
                       </button></div>",
                 this.GetText("GO_TO_ANSWER"),
-                BuildLink.GetLink(ForumPages.posts, "m={0}#post{0}", messageId));
+                BuildLink.GetLink(ForumPages.Posts, "m={0}#post{0}", messageId));
         }
 
         /// <summary>
@@ -299,7 +299,7 @@ namespace YAF.Web.Controls
             else
             {
                 var formattedMessage =
-                    this.Get<IFormatMessage>().FormatMessage(
+                    this.Get<IFormatMessage>().Format(
                         this.HighlightMessage(this.Message, true), this.MessageFlags);
 
                 // tha_watcha : Since HTML message and BBCode can be mixed now, message should be always replace BBCode

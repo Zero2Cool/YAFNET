@@ -105,9 +105,9 @@ namespace YAF.Web.Editors
         {
             base.Editor_PreRender(sender, e);
 
-            YafContext.Current.PageElements.AddScriptReference("YafEditor", "yafEditor/yafEditor.min.js");
+            BoardContext.Current.PageElements.AddScriptReference("YafEditor", "yafEditor/yafEditor.min.js");
 
-            YafContext.Current.PageElements.RegisterJsBlock(
+            BoardContext.Current.PageElements.RegisterJsBlock(
                 "CreateYafEditorJs",
                 $@"var {this.SafeID}=new yafEditor('{this.SafeID}');
                   function setStyle(style,option) {{
@@ -138,12 +138,12 @@ namespace YAF.Web.Editors
                 var extensions = this.GetRepository<FileExtension>()
                     .Get(ext => ext.BoardId == this.PageContext.PageBoardID);
 
-                YafContext.Current.PageElements.RegisterJsBlock(
+                BoardContext.Current.PageElements.RegisterJsBlock(
                     "autoUpload",
                     JavaScriptBlocks.FileAutoUploadLoadJs(
                         string.Join("|", extensions.Select(ext => ext.Extension)),
                         this.Get<BoardSettings>().MaxFileSize,
-                        $"{BoardInfo.ForumClientFileRoot}YafUploader.ashx",
+                        $"{BoardInfo.ForumClientFileRoot}FileUploader.ashx",
                         this.PageContext.PageForumID,
                         this.PageContext.PageBoardID,
                         this.Get<BoardSettings>().ImageAttachmentResizeWidth,
@@ -331,7 +331,7 @@ namespace YAF.Web.Editors
 
             RenderButton(writer, "setStyle('indent','')", this.GetText("COMMON", "INDENT"), "indent");
 
-            var customBbCode = this.Get<YafDbBroker>().GetCustomBBCode().ToList();
+            var customBbCode = this.Get<DataBroker>().GetCustomBBCode().ToList();
 
             var customBbCodesWithToolbar = customBbCode.Where(code => code.UseToolbar == true).ToList();
             var customBbCodesWithNoToolbar =
@@ -444,8 +444,6 @@ namespace YAF.Web.Editors
             writer.Write("</div></div>");
 
             writer.Write("<div class=\"btn-group mt-1\" role =\"group\">");
-
-            RenderButton(writer, "SaveMessage()", this.GetText("COMMON", "TT_SAVE"), "save");
 
             writer.Write("</div>");
 

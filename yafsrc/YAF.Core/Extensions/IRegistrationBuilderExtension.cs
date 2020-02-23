@@ -28,6 +28,7 @@ namespace YAF.Core.Extensions
     using Autofac.Builder;
 
     using YAF.Types;
+    using YAF.Types.Constants;
 
     #endregion
 
@@ -53,12 +54,12 @@ namespace YAF.Core.Extensions
         /// <returns>
         /// The instance per yaf context.
         /// </returns>
-        public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> InstancePerYafContext<TLimit, TActivatorData, TRegistrationStyle>(
+        public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> InstancePerBoardContext<TLimit, TActivatorData, TRegistrationStyle>(
                 [NotNull] this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> builder)
         {
             CodeContracts.VerifyNotNull(builder, "builder");
 
-            return builder.InstancePerMatchingLifetimeScope(YafLifetimeScope.Context);
+            return builder.InstancePerMatchingLifetimeScope(LifetimeScope.Context);
         }
 
         #endregion

@@ -27,6 +27,7 @@ namespace YAF.Types.Interfaces
 
     using System.Collections.Generic;
 
+    using YAF.Types.Constants;
     using YAF.Types.Interfaces.Data;
 
     #endregion
@@ -244,11 +245,11 @@ namespace YAF.Types.Interfaces
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool IsYafContext([NotNull] this IServiceLocator serviceLocator)
+        public static bool IsBoardContext([NotNull] this IServiceLocator serviceLocator)
         {
             CodeContracts.VerifyNotNull(serviceLocator, "serviceLocator");
 
-            return serviceLocator.Tag == (object)YafLifetimeScope.Context;
+            return serviceLocator.Tag == (object)LifetimeScope.Context;
         }
 
         /// <summary>

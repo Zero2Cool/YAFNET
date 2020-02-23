@@ -62,7 +62,7 @@ namespace YAF.Web.Controls
         /// <summary>
         /// Gets CustomBBCode.
         /// </summary>
-        protected IDictionary<BBCode, Regex> CustomBBCode
+        protected IDictionary<Types.Models.BBCode, Regex> CustomBBCode
         {
             get
             {
@@ -70,7 +70,7 @@ namespace YAF.Web.Controls
                     "CustomBBCodeRegExDictionary",
                     () =>
                         {
-                            var bbcodeTable = this.Get<YafDbBroker>().GetCustomBBCode();
+                            var bbcodeTable = this.Get<DataBroker>().GetCustomBBCode();
                             return
                                 bbcodeTable.Where(b => (b.UseModule ?? false) && b.ModuleClass.IsSet() && b.SearchRegex.IsSet()).ToDictionary(
                                     codeRow => codeRow, codeRow => new Regex(codeRow.SearchRegex, Options));
@@ -136,7 +136,7 @@ namespace YAF.Web.Controls
 
                             // create/render the control...
                             var module = BuildManager.GetType(codeRow.ModuleClass, true, false);
-                            var customModule = (YafBBCodeControl)Activator.CreateInstance(module);
+                            var customModule = (BBCodeControl)Activator.CreateInstance(module);
 
                             // assign parameters...
                             customModule.CurrentMessageFlags = theseFlags;

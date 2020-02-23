@@ -58,7 +58,7 @@ namespace YAF.Core.Handlers
         /// <summary>
         /// Gets the ServiceLocator.
         /// </summary>
-        public IServiceLocator ServiceLocator => YafContext.Current.ServiceLocator;
+        public IServiceLocator ServiceLocator => BoardContext.Current.ServiceLocator;
 
         #endregion
 
@@ -282,7 +282,7 @@ namespace YAF.Core.Handlers
                 userKey = user.ProviderUserKey;
             }
 
-            var pageRow = this.GetRepository<ActiveAccess>().PageLoad(
+            var pageRow = this.GetRepository<ActiveAccess>().PageLoadAsDataRow(
                 HttpContext.Current.Session.SessionID,
                 boardId,
                 userKey,

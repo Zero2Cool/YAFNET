@@ -33,6 +33,7 @@ namespace YAF.Core.Services.CheckForSpam
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Constants;
+    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
@@ -78,19 +79,19 @@ namespace YAF.Core.Services.CheckForSpam
 
             try
             {
-                var bannedEmailRepository = YafContext.Current.Get<IRepository<BannedEmail>>();
-                var bannedIPRepository = YafContext.Current.Get<IRepository<BannedIP>>();
+                var bannedEmailRepository = BoardContext.Current.Get<IRepository<BannedEmail>>();
+                var bannedIPRepository = BoardContext.Current.Get<IRepository<BannedIP>>();
 
-                var bannedIpList = YafContext.Current.Get<IDataCache>().GetOrSet(
+                var bannedIpList = BoardContext.Current.Get<IDataCache>().GetOrSet(
                     Constants.Cache.BannedIP,
-                    () => bannedIPRepository.Get(x => x.BoardID == YafContext.Current.PageBoardID)
+                    () => bannedIPRepository.Get(x => x.BoardID == BoardContext.Current.PageBoardID)
                         .Select(x => x.Mask.Trim()).ToList());
 
-                var bannedNameRepository = YafContext.Current.Get<IRepository<BannedName>>();
+                var bannedNameRepository = BoardContext.Current.Get<IRepository<BannedName>>();
 
                 var isBot = false;
 
-                foreach (var email in bannedEmailRepository.Get(x => x.BoardID == YafContext.Current.PageBoardID))
+                foreach (var email in bannedEmailRepository.Get(x => x.BoardID == BoardContext.Current.PageBoardID))
                 {
                     try
                     {
@@ -105,7 +106,7 @@ namespace YAF.Core.Services.CheckForSpam
                     }
                     catch (Exception ex)
                     {
-                        YafContext.Current.Get<ILogger>().Error(
+                        BoardContext.Current.Get<ILogger>().Error(
                             ex,
                             $"Error while Checking for Bot Email (Check: {email.Mask})");
                     }
@@ -117,7 +118,7 @@ namespace YAF.Core.Services.CheckForSpam
                     isBot = true;
                 }
 
-                foreach (var name in bannedNameRepository.Get(x => x.BoardID == YafContext.Current.PageBoardID))
+                foreach (var name in bannedNameRepository.Get(x => x.BoardID == BoardContext.Current.PageBoardID))
                 {
                     try
                     {
@@ -132,7 +133,7 @@ namespace YAF.Core.Services.CheckForSpam
                     }
                     catch (Exception ex)
                     {
-                        YafContext.Current.Get<ILogger>().Error(
+                        BoardContext.Current.Get<ILogger>().Error(
                             ex,
                             $"Error while Checking for Bot Name (Check: {name.Mask})");
                     }
@@ -142,7 +143,7 @@ namespace YAF.Core.Services.CheckForSpam
             }
             catch (Exception ex)
             {
-                YafContext.Current.Get<ILogger>().Error(ex, "Error while Checking for Bot");
+                BoardContext.Current.Get<ILogger>().Error(ex, "Error while Checking for Bot");
 
                 return false;
             }

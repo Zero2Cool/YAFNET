@@ -26,7 +26,7 @@ namespace YAF.Core.UsersRoles
     using System;
 
     using YAF.Configuration;
-    using YAF.Core.Theme;
+    using YAF.Core.Services;
     using YAF.Types.Interfaces;
 
     /// <summary>
@@ -49,7 +49,7 @@ namespace YAF.Core.UsersRoles
             var row = UserMembershipHelper.GetUserRowForID(userId);
 
             if (row != null && row["LanguageFile"] != DBNull.Value
-                && YafContext.Current.Get<BoardSettings>().AllowUserLanguage)
+                && BoardContext.Current.Get<BoardSettings>().AllowUserLanguage)
             {
                 return row["LanguageFile"].ToString();
             }
@@ -98,7 +98,7 @@ namespace YAF.Core.UsersRoles
                                    ? row["ThemeFile"].ToString()
                                    : theme;
             
-            if (!YafTheme.IsValidTheme(themeFile))
+            if (!Theme.IsValidTheme(themeFile))
             {
                 themeFile = "yaf";
             }

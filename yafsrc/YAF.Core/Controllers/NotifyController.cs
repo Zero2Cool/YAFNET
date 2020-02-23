@@ -49,7 +49,7 @@ namespace YAF.Core.Controllers
         /// <summary>
         ///   Gets ServiceLocator.
         /// </summary>
-        public IServiceLocator ServiceLocator => YafContext.Current.ServiceLocator;
+        public IServiceLocator ServiceLocator => BoardContext.Current.ServiceLocator;
 
         #endregion
 
@@ -90,7 +90,7 @@ namespace YAF.Core.Controllers
                         {
                             NavigateUrl =
                                                     BuildLink.GetLink(
-                                                        ForumPages.posts,
+                                                        ForumPages.Posts,
                                                         "m={0}#post{0}",
                                                         activity.MessageID.Value),
                             Text =

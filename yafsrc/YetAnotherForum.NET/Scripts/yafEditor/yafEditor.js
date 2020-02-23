@@ -74,7 +74,7 @@ yafEditor.prototype.FormatText = function (command, option) {
             bootbox.prompt({
                 title: "Enter URL:",
                 placeholder: "https://",
-                callback: function(url) {
+                callback: function (url) {
                     if (url !== null && url !== "") {
                         if (getCurrentSelection(textObj)) {
                             wrapSelection(textObj, "[url=" + url + "]", "[/url]");
@@ -83,7 +83,7 @@ yafEditor.prototype.FormatText = function (command, option) {
                             bootbox.prompt({
                                 title: "Enter URL Description:",
                                 placeholder: "Description",
-                                callback: function(desc) {
+                                callback: function (desc) {
                                     if (desc != "" && desc != null) {
                                         replaceSelection(textObj, "[url=" + url + "]" + desc + "[/url]");
                                     } else {
@@ -155,11 +155,11 @@ function replaceSelection(input, replaceString) {
         var selectionStart = input.selectionStart;
         var selectionEnd = input.selectionEnd;
         input.value = input.value.substring(0, selectionStart)
-					+ replaceString
-					+ input.value.substring(selectionEnd);
+            + replaceString
+            + input.value.substring(selectionEnd);
         if (selectionStart != selectionEnd) // has there been a selection
             setSelectionRange(input, selectionStart, selectionStart +
-				replaceString.length);
+                replaceString.length);
         else // set caret
             setCaretToPos(input, selectionStart + replaceString.length);
     }
@@ -183,8 +183,8 @@ function removeFromSelection(input, preString, postString) {
         if (selectedText.indexOf(preString) != -1 && selectedText.indexOf(postString) != -1) {
 
             input.value = input.value.substring(0, selectionStart)
-                        + input.value.substring(selectionStart + preString.length, selectionEnd - postString.length)
-                        + input.value.substring(selectionEnd);
+                + input.value.substring(selectionStart + preString.length, selectionEnd - postString.length)
+                + input.value.substring(selectionEnd);
 
             if (selectionStart != selectionEnd) {
                 // has there been a selection
@@ -203,10 +203,10 @@ function wrapSelection(input, preString, postString) {
         var selectionStart = input.selectionStart;
         var selectionEnd = input.selectionEnd;
         input.value = input.value.substring(0, selectionStart)
-					+ preString
-					+ input.value.substring(selectionStart, selectionEnd)
-					+ postString
-					+ input.value.substring(selectionEnd);
+            + preString
+            + input.value.substring(selectionStart, selectionEnd)
+            + postString
+            + input.value.substring(selectionEnd);
         if (selectionStart != selectionEnd) {
             // has there been a selection
             setSelectionRange(input, selectionStart, preString.length + postString.length + selectionEnd);
@@ -243,7 +243,7 @@ function getCurrentSelection(input) {
     }
 }
 
-jQuery(document).ready(function() {
+jQuery(document).ready(function () {
 
     var autoSaveKey = "autosave_" + window.location + "_" + $(".BBCodeEditor").attr("name");
 
@@ -264,7 +264,7 @@ jQuery(document).ready(function() {
     });
 
     $(".btn-group").on("show.bs.dropdown",
-        function(event) {
+        function (event) {
             if (event.relatedTarget.id === "emoji") {
                 $(".BBCodeEditor").emojiPicker("toggle");
             }
@@ -274,14 +274,14 @@ jQuery(document).ready(function() {
     var autoSaveKey = "autosave_" + window.location + "_" + $(this).attr("name");
 
 
-    $(".BBCodeEditor").change(function() {
+    $(".BBCodeEditor").change(function () {
 
         CheckForAutoSavedContent(this, autoSaveKey, 1440);
 
         startTimer(this);
     });
 
-    $(".BBCodeEditor").keydown(function(e) {
+    $(".BBCodeEditor").keydown(function (e) {
         if (e.ctrlKey &&
             !e.altKey &&
             (e.which == 66 || e.which == 73 || e.which == 85 || e.which == 81 || e.which == 13)) {
@@ -304,7 +304,7 @@ jQuery(document).ready(function() {
         }
     });
 
-    $("a[id*='Cancel'], a[id*='PostReply']").click(function () {
+    $("a[id*='Preview'], a[id*='Cancel'], a[id*='PostReply']").click(function () {
         RemoveStorage(autoSaveKey);
     });
 });
@@ -345,16 +345,16 @@ function CheckForAutoSavedContent(editorInstance, autoSaveKey, notOlderThen) {
         } else {
             RemoveStorage(autoSaveKey);
         }
-    } 
+    }
 }
 
 var startTimer = function (editorInstance) {
-    
+
     if (window.autosave_timeOutId == null) {
-        var delay =   10;
+        var delay = 10;
         window.autosave_timeOutId = setTimeout(function () {
-                onTimer(editorInstance);
-            },
+            onTimer(editorInstance);
+        },
             delay * 1000);
     }
 };
@@ -399,16 +399,17 @@ function SaveData(autoSaveKey, editorInstance) {
         alert("Browser localStorage is full, clear your storage or Increase database size");
     } else {
         $.notify({
-                message: "Auto Saved",
-                icon: "fa fa-check"
-            },
+            message: "Auto Saved",
+            icon: "fa fa-check"
+        },
             {
                 allow_dismiss: true,
                 type: "success",
                 element: "body",
                 position: null,
                 placement: {
-                    from: "top", align: "center" }
+                    from: "top", align: "center"
+                }
             });
     }
 }
@@ -426,15 +427,15 @@ function isQuotaExceeded(e) {
     if (e) {
         if (e.code) {
             switch (e.code) {
-            case 22:
-                quotaExceeded = true;
-                break;
-            case 1014:
-                // Firefox
-                if (e.name === "NS_ERROR_DOM_QUOTA_REACHED") {
+                case 22:
                     quotaExceeded = true;
-                }
-                break;
+                    break;
+                case 1014:
+                    // Firefox
+                    if (e.name === "NS_ERROR_DOM_QUOTA_REACHED") {
+                        quotaExceeded = true;
+                    }
+                    break;
             }
         } else if (e.number === -2147024882) {
             // Internet Explorer 8

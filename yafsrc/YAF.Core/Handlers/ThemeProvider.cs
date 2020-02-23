@@ -25,7 +25,7 @@ namespace YAF.Core.Handlers
 
     using System;
 
-    using YAF.Core.Theme;
+    using YAF.Core.Services;
     using YAF.Types.Exceptions;
     using YAF.Types.Interfaces;
 
@@ -107,28 +107,28 @@ namespace YAF.Core.Handlers
 
             string theme;
 
-            if (YafContext.Current.Page != null && YafContext.Current.Page["ThemeFile"] != null &&
-                YafContext.Current.BoardSettings.AllowUserTheme)
+            if (BoardContext.Current.Page != null && BoardContext.Current.Page["ThemeFile"] != null &&
+                BoardContext.Current.BoardSettings.AllowUserTheme)
             {
                 // use user-selected theme
-                theme = YafContext.Current.Page["ThemeFile"].ToString();
+                theme = BoardContext.Current.Page["ThemeFile"].ToString();
             }
-            else if (YafContext.Current.Page != null && YafContext.Current.Page["ForumTheme"] != null)
+            else if (BoardContext.Current.Page != null && BoardContext.Current.Page["ForumTheme"] != null)
             {
-                theme = YafContext.Current.Page["ForumTheme"].ToString();
+                theme = BoardContext.Current.Page["ForumTheme"].ToString();
             }
             else
             {
-                theme = YafContext.Current.BoardSettings.Theme;
+                theme = BoardContext.Current.BoardSettings.Theme;
             }
 
-            if (!YafTheme.IsValidTheme(theme))
+            if (!Services.Theme.IsValidTheme(theme))
             {
                 theme = "yaf";
             }
 
             // create the theme class
-            this.Theme = new YafTheme(theme);
+            this.Theme = new Theme(theme);
 
             this.AfterInit?.Invoke(this, new EventArgs());
         }

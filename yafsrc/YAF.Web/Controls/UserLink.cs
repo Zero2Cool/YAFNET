@@ -32,6 +32,7 @@ namespace YAF.Web.Controls
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.Extensions;
+    using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -100,7 +101,7 @@ namespace YAF.Web.Controls
         /// </summary>
         private bool IsHoverCardEnabled =>
             this.Get<BoardSettings>().EnableUserInfoHoverCards && this.EnableHoverCard
-                                                                  && YafContext.Current.CurrentForumPage != null;
+                                                                  && BoardContext.Current.CurrentForumPage != null;
 
         #endregion
 
@@ -132,7 +133,7 @@ namespace YAF.Web.Controls
                  }}";
 
             // Setup Hover Card JS
-            YafContext.Current.PageElements.RegisterJsBlockStartup("yafhovercardtjs", script);
+            BoardContext.Current.PageElements.RegisterJsBlockStartup("yafhovercardtjs", script);
         }
 
         /// <summary>
@@ -152,15 +153,11 @@ namespace YAF.Web.Controls
                 return;
             }
 
-            var user = this.GetRepository<User>().GetById(this.UserID);
-
-
-            // is this the guest user? If so, guest's don't have a profile.
-            var isGuest = this.IsGuest ? this.IsGuest : user.IsGuest.Value;
+            var userSuspended = this.GetRepository<User>().GetSuspended(this.UserID);
 
             output.BeginRender();
 
-            if (!isGuest)
+            if (!this.IsGuest)
             {
                 output.WriteBeginTag("a");
 
@@ -179,7 +176,7 @@ namespace YAF.Web.Controls
 
                     output.WriteAttribute(
                         "data-hovercard",
-                        $"{(Config.IsDotNetNuke ? $"{BaseUrlBuilder.GetBaseUrlFromVariables()}{BaseUrlBuilder.AppPath}" : BoardInfo.ForumClientFileRoot)}resource.ashx?userinfo={this.UserID}&boardId={YafContext.Current.PageBoardID}&type=json&forumUrl={HttpUtility.UrlEncode(BuildLink.GetBasePath())}");
+                        $"{(Config.IsDotNetNuke ? $"{BaseUrlBuilder.GetBaseUrlFromVariables()}{BaseUrlBuilder.AppPath}" : BoardInfo.ForumClientFileRoot)}resource.ashx?userinfo={this.UserID}&boardId={BoardContext.Current.PageBoardID}&type=json&forumUrl={HttpUtility.UrlEncode(BuildLink.GetBasePath())}");
                 }
                 else
                 {
@@ -224,7 +221,7 @@ namespace YAF.Web.Controls
             // show online icon
             if (this.Get<BoardSettings>().ShowUserOnlineStatus)
             {
-                var onlineStatusIcon = new OnlineStatusIcon { UserId = this.UserID, Suspended = user.Suspended };
+                var onlineStatusIcon = new OnlineStatusIcon { UserId = this.UserID, Suspended = userSuspended };
 
                 onlineStatusIcon.RenderControl(output);
 
@@ -236,7 +233,7 @@ namespace YAF.Web.Controls
             {
                 output.WriteEncodedText(this.CrawlerName);
             }
-            else if (!this.CrawlerName.IsSet() && this.ReplaceName.IsSet() && isGuest)
+            else if (!this.CrawlerName.IsSet() && this.ReplaceName.IsSet() && this.IsGuest)
             {
                 output.WriteEncodedText(this.ReplaceName);
             }
@@ -250,7 +247,7 @@ namespace YAF.Web.Controls
                 output.Write(this.PostfixText);
             }
 
-            output.WriteEndTag(!isGuest ? "a" : "span");
+            output.WriteEndTag(!this.IsGuest ? "a" : "span");
 
             output.EndRender();
         }

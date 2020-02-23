@@ -34,6 +34,7 @@ namespace YAF.Core.Model
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Types;
+    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
@@ -100,7 +101,7 @@ namespace YAF.Core.Model
                 catch (Exception e)
                 {
                     // error deleting that file... 
-                    YafContext.Current.Get<ILogger>().Warn(e, "Error Deleting Attachment");
+                    BoardContext.Current.Get<ILogger>().Warn(e, "Error Deleting Attachment");
                 }
             }
 
