@@ -22,6 +22,8 @@
  * under the License.
  */
 
+using YAF.Types.Extensions;
+
 namespace YAF.Classes
 {
     using System;
