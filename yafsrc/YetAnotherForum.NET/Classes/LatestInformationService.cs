@@ -31,6 +31,9 @@ namespace YAF.Classes
 
     using YAF.Core;
     using YAF.RegisterV2;
+#if DEBUG
+    using YAF.Types.Extensions;
+#endif
     using YAF.Types.Interfaces;
 
     /// <summary>
@@ -67,7 +70,6 @@ namespace YAF.Classes
                     this.Get<HttpApplicationStateBase>().Set("YafRegistrationLatestInformation", latestInfo);
                 }
             }
-
 #if DEBUG
             catch (Exception x)
             {
