@@ -25,9 +25,12 @@ namespace YAF.Web.Editors
 {
     using YAF.Configuration;
     using YAF.Core;
+    using YAF.Core.Context;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Utils;
 
     /// <summary>
     /// The CKEditor BBCode editor.
@@ -40,7 +43,7 @@ namespace YAF.Web.Editors
         ///   Gets Description.
         /// </summary>
         [NotNull]
-        public override string Description => "CKEditor (BBCode)";
+        public override string Description => "CKEditor (BBCode) - Full";
 
         /// <summary>
         ///   Gets ModuleId.
@@ -57,6 +60,11 @@ namespace YAF.Web.Editors
         /// </summary>
         public override bool UsesHTML => false;
 
+        /// <summary>
+        /// The allows uploads.
+        /// </summary>
+        public override bool AllowsUploads => true;
+
         #endregion
 
         #region Methods
@@ -66,16 +74,26 @@ namespace YAF.Web.Editors
         /// </summary>
         protected override void RegisterCKEditorCustomJS()
         {
-            BoardContext.Current.PageElements.RegisterJsBlock(
-                "editorlang",
-                $@"var editorLanguage = ""{(BoardContext.Current.CultureUser.IsSet()
-                                                ? BoardContext.Current.CultureUser.Substring(0, 2)
-                                                : this.Get<BoardSettings>().Culture.Substring(0, 2))}"";
-                        var editorMaxChar = {BoardContext.Current.BoardSettings.MaxPostSize};");
+            var toolbar = this.Get<BoardSettings>().EditorToolbarFull;
 
-            BoardContext.Current.PageElements.AddScriptReference(
+            if (!(this.Get<BoardSettings>().EnableAlbum && this.PageContext.UsrAlbums > 0
+                                                        && this.PageContext.NumAlbums > 0))
+            {
+                // remove albums
+                toolbar = toolbar.Replace(", \"albumsbrowser\"", string.Empty);
+            }
+
+            BoardContext.Current.PageElements.RegisterJsBlock(
                 "ckeditorinitbbcode",
-                "ckeditor/ckeditor_initbbcode.js");
+                JavaScriptBlocks.CKEditorLoadJs(
+                    this.TextAreaControl.ClientID,
+                    BoardContext.Current.CultureUser.IsSet()
+                        ? BoardContext.Current.CultureUser.Substring(0, 2)
+                        : this.Get<BoardSettings>().Culture.Substring(0, 2),
+                    this.MaxCharacters,
+                    this.Get<ITheme>().BuildThemePath("bootstrap-forum.min.css"),
+                    BoardInfo.GetURLToContent("forum.min.css"),
+                    toolbar));
         }
 
         #endregion

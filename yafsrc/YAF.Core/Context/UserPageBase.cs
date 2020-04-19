@@ -22,7 +22,7 @@
  * under the License.
  */
 
-namespace YAF.Core
+namespace YAF.Core.Context
 {
     #region
 
@@ -288,6 +288,19 @@ namespace YAF.Core
         public string PageCategoryName => this.PageValueAsString("CategoryName");
 
         /// <summary>
+        ///   Gets the Parent ForumID for the current page, or 0 if not in any forum
+        /// </summary>
+        public int? PageParentForumID
+        {
+            get
+            {
+                var isLockedForum = BoardContext.Current.Settings.LockedForum;
+
+                return isLockedForum != 0 ? isLockedForum : this.PageValueAsInt("ParentForumID");
+            }
+        }
+
+        /// <summary>
         ///   Gets the ForumID for the current page, or 0 if not in any forum
         /// </summary>
         public int PageForumID
@@ -345,11 +358,6 @@ namespace YAF.Core
         ///   Gets the DateTime the user is suspended until
         /// </summary>
         public string SuspendedReason => this.IsSuspended ? this.Page["SuspendedReason"].ToString() : string.Empty;
-
-        /// <summary>
-        ///   Gets the user text editor
-        /// </summary>
-        public string TextEditor => this.PageValueAsString("TextEditor");
 
         /// <summary>
         ///   Gets the time zone offset for the user

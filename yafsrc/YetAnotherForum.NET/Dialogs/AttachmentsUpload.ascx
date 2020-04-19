@@ -5,13 +5,19 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-          <h5 class="modal-title" id="myModalLabel"><%= this.Get<ILocalization>().GetText("ATTACHMENTS", "UPLOAD_TITLE") %></h5>
+          <h5 class="modal-title" id="myModalLabel">
+              <%= this.Get<ILocalization>().GetText("ATTACHMENTS", "UPLOAD_TITLE") %>
+          </h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <h4><YAF:LocalizedLabel ID="SelectFile" LocalizedTag="SELECT_FILE" LocalizedPage="ATTACHMENTS" runat="server" /></h4>
+        <h4>
+            <YAF:LocalizedLabel ID="SelectFile" 
+                                LocalizedTag="SELECT_FILE" 
+                                LocalizedPage="ATTACHMENTS" runat="server" />
+        </h4>
         <div>
             <div id="fileupload">
                       <div class="fileupload-buttonbar">
@@ -53,9 +59,10 @@
       <h5 class="mb-1"><span class="preview"></span></h5>
       <small class="text-muted size">Processing...</small>
     </div>
-    <p class="mb-1"> <p class="name">{%=file.name%}</p>
+    <div class="mb-1"> <p class="name">{%=file.name%}</p>
                                   <strong class="error"></strong>
-                                  <div class="progress"></div></p>
+                                  <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-bar progress-bar-success" style="width:0%;"></div></div>
+   </div>
     <small class="text-muted"><div class="btn-group" role="group">
                       {% if (!i && !o.options.autoUpload) { %}
                 <button class="btn btn-success btn-sm start" disabled>Start</button>
@@ -80,7 +87,10 @@
       </div>
       <div class="modal-footer">
         <div class="alert alert-info" role="alert">
-                <strong><YAF:LocalizedLabel ID="ExtensionTitle" LocalizedTag="ALLOWED_EXTENSIONS" runat="server" />:</strong>&nbsp;<asp:Label ID="ExtensionsList" runat="server"></asp:Label>
+                <strong><YAF:LocalizedLabel ID="ExtensionTitle" 
+                                            LocalizedTag="ALLOWED_EXTENSIONS" runat="server" /></strong>
+            &nbsp;
+            <asp:Label ID="ExtensionsList" runat="server"></asp:Label>
         </div>
       </div>
     </div>

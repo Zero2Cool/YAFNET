@@ -37,6 +37,7 @@ namespace YAF.Controls
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
@@ -51,6 +52,8 @@ namespace YAF.Controls
     using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Web.Controls;
+
+    using ButtonStyle = YAF.Types.Constants.ButtonStyle;
 
     #endregion
 
@@ -161,7 +164,38 @@ namespace YAF.Controls
                                             this.PostData.MessageId);
 
             this.Quote.Visible = this.Quote2.Visible =
-                                     !this.PostData.PostDeleted && this.PostData.CanReply && !this.PostData.IsLocked;
+                                     this.Reply.Visible =
+                                         this.ReplyFooter.Visible =
+                                             this.QuickReplyLink.Visible =
+                                                 !this.PostData.PostDeleted && this.PostData.CanReply
+                                                                            && !this.PostData.IsLocked;
+
+            if (!this.PostData.PostDeleted && this.PostData.CanReply
+                                           && !this.PostData.IsLocked)
+            {
+                this.ContextMenu.Attributes.Add(
+                    "data-url",
+                    BuildLink.GetLinkNotEscaped(
+                        ForumPages.PostMessage,
+                        "t={0}&f={1}",
+                        this.PageContext.PageTopicID,
+                        this.PageContext.PageForumID));
+
+                this.ContextMenu.Attributes.Add(
+                    "data-quote",
+                    this.GetText("COMMON", "SELECTED_QUOTE"));
+            }
+
+            this.ContextMenu.Attributes.Add(
+                "data-search",
+                this.GetText("COMMON", "SELECTED_SEARCH"));
+
+            if (!this.PageContext.IsMobileDevice)
+            {
+                this.Quote.Text = this.GetText("BUTTON_QUOTE_TT");
+                this.ReplyFooter.Text = this.GetText("REPLY");
+            }
+
             this.MultiQuote.Visible = !this.PostData.PostDeleted && this.PostData.CanReply && !this.PostData.IsLocked;
 
             this.Quote.NavigateUrl = this.Quote2.NavigateUrl = BuildLink.GetLinkNotEscaped(
@@ -171,11 +205,11 @@ namespace YAF.Controls
                                          this.PageContext.PageForumID,
                                          this.PostData.MessageId);
 
-            this.Reply.NavigateUrl = BuildLink.GetLinkNotEscaped(
-                ForumPages.PostMessage,
-                "t={0}&f={1}",
-                this.PageContext.PageTopicID,
-                this.PageContext.PageForumID);
+            this.Reply.NavigateUrl = this.ReplyFooter.NavigateUrl = BuildLink.GetLinkNotEscaped(
+                                         ForumPages.PostMessage,
+                                         "t={0}&f={1}",
+                                         this.PageContext.PageTopicID,
+                                         this.PageContext.PageForumID);
 
             if (this.MultiQuote.Visible)
             {
@@ -190,7 +224,12 @@ namespace YAF.Controls
                     "MultiQuoteCallbackSuccessJS",
                     JavaScriptBlocks.MultiQuoteCallbackSuccessJs);
 
-                this.MultiQuote.Text = this.GetText("BUTTON_MULTI_QUOTE");
+                var icon = new Icon { IconName = "quote-left", IconNameBadge = "plus" };
+
+                this.MultiQuote.Text = this.PageContext.IsMobileDevice
+                                           ? icon.RenderToString()
+                                           : $"{icon.RenderToString()}&nbsp;{this.GetText("BUTTON_MULTI_QUOTE")}";
+
                 this.MultiQuote.ToolTip = this.GetText("BUTTON_MULTI_QUOTE_TT");
             }
 
@@ -519,7 +558,7 @@ namespace YAF.Controls
             this.UserDropHolder.Controls.Add(
                 new ThemeButton
                     {
-                        Type = ButtonAction.None,
+                        Type = ButtonStyle.None,
                         Icon = "th-list",
                         TextLocalizedPage = "PAGE",
                         TextLocalizedTag = "SEARCHUSER",
@@ -532,7 +571,7 @@ namespace YAF.Controls
             this.UserDropHolder2.Controls.Add(
                 new ThemeButton
                     {
-                        Type = ButtonAction.None,
+                        Type = ButtonStyle.None,
                         Icon = "th-list",
                         TextLocalizedPage = "PAGE",
                         TextLocalizedTag = "SEARCHUSER",
@@ -548,22 +587,22 @@ namespace YAF.Controls
                 this.UserDropHolder.Controls.Add(
                     new ThemeButton
                         {
-                            Type = ButtonAction.None,
+                            Type = ButtonStyle.None,
                             Icon = "cogs",
                             TextLocalizedPage = "POSTS",
                             TextLocalizedTag = "EDITUSER",
                             CssClass = "dropdown-item",
-                            NavigateUrl = BuildLink.GetLink(ForumPages.admin_edituser, "u={0}", this.PostData.UserId)
+                            NavigateUrl = BuildLink.GetLink(ForumPages.Admin_EditUser, "u={0}", this.PostData.UserId)
                         });
                 this.UserDropHolder2.Controls.Add(
                     new ThemeButton
                         {
-                            Type = ButtonAction.None,
+                            Type = ButtonStyle.None,
                             Icon = "cogs",
                             TextLocalizedPage = "POSTS",
                             TextLocalizedTag = "EDITUSER",
                             CssClass = "dropdown-item",
-                            NavigateUrl = BuildLink.GetLink(ForumPages.admin_edituser, "u={0}", this.PostData.UserId)
+                            NavigateUrl = BuildLink.GetLink(ForumPages.Admin_EditUser, "u={0}", this.PostData.UserId)
                         });
             }
 
@@ -573,7 +612,7 @@ namespace YAF.Controls
                 {
                     var showButton = new ThemeButton
                                          {
-                                             Type = ButtonAction.None,
+                                             Type = ButtonStyle.None,
                                              Icon = "eye",
                                              TextLocalizedPage = "POSTS",
                                              TextLocalizedTag = "TOGGLEUSERPOSTS_SHOW",
@@ -592,7 +631,7 @@ namespace YAF.Controls
                 {
                     var hideButton = new ThemeButton
                                          {
-                                             Type = ButtonAction.None,
+                                             Type = ButtonStyle.None,
                                              Icon = "eye-slash",
                                              TextLocalizedPage = "POSTS",
                                              TextLocalizedTag = "TOGGLEUSERPOSTS_HIDE",
@@ -619,7 +658,7 @@ namespace YAF.Controls
                 {
                     var addFriendButton = new ThemeButton
                                               {
-                                                  Type = ButtonAction.None,
+                                                  Type = ButtonStyle.None,
                                                   Icon = "user-plus",
                                                   TextLocalizedPage = "BUDDY",
                                                   TextLocalizedTag = "ADDBUDDY",
@@ -653,7 +692,7 @@ namespace YAF.Controls
                     // Are the users approved buddies? Add the "Remove buddy" item.
                     var removeFriendButton = new ThemeButton
                                                  {
-                                                     Type = ButtonAction.None,
+                                                     Type = ButtonStyle.None,
                                                      Icon = "user-times",
                                                      TextLocalizedPage = "BUDDY",
                                                      TextLocalizedTag = "REMOVEBUDDY",
@@ -738,26 +777,35 @@ namespace YAF.Controls
             }
 
             // Register Javascript
-            const string AddThankBoxHTML =
+            var addThankBoxHTML =
+                this.PageContext.IsMobileDevice ?
+                "'<a class=\"btn btn-link\" href=\"javascript:addThanks(' + response.MessageID + ');\" onclick=\"jQuery(this).blur();\" title=' + response.Title + '><span><i class=\"fas fa-heart text-danger fa-fw\"></i></span></a>'" :
                 "'<a class=\"btn btn-link\" href=\"javascript:addThanks(' + response.MessageID + ');\" onclick=\"jQuery(this).blur();\" title=' + response.Title + '><span><i class=\"fas fa-heart text-danger fa-fw\"></i>&nbsp;' + response.Text + '</span></a>'";
 
-            const string RemoveThankBoxHTML =
+            var removeThankBoxHTML =
+                this.PageContext.IsMobileDevice ?
+                "'<a class=\"btn btn-link\" href=\"javascript:removeThanks(' + response.MessageID + ');\" onclick=\"jQuery(this).blur();\" title=' + response.Title + '><span><i class=\"far fa-heart fa-fw\"></i></a>'" :
                 "'<a class=\"btn btn-link\" href=\"javascript:removeThanks(' + response.MessageID + ');\" onclick=\"jQuery(this).blur();\" title=' + response.Title + '><span><i class=\"far fa-heart fa-fw\"></i>&nbsp;' + response.Text + '</span></a>'";
 
             var thanksJs = "{0}{1}{2}".Fmt(
-                JavaScriptBlocks.AddThanksJs(RemoveThankBoxHTML),
+                JavaScriptBlocks.AddThanksJs(removeThankBoxHTML),
                 Environment.NewLine,
-                JavaScriptBlocks.RemoveThanksJs(AddThankBoxHTML));
+                JavaScriptBlocks.RemoveThanksJs(addThankBoxHTML));
 
-            BoardContext.Current.PageElements.RegisterJsBlockStartup("ThanksJs", thanksJs);
+            this.PageContext.PageElements.RegisterJsBlockStartup("ThanksJs", thanksJs);
 
             this.Thank.Visible = this.PostData.CanThankPost && !this.PageContext.IsGuest
                                                             && this.Get<BoardSettings>().EnableThanksMod;
 
-            if (Convert.ToBoolean(this.DataRow["IsThankedByUser"]))
+            if (this.DataRow.Field<bool>("IsThankedByUser"))
             {
                 this.Thank.NavigateUrl = $"javascript:removeThanks({this.DataRow["MessageID"]});";
-                this.Thank.TextLocalizedTag = "BUTTON_THANKSDELETE";
+
+                if (!this.PageContext.IsMobileDevice)
+                {
+                    this.Thank.Text = this.GetText("BUTTON_THANKSDELETE");
+                }
+
                 this.Thank.TitleLocalizedTag = "BUTTON_THANKSDELETE_TT";
                 this.Thank.Icon = "heart";
                 this.Thank.IconCssClass = "far";
@@ -765,7 +813,12 @@ namespace YAF.Controls
             else
             {
                 this.Thank.NavigateUrl = $"javascript:addThanks({this.DataRow["MessageID"]});";
-                this.Thank.TextLocalizedTag = "BUTTON_THANKS";
+
+                if (!this.PageContext.IsMobileDevice)
+                {
+                    this.Thank.Text = this.GetText("BUTTON_THANKS");
+                }
+
                 this.Thank.TitleLocalizedTag = "BUTTON_THANKS_TT";
                 this.Thank.Icon = "heart";
                 this.Thank.IconCssClass = "fas";

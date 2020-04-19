@@ -34,12 +34,11 @@ namespace YAF.Web.ReCAPTCHA
 
     using ServiceStack;
 
-    using YAF.Core;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Utils.Extensions;
 
     #endregion
 
@@ -59,11 +58,6 @@ namespace YAF.Web.ReCAPTCHA
         ///   The remote IP.
         /// </summary>
         private string remoteIp;
-
-        /// <summary>
-        ///   The response.
-        /// </summary>
-        private string response;
 
         #endregion
 
@@ -98,12 +92,7 @@ namespace YAF.Web.ReCAPTCHA
         /// <summary>
         ///   Gets or sets Response.
         /// </summary>
-        public string Response
-        {
-            get => this.response;
-
-            set => this.response = value;
-        }
+        public string Response { get; set; }
 
         #endregion
 
@@ -121,7 +110,7 @@ namespace YAF.Web.ReCAPTCHA
             CheckNotNull(this.RemoteIP, "RemoteIp");
             CheckNotNull(this.Response, "Response");
             
-            if (this.response.IsNotSet())
+            if (this.Response.IsNotSet())
             {
                 return RecaptchaResponse.InvalidSolution;
             }

@@ -34,6 +34,7 @@ namespace YAF.Controls
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
@@ -101,7 +102,7 @@ namespace YAF.Controls
         protected void CancelClick([NotNull] object sender, [NotNull] EventArgs e)
         {
             BuildLink.Redirect(
-                this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.admin_users : ForumPages.Account);
+                this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.Admin_Users : ForumPages.Account);
         }
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.Page.Form.DefaultButton = this.UpdateProfile.UniqueID;
+            //this.Page.Form.DefaultButton = this.UpdateProfile.UniqueID;
 
             this.PageContext.QueryIDs = new QueryStringIDHelper("u");
 
@@ -162,7 +163,6 @@ namespace YAF.Controls
                                              || this.Get<BoardSettings>().AllowUserLanguage;
 
             this.UserThemeRow.Visible = this.Get<BoardSettings>().AllowUserTheme;
-            this.TrTextEditors.Visible = this.Get<BoardSettings>().AllowUsersTextEditor;
             this.UserLanguageRow.Visible = this.Get<BoardSettings>().AllowUserLanguage;
             this.LoginInfo.Visible = this.Get<BoardSettings>().AllowEmailChange;
 
@@ -229,16 +229,10 @@ namespace YAF.Controls
             object language = null;
             object culture = this.Culture.SelectedValue;
             object theme = this.Theme.SelectedValue;
-            object editor = this.ForumEditor.SelectedValue;
 
             if (this.Theme.SelectedValue.IsNotSet())
             {
                 theme = null;
-            }
-
-            if (this.ForumEditor.SelectedValue.IsNotSet())
-            {
-                editor = null;
             }
 
             if (this.Culture.SelectedValue.IsNotSet())
@@ -263,7 +257,6 @@ namespace YAF.Controls
                 language,
                 culture,
                 theme,
-                editor,
                 null,
                 null,
                 null,
@@ -327,13 +320,6 @@ namespace YAF.Controls
                 this.Culture.DataTextField = "CultureNativeName";
             }
 
-            if (this.Get<BoardSettings>().AllowUsersTextEditor)
-            {
-                this.ForumEditor.DataSource = ForumEditorHelper.GetFilteredEditorList();
-                this.ForumEditor.DataValueField = "Value";
-                this.ForumEditor.DataTextField = "Name";
-            }
-
             this.DataBind();
 
             this.Email.Text = this.UserData.Email;
@@ -370,25 +356,6 @@ namespace YAF.Controls
                     {
                         themeItem.Selected = true;
                     }
-                }
-            }
-
-            if (this.Get<BoardSettings>().AllowUsersTextEditor && this.ForumEditor.Items.Count > 0)
-            {
-                // Text editor
-                var textEditor = this.UserData.TextEditor.IsSet()
-                                     ? this.UserData.TextEditor
-                                     : this.Get<BoardSettings>().ForumEditor;
-
-                var editorItem = this.ForumEditor.Items.FindByValue(textEditor);
-                if (editorItem != null)
-                {
-                    editorItem.Selected = true;
-                }
-                else
-                {
-                    editorItem = this.ForumEditor.Items.FindByValue("1");
-                    editorItem.Selected = true;
                 }
             }
 

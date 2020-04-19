@@ -27,11 +27,11 @@ namespace YAF.Controls
     #region Using
 
     using System;
-    using System.Text;
-
+    using System.Data;
+    
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.BaseModules;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
     using YAF.Types;
@@ -59,11 +59,6 @@ namespace YAF.Controls
         ///   The string with allowed BBCodes info.
         /// </summary>
         private string allowedBbcodes;
-
-        /// <summary>
-        ///   The string with allowed HTML tags info.
-        /// </summary>
-        private string allowedHtml;
 
         /// <summary>
         ///   The number of characters which is allowed in user signature.
@@ -143,8 +138,23 @@ namespace YAF.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit([NotNull] EventArgs e)
         {
-            // since signatures are so small only allow YafBBCode in them...
-            this.signatureEditor = new BBCodeEditor { UserCanUpload = false };
+            this.PageContext.QueryIDs = new QueryStringIDHelper("u");
+
+            var sigData = this.GetRepository<User>()
+                .SignatureDataAsDataRow(this.CurrentUserID, this.PageContext.PageBoardID);
+
+            if (sigData != null)
+            {
+                this.allowedBbcodes = sigData.Field<string>("UsrSigBBCodes").Trim().Trim(',').Trim();
+
+                this.allowedNumberOfCharacters = sigData.Field<int>("UsrSigChars");
+            }
+
+            // Quick Reply Modification Begin
+            this.signatureEditor = new CKEditorBBCodeEditorBasic
+                                       {
+                                           UserCanUpload = false, MaxCharacters = this.allowedNumberOfCharacters
+                                       };
 
             this.EditorLine.Controls.Add(this.signatureEditor);
 
@@ -155,7 +165,6 @@ namespace YAF.Controls
             this.preview.Click += this.Preview_Click;
             this.cancel.Click += this.Cancel_Click;
 
-            InitializeComponent();
             base.OnInit(e);
         }
 
@@ -166,66 +175,10 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.PageContext.QueryIDs = new QueryStringIDHelper("u");
-
-            this.signatureEditor.BaseDir = $"{BoardInfo.ForumClientFileRoot}Scripts";
-
-            var sigData = this.GetRepository<User>()
-                .SignatureDataAsDataTable(this.CurrentUserID, this.PageContext.PageBoardID);
-
-            if (sigData.HasRows())
-            {
-                this.allowedBbcodes = sigData.Rows[0]["UsrSigBBCodes"].ToString().Trim().Trim(',').Trim();
-
-                this.allowedHtml = sigData.Rows[0]["UsrSigHTMLTags"].ToString().Trim().Trim(',').Trim();
-
-                this.allowedNumberOfCharacters = sigData.Rows[0]["UsrSigChars"].ToType<int>();
-            }
-
             if (this.IsPostBack)
             {
                 return;
             }
-
-            var warningMessage = new StringBuilder();
-
-            warningMessage.Append("<ul>");
-
-            if (this.allowedBbcodes.IsSet())
-            {
-                warningMessage.AppendFormat(
-                    "<li>{0}</li>",
-                    this.allowedBbcodes.Contains("ALL")
-                        ? this.GetText("BBCODE_ALLOWEDALL")
-                        : this.GetTextFormatted("BBCODE_ALLOWEDLIST", this.allowedBbcodes));
-            }
-            else
-            {
-                warningMessage.AppendFormat("<li>{0}</li>", this.GetText("BBCODE_FORBIDDEN"));
-            }
-
-            if (this.allowedHtml.IsSet())
-            {
-                warningMessage.AppendFormat(
-                    "<li>{0}</li>",
-                    this.allowedHtml.Contains("ALL")
-                        ? this.GetText("HTML_ALLOWEDALL")
-                        : this.GetTextFormatted("HTML_ALLOWEDLIST", this.allowedHtml));
-            }
-            else
-            {
-                warningMessage.AppendFormat("<li>{0}</li>", this.GetText("HTML_FORBIDDEN"));
-            }
-
-            warningMessage.AppendFormat(
-                "<li>{0}</li>",
-                this.allowedNumberOfCharacters > 0
-                    ? this.GetTextFormatted("SIGNATURE_CHARSMAX", this.allowedNumberOfCharacters)
-                    : this.GetText("SIGNATURE_NOEDIT"));
-
-            warningMessage.Append("</ul>");
-
-            this.TagsAllowedWarning.Text = warningMessage.ToString();
 
             this.BindData();
         }
@@ -242,14 +195,6 @@ namespace YAF.Controls
         protected void Page_PreRender([NotNull] object sender, [NotNull] EventArgs e)
         {
             this.trHeader.Visible = this.ShowHeader;
-        }
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        ///   the contents of this method with the code editor.
-        /// </summary>
-        private static void InitializeComponent()
-        {
         }
 
         /// <summary>
@@ -295,23 +240,6 @@ namespace YAF.Controls
                 if (detectedBbCode.IsSet() && detectedBbCode == "ALL")
                 {
                     this.PageContext.AddLoadMessage(this.GetText("BBCODE_FORBIDDEN"), MessageTypes.warning);
-                    return;
-                }
-            }
-
-            // find forbidden HTMLTags in signature
-            if (!this.PageContext.IsAdmin && this.allowedHtml.IndexOf("ALL", StringComparison.Ordinal) < 0)
-            {
-                var detectedHtmlTag = this.Get<IFormatMessage>().CheckHtmlTags(body, this.allowedHtml, ',');
-                if (detectedHtmlTag.IsSet() && detectedHtmlTag != "ALL")
-                {
-                    this.PageContext.AddLoadMessage(detectedHtmlTag, MessageTypes.warning);
-                    return;
-                }
-
-                if (detectedHtmlTag.IsSet() && detectedHtmlTag == "ALL")
-                {
-                    this.PageContext.AddLoadMessage(this.GetText("HTML_FORBIDDEN"), MessageTypes.warning);
                     return;
                 }
             }
@@ -425,24 +353,6 @@ namespace YAF.Controls
                 if (detectedBbCode.IsSet() && detectedBbCode == "ALL")
                 {
                     this.PageContext.AddLoadMessage(this.GetText("BBCODE_FORBIDDEN"), MessageTypes.warning);
-                    return;
-                }
-            }
-
-            // find forbidden HTMLTags in signature
-            if (!this.PageContext.IsAdmin && this.allowedHtml.IndexOf("ALL", StringComparison.Ordinal) < 0)
-            {
-                var detectedHtmlTag = this.Get<IFormatMessage>().CheckHtmlTags(body, this.allowedHtml, ',');
-
-                if (detectedHtmlTag.IsSet() && detectedHtmlTag != "ALL")
-                {
-                    this.PageContext.AddLoadMessage(detectedHtmlTag, MessageTypes.warning);
-                    return;
-                }
-
-                if (detectedHtmlTag.IsSet() && detectedHtmlTag == "ALL")
-                {
-                    this.PageContext.AddLoadMessage(this.GetText("HTML_FORBIDDEN"), MessageTypes.warning);
                     return;
                 }
             }

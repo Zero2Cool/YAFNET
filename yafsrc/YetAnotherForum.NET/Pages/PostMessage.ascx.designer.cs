@@ -213,33 +213,6 @@ namespace YAF.Pages
         protected global::System.Web.UI.WebControls.PlaceHolder EditorLine;
 
         /// <summary>
-        /// maxCharRow control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder maxCharRow;
-
-        /// <summary>
-        /// LocalizedLabel3 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel3;
-
-        /// <summary>
-        /// LocalizedLblMaxNumberOfPost control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLblMaxNumberOfPost;
-
-        /// <summary>
         /// PostOptions1 control.
         /// </summary>
         /// <remarks>
@@ -247,15 +220,6 @@ namespace YAF.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::YAF.Controls.PostOptions PostOptions1;
-
-        /// <summary>
-        /// PostAttachments1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Controls.PostAttachments PostAttachments1;
 
         /// <summary>
         /// tr_captcha1 control.

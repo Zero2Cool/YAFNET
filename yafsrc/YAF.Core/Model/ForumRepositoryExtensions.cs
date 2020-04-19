@@ -31,6 +31,7 @@ namespace YAF.Core.Model
 
     using ServiceStack.OrmLite;
 
+    using YAF.Core.Context;
     using YAF.Core.Data;
     using YAF.Core.Extensions;
     using YAF.Types;
@@ -134,23 +135,44 @@ namespace YAF.Core.Model
                                 IsLocked = locked, IsHidden = hidden, IsTest = isTest, IsModerated = moderated
                             };
 
-            return repository.Upsert(
-                new Forum
-                    {
-                        ParentID = parentID,
-                        ID = forumID ?? 0,
-                        Name = name,
-                        Description = description,
-                        SortOrder = sortOrder,
-                        CategoryID = categoryID,
-                        RemoteURL = remoteURL,
-                        ThemeURL = themeURL,
-                        ImageURL = imageURL,
-                        Styles = styles,
-                        Flags = flags.BitValue,
-                        ModeratedPostCount = moderatedPostCount,
-                        IsModeratedNewTopicOnly = isModeratedNewTopicOnly
-                    });
+            if (!forumID.HasValue)
+            {
+                return repository.Insert(
+                    new Forum
+                        {
+                            Name = name,
+                            Description = description,
+                            SortOrder = sortOrder,
+                            CategoryID = categoryID,
+                            RemoteURL = remoteURL,
+                            ThemeURL = themeURL,
+                            ImageURL = imageURL,
+                            Styles = styles,
+                            Flags = flags.BitValue,
+                            ModeratedPostCount = moderatedPostCount,
+                            IsModeratedNewTopicOnly = isModeratedNewTopicOnly
+                        });
+            }
+
+            repository.UpdateOnly(
+                () => new Forum
+                          {
+                              ParentID = parentID,
+                              Name = name,
+                              Description = description,
+                              SortOrder = sortOrder,
+                              CategoryID = categoryID,
+                              RemoteURL = remoteURL,
+                              ThemeURL = themeURL,
+                              ImageURL = imageURL,
+                              Styles = styles,
+                              Flags = flags.BitValue,
+                              ModeratedPostCount = moderatedPostCount,
+                              IsModeratedNewTopicOnly = isModeratedNewTopicOnly
+                          },
+                f => f.ID == forumID);
+
+            return forumID.Value;
         }
 
         /// <summary>
@@ -330,23 +352,6 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// Sorry no idea what this does
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="forumID">
-        /// The forum ID.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable ListPathAsDataTable([NotNull] this IRepository<Forum> repository, [NotNull] int forumID)
-        {
-            return repository.DbFunction.GetData.forum_listpath(ForumID: forumID);
-        }
-
-        /// <summary>
         /// Lists read topics
         /// </summary>
         /// <param name="repository">
@@ -481,12 +486,10 @@ namespace YAF.Core.Model
         /// </returns>
         public static bool Delete(this IRepository<Forum> repository, [NotNull] int forumID)
         {
-            if (BoardContext.Current.GetRepository<Forum>().Count(f => f.ParentID == forumID) > 0)
+            if (repository.Exists(f => f.ParentID == forumID))
             {
                 return false;
             }
-
-            DeleteAttachments(forumID);
 
             repository.DbFunction.Scalar.forum_delete(ForumID: forumID);
 
@@ -510,7 +513,7 @@ namespace YAF.Core.Model
         /// </returns>
         public static bool Move(this IRepository<Forum> repository, [NotNull] int forumOldID, [NotNull] int forumNewID)
         {
-            if (BoardContext.Current.GetRepository<Forum>().Count(f => f.ParentID == forumOldID) > 0)
+            if (repository.Exists(f => f.ParentID == forumOldID))
             {
                 return false;
             }
@@ -602,19 +605,6 @@ namespace YAF.Core.Model
         }
 
         #endregion
-
-        /// <summary>
-        /// Deletes attachments out of a entire forum
-        /// </summary>
-        /// <param name="forumID">
-        /// The forum ID.
-        /// </param>
-        private static void DeleteAttachments([NotNull] int forumID)
-        {
-            var topicRepository = BoardContext.Current.GetRepository<Topic>();
-
-            topicRepository.Get(t => t.ForumID == forumID).ForEach(t => topicRepository.Delete(t.ID, true));
-        }
 
         /// <summary>
         /// The SortList.

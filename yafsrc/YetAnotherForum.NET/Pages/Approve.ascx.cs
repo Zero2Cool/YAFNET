@@ -27,10 +27,11 @@ namespace YAF.Pages
     #region Using
 
     using System;
+    using System.Data;
     using System.Web;
     using System.Web.Security;
 
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
     using YAF.Types;
@@ -39,6 +40,7 @@ namespace YAF.Pages
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
     using YAF.Utils;
+    using YAF.Utils.Helpers;
     using YAF.Web.Extensions;
 
     #endregion
@@ -82,13 +84,13 @@ namespace YAF.Pages
         /// </param>
         public void ValidateKey_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            var userRow = this.GetRepository<CheckEmail>().Update(this.key.Text).Rows[0];
+            var userRow = this.GetRepository<CheckEmail>().Update(this.key.Text);
             var userEmail = userRow["Email"].ToString();
 
-            var keyVerified = userRow["ProviderUserKey"] != DBNull.Value;
+            var keyVerified = !userRow["ProviderUserKey"].IsNullOrEmptyDBField();
 
-            this.approved.Visible = keyVerified;
-            this.error.Visible = !keyVerified;
+            this.Approved.Visible = keyVerified;
+            this.Error.Visible = !keyVerified;
 
             if (!keyVerified)
             {
@@ -103,7 +105,7 @@ namespace YAF.Pages
                 user.IsApproved = true;
 
                 // Send welcome mail/pm to user
-                this.Get<ISendNotification>().SendUserWelcomeNotification(user, userRow["UserID"].ToType<int>());
+                this.Get<ISendNotification>().SendUserWelcomeNotification(user, userRow.Field<int>("UserID"));
             }
 
             // update the email if anything was returned...
@@ -138,9 +140,6 @@ namespace YAF.Pages
                 return;
             }
 
-            this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
-
             if (this.Get<HttpRequestBase>().QueryString.Exists("k"))
             {
                 this.key.Text = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("k");
@@ -148,9 +147,18 @@ namespace YAF.Pages
             }
             else
             {
-                this.approved.Visible = false;
-                this.error.Visible = !this.approved.Visible;
+                this.Approved.Visible = false;
+                this.Error.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            this.PageLinks.AddRoot();
+            this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
         }
 
         #endregion

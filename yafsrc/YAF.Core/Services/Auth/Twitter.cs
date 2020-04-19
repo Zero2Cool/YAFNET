@@ -30,6 +30,7 @@ namespace YAF.Core.Services.Auth
     using System.Web.Security;
 
     using YAF.Configuration;
+    using YAF.Core.Context;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
     using YAF.Types;
@@ -38,6 +39,7 @@ namespace YAF.Core.Services.Auth
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Auth;
     using YAF.Types.Interfaces.Events;
     using YAF.Types.Models;
     using YAF.Types.Objects;
@@ -119,7 +121,7 @@ namespace YAF.Core.Services.Auth
                     }
 
                     // LOGIN Existing User
-                    var yafUser = YafUserProfile.GetProfile(checkUser.UserName);
+                    var yafUser = Utils.UserProfile.GetProfile(checkUser.UserName);
 
                     var yafUserData = new CombinedUserDataHelper(checkUser);
 
@@ -343,7 +345,7 @@ namespace YAF.Core.Services.Auth
             var userID = RoleMembershipHelper.CreateForumUser(user, BoardContext.Current.PageBoardID);
 
             // create empty profile just so they have one
-            var userProfile = YafUserProfile.GetProfile(twitterUser.UserName);
+            var userProfile = Utils.UserProfile.GetProfile(twitterUser.UserName);
 
             // setup their initial profile information
             userProfile.Save();
@@ -415,7 +417,6 @@ namespace YAF.Core.Services.Auth
                 twitterUser.UserName,
                 email,
                 TimeZoneInfo.Local.Id,
-                null,
                 null,
                 null,
                 null,

@@ -33,6 +33,7 @@ namespace YAF.Core.Tasks
     using System.Web;
 
     using YAF.Configuration;
+    using YAF.Core.Context;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
     using YAF.Types;
@@ -133,7 +134,6 @@ namespace YAF.Core.Tasks
             // we're good to send -- update latest send so no duplication...
             boardSettings.LastDigestSend = DateTime.Now.ToString(CultureInfo.InvariantCulture);
             boardSettings.ForceDigestSend = false;
-            boardSettings.SaveGuestUserIdBackup();
 
             boardSettings.SaveRegistry();
 

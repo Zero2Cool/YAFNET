@@ -36,6 +36,7 @@ namespace YAF.Dialogs
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
     using YAF.Types;
@@ -126,7 +127,7 @@ namespace YAF.Dialogs
                     string.Format(this.GetText("ADMIN_USERS_IMPORT", "IMPORT_FAILED"), x.Message), MessageTypes.danger);
             }
 
-            BuildLink.Redirect(ForumPages.admin_users);
+            BuildLink.Redirect(ForumPages.Admin_Users);
         }
 
         /// <summary>
@@ -251,7 +252,7 @@ namespace YAF.Dialogs
             var userID = RoleMembershipHelper.CreateForumUser(user, BoardContext.Current.PageBoardID);
 
             // create empty profile just so they have one
-            var userProfile = YafUserProfile.GetProfile((string)row["Name"]);
+            var userProfile = Utils.UserProfile.GetProfile((string)row["Name"]);
 
             // Add Profile Fields to User List Table.
             if (row.Table.Columns.Contains("RealName") && ((string)row["RealName"]).IsSet())
@@ -279,18 +280,6 @@ namespace YAF.Dialogs
                 {
                     userProfile.Birthday = userBirthdate;
                 }
-            }
-
-            if (row.Table.Columns.Contains("BlogServiceUsername")
-                && ((string)row["BlogServiceUsername"]).IsSet())
-            {
-                userProfile.BlogServiceUsername = (string)row["BlogServiceUsername"];
-            }
-
-            if (row.Table.Columns.Contains("BlogServicePassword")
-                && ((string)row["BlogServicePassword"]).IsSet())
-            {
-                userProfile.BlogServicePassword = (string)row["BlogServicePassword"];
             }
 
             if (row.Table.Columns.Contains("GoogleId") && ((string)row["GoogleId"]).IsSet())
@@ -410,7 +399,6 @@ namespace YAF.Dialogs
                 row.Table.Columns.Contains("LanguageFile") ? row["LanguageFile"] : null,
                 row.Table.Columns.Contains("Culture") ? row["Culture"] : null,
                 row.Table.Columns.Contains("ThemeFile") ? row["ThemeFile"] : null,
-                row.Table.Columns.Contains("TextEditor") ? row["TextEditor"] : null,
                 null,
                 null,
                 this.Get<BoardSettings>().DefaultNotificationSetting,

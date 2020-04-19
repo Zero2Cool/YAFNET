@@ -33,6 +33,7 @@ namespace YAF.Core.UsersRoles
     using System.Web.Security;
 
     using YAF.Configuration;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
@@ -559,7 +560,7 @@ namespace YAF.Core.UsersRoles
                             if (isLegacyYafDB)
                             {
                                 // copy profile data over...
-                                var userProfile = YafUserProfile.GetProfile(name);
+                                var userProfile = Utils.UserProfile.GetProfile(name);
 
                                 if (dataTable.Columns.Contains("ICQ") && !row["ICQ"].IsNullOrEmptyDBField())
                                 {

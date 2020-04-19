@@ -28,10 +28,12 @@ namespace YAF.Web.Controls
     using System.Web.UI.WebControls;
 
     using YAF.Core;
+    using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Utils.Helpers;
 
     #endregion
 
@@ -148,9 +150,13 @@ namespace YAF.Web.Controls
         protected override void OnPreRender([NotNull] EventArgs e)
         {
             // setup initial image state...
-            this.Text =
-                $"<i class=\"fas fa-{GetCollapsiblePanelIcon(this.PanelID, this.DefaultState)} text-primary\"></i>";
-            this.CssClass = $"btn btn-link{(this.CssClass.Length > 0 ? $" {this.CssClass}" : string.Empty)}";
+            this.Text = new Icon
+                            {
+                                IconName = GetCollapsiblePanelIcon(this.PanelID, this.DefaultState),
+                                IconType = "text-primary"
+                            }.RenderToString();
+
+            this.CssClass = "btn-collapse px-0";
 
             this.Attributes.Add("aria-label", "collapse button");
 

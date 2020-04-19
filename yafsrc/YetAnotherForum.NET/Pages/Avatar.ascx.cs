@@ -35,7 +35,7 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -141,7 +141,7 @@ namespace YAF.Pages
                     if (this.returnUserID > 0)
                     {
                         link = BuildLink.GetLink(
-                            ForumPages.admin_edituser,
+                            ForumPages.Admin_EditUser,
                             "u={0}&av={1}",
                             this.returnUserID,
                             this.Server.UrlEncode($"{directoryPath}/{encodedFileName}"));
@@ -277,7 +277,7 @@ namespace YAF.Pages
         {
             if (this.Get<HttpRequestBase>().QueryString.Exists("u"))
             {
-                this.returnUserID = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u").ToType<int>();
+                this.returnUserID = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAsInt("u").Value;
             }
 
             if (this.IsPostBack)
@@ -285,12 +285,22 @@ namespace YAF.Pages
                 return;
             }
 
+            this.CurrentDirectory = Path.Combine(BoardInfo.ForumClientFileRoot, BoardFolders.Current.Avatars);
+
+            this.BindData(this.CurrentDirectory);
+        }
+
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
             this.PageLinks.AddRoot();
 
             if (this.returnUserID > 0)
             {
                 this.PageLinks.AddLink(this.GetText("ADMIN_ADMIN", "Administration"), string.Empty);
-                this.PageLinks.AddLink("Users", BuildLink.GetLink(ForumPages.admin_users));
+                this.PageLinks.AddLink("Users", BuildLink.GetLink(ForumPages.Admin_Users));
             }
             else
             {
@@ -304,9 +314,7 @@ namespace YAF.Pages
 
             this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
 
-            this.CurrentDirectory = Path.Combine(BoardInfo.ForumClientFileRoot, BoardFolders.Current.Avatars);
 
-            this.BindData(this.CurrentDirectory);
         }
 
         /// <summary>

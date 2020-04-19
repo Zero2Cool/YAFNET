@@ -34,6 +34,7 @@ namespace YAF.Pages
 
     using YAF.Configuration;
     using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
@@ -195,7 +196,7 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void Page_Load(object sender, EventArgs e)
         {
-            this.Page.Form.DefaultButton = this.SearchByUserName.UniqueID;
+            //this.Page.Form.DefaultButton = this.SearchByUserName.UniqueID;
 
             this.UserSearchName.Focus();
 

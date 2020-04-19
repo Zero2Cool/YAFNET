@@ -38,6 +38,7 @@ namespace YAF.Web.Controls
     using YAF.Core;
     using YAF.Core.BaseControls;
     using YAF.Core.BasePages;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -227,9 +228,9 @@ namespace YAF.Web.Controls
             // wrap the forum in one main div and then a page div for better CSS selection
             writer.WriteLine();
 
-            writer.Write(@"<div class=""yaf-net"" id=""{0}"">", this.ClientID);
+            writer.Write(@"<div id=""{0}"" class=""yafnet"">", this.ClientID);
 
-            writer.Write(@"<div id=""yafpage_{0}"" class=""{1}"">", this.page, this.page.ToString().Replace(".", "_"));
+            writer.Write(@"<div class=""page-{0}"">", this.page.PageName.ToLower().Replace("_", "-"));
 
             // render the forum
             base.Render(writer);
@@ -354,10 +355,10 @@ namespace YAF.Web.Controls
             }
 
             // Add smart Scroll
-            if (Config.IsAnyPortal)
+            /*if (Config.IsAnyPortal)
             {
                 this.Controls.Add(new SmartScroller());
-            }
+            }*/
 
             if (this.Get<BoardSettings>().ShowScrollBackToTopButton)
             {
@@ -419,18 +420,14 @@ namespace YAF.Web.Controls
                 this.page = pages.GetPage("forum");
             }
 
-            /*if (!this.IsValidForLockedForum(this._page))
-            {
-            /  BuildLink.Redirect(ForumPages.topics, "f={0}", this.LockedForum);
-            }*/
-            string[] src = { $"{BoardInfo.ForumServerFileRoot}pages/{this.page.PageName}.ascx" };
+            var src = $"{BoardInfo.ForumServerFileRoot}pages/{this.page.PageName}.ascx";
 
             var replacementPaths = new List<string> { "moderate", "admin", "help" };
 
-            replacementPaths.Where(path => src[0].IndexOf($"/{path}_", StringComparison.Ordinal) >= 0)
-                .ForEach(path => { src[0] = src[0].Replace($"/{path}_", $"/{path}/"); });
+            replacementPaths.Where(path => src.IndexOf($"/{path}_", StringComparison.Ordinal) >= 0)
+                .ForEach(path => { src = src.Replace($"/{path}_", $"/{path}/"); });
 
-            return src[0];
+            return src;
         }
 
         #endregion

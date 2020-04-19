@@ -27,8 +27,8 @@ namespace YAF.Core.Extensions
 
     using ServiceStack;
 
-    using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
@@ -86,10 +86,10 @@ namespace YAF.Core.Extensions
 
             var localizedItem = supportedItem.Localize(currentControl);
 
-            // convert from YafBBCode to HTML
+            // convert from BBCode to HTML
             if (supportedItem.EnableBBCode)
             {
-                localizedItem = currentControl.Get<IBBCode>().MakeHtml(localizedItem, false, true, false);
+                localizedItem = currentControl.Get<IBBCode>().MakeHtml(localizedItem, true, true);
             }
 
             return localizedItem.Fmt(supportedItem.Param0, supportedItem.Param1, supportedItem.Param2);

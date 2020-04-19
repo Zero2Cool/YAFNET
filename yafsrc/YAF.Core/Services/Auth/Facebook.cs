@@ -34,12 +34,14 @@ namespace YAF.Core.Services.Auth
     using ServiceStack;
 
     using YAF.Configuration;
+    using YAF.Core.Context;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
     using YAF.Types.Constants;
     using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Auth;
     using YAF.Types.Interfaces.Events;
     using YAF.Types.Models;
     using YAF.Types.Objects;
@@ -192,21 +194,18 @@ namespace YAF.Core.Services.Auth
                     return CreateFacebookUser(facebookUser, userGender, out message);
                 }
 
-                switch (facebookUser.Gender)
-                {
-                    case "male":
-                        userGender = 1;
-                        break;
-                    case "female":
-                        userGender = 2;
-                        break;
-                }
+                userGender = facebookUser.Gender switch
+                    {
+                        "male" => 1,
+                        "female" => 2,
+                        _ => userGender
+                    };
 
                 // Create User if not exists?!
                 return CreateFacebookUser(facebookUser, userGender, out message);
             }
 
-            var yafUser = YafUserProfile.GetProfile(userName);
+            var yafUser = Utils.UserProfile.GetProfile(userName);
 
             var yafUserData =
                 new CombinedUserDataHelper(BoardContext.Current.Get<MembershipProvider>().GetUser(userName, true));
@@ -463,7 +462,7 @@ namespace YAF.Core.Services.Auth
             var userID = RoleMembershipHelper.CreateForumUser(user, BoardContext.Current.PageBoardID);
 
             // create empty profile just so they have one
-            var userProfile = YafUserProfile.GetProfile(facebookUser.UserName);
+            var userProfile = Utils.UserProfile.GetProfile(facebookUser.UserName);
 
             // setup their initial profile information
             userProfile.Save();
@@ -541,7 +540,6 @@ namespace YAF.Core.Services.Auth
                 facebookUser.UserName,
                 facebookUser.Email,
                 TimeZoneInfo.Local.Id,
-                null,
                 null,
                 null,
                 null,

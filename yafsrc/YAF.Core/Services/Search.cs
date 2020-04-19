@@ -26,7 +26,6 @@ namespace YAF.Core.Services
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -39,6 +38,7 @@ namespace YAF.Core.Services
     using YAF.Lucene.Net.Analysis.Standard;
     using YAF.Lucene.Net.Documents;
     using YAF.Lucene.Net.Index;
+    using YAF.Lucene.Net.Queries;
     using YAF.Lucene.Net.QueryParsers.Classic;
     using YAF.Lucene.Net.Search;
     using YAF.Lucene.Net.Search.Highlight;
@@ -203,13 +203,31 @@ namespace YAF.Core.Services
         }
 
         /// <summary>
-        /// Clears the search index record.
+        /// Delete Search Index Record by Message Id.
         /// </summary>
-        /// <param name="messageId">The message identifier.</param>
-        public void ClearSearchIndexRecord(int messageId)
+        /// <param name="messageId">
+        /// The message id.
+        /// </param>
+        public void DeleteSearchIndexRecordByMessageId(int messageId)
         {
             // remove older index entry
             var searchQuery = new TermQuery(new Term("MessageId", messageId.ToString()));
+
+            this.Writer.DeleteDocuments(searchQuery);
+
+            this.Optimize();
+        }
+
+        /// <summary>
+        /// Delete Search Index Record by Topic Id.
+        /// </summary>
+        /// <param name="topicId">
+        /// The topic Id.
+        /// </param>
+        public void DeleteSearchIndexRecordByTopicId(int topicId)
+        {
+            // remove older index entry
+            var searchQuery = new TermQuery(new Term("TopicId", topicId.ToString()));
 
             this.Writer.DeleteDocuments(searchQuery);
 
@@ -259,11 +277,11 @@ namespace YAF.Core.Services
                                   new StoredField("Flags", message.Flags.ToString()),
                                   new StoredField("Posted", message.Posted),
                                   new StringField("UserId", message.UserId.ToString(), Field.Store.YES),
-                                  new StoredField("TopicId", message.TopicId.ToString()),
+                                  new StringField("TopicId", message.TopicId.ToString(), Field.Store.YES),
                                   new TextField("Topic", message.Topic, Field.Store.YES),
                                   new TextField("TopicTags", message.TopicTags, Field.Store.YES),
                                   new StringField("ForumName", message.ForumName, Field.Store.YES),
-                                  new StoredField("ForumId", message.ForumId.ToString()),
+                                  new StringField("ForumId", message.ForumId.ToString(), Field.Store.YES),
                                   new TextField("Author", name, Field.Store.YES),
                                   new TextField("AuthorDisplay", userDisplayName, Field.Store.YES),
                                   new StoredField("AuthorStyle", userStyle),
@@ -310,10 +328,10 @@ namespace YAF.Core.Services
                                   new StoredField("Flags", message.Flags.ToString()),
                                   new StoredField("Posted", message.Posted),
                                   new StringField("UserId", message.UserId.ToString(), Field.Store.YES),
-                                  new StoredField("TopicId", message.TopicId.ToString()),
+                                  new StringField("TopicId", message.TopicId.ToString(), Field.Store.YES),
                                   new TextField("Topic", message.Topic, Field.Store.YES),
                                   new StringField("ForumName", message.ForumName, Field.Store.YES),
-                                  new StoredField("ForumId", message.ForumId.ToString()),
+                                  new StringField("ForumId", message.ForumId.ToString(), Field.Store.YES),
                                   new TextField("Author", name, Field.Store.YES),
                                   new TextField("AuthorDisplay", userDisplayName, Field.Store.YES),
                                   new StoredField("AuthorStyle", userStyle),
@@ -365,15 +383,26 @@ namespace YAF.Core.Services
         /// <summary>
         /// Searches for similar words
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="input">The input.</param>
-        /// <param name="fieldName">Name of the field.</param>
+        /// <param name="userId">
+        /// The user identifier.
+        /// </param>
+        /// <param name="filter">
+        /// The filter.
+        /// </param>
+        /// <param name="input">
+        /// The input.
+        /// </param>
+        /// <param name="fieldName">
+        /// Name of the field.
+        /// </param>
         /// <returns>
         /// Returns the list of search results.
         /// </returns>
-        public List<SearchMessage> SearchSimilar(int userId, string input, string fieldName = "")
+        public List<SearchMessage> SearchSimilar(int userId, string filter, string input, string fieldName = "")
         {
-           return input.IsNotSet() ? new List<SearchMessage>() : this.SearchSimilarIndex(userId, input, fieldName);
+            return input.IsNotSet()
+                       ? new List<SearchMessage>()
+                       : this.SearchSimilarIndex(userId, filter, input, fieldName);
         }
 
         /// <summary>
@@ -516,14 +545,11 @@ namespace YAF.Core.Services
             }
 
             return new SearchMessage
-            {
+                       {
                            Topic = doc.Get("Topic"),
                            TopicId = doc.Get("TopicId").ToType<int>(),
                            TopicUrl = BuildLink.GetLink(ForumPages.Posts, "t={0}", doc.Get("TopicId").ToType<int>()),
-                           Posted =
-                               doc.Get("Posted").ToType<System.DateTime>().ToString(
-                                   "yyyy-MM-ddTHH:mm:ssZ",
-                                   CultureInfo.InvariantCulture),
+                           Posted = doc.Get("Posted"),
                            UserId = doc.Get("UserId").ToType<int>(),
                            UserName = doc.Get("Author"),
                            UserDisplayName = doc.Get("AuthorDisplay"),
@@ -561,10 +587,10 @@ namespace YAF.Core.Services
                                   new StoredField("Flags", message.Flags.ToString()),
                                   new StoredField("Posted", message.Posted),
                                   new StringField("UserId", message.UserId.ToString(), Field.Store.YES),
-                                  new StoredField("TopicId", message.TopicId.ToString()),
+                                  new StringField("TopicId", message.TopicId.ToString(), Field.Store.YES),
                                   new TextField("Topic", message.Topic, Field.Store.YES),
                                   new StringField("ForumName", message.ForumName, Field.Store.YES),
-                                  new StoredField("ForumId", message.ForumId.ToString()),
+                                  new StringField("ForumId", message.ForumId.ToString(), Field.Store.YES),
                                   new TextField("Author", name, Field.Store.YES),
                                   new TextField("AuthorDisplay", userDisplayName, Field.Store.YES),
                                   new StoredField("AuthorStyle", userStyle),
@@ -685,14 +711,11 @@ namespace YAF.Core.Services
             }
 
             return new SearchMessage
-            {
+                       {
                            MessageId = doc.Get("MessageId").ToType<int>(),
                            Message = message,
                            Flags = flags,
-                           Posted =
-                               doc.Get("Posted").ToType<System.DateTime>().ToString(
-                                   "yyyy-MM-ddTHH:mm:ssZ",
-                                   CultureInfo.InvariantCulture),
+                           Posted = doc.Get("Posted"),
                            UserName = doc.Get("Author"),
                            UserId = doc.Get("UserId").ToType<int>(),
                            TopicId = doc.Get("TopicId").ToType<int>(),
@@ -702,10 +725,7 @@ namespace YAF.Core.Services
                            Description = doc.Get("Description"),
                            TopicUrl = BuildLink.GetLink(ForumPages.Posts, "t={0}", doc.Get("TopicId").ToType<int>()),
                            MessageUrl =
-                               BuildLink.GetLink(
-                                   ForumPages.Posts,
-                                   "m={0}#post{0}",
-                                   doc.Get("MessageId").ToType<int>()),
+                               BuildLink.GetLink(ForumPages.Posts, "m={0}#post{0}", doc.Get("MessageId").ToType<int>()),
                            ForumUrl = BuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
                            UserDisplayName = doc.Get("AuthorDisplay"),
                            ForumName = doc.Get("ForumName"),
@@ -842,7 +862,31 @@ namespace YAF.Core.Services
 
                 // sort by date
                 var sort = new Sort(new SortField("MessageId", SortFieldType.STRING, true));
-                var hits = searcher.Search(query, null, hitsLimit, sort).ScoreDocs;
+
+                var fil = new BooleanFilter();
+
+                // search this forum
+                if (forumId > 0)
+                {
+                    fil.Add(new FilterClause(new TermsFilter(new Term("ForumId", forumId.ToString())), Occur.SHOULD));
+                }
+                else
+                {
+                    // filter user access
+                    if (userAccessList.Any())
+                    {
+                        userAccessList.Where(a => !a.ReadAccess).ForEach(
+                            access =>
+                                {
+                                    fil.Add(
+                                        new FilterClause(
+                                            new TermsFilter(new Term("ForumId", access.ForumID.ToString())),
+                                            Occur.MUST_NOT));
+                                });
+                    }
+                }
+
+                var hits = searcher.Search(query, fil.Any() ? fil : null, hitsLimit, sort).ScoreDocs;
 
                 totalHits = hits.Length;
                 var highlighter = new Highlighter(formatter, scorer) { TextFragmenter = fragmenter };
@@ -865,13 +909,22 @@ namespace YAF.Core.Services
         /// <summary>
         /// Searches for similar words
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="searchQuery">The search query.</param>
-        /// <param name="searchField">The search field.</param>
+        /// <param name="userId">
+        /// The user identifier.
+        /// </param>
+        /// <param name="filter">
+        /// The filter.
+        /// </param>
+        /// <param name="searchQuery">
+        /// The search query.
+        /// </param>
+        /// <param name="searchField">
+        /// The search field.
+        /// </param>
         /// <returns>
         /// Returns the Search results
         /// </returns>
-        private List<SearchMessage> SearchSimilarIndex(int userId, string searchQuery, string searchField)
+        private List<SearchMessage> SearchSimilarIndex(int userId, string filter, string searchQuery, string searchField)
         {
             if (searchQuery.Replace("*", string.Empty).Replace("?", string.Empty).IsNotSet())
             {
@@ -888,12 +941,17 @@ namespace YAF.Core.Services
                 return new List<SearchMessage>();
             }
 
+            var booleanFilter = new BooleanFilter
+                                    {
+                                        new FilterClause(new TermsFilter(new Term("TopicId", filter)), Occur.MUST_NOT)
+                                    };
+
             var hitsLimit = this.Get<BoardSettings>().ReturnSearchMax;
 
             var parser = new QueryParser(MatchVersion, searchField, this.standardAnalyzer);
             var query = ParseQuery(searchQuery, parser);
 
-            var hits = searcher.Search(query, hitsLimit).ScoreDocs;
+            var hits = searcher.Search(query, booleanFilter, hitsLimit).ScoreDocs;
 
             var results = MapSearchToDataList(searcher, hits, userAccessList);
 

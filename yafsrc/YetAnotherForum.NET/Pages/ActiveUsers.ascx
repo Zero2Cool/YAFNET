@@ -11,7 +11,8 @@
             <div class="col-xl-12">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <i class="fa fa-users fa-fw text-secondary"></i> <YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" LocalizedTag="title" />
+                        <YAF:IconHeader runat="server"
+                                        IconName="users"></YAF:IconHeader>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -116,7 +117,7 @@
                 <div class="btn-group"  role="group">
                     <a href="#" class="first btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-left"></i></span></a>
                     <a href="#" class="prev btn btn-secondary btn-sm"><span><i class="fas fa-angle-left"></i></span></a>
-                    <input type="text" class="pagedisplay  btn btn-secondary btn-sm"  style="width:150px" />
+                    <input type="button" class="pagedisplay  btn btn-secondary btn-sm disabled"  style="width:150px" />
                     <a href="#" class="next btn btn-secondary btn-sm"><span><i class="fas fa-angle-right"></i></span></a>
                     <a href="#" class="last btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-right"></i></span></a>
                 </div>

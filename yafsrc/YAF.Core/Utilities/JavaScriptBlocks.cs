@@ -26,7 +26,7 @@ namespace YAF.Core.Utilities
     #region Using
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.Context;
     using YAF.Core.Context.Start;
     using YAF.Types;
     using YAF.Types.Extensions;
@@ -41,6 +41,75 @@ namespace YAF.Core.Utilities
     public static class JavaScriptBlocks
     {
         #region Properties
+
+        /// <summary>
+        ///   Gets the script for changing the album title.
+        /// </summary>
+        /// <returns>
+        ///   the change album title js.
+        /// </returns>
+        [NotNull]
+        public static string ChangeAlbumTitleJs =>
+            $@"function changeAlbumTitle(albumId, txtTitleId){{
+                     var newTitleTxt = {Config.JQueryAlias}('#' + txtTitleId).val();
+            {Config.JQueryAlias}.ajax({{
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeAlbumTitle',
+                    type: 'POST',
+                    contentType: 'application/json;charset=utf-8',
+                    data: JSON.stringify({{ AlbumId: albumId, NewTitle: newTitleTxt  }}),
+                    dataType: 'json',
+                    success: changeTitleSuccess,
+                    error: function(x, e)  {{
+                             console.log('An Error has occured!');
+                             console.log(x.responseText);
+                             console.log(x.status);
+                    }}
+                 }});
+               }}";
+
+        /// <summary>
+        ///   Gets the script for changing the image caption.
+        /// </summary>
+        /// <returns></returns>
+        [NotNull]
+        public static string ChangeImageCaptionJs =>
+            $@"function changeImageCaption(imageID, txtTitleId){{
+                        var newImgTitleTxt = {Config.JQueryAlias}('#' + txtTitleId).val();
+              {Config.JQueryAlias}.ajax({{
+                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeImageCaption',
+                    type: 'POST',
+                    contentType: 'application/json;charset=utf-8',
+                    data: JSON.stringify({{ ImageId: imageID, NewCaption: newImgTitleTxt  }}),
+                    dataType: 'json',
+                    success: changeTitleSuccess,
+                    error: function(x, e)  {{
+                             console.log('An Error has occured!');
+                             console.log(x.responseText);
+                             console.log(x.status);
+                    }}
+                 }});
+               }}";
+
+        /// <summary>
+        ///   Gets the MomentJS Load JS.
+        /// </summary>
+        public static string MomentLoadJs =>
+            $@"function loadTimeAgo() {{
+            
+		     moment.locale('{(BoardContext.Current.CultureUser.IsSet()
+                                  ? BoardContext.Current.CultureUser.Substring(0, 2)
+                                  : BoardContext.Current.Get<BoardSettings>().Culture.Substring(0, 2))}');
+
+             {Config.JQueryAlias}('abbr.timeago').each(function() {{
+                  {Config.JQueryAlias}(this).html(function(index, value) {{
+                                          return moment(value).fromNow();
+                  }});
+                  {Config.JQueryAlias}(this).removeClass('timeago');
+            }});
+
+            Prism.highlightAll();
+			      }}
+                   Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(loadTimeAgo);";
 
         /// <summary>
         ///   Gets the script for album/image title/image callback.
@@ -131,77 +200,6 @@ namespace YAF.Core.Utilities
             $("">input[type=text]"", "".bootstrap-tagsinput"").val("""");
         }}, 1);
     }});";
-
-        /// <summary>
-        ///   Gets the script for changing the album title.
-        /// </summary>
-        /// <returns>
-        ///   the change album title js.
-        /// </returns>
-        [NotNull]
-        public static string ChangeAlbumTitleJs =>
-            $@"function changeAlbumTitle(albumId, txtTitleId){{
-                     var newTitleTxt = {Config.JQueryAlias}('#' + txtTitleId).val();
-            {Config.JQueryAlias}.ajax({{
-                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeAlbumTitle',
-                    type: 'POST',
-                    contentType: 'application/json;charset=utf-8',
-                    data: JSON.stringify({{ AlbumId: albumId, NewTitle: newTitleTxt  }}),
-                    dataType: 'json',
-                    success: changeTitleSuccess,
-                    error: function(x, e)  {{
-                             console.log('An Error has occured!');
-                             console.log(x.responseText);
-                             console.log(x.status);
-                    }}
-                 }});
-               }}";
-
-        /// <summary>
-        ///   Gets the script for changing the image caption.
-        /// </summary>
-        /// <returns></returns>
-        [NotNull]
-        public static string ChangeImageCaptionJs =>
-            $@"function changeImageCaption(imageID, txtTitleId){{
-                        var newImgTitleTxt = {Config.JQueryAlias}('#' + txtTitleId).val();
-              {Config.JQueryAlias}.ajax({{
-                    url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Album/ChangeImageCaption',
-                    type: 'POST',
-                    contentType: 'application/json;charset=utf-8',
-                    data: JSON.stringify({{ ImageId: imageID, NewCaption: newImgTitleTxt  }}),
-                    dataType: 'json',
-                    success: changeTitleSuccess,
-                    error: function(x, e)  {{
-                             console.log('An Error has occured!');
-                             console.log(x.responseText);
-                             console.log(x.status);
-                    }}
-                 }});
-               }}";
-
-        /// <summary>
-        ///   Gets the MomentJS Load JS.
-        /// </summary>
-        public static string MomentLoadJs =>
-            $@" if( typeof(CKEDITOR) == 'undefined') {{
-            function loadTimeAgo() {{
-            
-		     moment.locale('{(BoardContext.Current.CultureUser.IsSet()
-                                  ? BoardContext.Current.CultureUser.Substring(0, 2)
-                                  : BoardContext.Current.Get<BoardSettings>().Culture.Substring(0, 2))}');
-
-             {Config.JQueryAlias}('abbr.timeago').each(function() {{
-                  {Config.JQueryAlias}(this).html(function(index, value) {{
-                                          return moment(value).fromNow();
-                  }});
-                  {Config.JQueryAlias}(this).removeClass('timeago');
-            }});
-
-            Prism.highlightAll();
-			      }}
-                   Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(loadTimeAgo);
-                   }};";
 
         #endregion
 
@@ -416,7 +414,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         /// <returns>
         /// Returns the the Bootstrap Tab Load JS string
         /// </returns>
-        public static string BootstrapNavsLoadJs([NotNull] string tabId, string hiddenId)
+        public static string BootstrapTabLoadJs([NotNull] string tabId, string hiddenId)
         {
             return $@"{Config.JQueryAlias}(document).ready(function() {{
             var selectedTab = {Config.JQueryAlias}(""#{hiddenId}"");
@@ -455,6 +453,32 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                  }});
                  }});
                 }});";
+        }
+
+        /// <summary>
+        /// The drop down toggle JS.
+        /// </summary>
+        /// <param name="hideText">
+        /// The hide Text.
+        /// </param>
+        /// <param name="showText">
+        /// The show Text.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        public static string CollapseToggleJs(string hideText, string showText)
+        {
+            return $@"{Config.JQueryAlias}(document).ready(function() {{
+                          {Config.JQueryAlias}('a[data-toggle=""collapse""]').click(function() {{
+                              var button = $(this);
+                              if (button.attr(""aria-expanded"") == ""false"") {{
+                                  button.html('<i class=""fa fa-caret-square-up fa-fw""></i>&nbsp;{hideText}');
+                              }} else {{
+                                  button.html('<i class=""fa fa-caret-square-down fa-fw""></i>&nbsp;{showText}');
+                              }}
+                          }});
+                      }});";
         }
 
         /// <summary>
@@ -688,6 +712,139 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         #endregion
 
         /// <summary>
+        /// The CKEditor Load JS.
+        /// </summary>
+        /// <param name="editorId">
+        /// The editor Id.
+        /// </param>
+        /// <param name="editorLanguage">
+        /// The editor language.
+        /// </param>
+        /// <param name="maxCharacters">
+        /// The max characters.
+        /// </param>
+        /// <param name="themeCssUrl">
+        /// The theme CSS url.
+        /// </param>
+        /// <param name="forumCssUrl">
+        /// The forum CSS url.
+        /// </param>
+        /// <param name="toolbar">
+        /// The toolbar.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        [NotNull]
+        public static string CKEditorLoadJs(
+            [NotNull] string editorId,
+            [NotNull] string editorLanguage,
+            [NotNull] int maxCharacters,
+            [NotNull] string themeCssUrl,
+            [NotNull] string forumCssUrl,
+            [NotNull] string toolbar)
+        {
+            return $@"{Config.JQueryAlias}(document).ready(function() {{
+                      var yafCKEditor = {Config.JQueryAlias}(""#{editorId}"").ckeditor({{
+                          extraPlugins: ""bbcode,mentions,highlight,bbcodeselector,syntaxhighlight,emoji,wordcount,autolink,albumsbrowser,attachments,quote,codemirror"",
+                          removePlugins: 'bidi,dialogadvtab,div,filebrowser,flash,format,forms,horizontalrule,iframe,liststyle,pagebreak,showborders,stylescombo,table,tabletools,templates',
+		                  toolbar: [{toolbar}],
+		                  entities_greek: false,
+                          entities_latin: false,
+                          language: '{editorLanguage}',
+                          disableObjectResizing: true,
+		                  fontSize_sizes: ""30/30%;50/50%;100/100%;120/120%;150/150%;200/200%;300/300%"",
+		                  forcePasteAsPlainText: true,
+		                  contentsCss: [""{themeCssUrl}"", ""{forumCssUrl}""],
+                          autosave:
+                          {{
+                              saveDetectionSelectors: ""a[id*='_PostReply'],a[id*='Cancel'],a[id*='_Preview']""
+                          }},
+                          codemirror: {{mode: ""bbcode"",  theme: ""monokai""}},
+                          wordcount:
+                          {{
+                              maxCharCount: {maxCharacters},showParagraphs: false,showWordCount: false,showCharCount: true,countHTML: true
+                          }},
+		                  mentions: [ {{ feed:  CKEDITOR.basePath.replace('Scripts/ckeditor/', '') + 'resource.ashx?users={{encodedQuery}}',
+                                         itemTemplate: '<li data-id=""{{id}}""><i class=""fas fa-user pr-1""></i><strong class=""username"">{{name}}</strong></li>',
+		                                 outputTemplate: '@[userlink]{{name}}[/userlink]'
+          		                      }} ]
+                          }});
+
+                      {Config.JQueryAlias}(""a[id*='_PostReply'],a[id*='_Save'],a[id*='_Preview']"").click(function () {{
+                          yafCKEditor.editor.updateElement();
+                      }});
+                  }});
+
+                  CKEDITOR.on('instanceReady', function (ev) {{
+                     ev.editor.document.on('drop', function (event) {{
+                       {Config.JQueryAlias}('.EditorDiv').yafFileUpload(""send"", {{files: event.data.$.dataTransfer.files}});
+                     }});
+                  }});";
+        }
+
+        /// <summary>
+        /// The CKEditor Load JS.
+        /// </summary>
+        /// <param name="editorId">
+        /// The editor Id.
+        /// </param>
+        /// <param name="editorLanguage">
+        /// The editor language.
+        /// </param>
+        /// <param name="maxCharacters">
+        /// The max characters.
+        /// </param>
+        /// <param name="themeCssUrl">
+        /// The theme CSS url.
+        /// </param>
+        /// <param name="forumCssUrl">
+        /// The forum CSS url.
+        /// </param>
+        /// <param name="toolbar">
+        /// The toolbar.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        [NotNull]
+        public static string CKEditorBasicLoadJs(
+            [NotNull] string editorId,
+            [NotNull] string editorLanguage,
+            [NotNull] int maxCharacters,
+            [NotNull] string themeCssUrl,
+            [NotNull] string forumCssUrl,
+            [NotNull] string toolbar)
+        {
+            return $@"{Config.JQueryAlias}(document).ready(function() {{
+                      var yafCKEditor = {Config.JQueryAlias}(""#{editorId}"").ckeditor({{
+                          extraPlugins: ""bbcode,mentions,wordcount,autolink,quote,codemirror"",
+                          removePlugins: 'autosave,bidi,dialogadvtab,div,filebrowser,flash,format,forms,horizontalrule,iframe,liststyle,pagebreak,showborders,stylescombo,table,tabletools,templates',
+		                  toolbar: [{toolbar}],
+		                  entities_greek: false,
+                          entities_latin: false,
+                          language: '{editorLanguage}',
+                          disableObjectResizing: true,
+		                  forcePasteAsPlainText: true,
+		                  contentsCss: [""{themeCssUrl}"", ""{forumCssUrl}""],
+                          wordcount:
+                          {{
+                              maxCharCount: {maxCharacters},showParagraphs: false,showWordCount: false,showCharCount: true,countHTML: true
+                          }},
+                          codemirror: {{mode: ""bbcode"",  theme: ""monokai""}},
+		                  mentions: [ {{ feed:  CKEDITOR.basePath.replace('Scripts/ckeditor/', '') + 'resource.ashx?users={{encodedQuery}}',
+                                         itemTemplate: '<li data-id=""{{id}}""><i class=""fas fa-user pr-1""></i><strong class=""username"">{{name}}</strong></li>',
+		                                 outputTemplate: '@[userlink]{{name}}[/userlink]'
+          		                      }} ]
+                          }});
+
+                          {Config.JQueryAlias}(""a[id*='_QuickReplyDialog'],a[id*='_SignatureEdit']"").click(function () {{
+                              yafCKEditor.editor.updateElement();
+                          }});
+                  }});";
+        }
+
+        /// <summary>
         /// Gets the FileUpload Java Script.
         /// </summary>
         /// <param name="acceptedFileTypes">
@@ -711,6 +868,9 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         /// <param name="imageMaxHeight">
         /// The image Max Height.
         /// </param>
+        /// <param name="editorId">
+        /// The editor Id.
+        /// </param>
         /// <returns>
         /// Returns the FileUpload Java Script.
         /// </returns>
@@ -722,11 +882,10 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
             [NotNull] int forumId,
             [NotNull] int boardId,
             [NotNull] int imageMaxWidth,
-            [NotNull] int imageMaxHeight)
+            [NotNull] int imageMaxHeight,
+            [NotNull] string editorId)
         {
-            return $@"{Config.JQueryAlias}(function() {{
-
-            {Config.JQueryAlias}('.BBCodeEditor').yafFileUpload({{
+            return $@"{Config.JQueryAlias}('.EditorDiv').yafFileUpload({{
                 url: '{fileUploaderUrl}',
                 acceptFileTypes: new RegExp('(\.|\/)(' + '{acceptedFileTypes}' + ')', 'i'),
                 imageMaxWidth: {imageMaxWidth},
@@ -737,7 +896,8 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                 dataType: 'json',
                 {(maxFileSize > 0 ? $"maxFileSize: {maxFileSize}," : string.Empty)}
                 done: function (e, data) {{
-                    insertAttachment(data.result[0].fileID, data.result[0].fileID); 
+                    var ckEditor = CKEDITOR.instances.{editorId}; 
+                    ckEditor.insertHtml( '[attach]' + data.result[0].fileID + '[/attach]' );
                 }},
                 formData: {{
                     forumID: '{forumId}',
@@ -746,10 +906,9 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                     uploadFolder: '{BoardFolders.Current.Uploads}',
                     allowedUpload: true
                 }},
-                dropZone: {Config.JQueryAlias}('.BBCodeEditor'),
-                pasteZone: {Config.JQueryAlias}('.BBCodeEditor')
-            }});
-        }});";
+                dropZone: {Config.JQueryAlias}('.EditorDiv'),
+                pasteZone: {Config.JQueryAlias}('.EditorDiv')
+            }});";
         }
 
         /// <summary>
@@ -804,7 +963,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                     {Config.JQueryAlias}('#fileupload .alert-danger').toggle();
                 }},
                 done: function (e, data) {{
-                    insertAttachment(data.result[0].fileID, data.result[0].fileID);
+                    CKEDITOR.tools.insertAttachment(data.result[0].fileID);
                     {Config.JQueryAlias}('#fileupload').find('.files li:first').remove();
 
                     if ({Config.JQueryAlias}('#fileupload').find('.files li').length == 0) {{
@@ -905,21 +1064,6 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
             cache: true,
             {BoardContext.Current.Get<ILocalization>().GetText("SELECT_LOCALE_JS")}
         }});";
-        }
-
-        /// <summary>
-        /// Gets the Selected Quoting Java Script
-        /// </summary>
-        /// <param name="postUrl">The post URL.</param>
-        /// <param name="toolTipText">The tool tip text.</param>
-        /// <returns>Returns the the Selected Quoting Java Script</returns>
-        [NotNull]
-        public static string SelectedQuotingJs([NotNull] string postUrl, string toolTipText)
-        {
-            return $@"{Config.JQueryAlias}('.selectionQuoteable').each(function () {{
-                         var $this = jQuery(this);
-                         $this.selectedQuoting({{ URL: '{postUrl}', ToolTip: '{toolTipText}' }});
-                     }});";
         }
 
         /// <summary>

@@ -33,7 +33,7 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Core.Model;
     using YAF.Core.Services;
     using YAF.Core.UsersRoles;
@@ -225,9 +225,6 @@ namespace YAF.Pages
             }
 
             this.Login1.MembershipProvider = Config.MembershipProvider;
-
-            this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(this.GetText("title"));
 
             // Login1.CreateUserText = "Sign up for a new account.";
             // Login1.CreateUserUrl = BuildLink.GetLink( ForumPages.register );
@@ -515,6 +512,15 @@ namespace YAF.Pages
         }
 
         /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            this.PageLinks.AddRoot();
+            this.PageLinks.AddLink(this.GetText("title"));
+        }
+
+        /// <summary>
         /// Called when Password Recovery is Clicked
         /// </summary>
         /// <param name="sender">
@@ -566,7 +572,7 @@ namespace YAF.Pages
         protected void RegisterLinkClick(object sender, EventArgs e)
         {
             BuildLink.Redirect(
-                this.Get<BoardSettings>().ShowRulesForRegistration ? ForumPages.Rules : ForumPages.Register);
+                this.Get<BoardSettings>().ShowRulesForRegistration ? ForumPages.RulesAndPrivacy : ForumPages.Register);
         }
 
         /// <summary>

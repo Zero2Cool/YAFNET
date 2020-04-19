@@ -47,10 +47,20 @@ namespace YAF.Types.Interfaces
         bool ClearSearchIndex();
 
         /// <summary>
-        /// Clears the search index record.
+        /// Delete Search Index Record by Message Id.
         /// </summary>
-        /// <param name="messageId">The message identifier.</param>
-        void ClearSearchIndexRecord(int messageId);
+        /// <param name="messageId">
+        /// The message id.
+        /// </param>
+        void DeleteSearchIndexRecordByMessageId(int messageId);
+
+        /// <summary>
+        /// Delete Search Index Record by Topic Id.
+        /// </summary>
+        /// <param name="topicId">
+        /// The topic Id.
+        /// </param>
+        void DeleteSearchIndexRecordByTopicId(int topicId);
 
         /// <summary>
         /// Adds the search index
@@ -97,11 +107,22 @@ namespace YAF.Types.Interfaces
         /// <summary>
         /// Searches for similar words
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="input">The input.</param>
-        /// <param name="fieldName">Name of the field.</param>
-        /// <returns>Returns the list of search results.</returns>
-        List<SearchMessage> SearchSimilar(int userId, string input, string fieldName = "");
+        /// <param name="userId">
+        /// The user identifier.
+        /// </param>
+        /// <param name="filter">
+        /// The filter.
+        /// </param>
+        /// <param name="input">
+        /// The input.
+        /// </param>
+        /// <param name="fieldName">
+        /// Name of the field.
+        /// </param>
+        /// <returns>
+        /// Returns the list of search results.
+        /// </returns>
+        List<SearchMessage> SearchSimilar(int userId, string filter, string input, string fieldName = "");
 
         /// <summary>
         /// Searches the paged.

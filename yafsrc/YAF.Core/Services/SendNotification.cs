@@ -32,11 +32,11 @@ namespace YAF.Core.Services
     using System.Globalization;
     using System.Linq;
     using System.Net.Mail;
-    using System.Threading.Tasks;
     using System.Web;
     using System.Web.Security;
 
     using YAF.Configuration;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
@@ -159,6 +159,7 @@ namespace YAF.Core.Services
                                         TemplateLanguageFile = languageFile,
                                         TemplateParams =
                                             {
+                                                ["{user}"] = userName,
                                                 ["{adminlink}"] = adminLink,
                                                 ["{themecss}"] = themeCss,
                                                 ["{forumlink}"] = forumLink
@@ -630,18 +631,27 @@ namespace YAF.Core.Services
         /// <param name="userId">The user id.</param>
         public void SendRegistrationNotificationEmail([NotNull] MembershipUser user, int userId)
         {
+            if (this.BoardSettings.NotificationOnUserRegisterEmailList.IsNotSet())
+            {
+                return;
+            }
+
             var emails = this.BoardSettings.NotificationOnUserRegisterEmailList.Split(';');
 
-            var subject = this.Get<ILocalization>().GetTextFormatted(
-                "NOTIFICATION_ON_USER_REGISTER_EMAIL_SUBJECT",
+            var subject = string.Format(
+                this.Get<ILocalization>().GetText(
+                    "COMMON",
+                    "NOTIFICATION_ON_USER_REGISTER_EMAIL_SUBJECT",
+                    this.BoardSettings.Language),
                 this.BoardSettings.Name);
 
             var notifyAdmin = new TemplateEmail("NOTIFICATION_ON_USER_REGISTER")
                                   {
+                                      TemplateLanguageFile = this.BoardSettings.Language,
                                       TemplateParams =
                                           {
                                               ["{adminlink}"] = BuildLink.GetLinkNotEscaped(
-                                                  ForumPages.admin_edituser,
+                                                  ForumPages.Admin_EditUser,
                                                   true,
                                                   "u={0}",
                                                   userId),
@@ -649,9 +659,9 @@ namespace YAF.Core.Services
                                               ["{email}"] = user.Email
                                           }
                                   };
-            Parallel.ForEach(
-                emails.Where(email => email.Trim().IsSet()),
-                email => notifyAdmin.SendEmail(new MailAddress(email.Trim()), subject));
+
+            emails.Where(email => email.Trim().IsSet())
+                .ForEach(email => notifyAdmin.SendEmail(new MailAddress(email.Trim()), subject));
         }
 
         /// <summary>
@@ -692,7 +702,7 @@ namespace YAF.Core.Services
                                                       TemplateParams =
                                                           {
                                                               ["{adminlink}"] = BuildLink.GetLinkNotEscaped(
-                                                                  ForumPages.admin_edituser,
+                                                                  ForumPages.Admin_EditUser,
                                                                   true,
                                                                   "u={0}",
                                                                   userId),

@@ -36,7 +36,8 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
@@ -145,45 +146,22 @@ namespace YAF.Pages
         /// </param>
         protected void CreateUserWizard1_CreateUserError([NotNull] object sender, [NotNull] CreateUserErrorEventArgs e)
         {
-            var createUserError = string.Empty;
-
             // find the type of error
-            switch (e.CreateUserError)
-            {
-                case MembershipCreateStatus.DuplicateEmail:
-                    createUserError = this.GetText("ALREADY_REGISTERED");
-                    break;
-                case MembershipCreateStatus.DuplicateUserName:
-                    createUserError = this.GetText("ALREADY_REGISTERED");
-                    break;
-                case MembershipCreateStatus.InvalidEmail:
-                    createUserError = this.GetText("BAD_EMAIL");
-                    break;
-                case MembershipCreateStatus.InvalidPassword:
-                    createUserError = this.GetText("BAD_PASSWORD");
-                    break;
-                case MembershipCreateStatus.InvalidQuestion:
-                    createUserError = this.GetText("INVALID_QUESTION");
-                    break;
-                case MembershipCreateStatus.InvalidUserName:
-                    createUserError = this.GetText("INVALID_USERNAME");
-                    break;
-                case MembershipCreateStatus.InvalidAnswer:
-                    createUserError = this.GetText("INVALID_ANSWER");
-                    break;
-                case MembershipCreateStatus.InvalidProviderUserKey:
-                    createUserError = "Invalid provider user key.";
-                    break;
-                case MembershipCreateStatus.DuplicateProviderUserKey:
-                    createUserError = "Duplicate provider user key.";
-                    break;
-                case MembershipCreateStatus.ProviderError:
-                    createUserError = "Provider Error";
-                    break;
-                case MembershipCreateStatus.UserRejected:
-                    createUserError = "User creation failed: Reason is defined by the provider.";
-                    break;
-            }
+            var createUserError = e.CreateUserError switch
+                {
+                    MembershipCreateStatus.DuplicateEmail => this.GetText("ALREADY_REGISTERED"),
+                    MembershipCreateStatus.DuplicateUserName => this.GetText("ALREADY_REGISTERED"),
+                    MembershipCreateStatus.InvalidEmail => this.GetText("BAD_EMAIL"),
+                    MembershipCreateStatus.InvalidPassword => this.GetText("BAD_PASSWORD"),
+                    MembershipCreateStatus.InvalidQuestion => this.GetText("INVALID_QUESTION"),
+                    MembershipCreateStatus.InvalidUserName => this.GetText("INVALID_USERNAME"),
+                    MembershipCreateStatus.InvalidAnswer => this.GetText("INVALID_ANSWER"),
+                    MembershipCreateStatus.InvalidProviderUserKey => "Invalid provider user key.",
+                    MembershipCreateStatus.DuplicateProviderUserKey => "Duplicate provider user key.",
+                    MembershipCreateStatus.ProviderError => "Provider Error",
+                    MembershipCreateStatus.UserRejected => "User creation failed: Reason is defined by the provider.",
+                    _ => string.Empty
+                };
 
             this.PageContext.AddLoadMessage(createUserError, MessageTypes.danger);
         }
@@ -215,7 +193,7 @@ namespace YAF.Pages
             var userID = RoleMembershipHelper.CreateForumUser(user, displayName, BoardContext.Current.PageBoardID);
 
             // create empty profile just so they have one
-            var userProfile = YafUserProfile.GetProfile(this.CreateUserWizard1.UserName);
+            var userProfile = Utils.UserProfile.GetProfile(this.CreateUserWizard1.UserName);
 
             // setup their initial profile information
             userProfile.Save();
@@ -542,9 +520,6 @@ namespace YAF.Pages
 
             this.CreateUserWizard1.MembershipProvider = Config.MembershipProvider;
 
-            this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(this.GetText("TITLE"));
-
             // handle the CreateUser Step localization
             this.SetupCreateUserStep();
 
@@ -608,7 +583,7 @@ namespace YAF.Pages
 
                 // success notification localization
                 ((Literal)this.CreateUserWizard1.FindWizardControlRecursive("AccountCreated")).Text =
-                    this.Get<IBBCode>().MakeHtml(this.GetText("ACCOUNT_CREATED"), false, true, false);
+                    this.Get<IBBCode>().MakeHtml(this.GetText("ACCOUNT_CREATED"), false, true);
             }
             else
             {
@@ -617,7 +592,7 @@ namespace YAF.Pages
 
                 // success notification localization
                 ((Literal)this.CreateUserWizard1.FindWizardControlRecursive("AccountCreated")).Text =
-                    this.Get<IBBCode>().MakeHtml(this.GetText("ACCOUNT_CREATED_VERIFICATION"), false, true, false);
+                    this.Get<IBBCode>().MakeHtml(this.GetText("ACCOUNT_CREATED_VERIFICATION"), false, true);
             }
 
             this.CreateUserWizard1.ContinueDestinationPageUrl = BoardInfo.ForumURL;
@@ -651,6 +626,15 @@ namespace YAF.Pages
             {
                 this.SetupRecaptchaControl();
             }
+        }
+
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            this.PageLinks.AddRoot();
+            this.PageLinks.AddLink(this.GetText("TITLE"));
         }
 
         /// <summary>
@@ -873,7 +857,7 @@ namespace YAF.Pages
             var dstUser = (CheckBox)this.CreateUserWizard1.FindWizardControlRecursive("DSTUser");
 
             // setup/save the profile
-            var userProfile = YafUserProfile.GetProfile(this.CreateUserWizard1.UserName);
+            var userProfile = Utils.UserProfile.GetProfile(this.CreateUserWizard1.UserName);
 
             if (country.SelectedValue != null)
             {
@@ -941,7 +925,6 @@ namespace YAF.Pages
                 null, 
                 null, 
                 timeZones.SelectedValue, 
-                null, 
                 null, 
                 null, 
                 null, 

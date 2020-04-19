@@ -34,7 +34,7 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.Services;
@@ -49,6 +49,8 @@ namespace YAF.Pages
     using YAF.Utils.Helpers;
     using YAF.Web.Controls;
     using YAF.Web.Extensions;
+
+    using ButtonStyle = YAF.Types.Constants.ButtonStyle;
 
     #endregion
 
@@ -311,7 +313,7 @@ namespace YAF.Pages
                 this.lnkBuddy.Visible = true;
                 this.lnkBuddy.Icon = "user-minus";
                 this.lnkBuddy.TextLocalizedTag = "REMOVEBUDDY";
-                this.lnkBuddy.Type = ButtonAction.Warning;
+                this.lnkBuddy.Type = ButtonStyle.Warning;
                 this.lnkBuddy.TextLocalizedPage = "PAGE";
                 this.lnkBuddy.CommandArgument = "removebuddy";
                 this.lnkBuddy.ReturnConfirmText = this.GetText("FRIENDS", "NOTIFICATION_REMOVE");
@@ -328,7 +330,7 @@ namespace YAF.Pages
                     this.lnkBuddy.TextLocalizedTag = "ADDBUDDY";
                     this.lnkBuddy.TextLocalizedPage = "PAGE";
                     this.lnkBuddy.Icon = "user-plus";
-                    this.lnkBuddy.Type = ButtonAction.Success;
+                    this.lnkBuddy.Type = ButtonStyle.Success;
 
                     this.lnkBuddy.CommandArgument = "addbuddy";
                 }
@@ -427,7 +429,7 @@ namespace YAF.Pages
             this.Email.ParamTitle0 = userName;
 
             this.XMPP.Visible = this.User != null && userData.Profile.XMPP.IsSet();
-            this.XMPP.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.Xmpp, "u={0}", userData.UserID);
+            this.XMPP.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.Jabber, "u={0}", userData.UserID);
             this.XMPP.ParamTitle0 = userName;
 
             this.Skype.Visible = this.User != null && userData.Profile.Skype.IsSet();

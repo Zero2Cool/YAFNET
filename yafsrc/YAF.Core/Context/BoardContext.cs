@@ -22,7 +22,7 @@
  * under the License.
  */
 
-namespace YAF.Core
+namespace YAF.Core.Context
 {
     #region Using
 
@@ -34,6 +34,8 @@ namespace YAF.Core
 
     using YAF.Configuration;
     using YAF.Configuration.Pattern;
+    using YAF.Core.BasePages;
+    using YAF.Core.Helpers;
     using YAF.Core.Services;
     using YAF.Core.UsersRoles;
     using YAF.Types;
@@ -200,7 +202,7 @@ namespace YAF.Core
         /// <summary>
         /// Gets the Current Page User Profile
         /// </summary>
-        public YafUserProfile Profile => (YafUserProfile)this.Get<HttpContextBase>().Profile;
+        public UserProfile Profile => (UserProfile)this.Get<HttpContextBase>().Profile;
 
         /// <summary>
         /// Gets or sets the Current Page Query ID Helper
