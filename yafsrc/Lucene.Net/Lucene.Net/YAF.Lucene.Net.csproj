@@ -35,7 +35,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="J2N" Version="2.0.0-beta-0003" />
+    <PackageReference Include="J2N" Version="2.0.0-beta-0007" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -52,6 +52,13 @@
     <None Update="C:\Users\Watcher\Documents\GitHub\lucenenet\branding\logo\lucene-net-icon-128x128.png" Link="Sandbox\lucene-net-icon-128x128.png" />
     <None Update="C:\Users\Watcher\Documents\GitHub\lucenenet\LICENSE.txt" Link="Sandbox\LICENSE.txt" />
     <None Update="C:\Users\Watcher\Documents\GitHub\lucenenet\NOTICE.txt" Link="Sandbox\NOTICE.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="YAF.Lucene.Net.Analysis.Common" />
+    <InternalsVisibleTo Include="YAF.Lucene.Net.Highlighter" />
+    <InternalsVisibleTo Include="YAF.Lucene.Net.Queries" />
+    <InternalsVisibleTo Include="YAF.Lucene.Net.QueryParser" />
   </ItemGroup>
 
 </Project>

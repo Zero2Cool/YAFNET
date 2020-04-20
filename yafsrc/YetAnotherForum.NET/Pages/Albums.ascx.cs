@@ -31,6 +31,7 @@ namespace YAF.Pages
 
     using YAF.Configuration;
     using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -77,8 +78,10 @@ namespace YAF.Pages
                 BuildLink.AccessDenied();
             }
 
-            var user = UserMembershipHelper.GetMembershipUserById(
-                Security.StringToLongOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u")));
+            var userId =
+                Security.StringToLongOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
+
+            var user = UserMembershipHelper.GetMembershipUserById(userId);
 
             if (user == null)
             {
@@ -91,26 +94,27 @@ namespace YAF.Pages
                 BuildLink.AccessDenied();
             }
 
-            var displayName = UserMembershipHelper.GetDisplayNameFromID(
-                Security.StringToLongOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u")));
+            var displayName = UserMembershipHelper.GetDisplayNameFromID(userId);
 
-            // Generate the Page Links.
             this.PageLinks.Clear();
             this.PageLinks.AddRoot();
             this.PageLinks.AddLink(
                 this.Get<BoardSettings>().EnableDisplayName
                     ? displayName
-                    : UserMembershipHelper.GetUserNameFromID(
-                        Security.StringToLongOrRedirect(
-                            this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"))),
-                BuildLink.GetLink(
-                    ForumPages.Profile,
-                    "u={0}",
-                    this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u")));
+                    : UserMembershipHelper.GetUserNameFromID(userId),
+                BuildLink.GetLink(ForumPages.Profile, "u={0}", userId));
             this.PageLinks.AddLink(this.GetText("ALBUMS"), string.Empty);
 
             // Initialize the Album List control.
-            this.AlbumList1.UserID = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u").ToType<int>();
+            this.AlbumList1.UserID = userId.ToType<int>();
+        }
+
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            // 
         }
 
         #endregion

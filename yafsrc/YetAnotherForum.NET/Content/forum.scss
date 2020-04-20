@@ -1,29 +1,25 @@
 ﻿@import "jsdifflib.scss";
 @import "prism";
-@import "jquery.selectedQuoting";
 @import "jquery.hovercard.scss";
 @import "bootstrap-notify";
-@import "jquery.emojipicker";
 
 @import "fontawesome/fontawesome-all";
 @import "flag-icons/flag-icon.scss";
 
 // -- TableSorter Plugin
 @import "tablesorter/theme.bootstrap_4.min";
-@import "tablesorter/jquery.tablesorter.pager.min";
 
 // --Bootstrap extensions
 @import "select2/select2";
 @import "bootstrap-tagsinput";
 @import "select2/select2-bootstrap";
 @import "bootstrap-datetimepicker";
+
 @import "blueimp-gallery.scss";
-@import "bootstrap-suggest.scss";
 
 // --Forum imports
 @import "forum/attachments-upload.scss";
 @import "forum/dropdowns.scss";
-@import "forum/editor.scss";
 @import "forum/user-albums.scss";
 @import "forum/social-icons.scss";
 @import "forum/cookie-alert.scss";
@@ -43,27 +39,18 @@
 }
 
 // -- MultiQuote Button
-.MultiQuoteButton{
-    display:inline-block;
+.MultiQuoteButton {
+    display: inline-block;
+
+    label {
+        margin-top: -1px;
+    }
+
+    .fa-stack {
+        margin-top: -2px;
+    }
 }
 
-// Radio Button Lists
-span.form-check {
-    padding: 0px;
-}
-
-span.form-check > input[type="radio"] {
-    margin: 8px -5px 7px 0px;
-    display: block;
-    float: left;
-}
-
-span.form-check > label {
-    margin-right: 5px;
-    margin-left: 5px;
-    padding: 0px 5px 0px 10px;
-    display: block;
-}
 
 .list-inline {
     margin: 0;
@@ -85,11 +72,6 @@ span.form-check > label {
     height: 200px;
     overflow: hidden;
     overflow-y: scroll;
-}
-
-.navbar-round {
-    border-radius: 4px;
-    border: 1px solid #e7e7e7;
 }
 
 #passwordStrength {
@@ -118,6 +100,7 @@ span.form-check > label {
     position: relative;
     margin-bottom: 0;
     display: inline-block;
+    min-width: 0.9rem;
     max-width: 1.2rem;
     max-height: 1.2rem;
     font-size: 2rem;
@@ -127,7 +110,11 @@ span.form-check > label {
 // Quotes
 .blockquote-custom {
     position: relative;
-    font-size: 1.1rem;
+    margin-top: .25rem;
+
+    > .blockquote-custom {
+        margin-top: 2rem;
+    }
 }
 
 .blockquote-custom-icon {
@@ -153,4 +140,9 @@ span.form-check > label {
     position: absolute;
     top: 8px;
     left:16px;
+}
+
+/* TABS */
+.tab-content {
+    padding-top: 10px;
 }

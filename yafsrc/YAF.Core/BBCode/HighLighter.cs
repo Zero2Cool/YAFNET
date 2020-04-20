@@ -28,6 +28,7 @@ namespace YAF.Core.BBCode
 
     using System;
     using System.Text;
+    using System.Web;
 
     using YAF.Types.Extensions;
 
@@ -64,32 +65,30 @@ namespace YAF.Core.BBCode
         /// <summary>
         /// Colors the text.
         /// </summary>
-        /// <param name="codeText">The code to highlight.</param>
-        /// <param name="language">The language.</param>
+        /// <param name="codeText">
+        /// The code to highlight.
+        /// </param>
+        /// <param name="language">
+        /// The language.
+        /// </param>
+        /// <param name="isEditMode">
+        /// The is Edit Mode.
+        /// </param>
         /// <returns>
         /// The color text.
         /// </returns>
-        public string ColorText(string codeText, string language)
+        public string ColorText(string codeText, string language, bool isEditMode)
         {
             language = language.ToLower();
 
-            language = language.Replace("\"", string.Empty);
-
-            switch (language)
-            {
-                case "cs":
-                    language = "csharp";
-                    break;
-                case "xml":
-                    language = "markup";
-                    break;
-                case "plain":
-                    language = "markup";
-                    break;
-                case "":
-                    language = "markup";
-                    break;
-            }
+            language = language switch
+                {
+                    "cs" => "csharp",
+                    "xml" => "markup",
+                    "plain" => "markup",
+                    "" => "markup",
+                    _ => language.Replace("\"", string.Empty)
+                };
 
             var tmpOutput = new StringBuilder();
 
@@ -104,11 +103,11 @@ namespace YAF.Core.BBCode
 
             // Create Output
             tmpOutput.AppendFormat(
-                "<pre class=\"line-numbers\"{1}><code class=\"language-{0}\">",
+                "<pre class=\"line-numbers language-{0}\"{1}><code class=\"language-{0}\">",
                 language,
                 highlight.IsSet() ? $" data-line=\"{highlight}\"" : string.Empty);
 
-            tmpOutput.Append(codeText);
+            tmpOutput.Append(isEditMode ? HttpUtility.HtmlEncode(codeText) : codeText);
 
             tmpOutput.AppendFormat("</code></pre>{0}", Environment.NewLine);
 

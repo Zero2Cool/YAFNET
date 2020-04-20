@@ -44,15 +44,15 @@ namespace YAF.Modules
     /// <summary>
     /// Page Title Module
     /// </summary>
-    [YafModule("Page Title Module", "Tiny Gecko", 1)]
+    [Module("Page Title Module", "Tiny Gecko", 1)]
     public class PageTitleForumModule : SimpleBaseForumModule
     {
         #region Constants and Fields
 
         /// <summary>
-        ///   The _forum page title.
+        ///   The forum page title.
         /// </summary>
-        protected string _forumPageTitle;
+        private string forumPageTitle;
 
         #endregion
 
@@ -65,13 +65,6 @@ namespace YAF.Modules
         {
             this.CurrentForumPage.PreRender += this.ForumPage_PreRender;
             this.CurrentForumPage.Load += this.ForumPage_Load;
-        }
-
-        /// <summary>
-        /// The init before page.
-        /// </summary>
-        public override void InitBeforePage()
-        {
         }
 
         #endregion
@@ -108,7 +101,7 @@ namespace YAF.Modules
                     addition = $" - {head.Title.Trim()}";
                 }
 
-                head.Title = this._forumPageTitle + addition;
+                head.Title = $"{this.forumPageTitle}{addition}";
             }
             else
             {
@@ -117,7 +110,7 @@ namespace YAF.Modules
 
                 if (title != null)
                 {
-                    title.Text = this._forumPageTitle;
+                    title.Text = this.forumPageTitle;
                 }
             }
         }
@@ -210,9 +203,9 @@ namespace YAF.Modules
                 title.Append(this.CurrentForumPage.HtmlEncode(this.PageContext.BoardSettings.Name));
             }
 
-            this._forumPageTitle = title.ToString();
+            this.forumPageTitle = title.ToString();
 
-            this.ForumControl.FirePageTitleSet(this, new ForumPageTitleArgs(this._forumPageTitle));
+            this.ForumControl.FirePageTitleSet(this, new ForumPageTitleArgs(this.forumPageTitle));
         }
 
         #endregion

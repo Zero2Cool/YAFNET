@@ -74,7 +74,7 @@ namespace YAF.Controls
         protected void Back_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
             BuildLink.Redirect(
-                this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.admin_users : ForumPages.Account);
+                this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.Admin_Users : ForumPages.Account);
         }
 
         /// <summary>
@@ -138,7 +138,6 @@ namespace YAF.Controls
             }
 
             this.OurAvatar.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.Avatar, addAdminParam);
-            this.OurAvatar.Text = this.GetText("EDIT_AVATAR", "OURAVATAR_SELECT");
 
             this.noteRemote.Text = this.GetTextFormatted(
                 "NOTE_REMOTE",
@@ -321,7 +320,7 @@ namespace YAF.Controls
                 this.currentUserId,
                 null))
             {
-                row = dt.Rows[0];
+                row = dt.GetFirstRow();
             }
 
             this.AvatarImg.Visible = true;

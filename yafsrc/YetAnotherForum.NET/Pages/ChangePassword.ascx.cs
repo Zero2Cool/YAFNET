@@ -31,7 +31,7 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -124,7 +124,7 @@ namespace YAF.Pages
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
+        protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
             if (Config.IsDotNetNuke)
             {
@@ -137,17 +137,6 @@ namespace YAF.Pages
             {
                 // Not accessible...
                 BuildLink.AccessDenied();
-            }
-
-            if (!this.IsPostBack)
-            {
-                this.PageLinks.AddRoot();
-                this.PageLinks.AddLink(
-                    this.Get<BoardSettings>().EnableDisplayName
-                        ? this.PageContext.CurrentUserData.DisplayName
-                        : this.PageContext.PageUserName,
-                    BuildLink.GetLink(ForumPages.Account));
-                this.PageLinks.AddLink(this.GetText("TITLE"));
             }
 
             var oldPasswordRequired =
@@ -184,9 +173,13 @@ namespace YAF.Pages
             // 1. Password incorrect or New Password invalid.
             // 2. New Password length minimum: {0}.t
             // 3. Non-alphanumeric characters required: {1}.
-            var failureText = this.GetText("PASSWORD_INCORRECT");
-            failureText += $"<br />{this.GetText("PASSWORD_BAD_LENGTH")}";
-            failureText += $"<br />{this.GetText("PASSWORD_NOT_COMPLEX")}";
+            var failureText = "<div class=\"alert alert-danger col-12\" role=\"alert\">";
+            failureText += "<ul>";
+            failureText += $"<li>{this.GetText("PASSWORD_INCORRECT")}</li>";
+            failureText += $"<li>{this.GetText("PASSWORD_BAD_LENGTH")}</li>";
+            failureText += $"<li>{this.GetText("PASSWORD_NOT_COMPLEX")}</li>";
+            failureText += "</ul>";
+            failureText += "</div>";
 
             this.ChangePassword1.ChangePasswordFailureText = failureText;
 
@@ -213,6 +206,20 @@ namespace YAF.Pages
             this.DataBind();
         }
 
-       #endregion
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            this.PageLinks.AddRoot();
+            this.PageLinks.AddLink(
+                this.Get<BoardSettings>().EnableDisplayName
+                    ? this.PageContext.CurrentUserData.DisplayName
+                    : this.PageContext.PageUserName,
+                BuildLink.GetLink(ForumPages.Account));
+            this.PageLinks.AddLink(this.GetText("TITLE"));
+        }
+
+        #endregion
     }
 }

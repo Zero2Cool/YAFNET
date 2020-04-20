@@ -33,7 +33,7 @@ jQuery(document).ready(function () {
         max: 720
     });
 
-    $(".yaf-net .select2-select").each(function () {
+    $(".yafnet .select2-select").each(function () {
         $(this).select2({
             theme: "bootstrap4",
             dropdownAutoWidth: true,
@@ -42,7 +42,7 @@ jQuery(document).ready(function () {
         });
     });
 
-    jQuery(".yaf-net .select2-image-select").select2({
+    jQuery(".yafnet .select2-image-select").select2({
         theme: "bootstrap4",
         dropdownAutoWidth: true,
         templateResult: formatState,
@@ -60,7 +60,10 @@ jQuery(document).ready(function () {
     jQuery(".img-user-posted").each(function () {
         var image = jQuery(this);
 
-        if (image.parents(".selectionQuoteable").length && image.parent().attr("class") !== "yafsignature") {
+        
+
+        if (image.parents(".selectionQuoteable").length && image.parent().attr("class") !== "card-body py-0") {
+
             var messageId = image.parents(".selectionQuoteable")[0].id;
 
             if (!image.parents("a").length) {

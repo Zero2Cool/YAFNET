@@ -210,7 +210,7 @@ namespace YAF.Web.Controls
                             // hidden user are always visible to admin and himself)
                             if (this.PageContext.IsAdmin || userLink.UserID == this.PageContext.PageUserID)
                             {
-                                userLink.PostfixText = $"  <i class=\"fas fa-user-secret\"></i>";
+                                userLink.PostfixText = "  <i class=\"fas fa-user-secret\"></i>";
                             }
                             else
                             {
@@ -258,6 +258,9 @@ namespace YAF.Web.Controls
 
                         writer.Write(@"</li>");
                     });
+
+            // writes ending tag
+            writer.Write(@"</ul>");
         }
 
         #endregion

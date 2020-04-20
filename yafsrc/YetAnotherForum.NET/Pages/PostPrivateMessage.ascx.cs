@@ -36,7 +36,9 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BaseModules;
+    using YAF.Core.BasePages;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
@@ -63,7 +65,7 @@ namespace YAF.Pages
         /// <summary>
         ///   message body editor
         /// </summary>
-        protected ForumEditor _editor;
+        private ForumEditor editor;
 
         #endregion
 
@@ -276,16 +278,16 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Init([NotNull] object sender, [NotNull] EventArgs e)
         {
-            // create editor based on administrator's settings
-            // get the forum editor based on the settings
-            this._editor = ForumEditorHelper.GetCurrentForumEditor();
+            this.editor = ForumEditorHelper.GetCurrentForumEditor();
 
-            this.EditorLine.Controls.Add(this._editor);
+            this.editor.MaxCharacters = this.PageContext.BoardSettings.MaxPostSize;
 
-            this._editor.UserCanUpload = this.Get<BoardSettings>().AllowPrivateMessageAttachments;
+            this.EditorLine.Controls.Add(this.editor);
+
+            this.editor.UserCanUpload = this.Get<BoardSettings>().AllowPrivateMessageAttachments;
 
             // add editor to the page
-            this.EditorLine.Controls.Add(this._editor);
+            this.EditorLine.Controls.Add(this.editor);
         }
 
         /// <summary>
@@ -301,17 +303,11 @@ namespace YAF.Pages
                 this.RedirectNoAccess();
             }
 
-            // set attributes of editor
-            this._editor.BaseDir = $"{BoardInfo.ForumClientFileRoot}Scripts";
-
             // this needs to be done just once, not during post-backs
             if (this.IsPostBack)
             {
                 return;
             }
-
-            // create page links
-            this.CreatePageLinks();
 
             // only administrators can send messages to all users
             this.AllUsers.Visible = BoardContext.Current.IsAdmin;
@@ -386,40 +382,42 @@ namespace YAF.Pages
                 body = $"[QUOTE={displayName}]{body}[/QUOTE]";
 
                 // we don't want any whitespaces at the beginning of message
-                this._editor.Text = body.TrimStart();
+                this.editor.Text = body.TrimStart();
 
-                if (isReport)
+                if (!isReport)
                 {
-                    var users = this.GetRepository<User>().UserList(
-                        BoardContext.Current.PageBoardID,
-                        null,
-                        true,
-                        null,
-                        null,
-                        null).ToList();
+                    return;
+                }
 
-                    var hostUser = users.FirstOrDefault(u => u.IsHostAdmin > 0);
+                var users = this.GetRepository<User>().UserList(
+                    BoardContext.Current.PageBoardID,
+                    null,
+                    true,
+                    null,
+                    null,
+                    null).ToList();
 
-                    if (hostUser != null)
-                    {
-                        this.To.Text = this.Get<BoardSettings>().EnableDisplayName
-                                           ? hostUser.DisplayName
-                                           : hostUser.Name;
+                var hostUser = users.FirstOrDefault(u => u.IsHostAdmin > 0);
 
-                        this.PmSubjectTextBox.Text = this.GetTextFormatted("REPORT_SUBJECT", displayName);
+                if (hostUser != null)
+                {
+                    this.To.Text = this.Get<BoardSettings>().EnableDisplayName
+                                       ? hostUser.DisplayName
+                                       : hostUser.Name;
 
-                        var bodyReport = $"[QUOTE={displayName}]{row["Body"].ToString()}[/QUOTE]";
+                    this.PmSubjectTextBox.Text = this.GetTextFormatted("REPORT_SUBJECT", displayName);
 
-                        // Quote the original message
-                        bodyReport = this.GetTextFormatted("REPORT_BODY", bodyReport);
+                    var bodyReport = $"[QUOTE={displayName}]{row["Body"]}[/QUOTE]";
 
-                        // we don't want any whitespaces at the beginning of message
-                        this._editor.Text = bodyReport.TrimStart();
-                    }
-                    else
-                    {
-                        BuildLink.AccessDenied();
-                    }
+                    // Quote the original message
+                    bodyReport = this.GetTextFormatted("REPORT_BODY", bodyReport);
+
+                    // we don't want any whitespaces at the beginning of message
+                    this.editor.Text = bodyReport.TrimStart();
+                }
+                else
+                {
+                    BuildLink.AccessDenied();
                 }
             }
             else if (this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u").IsSet()
@@ -480,7 +478,7 @@ namespace YAF.Pages
 
                     // Replace DateTime delimiter '??' by ': ' 
                     // we don't want any whitespaces at the beginning of message
-                    this._editor.Text = quoteList[i].Replace("??", ": ") + this._editor.Text.TrimStart();
+                    this.editor.Text = quoteList[i].Replace("??", ": ") + this.editor.Text.TrimStart();
                 }
             }
             else if (this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u").IsSet())
@@ -538,9 +536,9 @@ namespace YAF.Pages
             // make preview row visible
             this.PreviewRow.Visible = true;
 
-            this.PreviewMessagePost.MessageFlags.IsHtml = this._editor.UsesHTML;
-            this.PreviewMessagePost.MessageFlags.IsBBCode = this._editor.UsesBBCode;
-            this.PreviewMessagePost.Message = this._editor.Text;
+            this.PreviewMessagePost.MessageFlags.IsHtml = this.editor.UsesHTML;
+            this.PreviewMessagePost.MessageFlags.IsBBCode = this.editor.UsesBBCode;
+            this.PreviewMessagePost.Message = this.editor.Text;
 
             if (!this.Get<BoardSettings>().AllowSignatures)
             {
@@ -592,7 +590,7 @@ namespace YAF.Pages
             }
 
             // message is required
-            if (this._editor.Text.Trim().Length <= 0)
+            if (this.editor.Text.Trim().Length <= 0)
             {
                 BoardContext.Current.AddLoadMessage(this.GetText("need_message"), MessageTypes.warning);
                 return;
@@ -601,11 +599,11 @@ namespace YAF.Pages
             if (this.ToList.SelectedItem != null && this.ToList.SelectedItem.Value == "0")
             {
                 // administrator is sending PMs to all users           
-                var body = this._editor.Text;
+                var body = this.editor.Text;
                 var messageFlags = new MessageFlags
                                        {
-                                           IsHtml = this._editor.UsesHTML,
-                                           IsBBCode = this._editor.UsesBBCode
+                                           IsHtml = this.editor.UsesHTML,
+                                           IsBBCode = this.editor.UsesBBCode
                                        };
                 
                 // test user's PM count
@@ -660,7 +658,7 @@ namespace YAF.Pages
                     return;
                 }
 
-                if (!this.VerifyMessageAllowed(recipients.Count, this._editor.Text))
+                if (!this.VerifyMessageAllowed(recipients.Count, this.editor.Text))
                 {
                     return;
                 }
@@ -718,12 +716,12 @@ namespace YAF.Pages
                     userId =>
 
                         {
-                            var body = this._editor.Text;
+                            var body = this.editor.Text;
 
                             var messageFlags = new MessageFlags
                                                    {
-                                                       IsHtml = this._editor.UsesHTML,
-                                                       IsBBCode = this._editor.UsesBBCode
+                                                       IsHtml = this.editor.UsesHTML,
+                                                       IsBBCode = this.editor.UsesBBCode
                                                    };
 
                             this.GetRepository<PMessage>().SendMessage(
@@ -799,11 +797,7 @@ namespace YAF.Pages
                             this.Logger.Log(
                                 this.PageContext.PageUserID,
                                 "Spam Message Detected",
-                                string
-                                    .Format(
-                                        "Spam Check detected possible SPAM ({1}) posted by User: {0}, post was rejected",
-                                        this.PageContext.PageUserName,
-                                            spamResult),
+                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {this.PageContext.PageUserName}, post was rejected",
                                 EventLogTypes.SpamMessageDetected);
 
                             this.PageContext.AddLoadMessage(this.GetText("SPAM_MESSAGE"), MessageTypes.danger);
@@ -813,11 +807,7 @@ namespace YAF.Pages
                             this.Logger.Log(
                                 this.PageContext.PageUserID,
                                 "Spam Message Detected",
-                                string
-                                    .Format(
-                                        "Spam Check detected possible SPAM ({1}) posted by User: {0}, user was deleted and bannded",
-                                        this.PageContext.PageUserName,
-                                            spamResult),
+                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {this.PageContext.PageUserName}, user was deleted and bannded",
                                 EventLogTypes.SpamMessageDetected);
 
                             var userIp =
@@ -843,74 +833,61 @@ namespace YAF.Pages
                 {
                     var urlCount = UrlHelper.CountUrls(message);
 
-                    if (urlCount > this.PageContext.BoardSettings.AllowedNumberOfUrls)
+                    if (urlCount <= this.PageContext.BoardSettings.AllowedNumberOfUrls)
                     {
-                        spamResult =
-                            $"The user posted {urlCount} urls but allowed only {this.PageContext.BoardSettings.AllowedNumberOfUrls}";
-
-                        switch (this.Get<BoardSettings>().SpamMessageHandling)
-                        {
-                            case 0:
-                                this.Logger.Log(
-                                    this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    string.Format(
-                                        "Spam Check detected possible SPAM ({1}) posted by User: {0}",
-                                        this.PageContext.PageUserName,
-                                            spamResult),
-                                    EventLogTypes.SpamMessageDetected);
-                                break;
-                            case 1:
-                                this.Logger.Log(
-                                    this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    string
-                                        .Format(
-                                            "Spam Check detected possible SPAM ({1}) posted by User: {0}, it was flagged as unapproved post",
-                                            this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName,
-                                                spamResult),
-                                    EventLogTypes.SpamMessageDetected);
-                                break;
-                            case 2:
-                                this.Logger.Log(
-                                    this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    string
-                                        .Format(
-                                            "Spam Check detected possible SPAM ({1}) posted by User: {0}, post was rejected",
-                                            this.PageContext.PageUserName,
-                                                spamResult),
-                                    EventLogTypes.SpamMessageDetected);
-
-                                this.PageContext.AddLoadMessage(this.GetText("SPAM_MESSAGE"), MessageTypes.danger);
-
-                                break;
-                            case 3:
-                                this.Logger.Log(
-                                    this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    string
-                                        .Format(
-                                            "Spam Check detected possible SPAM ({1}) posted by User: {0}, user was deleted and bannded",
-                                            this.PageContext.PageUserName,
-                                                spamResult),
-                                    EventLogTypes.SpamMessageDetected);
-
-                                var userIp =
-                                    new CombinedUserDataHelper(
-                                        this.PageContext.CurrentUserData.Membership,
-                                        this.PageContext.PageUserID).LastIP;
-
-                                UserMembershipHelper.DeleteAndBanUser(
-                                    this.PageContext.PageUserID,
-                                    this.PageContext.CurrentUserData.Membership,
-                                    userIp);
-
-                                break;
-                        }
-
-                        return false;
+                        return true;
                     }
+
+                    spamResult =
+                        $"The user posted {urlCount} urls but allowed only {this.PageContext.BoardSettings.AllowedNumberOfUrls}";
+
+                    switch (this.Get<BoardSettings>().SpamMessageHandling)
+                    {
+                        case 0:
+                            this.Logger.Log(
+                                this.PageContext.PageUserID,
+                                "Spam Message Detected",
+                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {this.PageContext.PageUserName}",
+                                EventLogTypes.SpamMessageDetected);
+                            break;
+                        case 1:
+                            this.Logger.Log(
+                                this.PageContext.PageUserID,
+                                "Spam Message Detected",
+                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}, it was flagged as unapproved post",
+                                EventLogTypes.SpamMessageDetected);
+                            break;
+                        case 2:
+                            this.Logger.Log(
+                                this.PageContext.PageUserID,
+                                "Spam Message Detected",
+                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {this.PageContext.PageUserName}, post was rejected",
+                                EventLogTypes.SpamMessageDetected);
+
+                            this.PageContext.AddLoadMessage(this.GetText("SPAM_MESSAGE"), MessageTypes.danger);
+
+                            break;
+                        case 3:
+                            this.Logger.Log(
+                                this.PageContext.PageUserID,
+                                "Spam Message Detected",
+                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {this.PageContext.PageUserName}, user was deleted and bannded",
+                                EventLogTypes.SpamMessageDetected);
+
+                            var userIp =
+                                new CombinedUserDataHelper(
+                                    this.PageContext.CurrentUserData.Membership,
+                                    this.PageContext.PageUserID).LastIP;
+
+                            UserMembershipHelper.DeleteAndBanUser(
+                                this.PageContext.PageUserID,
+                                this.PageContext.CurrentUserData.Membership,
+                                userIp);
+
+                            break;
+                    }
+
+                    return false;
                 }
 
                 return true;

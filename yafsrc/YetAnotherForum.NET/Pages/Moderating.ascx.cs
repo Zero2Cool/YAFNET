@@ -33,7 +33,7 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -133,9 +133,11 @@ namespace YAF.Pages
                 this.PagerTop.Count = topicList.AsEnumerable().First().Field<int>("TotalRows");
             }
 
-            this.ForumList.DataSource = this.GetRepository<Forum>().ListAllSortedAsDataTable(
+            var forumList = this.GetRepository<Forum>().ListAllSortedAsDataTable(
                 this.PageContext.PageBoardID,
                 this.PageContext.PageUserID);
+
+            this.ForumList.AddForumAndCategoryIcons(forumList);
 
             this.DataBind();
 
@@ -249,17 +251,6 @@ namespace YAF.Pages
 
             if (!this.IsPostBack)
             {
-                if (this.PageContext.Settings.LockedForum == 0)
-                {
-                    this.PageLinks.AddRoot();
-                    this.PageLinks.AddLink(
-                        this.PageContext.PageCategoryName,
-                        BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
-                }
-
-                this.PageLinks.AddForum(this.PageContext.PageForumID);
-                this.PageLinks.AddLink(this.GetText("MODERATE", "TITLE"), string.Empty);
-
                 this.PagerTop.PageSize = 25;
 
                 var showMoved = this.Get<BoardSettings>().ShowMoved;
@@ -277,6 +268,23 @@ namespace YAF.Pages
             }
 
             this.BindData();
+        }
+
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            if (this.PageContext.Settings.LockedForum == 0)
+            {
+                this.PageLinks.AddRoot();
+                this.PageLinks.AddLink(
+                    this.PageContext.PageCategoryName,
+                    BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+            }
+
+            this.PageLinks.AddForum(this.PageContext.PageForumID);
+            this.PageLinks.AddLink(this.GetText("MODERATE", "TITLE"), string.Empty);
         }
 
         /// <summary>

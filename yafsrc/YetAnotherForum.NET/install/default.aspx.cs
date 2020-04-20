@@ -40,6 +40,7 @@ namespace YAF.Install
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BasePages;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
@@ -220,39 +221,19 @@ namespace YAF.Install
         [NotNull]
         public string GetMembershipErrorMessage(MembershipCreateStatus status)
         {
-            switch (status)
-            {
-                case MembershipCreateStatus.DuplicateUserName:
-                    return Install.DuplicateUserName;
-
-                case MembershipCreateStatus.DuplicateEmail:
-                    return Install.DuplicateEmail;
-
-                case MembershipCreateStatus.InvalidPassword:
-                    return Install.InvalidPassword;
-
-                case MembershipCreateStatus.InvalidEmail:
-                    return Install.InvalidEmail;
-
-                case MembershipCreateStatus.InvalidAnswer:
-                    return Install.InvalidAnswer;
-
-                case MembershipCreateStatus.InvalidQuestion:
-                    return Install.InvalidQuestion;
-
-                case MembershipCreateStatus.InvalidUserName:
-                    return Install.InvalidUserName;
-
-                case MembershipCreateStatus.ProviderError:
-                    return Install.ProviderError;
-
-                case MembershipCreateStatus.UserRejected:
-                    return Install.UserRejected;
-
-                default:
-                    return
-                        Install.UnknownError;
-            }
+            return status switch
+                {
+                    MembershipCreateStatus.DuplicateUserName => Install.DuplicateUserName,
+                    MembershipCreateStatus.DuplicateEmail => Install.DuplicateEmail,
+                    MembershipCreateStatus.InvalidPassword => Install.InvalidPassword,
+                    MembershipCreateStatus.InvalidEmail => Install.InvalidEmail,
+                    MembershipCreateStatus.InvalidAnswer => Install.InvalidAnswer,
+                    MembershipCreateStatus.InvalidQuestion => Install.InvalidQuestion,
+                    MembershipCreateStatus.InvalidUserName => Install.InvalidUserName,
+                    MembershipCreateStatus.ProviderError => Install.ProviderError,
+                    MembershipCreateStatus.UserRejected => Install.UserRejected,
+                    _ => Install.UnknownError
+                };
         }
 
         #endregion
@@ -320,7 +301,7 @@ namespace YAF.Install
                     this.lblConnectionDetailsManual,
                     Install.ConnectionDetails,
                     $"{Install.ConnectionFailed} {message}",
-                    "error");
+                    "danger");
             }
             else
             {
@@ -354,7 +335,7 @@ namespace YAF.Install
                     this.lblConnectionDetails,
                     Install.ConnectionDetails,
                     $"{Install.ConnectionFailed} {message}",
-                    "error");
+                    "danger");
             }
             else
             {
@@ -425,7 +406,7 @@ namespace YAF.Install
                     this.lblSmtpTestDetails,
                     Install.SmtpTestDetails,
                     $"{Install.ConnectionFailed} {x.Message}",
-                    "error");
+                    "danger");
             }
         }
 
@@ -836,11 +817,7 @@ namespace YAF.Install
             infoHolder.Visible = true;
 
             detailsLiteral.Text =
-                string.Format(
-                    "<div class=\"{0}Message\"><span class=\"{0}Label\">{1}</span> {2}</div>",
-                    cssClass,
-                        detailsTitle,
-                        info);
+                $"<div class=\"alert alert-{cssClass}\"><span class=\"badge badge-{cssClass}\">{detailsTitle}</span> {info}</div>";
         }
 
         /// <summary>
@@ -854,15 +831,15 @@ namespace YAF.Install
             {
                 case 0:
                     theLabel.Text = Install.No;
-                    theLabel.CssClass = "errorLabel float-right";
+                    theLabel.CssClass = "badge badge-danger float-right";
                     break;
                 case 1:
                     theLabel.Text = Install.Unchecked;
-                    theLabel.CssClass = "infoLabel float-right";
+                    theLabel.CssClass = "badge badge-info float-right";
                     break;
                 case 2:
                     theLabel.Text = Install.Yes;
-                    theLabel.CssClass = "successLabel float-right";
+                    theLabel.CssClass = "badge badge-success float-right";
                     break;
             }
         }
@@ -1032,10 +1009,8 @@ namespace YAF.Install
                 return;
             }
 
-            foreach (ConnectionStringSettings connectionString in ConfigurationManager.ConnectionStrings)
-            {
-                this.lbConnections.Items.Add(connectionString.Name);
-            }
+            ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>().ForEach(
+                connectionString => this.lbConnections.Items.Add(connectionString.Name));
 
             var item = this.lbConnections.Items.FindByText("yafnet");
 

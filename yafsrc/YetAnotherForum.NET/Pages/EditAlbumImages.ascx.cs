@@ -34,7 +34,8 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
@@ -298,6 +299,14 @@ namespace YAF.Pages
         }
 
         /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+
+        }
+
+        /// <summary>
         /// Update the album title.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -443,8 +452,7 @@ namespace YAF.Pages
 
             // If we don't get a match from the db, then the extension is not allowed
             // also, check to see an image is being uploaded.
-            if (Array.IndexOf(imageExtensions, extension) == -1 || this.GetRepository<FileExtension>()
-                    .Get(e => e.BoardId == this.PageContext.PageBoardID && e.Extension == extension).Count == 0)
+            if (Array.IndexOf(imageExtensions, extension) == -1)
             {
                 this.PageContext.AddLoadMessage(this.GetTextFormatted("FILEERROR", extension), MessageTypes.warning);
                 return false;

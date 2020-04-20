@@ -32,6 +32,7 @@ namespace YAF.Dialogs
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -293,7 +294,7 @@ namespace YAF.Dialogs
             this.Get<IDataCache>().Remove(string.Format(Constants.Cache.UserMedals, this.UserId));
 
             // re-bind data
-            BuildLink.Redirect(ForumPages.admin_editmedal, "medalid={0}", this.MedalId.Value);
+            BuildLink.Redirect(ForumPages.Admin_EditMedal, "medalid={0}", this.MedalId.Value);
         }
 
         #endregion

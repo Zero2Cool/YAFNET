@@ -34,6 +34,7 @@ namespace YAF.Controls
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
@@ -118,7 +119,7 @@ namespace YAF.Controls
                 return;
             }
 
-            this.AlbumHeaderLabel.Param0 = this.HtmlEncode(
+            this.IconHeader.Param0 = this.HtmlEncode(
                 this.Get<BoardSettings>().EnableDisplayName
                     ? UserMembershipHelper.GetDisplayNameFromID(this.UserID)
                     : UserMembershipHelper.GetUserNameFromID(this.UserID));

@@ -245,6 +245,7 @@
     <Resource tag="POSTS_DAY">Publicaciones por día:</Resource>
     <Resource tag="SIZE_DATABASE">Tamaño de la BD:</Resource>
     <Resource tag="STATS_DONTCOUNT">Estas estadísticas no contabilizan temas y publicaciones eliminadas.</Resource>
+    <Resource tag="TITLE">Dashboard</Resource>
     <Resource tag="TOPICS_DAY">Temas por día:</Resource>
     <Resource tag="USERS_DAY">Usuarios por día:</Resource>
   </page>
@@ -1045,6 +1046,8 @@
     <Resource tag="ALLOW_USERS_POLLIMAGES_HELP">Si está activada, los usuarios pueden añadir imágenes como opciones de una encuesta.</Resource>
     <Resource tag="ALLOW_USERTEXTEDITOR">Permitir a los usuarios elegir el editor de texto.</Resource>
     <Resource tag="ALLOW_USERTEXTEDITOR_HELP">Permitir a los usuarios elegir el editor de texto en sus perfiles.</Resource>
+    <Resource tag="ALLOWED_EXTENSIONS">Allowed File Extensions:</Resource>
+    <Resource tag="ALLOWED_EXTENSIONS_HELP">The list of allowed File Extensions for Attachments.</Resource>
     <Resource tag="AMOUNT_OF_SUBFORUMS">Sub Forums In Forums List:</Resource>
     <Resource tag="AMOUNT_OF_SUBFORUMS_HELP">The amount of Sub Forums In Forums List.</Resource>
     <Resource tag="APP_CORES">Núcleos del procesador:</Resource>
@@ -1120,6 +1123,10 @@
     <Resource tag="DISPLAYNAME_MIN_LENGTH_HELP">Longitud mínima para los nombres a mostrar.</Resource>
     <Resource tag="DYNAMIC_METATAGS">Añadir meta etiquetas dinámicas de página</Resource>
     <Resource tag="DYNAMIC_METATAGS_HELP">Si está seleccionado, la descripción y meta etiquetas de palabras clave serán creadas dinámicamente en las páginas de las publicaciones.</Resource>
+    <Resource tag="EDITOR_BASCIC_HELP">Editor Toolbar used for Signatures ans Quick Replies.</Resource>
+    <Resource tag="EDITOR_BASIC">Editor Toolbar Basic:</Resource>
+    <Resource tag="EDITOR_FULL">Editor Toolbar Full:</Resource>
+    <Resource tag="EDITOR_FULL_HELP">Editor Toolbar used for Posting and Private Messages.</Resource>
     <Resource tag="EMAIL_VERIFICATION">Necesita verificación de email:</Resource>
     <Resource tag="EMAIL_VERIFICATION_HELP">Si no está seleccionado, los usuarios no necesitan verificar su dirección de email.</Resource>
     <Resource tag="ENABLE_ABLBUMS">Activar funcionalidad de álbum:</Resource>
@@ -1674,7 +1681,9 @@
     <Resource tag="PRUNE_PERMANENT">Eliminar permanentemente de la BD:</Resource>
     <Resource tag="PRUNE_PERMANENT_HELP">Todos los temas marcados con la bandera de eliminar serán borrados permanentemente.</Resource>
     <Resource tag="PRUNE_START">Comenzar tarea de podado</Resource>
+    <Resource tag="RESTORE_TOPIC">Restore Topic</Resource>
     <Resource tag="TITLE">Podar temas</Resource>
+    <Resource tag="TITLE_HELP">Option to delete All Topics that are not marked as persistent.</Resource>
   </page>
   <page name="ADMIN_RANKS">
     <Resource tag="COMMAND">Comando</Resource>
@@ -1753,6 +1762,19 @@
     <Resource tag="INFO">Reiniciar la aplicación cargará de nuevo todos los archivos de configuración.</Resource>
     <Resource tag="MSG_TRUST">Debes tener permisos sin restricciones para cerrar la aplicación. El reinicio ha fallado.</Resource>
     <Resource tag="TITLE">Reiniciar la aplicación.</Resource>
+  </page>
+  <page name="ADMIN_RESTORE">
+    <Resource tag="DELETE_ALL_ZERO">Delete all with 0 Posts</Resource>
+    <Resource tag="FILTER">Search by Topic Name</Resource>
+    <Resource tag="FILTER_HELP">Filter list by Topic Name</Resource>
+    <Resource tag="MSG_DELETED">Topics deleted</Resource>
+    <Resource tag="MSG_RESTORED">Topic restored</Resource>
+    <Resource tag="RESTORE_MESSAGE">Restore Message</Resource>
+    <Resource tag="SEARCH">Reload</Resource>
+    <Resource tag="TITLE">Restore &amp; Delete Topics</Resource>
+    <Resource tag="TITLE_HELP">Option to restore topics that are flagged as deleted topics, or to permanently delete them from the database.</Resource>
+    <Resource tag="TITLE_MESSAGE">Restore &amp; Delete Messages</Resource>
+    <Resource tag="TITLE_MESSAGE_HELP">Option to restore Messages that are flagged as deleted messages, or to permanently delete them from the database.</Resource>
   </page>
   <page name="ADMIN_RUNSQL">
     <Resource tag="HEADER">Ejecutar consulta SQL</Resource>
@@ -1916,6 +1938,7 @@
     <Resource tag="admin_reindex">Mantenimiento de la BD</Resource>
     <Resource tag="admin_replacewords">Palabras de reemplazo</Resource>
     <Resource tag="admin_restartapp">Reiniciar aplicación</Resource>
+    <Resource tag="admin_restore">Restore &amp; Delete Topics</Resource>
     <Resource tag="admin_runsql">Ejecutar query SQL</Resource>
     <Resource tag="ADMIN_SPAMLOG">Spam Event Log</Resource>
     <Resource tag="admin_spamwords">Spam Check Words</Resource>
@@ -2162,6 +2185,8 @@
     <Resource tag="COPY">Copiar</Resource>
     <Resource tag="CUSTOM_BBCODE">Mas BBCode</Resource>
     <Resource tag="DELETE">Eliminar</Resource>
+    <Resource tag="DELETED_MESSAGE">Message with ID: {0} Deleted</Resource>
+    <Resource tag="DELETED_TOPIC">Topic with ID: {0} Deleted</Resource>
     <Resource tag="DISALLOWED">No permitido</Resource>
     <Resource tag="DOWNLOAD">Descargar</Resource>
     <Resource tag="EDIT">Editar</Resource>
@@ -2254,6 +2279,8 @@
       }
       }
     </Resource>
+    <Resource tag="SELECTED_QUOTE">Quote Selected Text</Resource>
+    <Resource tag="SELECTED_SEARCH">Search Google for ...</Resource>
     <Resource tag="SHOWHIDE">Mostrar/Ocultar</Resource>
     <Resource tag="SUBMIT">Enviar</Resource>
     <Resource tag="TOPIC_NOTIFICATION_SUBJECT">Suscripción a un tema - Notificación de nuevo mensaje (de {0})</Resource>

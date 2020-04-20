@@ -29,6 +29,7 @@ namespace YAF.Core.Model
 
     using ServiceStack.OrmLite;
 
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Extensions;
@@ -261,7 +262,7 @@ namespace YAF.Core.Model
                 repository.DbFunction.GetData.board_poststats(
                     BoardID: boardID, StyledNicks: styledNicks, ShowNoCountPosts: showNoCountPosts, GetDefaults: 1);
 
-            return dt.HasRows() ? dt.Rows[0] : null;
+            return dt.GetFirstRow();
         }
 
         /// <summary>

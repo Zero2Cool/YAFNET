@@ -28,7 +28,7 @@ namespace YAF.Web.Editors
     using System;
     using System.Web.UI.HtmlControls;
 
-    using YAF.Core;
+    using YAF.Core.BaseModules;
     using YAF.Types;
 
     #endregion
@@ -88,12 +88,6 @@ namespace YAF.Web.Editors
         ///   <c>true</c> if [allows uploads]; otherwise, <c>false</c>.
         /// </value>
         public override bool AllowsUploads => false;
-
-        /// <summary>
-        ///   Gets the Safe ID.
-        /// </summary>
-        [NotNull]
-        protected string SafeID => this.TextAreaControl.ClientID.Replace("$", "_");
 
         #endregion
 

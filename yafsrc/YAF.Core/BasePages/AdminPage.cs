@@ -22,7 +22,7 @@
  * under the License.
  */
 
-namespace YAF.Core
+namespace YAF.Core.BasePages
 {
     #region Using
 
@@ -76,13 +76,6 @@ namespace YAF.Core
         /// </summary>
         public override string PageName => $"admin_{base.PageName}";
 
-        /// <summary>
-        /// Creates page links for this page.
-        /// </summary>
-        protected override void CreatePageLinks()
-        {
-        }
-
         #endregion
 
         #region Methods
@@ -94,11 +87,6 @@ namespace YAF.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void AdminPageLoad([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (!this.IsPostBack)
-            {
-                this.CreatePageLinks();
-            }
-            
             // not admins are forbidden
             if (!this.PageContext.IsAdmin)
             { 

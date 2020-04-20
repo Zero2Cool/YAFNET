@@ -189,7 +189,7 @@ namespace YAF.Controls
             var link = new ThemeButton
                            {
                                TitleLocalizedTag = linkToolTip,
-                               Type = ButtonAction.None,
+                               Type = ButtonStyle.None,
                                TitleLocalizedPage = "TOOLBAR",
                                NavigateUrl = linkUrl,
                                Text = icon.IsSet()
@@ -297,10 +297,10 @@ namespace YAF.Controls
                 this.GetTextFormatted("MODERATE_NEW", this.PageContext.ModeratePosts),
                 this.PageContext.ForumPageType == ForumPages.Moderate_Index);
 
-            if (this.PageContext.ForumPageType == ForumPages.admin_hostsettings || this.PageContext.ForumPageType == ForumPages.admin_boards
-                                                                                || this.PageContext.ForumPageType == ForumPages.admin_editboard
-                                                                                || this.PageContext.ForumPageType == ForumPages.admin_pageaccessedit
-                                                                                || this.PageContext.ForumPageType == ForumPages.admin_pageaccesslist)
+            if (this.PageContext.ForumPageType == ForumPages.Admin_HostSettings || this.PageContext.ForumPageType == ForumPages.Admin_Boards
+                                                                                || this.PageContext.ForumPageType == ForumPages.Admin_EditBoard
+                                                                                || this.PageContext.ForumPageType == ForumPages.Admin_PageAccessEdit
+                                                                                || this.PageContext.ForumPageType == ForumPages.Admin_PageAccessList)
             {
                 this.hostDropdown.CssClass = "nav-link dropdown-toggle active";
             }
@@ -414,7 +414,7 @@ namespace YAF.Controls
                     this.GetText("TOOLBAR", "REGISTER"),
                     "REGISTER_TITLE",
                     this.Get<BoardSettings>().ShowRulesForRegistration
-                        ? BuildLink.GetLink(ForumPages.Rules)
+                        ? BuildLink.GetLink(ForumPages.RulesAndPrivacy)
                         : !this.Get<BoardSettings>().UseSSLToRegister
                             ? BuildLink.GetLink(ForumPages.Register)
                             : BuildLink.GetLink(ForumPages.Register, true).Replace("http:", "https:"),
@@ -484,7 +484,7 @@ namespace YAF.Controls
                                                Text = this.GetText("TOOLBAR", "REGISTER"),
                                                NavigateUrl =
                                                    this.Get<BoardSettings>().ShowRulesForRegistration
-                                                       ? BuildLink.GetLink(ForumPages.Rules)
+                                                       ? BuildLink.GetLink(ForumPages.RulesAndPrivacy)
                                                        : !this.Get<BoardSettings>().UseSSLToRegister
                                                            ? BuildLink.GetLink(ForumPages.Register)
                                                            : BuildLink.GetLink(

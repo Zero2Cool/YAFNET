@@ -29,7 +29,7 @@ namespace YAF.Core.Events
     using System.Globalization;
     using System.Web;
 
-    using YAF.Core;
+    using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Attributes;
     using YAF.Types.EventProxies;

@@ -31,6 +31,7 @@ namespace YAF.Core.UsersRoles
     using System.Web.Security;
 
     using YAF.Configuration;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -66,7 +67,7 @@ namespace YAF.Core.UsersRoles
         /// <summary>
         ///   The _user profile.
         /// </summary>
-        private YafUserProfile userProfile;
+        private UserProfile userProfile;
 
         #endregion
 
@@ -141,11 +142,6 @@ namespace YAF.Core.UsersRoles
         ///   Gets Culture.
         /// </summary>
         public string CultureUser => this.DBRow.Field<string>("CultureUser");
-
-        /// <summary>
-        ///   Gets User's Text Editor.
-        /// </summary>
-        public string TextEditor => this.DBRow.Field<string>("TextEditor");
 
         /// <summary>
         ///   Gets DBRow.
@@ -295,14 +291,14 @@ namespace YAF.Core.UsersRoles
         /// <summary>
         ///   Gets Profile.
         /// </summary>
-        public IYafUserProfile Profile
+        public IUserProfile Profile
         {
             get
             {
                 if (this.userProfile == null && this.UserName.IsSet())
                 {
                     // init the profile...
-                    this.userProfile = YafUserProfile.GetProfile(this.UserName);
+                    this.userProfile = UserProfile.GetProfile(this.UserName);
                 }
 
                 return this.userProfile;

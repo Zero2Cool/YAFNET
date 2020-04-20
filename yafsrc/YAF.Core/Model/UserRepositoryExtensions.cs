@@ -443,12 +443,12 @@ namespace YAF.Core.Model
         /// <returns>
         /// Data Table
         /// </returns>
-        public static DataTable SignatureDataAsDataTable(
+        public static DataRow SignatureDataAsDataRow(
             this IRepository<User> repository,
             [NotNull] int userID,
             [NotNull] int boardID)
         {
-            return repository.DbFunction.GetData.user_getsignaturedata(BoardID: boardID, UserID: userID);
+            return repository.DbFunction.GetAsDataTable(t => t.user_getsignaturedata(BoardID: boardID, UserID: userID)).GetFirstRow();
         }
 
         /// <summary>
@@ -805,9 +805,6 @@ namespace YAF.Core.Model
         /// </param>
         /// <param name="themeFile">
         /// The theme file.
-        /// <param name="textEditor">
-        /// The text Editor.
-        /// </param>
         /// <param name="approved">
         /// The approved.
         /// </param>
@@ -837,7 +834,6 @@ namespace YAF.Core.Model
             [NotNull] object languageFile,
             [NotNull] object culture,
             [NotNull] object themeFile,
-            [NotNull] object textEditor,
             [NotNull] object approved,
             [NotNull] object pmNotification,
             [NotNull] object autoWatchTopics,
@@ -855,7 +851,6 @@ namespace YAF.Core.Model
                 LanguageFile: languageFile,
                 Culture: culture,
                 ThemeFile: themeFile,
-                TextEditor: textEditor,
                 Approved: approved,
                 PMNotification: pmNotification,
                 AutoWatchTopics: autoWatchTopics,

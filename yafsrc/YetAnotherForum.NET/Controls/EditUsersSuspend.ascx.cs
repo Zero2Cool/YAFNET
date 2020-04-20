@@ -179,11 +179,14 @@ namespace YAF.Controls
 
             if (usr.Any())
             {
-                this.Get<ILogger>().Log(
-                    this.PageContext.PageUserID,
-                    "YAF.Controls.EditUsersSuspend",
-                    $"User {(this.Get<BoardSettings>().EnableDisplayName ? usr.First().DisplayName : usr.First().Name)} was unsuspended by {(this.Get<BoardSettings>().EnableDisplayName ? this.PageContext.CurrentUserData.DisplayName : this.PageContext.CurrentUserData.UserName)}.",
-                    EventLogTypes.UserUnsuspended);
+                if (this.Get<BoardSettings>().LogUserSuspendedUnsuspended)
+                {
+                    this.Get<ILogger>().Log(
+                        this.PageContext.PageUserID,
+                        "YAF.Controls.EditUsersSuspend",
+                        $"User {(this.Get<BoardSettings>().EnableDisplayName ? usr.First().DisplayName : usr.First().Name)} was unsuspended by {(this.Get<BoardSettings>().EnableDisplayName ? this.PageContext.CurrentUserData.DisplayName : this.PageContext.CurrentUserData.UserName)}.",
+                        EventLogTypes.UserUnsuspended);
+                }
 
                 this.Get<IRaiseEvent>().Raise(new UpdateUserEvent(this.CurrentUserID));
 
@@ -257,29 +260,22 @@ namespace YAF.Controls
             var count = int.Parse(this.SuspendCount.Text);
 
             // what time units are used for suspending
-            switch (this.SuspendUnit.SelectedValue)
-            {
-                // days
-                case "1":
-
+            suspend = this.SuspendUnit.SelectedValue switch
+                {
+                    // days
+                    "1" =>
                     // add user inserted suspension time to current time
-                    suspend = suspend.AddDays(count);
-                    break;
-
-                // hours
-                case "2":
-
+                    suspend.AddDays(count),
+                    // hours
+                    "2" =>
                     // add user inserted suspension time to current time
-                    suspend = suspend.AddHours(count);
-                    break;
-
-                // minutes
-                case "3":
-
+                    suspend.AddHours(count),
+                    // minutes
+                    "3" =>
                     // add user inserted suspension time to current time
-                    suspend = suspend.AddHours(count);
-                    break;
-            }
+                    suspend.AddHours(count),
+                    _ => suspend
+                };
 
             // suspend user by calling appropriate method
             this.GetRepository<User>().Suspend(
@@ -339,7 +335,7 @@ namespace YAF.Controls
                 }
 
                 // get user's data in form of data row
-                var user = dt.Rows[0];
+                var user = dt.GetFirstRow();
 
                 // if user is not suspended, hide row with suspend information and remove suspension button
                 this.SuspendedHolder.Visible = !user.IsNull("Suspended");

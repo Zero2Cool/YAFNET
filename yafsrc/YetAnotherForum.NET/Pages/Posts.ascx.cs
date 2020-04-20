@@ -37,7 +37,7 @@ namespace YAF.Pages
 
     using YAF.Configuration;
     using YAF.Controls;
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.Services;
@@ -142,6 +142,7 @@ namespace YAF.Pages
             }
 
             this.GetRepository<Topic>().Delete(this.PageContext.PageTopicID, true);
+
             BuildLink.Redirect(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
         }
 
@@ -174,20 +175,19 @@ namespace YAF.Pages
                 BuildLink.AccessDenied();
             }
 
-            var topicFlags  = this.topic.TopicFlags;
-
-            topicFlags.IsLocked = true;
+            this.topic.TopicFlags.IsLocked = true;
 
             this.GetRepository<Topic>().LockTopic(
                 this.PageContext.PageTopicID,
-                topicFlags.BitValue);
+                this.topic.TopicFlags.BitValue);
 
-            this.BindData();
             this.PageContext.AddLoadMessage(this.GetText("INFO_TOPIC_LOCKED"), MessageTypes.info);
-            this.LockTopic1.Visible = !this.LockTopic1.Visible;
-            this.UnlockTopic1.Visible = !this.UnlockTopic1.Visible;
-            this.LockTopic2.Visible = this.LockTopic1.Visible;
-            this.UnlockTopic2.Visible = this.UnlockTopic1.Visible;
+
+            this.LockTopic1.Visible = false;
+            this.LockTopic2.Visible = false;
+
+            this.UnlockTopic1.Visible = true;
+            this.UnlockTopic2.Visible = true;
         }
 
         /// <summary>
@@ -279,6 +279,7 @@ namespace YAF.Pages
                                       title: '{this.GetText("LINKBACK_TOPIC")}',
                                       message: '{this.GetText("LINKBACK_TOPIC_PROMT")}',
 	                                  value: '{topicUrl}',
+                                      buttons: {{cancel:{{label:'{this.GetText("CANCEL")}'}}, confirm:{{label:'{this.GetText("OK")}'}}}},
                                       callback: function(){{}}
 	                              }});",
                     "fa fa-link");
@@ -444,14 +445,6 @@ namespace YAF.Pages
                     }
                 }
 
-                if (this.PageContext.Settings.LockedForum == 0)
-                {
-                    this.PageLinks.AddRoot();
-                    this.PageLinks.AddLink(
-                        this.PageContext.PageCategoryName,
-                        BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
-                }
-
                 this.NewTopic2.NavigateUrl =
                     this.NewTopic1.NavigateUrl =
                     BuildLink.GetLinkNotEscaped(ForumPages.PostTopic, "f={0}", this.PageContext.PageForumID);
@@ -463,11 +456,6 @@ namespace YAF.Pages
                         "t={0}&f={1}",
                         this.PageContext.PageTopicID,
                         this.PageContext.PageForumID);
-
-                this.PageLinks.AddForum(this.PageContext.PageForumID);
-                this.PageLinks.AddLink(
-                    this.Get<IBadWordReplace>().Replace(this.Server.HtmlDecode(this.PageContext.PageTopicName)),
-                    string.Empty);
 
                 var topicSubject = this.Get<IBadWordReplace>().Replace(this.HtmlEncode(this.topic.TopicName));
 
@@ -540,25 +528,30 @@ namespace YAF.Pages
                     this.LockTopic2.Visible = this.LockTopic1.Visible;
                     this.UnlockTopic2.Visible = !this.LockTopic2.Visible;
                 }
-
-                if (this.PageContext.ForumReplyAccess ||
-                    (!this.topic.TopicFlags.IsLocked || !this.forumFlags.IsLocked) && this.PageContext.ForumModeratorAccess)
-                {
-                    this.PageContext.PageElements.RegisterJsBlockStartup(
-                        "SelectedQuotingJs",
-                        JavaScriptBlocks.SelectedQuotingJs(
-                            BuildLink.GetLinkNotEscaped(
-                                ForumPages.PostMessage,
-                                "t={0}&f={1}",
-                                this.PageContext.PageTopicID,
-                                this.PageContext.PageForumID),
-                                this.GetText("POSTS", "QUOTE_SELECTED")));
-                }
             }
 
             #endregion
 
             this.BindData();
+        }
+
+        /// <summary>
+        /// The create page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            if (this.PageContext.Settings.LockedForum == 0)
+            {
+                this.PageLinks.AddRoot();
+                this.PageLinks.AddLink(
+                    this.PageContext.PageCategoryName,
+                    BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+            }
+
+            this.PageLinks.AddForum(this.PageContext.PageForumID);
+            this.PageLinks.AddLink(
+                this.Get<IBadWordReplace>().Replace(this.Server.HtmlDecode(this.PageContext.PageTopicName)),
+                string.Empty);
         }
 
         /// <summary>
@@ -676,22 +669,19 @@ namespace YAF.Pages
                 BuildLink.AccessDenied(/*"You are not a forum moderator."*/);
             }
 
-            var topicFlags = this.topic.TopicFlags;
-
-            topicFlags.IsLocked = false;
+            this.topic.TopicFlags.IsLocked = false;
 
             this.GetRepository<Topic>().LockTopic(
                 this.PageContext.PageTopicID,
-                topicFlags.BitValue);
+                this.topic.TopicFlags.BitValue);
 
-            this.BindData();
             this.PageContext.AddLoadMessage(this.GetText("INFO_TOPIC_UNLOCKED"), MessageTypes.info);
-            this.LockTopic1.Visible = !this.LockTopic1.Visible;
-            this.UnlockTopic1.Visible = !this.UnlockTopic1.Visible;
-            this.LockTopic2.Visible = this.LockTopic1.Visible;
-            this.UnlockTopic2.Visible = this.UnlockTopic1.Visible;
-            this.PostReplyLink1.Visible = this.PageContext.ForumReplyAccess;
-            this.PostReplyLink2.Visible = this.PageContext.ForumReplyAccess;
+
+            this.LockTopic1.Visible = true;
+            this.LockTopic2.Visible = true;
+
+            this.UnlockTopic1.Visible = false;
+            this.UnlockTopic2.Visible = false;
         }
 
         /// <summary>
@@ -1263,14 +1253,14 @@ namespace YAF.Pages
                     BuildLink.Redirect(
                         ForumPages.RssTopic,
                         "pg={0}&t={1}&ft=0",
-                        YafRssFeeds.Posts.ToInt(),
+                        RssFeeds.Posts.ToInt(),
                         this.PageContext.PageTopicID);
                     break;
                 case "atomfeed":
                     BuildLink.Redirect(
                         ForumPages.RssTopic,
                         "pg={0}&t={1}&ft=1",
-                        YafRssFeeds.Posts.ToInt(),
+                        RssFeeds.Posts.ToInt(),
                         this.PageContext.PageTopicID);
                     break;
                 default:

@@ -35,17 +35,18 @@ namespace YAF.Core.Services.Auth
     using ServiceStack;
 
     using YAF.Configuration;
+    using YAF.Core.Context;
     using YAF.Core.Model;
     using YAF.Core.UsersRoles;
     using YAF.Types.Constants;
     using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Auth;
     using YAF.Types.Interfaces.Events;
     using YAF.Types.Models;
     using YAF.Types.Objects;
     using YAF.Utils;
-    using YAF.Utils.Extensions;
     using YAF.Utils.Helpers;
 
     /// <summary>
@@ -176,15 +177,12 @@ namespace YAF.Core.Services.Auth
 
             if (googleUser.Gender.IsSet())
             {
-                switch (googleUser.Gender)
-                {
-                    case "male":
-                        userGender = 1;
-                        break;
-                    case "female":
-                        userGender = 2;
-                        break;
-                }
+                userGender = googleUser.Gender switch
+                    {
+                        "male" => 1,
+                        "female" => 2,
+                        _ => userGender
+                    };
             }
 
             // Check if user exists
@@ -196,7 +194,7 @@ namespace YAF.Core.Services.Auth
                 return CreateGoogleUser(googleUser, userGender, out message);
             }
 
-            var yafUser = YafUserProfile.GetProfile(userName);
+            var yafUser = Utils.UserProfile.GetProfile(userName);
 
             var yafUserData =
                 new CombinedUserDataHelper(BoardContext.Current.Get<MembershipProvider>().GetUser(userName, true));
@@ -238,15 +236,12 @@ namespace YAF.Core.Services.Auth
 
             if (googleUser.Gender.IsSet())
             {
-                switch (googleUser.Gender)
-                {
-                    case "male":
-                        userGender = 1;
-                        break;
-                    case "female":
-                        userGender = 2;
-                        break;
-                }
+                userGender = googleUser.Gender switch
+                    {
+                        "male" => 1,
+                        "female" => 2,
+                        _ => userGender
+                    };
             }
 
             // Create User if not exists?!
@@ -260,7 +255,7 @@ namespace YAF.Core.Services.Auth
                     return false;
                 }
 
-                // Update profile with Google informations
+                // Update profile with Google information's
                 var userProfile = BoardContext.Current.Profile;
 
                 userProfile.GoogleId = googleUser.UserID;
@@ -295,24 +290,21 @@ namespace YAF.Core.Services.Auth
         /// </returns>
         private static string GetRedirectURL(HttpRequest request)
         {
-            var urlCurrentPage = request.Url.AbsoluteUri.IndexOf('?') == -1
-                                     ? request.Url.AbsoluteUri
-                                     : request.Url.AbsoluteUri.Substring(0, request.Url.AbsoluteUri.IndexOf('?'));
+            var urlCurrentPage = request.Url.AbsoluteUri.IndexOf('?') == -1 ? request.Url.AbsoluteUri : request.Url.AbsoluteUri.Substring(0, request.Url.AbsoluteUri.IndexOf('?'));
 
             var nvc = new NameValueCollection();
 
-            foreach (var key in request.QueryString.Cast<string>().Where(key => key != "code"))
-            {
-                nvc.Add(key, request.QueryString[key]);
-            }
+            request.QueryString.Cast<string>().Where(key => key != "code")
+                .ForEach(key => nvc.Add(key, request.QueryString[key]));
 
             var queryString = string.Empty;
 
-            foreach (string key in nvc)
-            {
-                queryString += queryString == string.Empty ? "?" : "&";
-                queryString += $"{key}={nvc[key]}";
-            }
+            nvc.Cast<string>().ForEach(
+                key =>
+                    {
+                        queryString += queryString == string.Empty ? "?" : "&";
+                        queryString += $"{key}={nvc[key]}";
+                    });
 
             return $"{urlCurrentPage}{queryString}";
         }
@@ -414,7 +406,7 @@ namespace YAF.Core.Services.Auth
             var userID = RoleMembershipHelper.CreateForumUser(user, BoardContext.Current.PageBoardID);
 
             // create empty profile just so they have one
-            var userProfile = YafUserProfile.GetProfile(googleUser.UserName);
+            var userProfile = Utils.UserProfile.GetProfile(googleUser.UserName);
 
             // setup their initial profile information
             userProfile.Save();
@@ -487,7 +479,6 @@ namespace YAF.Core.Services.Auth
                 googleUser.UserName,
                 googleUser.Email,
                 TimeZoneInfo.Local.Id,
-                null,
                 null,
                 null,
                 null,

@@ -1953,7 +1953,6 @@ begin
     delete from [{databaseOwner}].[{objectQualifier}Rank] where BoardID=@BoardID
     delete from [{databaseOwner}].[{objectQualifier}AccessMask] where BoardID=@BoardID
     delete from [{databaseOwner}].[{objectQualifier}BBCode] where BoardID=@BoardID
-    delete from [{databaseOwner}].[{objectQualifier}Extension] where BoardId=@BoardID
     delete from [{databaseOwner}].[{objectQualifier}Medal] where BoardID=@BoardID
     delete from [{databaseOwner}].[{objectQualifier}Replace_Words] where BoardId=@BoardID
 	delete from [{databaseOwner}].[{objectQualifier}Spam_Words] where BoardId=@BoardID
@@ -2379,48 +2378,6 @@ begin
     delete from [{databaseOwner}].[{objectQualifier}UserForum] where ForumID = @ForumID
     --END ABOT CHANGED 09.04.2004
     delete from [{databaseOwner}].[{objectQualifier}Forum] where ForumID = @ForumID
-end
-
-GO
-
-create procedure [{databaseOwner}].[{objectQualifier}forum_listpath](@ForumID int) as
-begin
-declare @tbllpath TABLE (ForumID int, Name nvarchar(255), Indent int);
-declare @Indent int;
-declare @CurrentParentID int;
-declare @CurrentForumID int;
-declare @CurrentForumName nvarchar(255);
-
--- Flag if a record was selected
-declare @Selectcount int;
-
--- Forum 1000 is a legal value... always use -1 instead
-SET @CurrentParentID = -1;
-
-SET @Indent = 0;
-	while (@CurrentParentID IS NOT NULL and @Indent < 1000)
-      begin
-	   set @Selectcount = 0;
-       select
-			@Selectcount = 1,
-            @CurrentForumID =  a.ForumID,
-            @CurrentParentID = a.ParentID,
-            @CurrentForumName = a.Name
-        from
-             [{databaseOwner}].[{objectQualifier}Forum] a
-        where
-            a.ForumID=@ForumID;
-
-		if @Selectcount = 0
-		begin
-			break;
-		end
-            Insert into @tbllpath(ForumID, Name,Indent)
-            values (@CurrentForumID,@CurrentForumName,@Indent)
-            SET @ForumID = @CurrentParentID;
-            SET @Indent = @Indent + 1;
-     end
-     select ForumID, Name from  @tbllpath order by Indent Desc;
 end
 GO
 
@@ -3895,7 +3852,8 @@ begin
         ForumName			= (select Name from [{databaseOwner}].[{objectQualifier}Forum] where ForumID = @ForumID),
         TopicID				= @TopicID,
         TopicName			= (select Topic from [{databaseOwner}].[{objectQualifier}Topic] where TopicID = @TopicID),
-        ForumTheme			= (select ThemeURL from [{databaseOwner}].[{objectQualifier}Forum] where ForumID = @ForumID)
+        ForumTheme			= (select ThemeURL from [{databaseOwner}].[{objectQualifier}Forum] where ForumID = @ForumID),
+		ParentForumID       = (select ParentID from [{databaseOwner}].[{objectQualifier}Forum] where ForumID = @ForumID)
 
 end
 GO
@@ -5207,9 +5165,7 @@ BEGIN
 
         DELETE FROM  [{databaseOwner}].[{objectQualifier}topic] WHERE TopicMovedID = @TopicID
 
-		
-		delete [{databaseOwner}].[{objectQualifier}Activity] where TopicID = @TopicID
-        DELETE  [{databaseOwner}].[{objectQualifier}Attachment] WHERE MessageID IN (SELECT MessageID FROM  [{databaseOwner}].[{objectQualifier}message] WHERE TopicID = @TopicID)
+		DELETE  [{databaseOwner}].[{objectQualifier}Attachment] WHERE MessageID IN (SELECT MessageID FROM  [{databaseOwner}].[{objectQualifier}message] WHERE TopicID = @TopicID)
         DELETE  [{databaseOwner}].[{objectQualifier}MessageHistory] WHERE MessageID IN (SELECT MessageID FROM  [{databaseOwner}].[{objectQualifier}message] WHERE TopicID = @TopicID)
 
 		update [{databaseOwner}].[{objectQualifier}Message] SET ReplyTo = null WHERE TopicID = @TopicID
@@ -5252,6 +5208,8 @@ BEGIN
 
 		EXEC [{databaseOwner}].[{objectQualifier}pollgroup_remove] @pollID, @TopicID, null, null, null, 0, 0
 
+        delete [{databaseOwner}].[{objectQualifier}TopicTag] where TopicID = @TopicID
+		delete [{databaseOwner}].[{objectQualifier}Activity] where TopicID = @TopicID
         DELETE  [{databaseOwner}].[{objectQualifier}WatchTopic] WHERE TopicID = @TopicID
         DELETE  [{databaseOwner}].[{objectQualifier}TopicReadTracking] WHERE TopicID = @TopicID
         DELETE  [{databaseOwner}].[{objectQualifier}FavoriteTopic]  WHERE TopicID = @TopicID
@@ -6568,7 +6526,6 @@ begin
 		a.SuspendedBy,
         a.LanguageFile,
         a.ThemeFile,
-        a.TextEditor,
         a.[PMNotification],
         a.[AutoWatchTopics],
         a.[DailyDigest],
@@ -6635,7 +6592,6 @@ begin
         a.Suspended,
         a.LanguageFile,
         a.ThemeFile,
-        a.TextEditor,
         a.[PMNotification],
         a.[AutoWatchTopics],
         a.[DailyDigest],
@@ -6693,7 +6649,6 @@ begin
         a.Suspended,
         a.LanguageFile,
         a.ThemeFile,
-        a.TextEditor,
         a.[PMNotification],
         a.[AutoWatchTopics],
         a.[DailyDigest],
@@ -6757,7 +6712,6 @@ begin
         a.Suspended,
         a.LanguageFile,
         a.ThemeFile,
-        a.TextEditor,
         a.[PMNotification],
         a.[AutoWatchTopics],
         a.[DailyDigest],
@@ -7024,7 +6978,7 @@ begin
 
     if @@ROWCOUNT<1
     begin
-        exec [{databaseOwner}].[{objectQualifier}user_save] null,@BoardID,@UserName,@UserName,@Email,@TimeZonetmp,null,null,null,null,null, 1, null, null, null, 0, 0,@UTCTIMESTAMP
+        exec [{databaseOwner}].[{objectQualifier}user_save] null,@BoardID,@UserName,@UserName,@Email,@TimeZonetmp,null,null,null,null, 1, null, null, null, 0, 0,@UTCTIMESTAMP
 
         -- The next one is not safe, but this procedure is only used for testing
         select @UserID = @@IDENTITY
@@ -7066,7 +7020,6 @@ CREATE procedure [{databaseOwner}].[{objectQualifier}user_save](
     @LanguageFile		nvarchar(50) = null,
     @Culture		    varchar(10) = null,
     @ThemeFile			nvarchar(50) = null,
-    @TextEditor			nvarchar(50) = null,
     @Approved			bit = null,
     @PMNotification		bit = null,
     @AutoWatchTopics    bit = null,
@@ -7122,7 +7075,6 @@ begin
             LanguageFile = @LanguageFile,
             ThemeFile = @ThemeFile,
             Culture = @Culture,
-            TextEditor = @TextEditor,
             PMNotification = (CASE WHEN (@PMNotification is not null) THEN  @PMNotification ELSE PMNotification END),
             AutoWatchTopics = (CASE WHEN (@AutoWatchTopics is not null) THEN  @AutoWatchTopics ELSE AutoWatchTopics END),
             NotificationType =  (CASE WHEN (@NotificationType is not null) THEN  @NotificationType ELSE NotificationType END),
@@ -8717,7 +8669,6 @@ begin
 		SuspendedReason     = a.SuspendedReason,
         ThemeFile			= a.ThemeFile,
         LanguageFile		= a.LanguageFile,
-        TextEditor		    = a.TextEditor,
         TimeZoneUser		= a.TimeZone,
         CultureUser		    = a.Culture,
         IsGuest				= SIGN(a.IsGuest),

@@ -28,7 +28,7 @@ namespace YAF.Pages
     using System;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Interfaces;
@@ -67,9 +67,10 @@ namespace YAF.Pages
             this.PollList.PollGroupId = this.Get<BoardSettings>().BoardPollID;
             this.PollList.BoardId = this.PageContext.Settings.BoardID;
 
-            // Since these controls have EnabledViewState=false, set their visibility on every page load so that this value is not lost on postback.
+            // Since these controls have EnabledViewState=false, set their visibility on every page load so that this value is not lost on post-back.
             // This is important for another reason: these are board settings; values in the view state should have no impact on whether these controls are shown or not.
-           this.ForumStats.Visible = this.Get<BoardSettings>().ShowForumStatistics;
+            this.ForumStats.Visible = this.Get<BoardSettings>().ShowForumStatistics;
+            this.ForumStatistics.Visible = this.Get<BoardSettings>().ShowForumStatistics;
             this.ActiveDiscussions.Visible = this.Get<BoardSettings>().ShowActiveDiscussions;
 
             if (this.IsPostBack)
@@ -82,6 +83,19 @@ namespace YAF.Pages
                 return;
             }
 
+            if (this.PageContext.PageCategoryID == 0)
+            {
+                return;
+            }
+
+            this.Welcome.Visible = false;
+        }
+
+        /// <summary>
+        /// The create page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
             this.PageLinks.AddRoot();
 
             if (this.PageContext.PageCategoryID == 0)
@@ -92,7 +106,6 @@ namespace YAF.Pages
             this.PageLinks.AddLink(
                 this.PageContext.PageCategoryName,
                 BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
-            this.Welcome.Visible = false;
         }
 
         #endregion

@@ -35,6 +35,7 @@ namespace YAF.Controls
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
@@ -155,13 +156,13 @@ namespace YAF.Controls
             // page index in db which is returned back  is +1 based!
             var currentPageIndex = this.PagerTop.CurrentPageIndex;
 
-            this.Title.LocalizedPage = "MyTopics";
+            this.IconHeader.LocalizedPage = "MyTopics";
 
             // now depending on mode fill the table
             switch (this.CurrentMode)
             {
                 case TopicListMode.Active:
-                    this.Title.LocalizedTag = "ActiveTopics";
+                    this.IconHeader.LocalizedTag = "ActiveTopics";
 
                     topicList = this.GetRepository<Topic>().ActiveAsDataTable(
                         this.PageContext.PageBoardID,
@@ -175,7 +176,7 @@ namespace YAF.Controls
                         this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.Unanswered:
-                    this.Title.LocalizedTag = "UnansweredTopics";
+                    this.IconHeader.LocalizedTag = "UnansweredTopics";
 
                     topicList = this.GetRepository<Topic>().UnansweredAsDataTable(
                         this.PageContext.PageBoardID,
@@ -189,7 +190,7 @@ namespace YAF.Controls
                         this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.Unread:
-                    this.Title.LocalizedTag = "UnreadTopics";
+                    this.IconHeader.LocalizedTag = "UnreadTopics";
 
                     topicList = this.GetRepository<Topic>().UnreadAsDataTable(
                         this.PageContext.PageBoardID,
@@ -203,7 +204,7 @@ namespace YAF.Controls
                         this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.User:
-                    this.Title.LocalizedTag = "MyTopics";
+                    this.IconHeader.LocalizedTag = "MyTopics";
 
                     topicList = this.GetRepository<Topic>().ByUserAsDataTable(
                         this.PageContext.PageBoardID,
@@ -217,7 +218,7 @@ namespace YAF.Controls
                         this.Get<BoardSettings>().UseReadTrackingByDatabase);
                     break;
                 case TopicListMode.Favorite:
-                    this.Title.LocalizedTag = "FavoriteTopics";
+                    this.IconHeader.LocalizedTag = "FavoriteTopics";
 
                     topicList = this.GetRepository<FavoriteTopic>().Details(
                         BoardContext.Current.Settings.CategoryID == 0
@@ -498,14 +499,14 @@ namespace YAF.Controls
                     this.RssFeed.Visible = false;
                     break;
                 case TopicListMode.Active:
-                    this.RssFeed.FeedType = YafRssFeeds.Active;
+                    this.RssFeed.FeedType = RssFeeds.Active;
                     this.RssFeed.AdditionalParameters =
                         $"txt={this.Server.UrlEncode(this.HtmlEncode(this.Since.Items[this.Since.SelectedIndex].Text))}&d={this.Server.UrlEncode(this.HtmlEncode(this.sinceDate.ToString(CultureInfo.InvariantCulture)))}";
 
                     this.RssFeed.Visible = accessActive;
                     break;
                 case TopicListMode.Favorite:
-                    this.RssFeed.FeedType = YafRssFeeds.Favorite;
+                    this.RssFeed.FeedType = RssFeeds.Favorite;
                     this.RssFeed.AdditionalParameters =
                         $"txt={this.Server.UrlEncode(this.HtmlEncode(this.Since.Items[this.Since.SelectedIndex].Text))}&d={this.Server.UrlEncode(this.HtmlEncode(this.sinceDate.ToString(CultureInfo.InvariantCulture)))}";
                     this.RssFeed.Visible = accessFavorite;

@@ -25,6 +25,7 @@ namespace YAF.Core.BBCode.ReplaceRules
     using System.Text;
     using System.Text.RegularExpressions;
 
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -67,19 +68,19 @@ namespace YAF.Core.BBCode.ReplaceRules
         {
             var sb = new StringBuilder(text);
 
-            var match = this._regExSearch.Match(text);
+            var match = this.RegExSearch.Match(text);
 
             while (match.Success)
             {
-                var innerReplace = new StringBuilder(this._regExReplace);
+                var innerReplace = new StringBuilder(this.RegExReplace);
                 var i = 0;
 
-                if (this._truncateLength > 0)
+                if (this.TruncateLength > 0)
                 {
                     // special handling to truncate urls
                     innerReplace.Replace(
                         "${innertrunc}",
-                        match.Groups["inner"].Value.TruncateMiddle(this._truncateLength));
+                        match.Groups["inner"].Value.TruncateMiddle(this.TruncateLength));
                 }
 
                 var quote = match.Groups["quote"].Value;
@@ -107,22 +108,22 @@ namespace YAF.Core.BBCode.ReplaceRules
                     }
 
                     quote = postId.IsSet()
-                                ? $@"<footer class=""blockquote-footer pt-1 mt-3"">
+                                ? $@"<footer class=""blockquote-footer"">
                                          <cite>{localQuotePosted.Replace("{0}", userName)}&nbsp;<a href=""{BuildLink.GetLink(ForumPages.Posts, "m={0}#post{0}", postId)}""><i class=""fas fa-external-link-alt""></i></a></cite></footer>
                                          <p class=""mb-0 mt-2"">"
-                                : $@"<footer class=""blockquote-footer pt-1 mt-3"">
-                                         <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0 mt-2"">";
+                                : $@"<footer class=""blockquote-footer"">
+                                         <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0"">";
                 }
                 else
                 {
                     quote =
-                        $@"<footer class=""blockquote-footer pt-1 mt-3"">
-                               <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0 mt-2"">";
+                        $@"<footer class=""blockquote-footer"">
+                               <cite>{localQuoteWrote.Replace("{0}", quote)}</cite></footer><p class=""mb-0"">";
                 }
 
                 innerReplace.Replace("${quote}", quote);
 
-                this._variables.ForEach(
+                this.Variables.ForEach(
                     variable =>
                     {
                         var varName = variable;
@@ -138,11 +139,11 @@ namespace YAF.Core.BBCode.ReplaceRules
 
                         var value = match.Groups[varName].Value;
 
-                        if (this._variableDefaults != null && value.Length == 0)
-                        {
-                            // use default instead
-                            value = this._variableDefaults[i];
-                        }
+                            if (this.VariableDefaults != null && value.Length == 0)
+                            {
+                                // use default instead
+                                value = this.VariableDefaults[i];
+                            }
 
                         innerReplace.Replace(
                             $"${{{varName}}}",
@@ -162,7 +163,7 @@ namespace YAF.Core.BBCode.ReplaceRules
                 sb.Insert(match.Groups[0].Index, innerReplace.ToString());
 
                 // text = text.Substring( 0, m.Groups [0].Index ) + tStr + text.Substring( m.Groups [0].Index + m.Groups [0].Length );
-                match = this._regExSearch.Match(sb.ToString());
+                match = this.RegExSearch.Match(sb.ToString());
             }
 
             text = sb.ToString();

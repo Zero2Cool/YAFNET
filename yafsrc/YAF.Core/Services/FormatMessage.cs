@@ -33,7 +33,7 @@ namespace YAF.Core.Services
 
     using YAF.Configuration;
     using YAF.Core;
-    using YAF.Core.BBCode.ReplaceRules;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -51,43 +51,6 @@ namespace YAF.Core.Services
     /// </summary>
     public class FormatMessage : IFormatMessage, IHaveServiceLocator
     {
-        #region Constants and Fields
-
-        /// <summary>
-        ///   format message regex
-        /// </summary>
-        private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.Multiline;
-
-        /// <summary>
-        /// The mail regex
-        /// </summary>
-        private static readonly Regex RgxEmail = new Regex(
-            @"(?<before>^|[ ]|\>|\[[A-Za-z0-9]\])(?<inner>(([A-Za-z0-9]+_+)|([A-Za-z0-9]+\-+)|([A-Za-z0-9]+\.+)|([A-Za-z0-9]+\++))*[A-Za-z0-9]+@((\w+\-+)|(\w+\.))*\w{1,63}\.[a-zA-Z]{2,6})",
-            Options | RegexOptions.Compiled);
-
-        /// <summary>
-        /// The YouTube Regex
-        /// </summary>
-        private static readonly Regex RgxYoutube1 = new Regex(
-            @"(?<before>^|[ ]|\[[A-Za-z0-9]\]|\[\*\]|[A-Za-z0-9])(?<!href="")(?<!src="")(?<inner>(http://|https://)(www.)?youtube\.com\/watch\?v=(?<videoId>[A-Za-z0-9._%-]*)(\&\S+)?)",
-            Options | RegexOptions.Compiled);
-
-        /// <summary>
-        /// The YouTube (Short URL) Regex
-        /// </summary>
-        private static readonly Regex RgxYoutube2 = new Regex(
-            @"(?<before>^|[ ]|\[[A-Za-z0-9]\]|\[\*\]|[A-Za-z0-9])(?<!href="")(?<!src="")(?<inner>(http://|https://)youtu\.be\/(?<videoId>[A-Za-z0-9._%-]*)(\&\S+)?)",
-            Options | RegexOptions.Compiled);
-
-        /// <summary>
-        /// The URL Regex
-        /// </summary>
-        private static readonly Regex RgxUrl3 = new Regex(
-            @"(?<before>^|[ ]|\[[A-Za-z0-9]\]|\[\*\]|[A-Za-z0-9])(?<!http://)(?<inner>www\.(?:[\w-]+\.)+[\w-]+(?:/[\w-./?%+#&=;,~]*)?)",
-            Options | RegexOptions.Compiled);
-
-        #endregion
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Services.FormatMessage"/> class.
         /// </summary>
@@ -260,72 +223,12 @@ namespace YAF.Core.Services
             // see if the rules are already populated...
             if (!ruleEngine.HasRules)
             {
-                // populate
-
                 // get rules for YafBBCode
                 this.Get<IBBCode>().CreateBBCodeRules(
                     ruleEngine,
-                    messageFlags.IsHtml,
                     true,
                     targetBlankOverride,
                     useNoFollow);
-
-                // add email rule
-                // vzrus: it's freezing  when post body contains full email address.
-                // the fix provided by community 
-                var email = new VariableRegexReplaceRule(
-                                RgxEmail,
-                                "${before}<a href=\"mailto:${inner}\">${inner}</a>",
-                                new[] { "before" }) {
-                                                       RuleRank = 31 
-                                                    };
-
-                ruleEngine.AddRule(email);
-
-                // URLs Rules
-                var target = boardSettings.BlankLinks || targetBlankOverride ? "target=\"_blank\"" : string.Empty;
-
-                var nofollow = useNoFollow ? "rel=\"nofollow\"" : string.Empty;
-
-                var youtubeVideo1 = new VariableRegexReplaceRule(
-                                        RgxYoutube1,
-                                        "${before}<div class=\"YoutubeVideoEmbed\"><iframe src=\"//www.youtube.com/embed/${videoId}?wmode=transparent\" width=\"560\" height=\"315\" allowfullscreen=\"true\" allowscriptaccess=\"always\" scrolling=\"no\" frameborder=\"0\"></iframe></div>",
-                                        new[] { "before", "videoId" },
-                                        new[] { string.Empty },
-                                        50) {
-                                               RuleRank = 40 
-                                            };
-
-                ruleEngine.AddRule(youtubeVideo1);
-
-                var youtubeVideo2 = new VariableRegexReplaceRule(
-                                        RgxYoutube2,
-                                        "${before}<div class=\"YoutubeVideoEmbed\"><iframe src=\"//www.youtube.com/embed/${videoId}?wmode=transparent\" width=\"560\" height=\"315\" allowfullscreen=\"true\" allowscriptaccess=\"always\" scrolling=\"no\" frameborder=\"0\"></iframe></div>",
-                                        new[] { "before", "videoId" },
-                                        new[] { string.Empty },
-                                        50) {
-                                               RuleRank = 41 
-                                            };
-
-                ruleEngine.AddRule(youtubeVideo2);
-
-                // ?<! - match if prefixes href="" and src="" are not present
-                // <inner> = named capture group
-                // (http://|https://|ftp://) - numbered capture group - select from 3 alternatives
-                // Match expression but don't capture it, one or more repetitions, in the end is dot(\.)? here we match "www." - (?:[\w-]+\.)+
-                // Match expression but don't capture it, zero or one repetitions (?:/[\w-./?%&=+;,:#~$]*[^.<])?
-                // (?<inner>(http://|https://|ftp://)(?:[\w-]+\.)+[\w-]+(?:/[\w-./?%&=+;,:#~$]*[^.<])?)
-                var url = new VariableRegexReplaceRule(
-                              RgxUrl3,
-                              "${before}<a {0} {1} href=\"http://${inner}\" title=\"http://${inner}\">${innertrunc}&nbsp;<i class=\"fa fa-external-link-alt fa-fw\"></i></a>"
-                                  .Replace("{0}", target).Replace("{1}", nofollow),
-                              new[] { "before" },
-                              new[] { string.Empty },
-                              50) {
-                                     RuleRank = 44 
-                                  };
-
-                ruleEngine.AddRule(url);
             }
 
             message = this.Get<IBadWordReplace>().Replace(message);
@@ -358,6 +261,7 @@ namespace YAF.Core.Services
         /// The formatted message.
         /// </returns>
         [NotNull]
+        [Obsolete]
         public string FormatSyndicationMessage(
             [NotNull] string message,
             [NotNull] MessageFlags messageFlags,
@@ -409,46 +313,50 @@ namespace YAF.Core.Services
                             var returnMsg = topicMessage.ToString();
                             var keywordList = new List<string>();
 
-                            if (returnMsg.IsSet())
+                            if (returnMsg.IsNotSet())
                             {
-                                // process message... clean html, strip html, remove bbcode, etc...
-                                returnMsg = BBCodeHelper
-                                    .StripBBCode(HtmlHelper.StripHtml(HtmlHelper.CleanHtmlString(returnMsg)))
-                                    .RemoveMultipleWhitespace();
+                                return new MessageCleaned(returnMsg.Truncate(200), keywordList);
+                            }
 
-                                // encode Message For Security Reasons
-                                returnMsg = this.HttpServer.HtmlEncode(returnMsg);
+                            // process message... clean html, strip html, remove bbcode, etc...
+                            returnMsg = BBCodeHelper
+                                .StripBBCode(HtmlHelper.StripHtml(HtmlHelper.CleanHtmlString(returnMsg)))
+                                .RemoveMultipleWhitespace();
 
-                                if (returnMsg.IsNotSet())
+                            // encode Message For Security Reasons
+                            returnMsg = this.HttpServer.HtmlEncode(returnMsg);
+
+                            if (returnMsg.IsNotSet())
+                            {
+                                returnMsg = string.Empty;
+                            }
+                            else
+                            {
+                                // get string without punctuation
+                                var keywordCleaned = new string(
+                                        returnMsg.Where(c => !char.IsPunctuation(c) || char.IsWhiteSpace(c))
+                                            .ToArray())
+                                    .Trim().ToLower();
+
+                                if (keywordCleaned.Length <= 5)
                                 {
-                                    returnMsg = string.Empty;
+                                    return new MessageCleaned(returnMsg.Truncate(200), keywordList);
                                 }
-                                else
+
+                                // create keywords...
+                                keywordList = keywordCleaned.StringToList(' ', commonWords);
+
+                                // clean up the list a bit...
+                                keywordList = keywordList.GetNewNoEmptyStrings().GetNewNoSmallStrings(5)
+                                    .Where(x => !char.IsNumber(x[0])).Distinct().ToList();
+
+                                // sort...
+                                keywordList.Sort();
+
+                                // get maximum of 20 keywords...
+                                if (keywordList.Count > 20)
                                 {
-                                    // get string without punctuation
-                                    var keywordCleaned = new string(
-                                            returnMsg.Where(c => !char.IsPunctuation(c) || char.IsWhiteSpace(c))
-                                                .ToArray())
-                                        .Trim().ToLower();
-
-                                    if (keywordCleaned.Length > 5)
-                                    {
-                                        // create keywords...
-                                        keywordList = keywordCleaned.StringToList(' ', commonWords);
-
-                                        // clean up the list a bit...
-                                        keywordList = keywordList.GetNewNoEmptyStrings().GetNewNoSmallStrings(5)
-                                            .Where(x => !char.IsNumber(x[0])).Distinct().ToList();
-
-                                        // sort...
-                                        keywordList.Sort();
-
-                                        // get maximum of 20 keywords...
-                                        if (keywordList.Count > 20)
-                                        {
-                                            keywordList = keywordList.GetRange(0, 20);
-                                        }
-                                    }
+                                    keywordList = keywordList.GetRange(0, 20);
                                 }
                             }
 
@@ -619,78 +527,6 @@ namespace YAF.Core.Services
             html = !allowHtml
                        ? this.HttpServer.HtmlEncode(html)
                        : RemoveHtmlByList(html, this.Get<BoardSettings>().AcceptedHTML.Split(','));
-
-            return html;
-        }
-
-        /// <summary>
-        /// The repair html.
-        /// </summary>
-        /// <param name="html">
-        /// The html.
-        /// </param>
-        /// <param name="allowHtml">
-        /// The allow html.
-        /// </param>
-        /// <param name="matchList">
-        /// The match List.
-        /// </param>
-        /// <returns>
-        /// The repaired html.
-        /// </returns>
-        public string RepairHtml(
-            [NotNull] string html,
-            [NotNull] bool allowHtml,
-            [NotNull] IEnumerable<string> matchList)
-        {
-            // vzrus: NNTP temporary tweaks to wipe out server hangs. Put it here as it can be in every place.
-            // These are '\n\r' things related to multiline regexps.
-            var mc1 = Regex.Matches(html, "[^\r]\n[^\r]", RegexOptions.IgnoreCase);
-            for (var i = mc1.Count - 1; i >= 0; i--)
-            {
-                html = html.Insert(mc1[i].Index + 1, " \r");
-            }
-
-            var mc2 = Regex.Matches(html, "[^\r]\n\r\n[^\r]", RegexOptions.IgnoreCase);
-            for (var i = mc2.Count - 1; i >= 0; i--)
-            {
-                html = html.Insert(mc2[i].Index + 1, " \r");
-            }
-
-            html = !allowHtml ? this.HttpServer.HtmlEncode(html) : RemoveHtmlByList(html, matchList);
-
-            return html;
-        }
-
-        /// <summary>
-        /// The repair html.
-        /// </summary>
-        /// <param name="html">
-        /// The html.
-        /// </param>
-        /// <param name="allowHtml">
-        /// The allow html.
-        /// </param>
-        /// <returns>
-        /// The repaired html.
-        /// </returns>
-        public string RepairHtmlFeeds([NotNull] string html, bool allowHtml)
-        {
-            // vzrus: NNTP temporary tweaks to wipe out server hangs. Put it here as it can be in every place.
-            // These are '\n\r' things related to multiline regexps.
-            var mc1 = Regex.Matches(html, "[^\r]\n[^\r]", RegexOptions.IgnoreCase);
-            for (var i = mc1.Count - 1; i >= 0; i--)
-            {
-                html = html.Insert(mc1[i].Index + 1, " \r");
-            }
-
-            var mc2 = Regex.Matches(html, "[^\r]\n\r\n[^\r]", RegexOptions.IgnoreCase);
-            for (var i = mc2.Count - 1; i >= 0; i--)
-            {
-                html = html.Insert(mc2[i].Index + 1, " \r");
-            }
-
-            html = !allowHtml ? this.HttpServer.HtmlEncode(html) : RemoveHtmlByList(html, new[] { "a" });
 
             return html;
         }

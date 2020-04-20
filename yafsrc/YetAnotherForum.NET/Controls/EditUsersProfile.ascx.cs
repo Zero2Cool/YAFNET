@@ -36,6 +36,7 @@ namespace YAF.Controls
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BaseControls;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
@@ -118,7 +119,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void CancelClick([NotNull] object sender, [NotNull] EventArgs e)
         {
-            BuildLink.Redirect(this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.admin_users : ForumPages.Account);
+            BuildLink.Redirect(this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.Admin_Users : ForumPages.Account);
         }
 
         /// <summary>
@@ -143,7 +144,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.Page.Form.DefaultButton = this.UpdateProfile.UniqueID;
+            //this.Page.Form.DefaultButton = this.UpdateProfile.UniqueID;
 
             this.PageContext.QueryIDs = new QueryStringIDHelper("u");
 
@@ -337,7 +338,6 @@ namespace YAF.Controls
                 this.UserData.LanguageFile,
                 this.UserData.CultureUser,
                 this.UserData.ThemeFile,
-                this.UserData.TextEditor,
                 null,
                 null,
                 null,
@@ -503,7 +503,7 @@ namespace YAF.Controls
         /// </param>
         private void UpdateUserProfile([NotNull] string userName)
         {
-            var userProfile = YafUserProfile.GetProfile(userName);
+            var userProfile = Utils.UserProfile.GetProfile(userName);
 
             userProfile.Country = this.Country.SelectedItem != null
                                       ? this.Country.SelectedItem.Value.Trim()

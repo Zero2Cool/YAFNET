@@ -37,11 +37,15 @@ namespace YAF.Core.Services
     using System.Text;
     using System.Web;
 
+    using Newtonsoft.Json;
+
     using ServiceStack;
 
     using YAF.Configuration;
     using YAF.Core;
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Services.Auth;
     using YAF.Core.UsersRoles;
     using YAF.Types;
@@ -199,12 +203,13 @@ namespace YAF.Core.Services
                 if (BoardContext.Current == null)
                 {
                     context.Response.Write(
-                   "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
+                        "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
 
                     return;
                 }
 
-                var customBbCode = this.Get<DataBroker>().GetCustomBBCode().ToList();
+                var customBbCode = this.Get<DataBroker>().GetCustomBBCode()
+                    .Where(e => e.Name != "ALBUMIMG" && e.Name != "ATTACH").Select(e => e.Name).ToList();
 
                 context.Response.Clear();
 
@@ -254,14 +259,14 @@ namespace YAF.Core.Services
                                 : user.Name.StartsWith(searchQuery));
 
                 var users = usersList.AsEnumerable().Where(u => !this.Get<IUserIgnored>().IsIgnored(u.ID)).Select(
-                    u => new { UserName = this.Get<BoardSettings>().EnableDisplayName ? u.DisplayName : u.Name });
+                    u => new { id = u.ID, name = this.Get<BoardSettings>().EnableDisplayName ? u.DisplayName : u.Name });
 
                 context.Response.Clear();
 
                 context.Response.ContentType = "application/json";
                 context.Response.ContentEncoding = Encoding.UTF8;
 
-                context.Response.Write(users.ToJson());
+                context.Response.Write(JsonConvert.SerializeObject(users));
 
                 HttpContext.Current.ApplicationInstance.CompleteRequest();
             }

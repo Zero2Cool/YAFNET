@@ -31,7 +31,8 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
+    using YAF.Core.BasePages;
+    using YAF.Core.Context;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -96,9 +97,6 @@ namespace YAF.Pages
 
             var doSearch = false;
 
-            this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
-
             this.txtSearchStringFromWho.Attributes.Add("data-display", this.Get<BoardSettings>().EnableDisplayName.ToString());
 
             // Load result dropdown
@@ -119,9 +117,11 @@ namespace YAF.Pages
             this.listSearchWhat.SelectedIndex = 2;
 
             // Load forum's combo
-            this.listForum.DataSource = this.GetRepository<Forum>().ListAllSortedAsDataTable(
+            var forumList = this.GetRepository<Forum>().ListAllSortedAsDataTable(
                 this.PageContext.PageBoardID,
                 this.PageContext.PageUserID);
+
+            this.listForum.AddForumAndCategoryIcons(forumList);
 
             this.listForum.DataValueField = "ForumID";
             this.listForum.DataTextField = "Title";
@@ -182,6 +182,15 @@ namespace YAF.Pages
                     "openModalJs",
                     JavaScriptBlocks.DoSearchJs());
             }
+        }
+
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
+            this.PageLinks.AddRoot();
+            this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
         }
 
         #endregion
