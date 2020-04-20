@@ -296,7 +296,7 @@ namespace YAF.Core.Context
             {
                 var isLockedForum = BoardContext.Current.Settings.LockedForum;
 
-                return isLockedForum != 0 ? isLockedForum : this.PageValueAsInt("ParentForumID");
+                return isLockedForum != 0 ? isLockedForum : this.PageValueAsInt("ForumID");
             }
         }
 

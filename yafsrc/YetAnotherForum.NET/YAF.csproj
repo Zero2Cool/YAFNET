@@ -2641,7 +2641,6 @@
     <Content Include="Scripts\jquery.ForumExtensions.min.js">
       <DependentUpon>jquery.ForumExtensions.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\ladda.min.js" />
     <Content Include="Scripts\moment-with-locales.js" />
     <Content Include="Scripts\moment-with-locales.min.js">
       <DependentUpon>moment-with-locales.js</DependentUpon>
@@ -3547,9 +3546,6 @@ RD /S /Q "$(TargetDir)zh-TW\"</PostBuildEvent>
       <LastGenOutput>Install.vi.designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Include="Scripts\ladda.d.ts" />
-  </ItemGroup>
   <Target Name="BrowsersListWarningsAsInfo" BeforeTargets="WebCompile">
     <FileUpdate Files="@(BrowsersListNodeJsFiles)" Regex="console.warn" ReplacementText="console.log" />
   </Target>
@@ -3569,7 +3565,7 @@ RD /S /Q "$(TargetDir)zh-TW\"</PostBuildEvent>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties bundleconfig_1json__JSONSchema="" compilerconfig_1json__JSONSchema="" />
+      <UserProperties compilerconfig_1json__JSONSchema="" bundleconfig_1json__JSONSchema="" />
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />

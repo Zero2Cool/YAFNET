@@ -19,3 +19,6 @@ If "%Current%" NEQ "15.0" set Current=Current
 @set $MSBUILDPATH="%$MSBUILDROOT%\MsBuild\%Current%\Bin\MSBuild.exe"
 
 %$MSBUILDPATH% YAF.NET.sln /p:Configuration=Release /p:Platform="Any CPU" /p:WarningLevel=0;CreatePackages=true
+
+
+pause
