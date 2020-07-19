@@ -28,7 +28,6 @@ namespace YAF.Pages
 
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.Linq;
     using System.Web.UI.WebControls;
 
@@ -40,13 +39,15 @@ namespace YAF.Pages
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
-    using YAF.Types.Flags;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
+    using YAF.Types.Objects;
     using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Web.Controls;
     using YAF.Web.Extensions;
+
+    using ListItem = System.Web.UI.WebControls.ListItem;
 
     #endregion
 
@@ -60,7 +61,7 @@ namespace YAF.Pages
         /// <summary>
         ///   The Moderators List
         /// </summary>
-        private List<Moderator> completeModsList = new List<Moderator>();
+        private List<SimpleModerator> completeModsList = new List<SimpleModerator>();
 
         #endregion
 
@@ -95,9 +96,13 @@ namespace YAF.Pages
 
             var modForums = gridItem.FindControlAs<DropDownList>("ModForums");
 
-            if (int.TryParse(modForums.SelectedValue, out var redirForum))
+            if (int.TryParse(modForums.SelectedValue, out var redirectForum))
             {
-                BuildLink.Redirect(ForumPages.topics, "f={0}", modForums.SelectedValue);
+                BuildLink.Redirect(
+                    ForumPages.Topics,
+                    "f={0}&name={1}",
+                    modForums.SelectedValue,
+                    modForums.SelectedItem.Text);
             }
         }
 
@@ -112,22 +117,22 @@ namespace YAF.Pages
         /// Moderators List
         /// </returns>
         [NotNull]
-        protected DataTable GetAdmins()
+        protected List<User> GetAdmins()
         {
             // get a row with user lazy data...
-            var adminListDataTable = this.Get<IDataCache>()
+            var adminList = this.Get<IDataCache>()
                 .GetOrSet(
                     Constants.Cache.BoardAdmins,
                     () =>
-                    this.GetRepository<User>().AdminList(this.Get<BoardSettings>().UseStyledNicks),
+                    this.GetRepository<User>().ListAdmins(this.Get<BoardSettings>().UseStyledNicks),
                     TimeSpan.FromMinutes(this.Get<BoardSettings>().BoardModeratorsCacheTimeout));
 
             if (this.Get<BoardSettings>().UseStyledNicks)
             {
-                this.Get<IStyleTransform>().DecodeStyleByTable(adminListDataTable, false);
+                this.Get<IStyleTransform>().DecodeStyleByUserList(adminList);
             }
 
-            return adminListDataTable;
+            return adminList;
         }
 
         /// <summary>
@@ -137,56 +142,42 @@ namespace YAF.Pages
         /// Moderators List
         /// </returns>
         [NotNull]
-        protected List<Moderator> GetModerators()
+        protected List<SimpleModerator> GetModerators()
         {
             var moderators = this.Get<DataBroker>().GetAllModerators();
 
-            var modsSorted = new List<Moderator>();
+            var modsSorted = new List<SimpleModerator>();
 
-            foreach (var mod in moderators)
-            {
-                if (mod.IsGroup)
+            moderators.Where(m => !m.IsGroup).ForEach(
+                mod =>
                 {
-                    continue;
-                }
+                    var sortedMod = mod;
 
-                var sortedMod = new Moderator
+                    // Check if Mod is already in modsSorted
+                    if (modsSorted.Find(
+                        s => s.Name.Equals(sortedMod.Name) && s.ModeratorID.Equals(sortedMod.ModeratorID)) != null)
                     {
-                        Name = mod.Name,
-                        ModeratorID = mod.ModeratorID,
-                        Email = mod.Email,
-                        Block = new UserBlockFlags(mod.BlockFlags),
-                        Avatar = mod.Avatar,
-                        AvatarImage = mod.AvatarImage,
-                        DisplayName = mod.DisplayName,
-                        Style = mod.Style
-                    };
+                        return;
+                    }
 
-                // Check if Mod is already in modsSorted
-                if (modsSorted.Find(s => s.Name.Equals(sortedMod.Name) && s.ModeratorID.Equals(sortedMod.ModeratorID))
-                    != null)
-                {
-                    continue;
-                }
+                    // Get All Items from that MOD
+                    var modList = moderators.Where(m => m.Name.Equals(sortedMod.Name)).ToList();
+                    var forumsCount = modList.Count;
 
-                // Get All Items from that MOD
-                var modList = moderators.Where(m => m.Name.Equals(sortedMod.Name)).ToList();
-                var forumsCount = modList.Count;
+                    sortedMod.ForumIDs = new ModeratorsForums[forumsCount];
 
-                sortedMod.ForumIDs = new ModeratorsForums[forumsCount];
-
-                for (var i = 0; i < forumsCount; i++)
-                {
-                    var forumsId = new ModeratorsForums
+                    for (var i = 0; i < forumsCount; i++)
+                    {
+                        var forumsId = new ModeratorsForums
                         {
-                           ForumID = modList[i].ForumID, ForumName = modList[i].ForumName 
+                            ForumID = modList[i].ForumID, ForumName = modList[i].ForumName
                         };
 
-                    sortedMod.ForumIDs[i] = forumsId;
-                }
+                        sortedMod.ForumIDs[i] = forumsId;
+                    }
 
-                modsSorted.Add(sortedMod);
-            }
+                    modsSorted.Add(sortedMod);
+                });
 
             return modsSorted;
         }
@@ -285,15 +276,14 @@ namespace YAF.Pages
 
             var adminAvatar = e.Item.FindControlAs<Image>("AdminAvatar");
 
-            var itemDataItem = (DataRowView)e.Item.DataItem;
-            var userid = itemDataItem["UserID"].ToType<int>();
-            var displayName = this.Get<BoardSettings>().EnableDisplayName ? itemDataItem.Row["DisplayName"].ToString() : itemDataItem.Row["Name"].ToString();
+            var user = (User)e.Item.DataItem;
+            var displayName = this.Get<IUserDisplayName>().GetName(user);
 
             adminAvatar.ImageUrl = this.GetAvatarUrlFileName(
-                itemDataItem.Row["UserID"].ToType<int>(),
-                itemDataItem.Row["Avatar"].ToString(),
-                itemDataItem.Row["AvatarImage"].ToString().IsSet(),
-                itemDataItem.Row["Email"].ToString());
+                user.ID,
+                user.Avatar,
+                !user.AvatarImage.IsNullOrEmptyDBField(),
+                user.Email);
 
             adminAvatar.AlternateText = displayName;
             adminAvatar.ToolTip = displayName; 
@@ -305,19 +295,18 @@ namespace YAF.Pages
 
             adminUserButton.Visible = this.PageContext.IsAdmin;
 
-            if (userid == this.PageContext.PageUserID)
+            if (user.ID == this.PageContext.PageUserID)
             {
                 return;
             }
 
-            var blockFlags = new UserBlockFlags(itemDataItem.Row["BlockFlags"].ToType<int>());
-            var isFriend = this.GetRepository<Buddy>().CheckIsFriend(this.PageContext.PageUserID, userid);
+            var isFriend = this.GetRepository<Buddy>().CheckIsFriend(this.PageContext.PageUserID, user.ID);
 
             pm.Visible = !this.PageContext.IsGuest && this.User != null && this.Get<BoardSettings>().AllowPrivateMessages;
 
             if (pm.Visible)
             {
-                if (blockFlags.BlockPMs)
+                if (user.Block.BlockPMs)
                 {
                     pm.Visible = false;
                 }
@@ -328,27 +317,29 @@ namespace YAF.Pages
                 }
             }
 
-            pm.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.PostPrivateMessage, "u={0}", userid);
+            pm.NavigateUrl = BuildLink.GetLink(ForumPages.PostPrivateMessage, "u={0}", user.ID);
             pm.ParamTitle0 = displayName;
 
             // email link
             email.Visible = !this.PageContext.IsGuest && this.User != null && this.Get<BoardSettings>().AllowEmailSending;
 
-            if (email.Visible)
+            if (!email.Visible)
             {
-                if (blockFlags.BlockEmails)
-                {
-                    email.Visible = false;
-                }
-
-                if (this.PageContext.IsAdmin && isFriend)
-                {
-                    email.Visible = true;
-                }
-
-                email.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.Email, "u={0}", userid);
-                email.ParamTitle0 = displayName;
+                return;
             }
+
+            if (user.Block.BlockEmails)
+            {
+                email.Visible = false;
+            }
+
+            if (this.PageContext.IsAdmin && isFriend)
+            {
+                email.Visible = true;
+            }
+
+            email.NavigateUrl = BuildLink.GetLink(ForumPages.Email, "u={0}", user.ID);
+            email.ParamTitle0 = displayName;
         }
 
         /// <summary>
@@ -397,7 +388,7 @@ namespace YAF.Pages
 
             adminUserButton.Visible = this.PageContext.IsAdmin;
 
-            var itemDataItem = (Moderator)e.Item.DataItem;
+            var itemDataItem = (SimpleModerator)e.Item.DataItem;
             var userid = itemDataItem.ModeratorID.ToType<int>();
             var displayName = this.Get<BoardSettings>().EnableDisplayName ? itemDataItem.DisplayName : itemDataItem.Name;
 
@@ -419,7 +410,7 @@ namespace YAF.Pages
 
             if (pm.Visible)
             {
-                if (mod.Block.BlockPMs)
+                if (mod.UserBlockFlags.BlockPMs)
                 {
                     pm.Visible = false;
                 }
@@ -430,7 +421,7 @@ namespace YAF.Pages
                 }
             }
 
-            pm.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.PostPrivateMessage, "u={0}", userid);
+            pm.NavigateUrl = BuildLink.GetLink(ForumPages.PostPrivateMessage, "u={0}", userid);
             pm.ParamTitle0 = displayName;
 
             // email link
@@ -441,7 +432,7 @@ namespace YAF.Pages
                 return;
             }
 
-            if (mod.Block.BlockEmails && !this.PageContext.IsAdmin)
+            if (mod.UserBlockFlags.BlockEmails && !this.PageContext.IsAdmin)
             {
                 email.Visible = false;
             }
@@ -451,7 +442,7 @@ namespace YAF.Pages
                 email.Visible = true;
             }
 
-            email.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.Email, "u={0}", userid);
+            email.NavigateUrl = BuildLink.GetLink(ForumPages.Email, "u={0}", userid);
             email.ParamTitle0 = displayName;
         }
 
@@ -479,83 +470,5 @@ namespace YAF.Pages
         }
 
         #endregion
-
-        /// <summary>
-        /// Moderators List
-        /// </summary>
-        public class Moderator
-        {
-            #region Properties
-
-            /// <summary>
-            ///   Gets or sets The Moderators Forums
-            /// </summary>
-            public ModeratorsForums[] ForumIDs { get; set; }
-
-            /// <summary>
-            ///   Gets or sets The Moderator ID (User ID)
-            /// </summary>
-            public long ModeratorID { get; set; }
-
-            /// <summary>
-            ///   Gets or sets The Moderator Email
-            /// </summary>
-            public string Email { get; set; }
-
-            public UserBlockFlags Block { get; set; }
-
-            /// <summary>
-            ///   Gets or sets The Moderator Avatar
-            /// </summary>
-            public string Avatar { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether [avatar image].
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if [avatar image]; otherwise, <c>false</c>.
-            /// </value>
-            public bool AvatarImage { get; set; }
-
-            /// <summary>
-            ///   Gets or sets The Moderator Name
-            /// </summary>
-            public string Name { get; set; }
-
-            /// <summary>
-            ///   Gets or sets The Moderator Display Name
-            /// </summary>
-            public string DisplayName { get; set; }
-
-            /// <summary>
-            ///   Gets or sets The Moderator Style
-            /// </summary>
-            public string Style { get; set; }
-
-            #endregion
-        }
-
-        /// <summary>
-        /// Moderator Forums
-        /// </summary>
-        public class ModeratorsForums
-        {
-            #region Properties
-
-            /// <summary>
-            ///   Gets or sets The Forum ID.
-            /// </summary>
-            public long ForumID { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the forum.
-            /// </summary>
-            /// <value>
-            /// The name of the forum.
-            /// </value>
-            public string ForumName { get; set; }
-
-            #endregion
-        }
     }
 }

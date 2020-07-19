@@ -24,6 +24,7 @@
 namespace YAF.Core.Extensions
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Data;
     using System.Linq;
@@ -166,7 +167,7 @@ namespace YAF.Core.Extensions
             var enumerable = ids.ToList();
 
             enumerable.ForEach(
-                id => { success = repository.DbAccess.Execute(db => db.Connection.Delete<T>(x => x.ID == id)) == 1; });
+                id => success = repository.DbAccess.Execute(db => db.Connection.Delete<T>(x => x.ID == id)) == 1);
 
             if (success)
             {
@@ -234,17 +235,21 @@ namespace YAF.Core.Extensions
         /// <summary>
         /// Update or Insert entity.
         /// </summary>
-        /// <typeparam name="T">The type parameter.</typeparam>
-        /// <param name="repository">The repository.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="transaction">The transaction.</param>
+        /// <typeparam name="T">
+        /// The type parameter.
+        /// </typeparam>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
         /// <returns>
-        /// The <see cref="bool" /> .
+        /// The <see cref="bool"/> .
         /// </returns>
         public static int Upsert<T>(
             [NotNull] this IRepository<T> repository,
-            [NotNull] T entity,
-            IDbTransaction transaction = null)
+            [NotNull] T entity)
             where T : class, IEntity, IHaveID, new()
         {
             CodeContracts.VerifyNotNull(entity, "entity");
@@ -274,7 +279,7 @@ namespace YAF.Core.Extensions
         /// The entity. 
         /// </param>
         /// <param name="transaction">
-        /// The transaction. 
+        /// The transaction.
         /// </param>
         /// <typeparam name="T">
         /// The type parameter.
@@ -286,16 +291,12 @@ namespace YAF.Core.Extensions
             [NotNull] this IRepository<T> repository,
             [NotNull] T entity,
             IDbTransaction transaction = null)
-            where T : class, IEntity, IHaveID, new()
+            where T : class, IEntity, new()
         {
             CodeContracts.VerifyNotNull(entity, "entity");
             CodeContracts.VerifyNotNull(repository, "repository");
 
-            var success = repository.DbAccess.Update(entity, transaction) > 0;
-            if (success)
-            {
-                repository.FireUpdated(entity.ID, entity);
-            }
+            var success = repository.DbAccess.Update(entity) > 0;
 
             return success;
         }
@@ -392,7 +393,7 @@ namespace YAF.Core.Extensions
         /// <param name="criteria">The criteria.</param>
         /// <returns>Returns the Row Count</returns>
         public static long Count<T>([NotNull] this IRepository<T> repository, Expression<Func<T, bool>> criteria)
-            where T : class, IEntity, IHaveID, new()
+            where T : class, IEntity, new()
         {
             CodeContracts.VerifyNotNull(repository, "repository");
             CodeContracts.VerifyNotNull(criteria, "criteria");
@@ -421,6 +422,31 @@ namespace YAF.Core.Extensions
             CodeContracts.VerifyNotNull(repository, "repository");
 
             return repository.DbAccess.Execute(db => db.Connection.SingleById<T>(id));
+        }
+
+        /// <summary>
+        /// Returns results using the supplied primary key ids. E.g:
+        /// <para>
+        /// db.SelectByIds&lt;Person&gt;(new[] { 1, 2, 3 })
+        /// </para>
+        /// </summary>
+        /// <typeparam name="T">
+        /// </typeparam>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="idValues">
+        /// The id Values.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<T> GetByIds<T>([NotNull] this IRepository<T> repository, IEnumerable idValues)
+            where T : IEntity, new()
+        {
+            CodeContracts.VerifyNotNull(repository, "repository");
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectByIds<T>(idValues));
         }
 
         /// <summary>
@@ -521,7 +547,6 @@ namespace YAF.Core.Extensions
             return repository.DbAccess.Execute(
                 dbCmd => dbCmd.Connection.SqlList<T>($"{Config.DatabaseObjectQualifier}{sql}", dbCmdFilter));
         }
-
 
         /// <summary>
         /// Gets the paged list of entities by the criteria.

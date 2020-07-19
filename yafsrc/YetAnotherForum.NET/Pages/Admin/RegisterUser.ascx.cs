@@ -27,19 +27,19 @@ namespace YAF.Pages.Admin
     #region Using
 
     using System;
-    using System.Web.Security;
+    using System.Linq;
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
+    using YAF.Types.Models.Identity;
     using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Web.Extensions;
@@ -77,84 +77,56 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            if (UserMembershipHelper.UserExists(this.UserName.Text.Trim(), newEmail))
+            if (this.Get<IAspNetUsersHelper>().UserExists(this.UserName.Text.Trim(), newEmail))
             {
                 this.PageContext.AddLoadMessage(this.GetText("ADMIN_REGUSER", "MSG_NAME_EXISTS"), MessageTypes.danger);
                 return;
             }
 
-            var user = this.Get<MembershipProvider>().CreateUser(
-                newUsername,
-                this.Password.Text.Trim(),
-                newEmail,
-                this.Question.Text.Trim(),
-                this.Answer.Text.Trim(),
-                !this.Get<BoardSettings>().EmailVerification,
-                null,
-                out var status);
+            var user = new AspNetUsers
+            {
+                Id = Guid.NewGuid().ToString(),
+                ApplicationId = this.Get<BoardSettings>().ApplicationId,
+                UserName = newUsername,
+                LoweredUserName = newUsername,
+                Email = newEmail,
+                IsApproved = false,
+                EmailConfirmed = false
+            };
 
-            if (status != MembershipCreateStatus.Success)
+            var result = this.Get<IAspNetUsersHelper>().Create(user, this.Password.Text.Trim());
+
+            if (!result.Succeeded)
             {
                 // error of some kind
-                this.PageContext.AddLoadMessage(
-                    this.GetTextFormatted("MSG_ERROR_CREATE", status),
-                    MessageTypes.danger);
+                this.PageContext.AddLoadMessage(result.Errors.FirstOrDefault(), MessageTypes.danger);
                 return;
             }
 
             // setup initial roles (if any) for this user
-            RoleMembershipHelper.SetupUserRoles(BoardContext.Current.PageBoardID, newUsername);
+            AspNetRolesHelper.SetupUserRoles(this.PageContext.PageBoardID, user);
 
             // create the user in the YAF DB as well as sync roles...
-            var userId = RoleMembershipHelper.CreateForumUser(user, BoardContext.Current.PageBoardID);
-
-            // create profile
-            var userProfile = Utils.UserProfile.GetProfile(newUsername);
-
-            // setup their initial profile information
-            userProfile.Location = this.Location.Text.Trim();
-            userProfile.Homepage = this.HomePage.Text.Trim();
-            userProfile.Save();
+            var userId = AspNetRolesHelper.CreateForumUser(user, this.PageContext.PageBoardID);
 
             var autoWatchTopicsEnabled = this.Get<BoardSettings>().DefaultNotificationSetting
                 .Equals(UserNotificationSetting.TopicsIPostToOrSubscribeTo);
 
-            // save the time zone...
-            this.GetRepository<User>().Save(
-                UserMembershipHelper.GetUserIDFromProviderUserKey(user.ProviderUserKey),
-                this.PageContext.PageBoardID,
-                null,
-                null,
-                null,
-                this.TimeZones.SelectedValue,
-                null,
-                null,
-                null,
-                null,
-                this.Get<BoardSettings>().DefaultNotificationSetting,
-                autoWatchTopicsEnabled,
-                null,
-                null,
-                null);
-
-            if (this.Get<BoardSettings>().EmailVerification)
-            {
-                this.Get<ISendNotification>().SendVerificationEmail(user, newEmail, userId, newUsername);
-            }
+            this.Get<ISendNotification>().SendVerificationEmail(user, newEmail, userId, newUsername);
 
             this.GetRepository<User>().SaveNotification(
-                UserMembershipHelper.GetUserIDFromProviderUserKey(user.ProviderUserKey),
+                this.Get<IAspNetUsersHelper>().GetUserIDFromProviderUserKey(user.Id),
                 true,
                 autoWatchTopicsEnabled,
                 this.Get<BoardSettings>().DefaultNotificationSetting.ToInt(),
                 this.Get<BoardSettings>().DefaultSendDigestEmail);
 
             // success
-            this.PageContext.AddLoadMessage(
+            this.PageContext.LoadMessage.AddSession(
                 this.GetTextFormatted("MSG_CREATED", this.UserName.Text.Trim()),
                 MessageTypes.success);
 
-            BuildLink.Redirect(ForumPages.Admin_RegisterUser);
+            BuildLink.Redirect(ForumPages.Admin_Users);
         }
 
         /// <summary>
@@ -169,7 +141,6 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            this.TimeZones.DataSource = StaticDataHelper.TimeZones();
             this.DataBind();
         }
 
@@ -179,9 +150,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMIN_USERS", "TITLE"), BuildLink.GetLink(ForumPages.Admin_Users));
 

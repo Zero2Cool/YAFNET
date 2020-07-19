@@ -169,7 +169,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
         {
             if (closed)
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "this FieldsReader is closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "this FieldsReader is closed");
             }
         }
 
@@ -431,29 +431,11 @@ namespace YAF.Lucene.Net.Codecs.Compressing
             return new CompressingStoredFieldsReader(this);
         }
 
-        internal int Version
-        {
-            get
-            {
-                return version;
-            }
-        }
+        internal int Version => version;
 
-        internal CompressionMode CompressionMode
-        {
-            get
-            {
-                return compressionMode;
-            }
-        }
+        internal CompressionMode CompressionMode => compressionMode;
 
-        internal int ChunkSize
-        {
-            get
-            {
-                return chunkSize;
-            }
-        }
+        internal int ChunkSize => chunkSize;
 
         internal ChunkIterator GetChunkIterator(int startDocID)
         {

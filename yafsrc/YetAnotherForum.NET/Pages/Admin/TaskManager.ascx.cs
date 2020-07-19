@@ -31,9 +31,7 @@ namespace YAF.Pages.Admin
 
     using YAF.Core.BasePages;
     using YAF.Types;
-    using YAF.Types.Constants;
     using YAF.Types.Interfaces;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -57,7 +55,7 @@ namespace YAF.Pages.Admin
         protected string GetItemColor(bool enabled)
         {
             // show enabled flag red
-            return enabled ? "badge badge-success" : "badge badge-default";
+            return enabled ? "badge bg-success" : "badge badge-default";
         }
 
         /// <summary>
@@ -115,9 +113,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMIN_TASKMANAGER", "TITLE"), string.Empty);
 

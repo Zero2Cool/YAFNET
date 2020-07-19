@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -87,14 +88,14 @@ namespace YAF.Lucene.Net.Store
         /// <para/>
         /// @lucene.experimental
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException"> if the <see cref="Directory"/> is already disposed
+        /// <exception cref="ObjectDisposedException"> if the <see cref="Directory"/> is already disposed
         /// </exception>
         public void SetMaxWriteMBPerSec(double? mbPerSec, IOContext.UsageContext context)
         {
             EnsureOpen();
             //if (context == null) // LUCENENET NOTE: enum values can never be null in .NET
             //{
-            //    throw new System.ArgumentException("Context must not be null");
+            //    throw new ArgumentException("Context must not be null");
             //}
             //int ord = context.ordinal();
             RateLimiter limiter;
@@ -132,7 +133,7 @@ namespace YAF.Lucene.Net.Store
         /// <para/>
         /// @lucene.experimental
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException"> if the <see cref="Directory"/> is already disposed
+        /// <exception cref="ObjectDisposedException"> if the <see cref="Directory"/> is already disposed
         /// </exception>
         public void SetRateLimiter(RateLimiter mergeWriteRateLimiter, IOContext.UsageContext context)
         {
@@ -145,7 +146,7 @@ namespace YAF.Lucene.Net.Store
         /// <para/>
         /// @lucene.experimental
         /// </summary>
-        /// <exception cref="System.ObjectDisposedException"> if the <see cref="Directory"/> is already disposed
+        /// <exception cref="ObjectDisposedException"> if the <see cref="Directory"/> is already disposed
         /// </exception>
         public double GetMaxWriteMBPerSec(IOContext.UsageContext context)
         {

@@ -2,6 +2,7 @@ using J2N;
 using J2N.Text;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace YAF.Lucene.Net.Util
@@ -571,6 +572,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         /// <exception cref="ArgumentException"> If invalid codepoint header byte occurs or the
         ///    content is prematurely truncated. </exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int CodePointCount(BytesRef utf8)
         {
             int pos = utf8.Offset;
@@ -647,7 +649,7 @@ namespace YAF.Lucene.Net.Util
                         break;
 
                     default:
-                        throw new System.ArgumentException("invalid utf8");
+                        throw new ArgumentException("invalid utf8");
                 }
 
                 // TODO: this may read past utf8's limit.
@@ -696,6 +698,7 @@ namespace YAF.Lucene.Net.Util
         /// <returns> a String representing the code points between offset and count. </returns>
         /// <exception cref="ArgumentException"> If an invalid code point is encountered. </exception>
         /// <exception cref="IndexOutOfRangeException"> If the offset or count are out of bounds. </exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string NewString(int[] codePoints, int offset, int count)
         {
             char[] chars = ToCharArray(codePoints, offset, count);
@@ -718,7 +721,7 @@ namespace YAF.Lucene.Net.Util
         {
             if (count < 0)
             {
-                throw new System.ArgumentException();
+                throw new ArgumentException();
             }
             int countThreashold = 1024; // If the number of chars exceeds this, we count them instead of allocating count * 2
             // LUCENENET: as a first approximation, assume each codepoint 
@@ -747,7 +750,7 @@ namespace YAF.Lucene.Net.Util
                 int cp = codePoints[r];
                 if (cp < 0 || cp > 0x10ffff)
                 {
-                    throw new System.ArgumentException();
+                    throw new ArgumentException();
                 }
                 if (cp < 0x010000)
                 {
@@ -862,6 +865,7 @@ namespace YAF.Lucene.Net.Util
         /// <summary>
         /// Utility method for <see cref="UTF8toUTF16(byte[], int, int, CharsRef)"/> </summary>
         /// <seealso cref="UTF8toUTF16(byte[], int, int, CharsRef)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void UTF8toUTF16(BytesRef bytesRef, CharsRef chars)
         {
             UTF8toUTF16(bytesRef.Bytes, bytesRef.Offset, bytesRef.Length, chars);

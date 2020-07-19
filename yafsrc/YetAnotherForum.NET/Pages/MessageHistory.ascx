@@ -8,7 +8,9 @@
 
 <div class="row">
     <div class="col-xl-12">
-        <h2><YAF:LocalizedLabel ID="LocalizedLabel6" runat="server" LocalizedTag="TITLE" /></h2>
+        <h2><YAF:LocalizedLabel ID="LocalizedLabel6" runat="server" 
+                                LocalizedTag="TITLE" />
+        </h2>
     </div>
 </div>
 
@@ -20,7 +22,8 @@
                                 IconName="history"/>
             </div>
             <div class="card-body">
-                <asp:Repeater ID="RevisionsList" runat="server"  OnItemCommand="RevisionsList_ItemCommand">
+                <asp:Repeater ID="RevisionsList" runat="server"
+                              OnItemCommand="RevisionsList_ItemCommand">
                     <HeaderTemplate>
                         <ul class="list-group">
                     </HeaderTemplate>
@@ -28,7 +31,7 @@
                         <li class="list-group-item list-group-item-action">
                                  <div class="d-flex w-100 justify-content-between">
                                      <h5 class="mb-1">
-                                         <div class="custom-control custom-checkbox d-inline-block">
+                                         <div class="form-check d-inline-block">
                                              <asp:Checkbox runat="server" ID="Compare" 
                                                            onclick="toggleSelection(this);" 
                                                            Text="&nbsp;" />
@@ -48,17 +51,20 @@
                                 <p class="mb-1">
                                     <YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" 
                                                         LocalizedPage="POSTMESSAGE"
-                                                        LocalizedTag="EDITEDBY" />: <YAF:UserLink ID="UserLink3" runat="server" UserID='<%# Container.DataItemToField<int>("EditedBy") %>' />
-                                    <asp:PlaceHolder runat="server" Visible='<%# this.PageContext.IsAdmin || this.Get<BoardSettings>().AllowModeratorsViewIPs && this.PageContext.ForumModeratorAccess%>'>
+                                                        LocalizedTag="EDITEDBY" />: <YAF:UserLink ID="UserLink3" runat="server"
+                                                                                                  Suspended='<%# Container.DataItemToField<DateTime?>("Suspended") %>'
+                                                                                                  Style='<%# Container.DataItemToField<string>("UserStyle") %>'
+                                                                                                  UserID='<%# Container.DataItemToField<int>("EditedBy") %>' />
+                                    <asp:PlaceHolder runat="server" Visible="<%# this.PageContext.IsAdmin || this.Get<BoardSettings>().AllowModeratorsViewIPs && this.PageContext.ForumModeratorAccess%>">
                                         <strong>
                                             <%# this.GetText("IP") %>:</strong><a id="IPLink1" 
-                                                                                  href='<%# string.Format(this.Get<BoardSettings>().IPInfoPageURL, this.GetIpAddress(Container.DataItem)) %>'
+                                                                                  href="<%# string.Format(this.Get<BoardSettings>().IPInfoPageURL, this.GetIpAddress(Container.DataItem)) %>"
                                                                                   title='<%# this.GetText("COMMON","TT_IPDETAILS") %>'
                                                                                   target="_blank" runat="server"><%# this.GetIpAddress(Container.DataItem) %></a>
                                     </asp:PlaceHolder>
                                     <YAF:LocalizedLabel ID="LocalizedLabel3" runat="server" 
                                                         LocalizedPage="POSTMESSAGE"
-                                                        LocalizedTag="EDITEDBY_MOD" />: <span class="badge badge-secondary"><%# Container.DataItemToField<bool>("IsModeratorChanged") ?  this.GetText("YES") : this.GetText("NO") %></span>
+                                                        LocalizedTag="EDITEDBY_MOD" />: <span class="badge bg-secondary"><%# Container.DataItemToField<bool>("IsModeratorChanged") ?  this.GetText("YES") : this.GetText("NO") %></span>
                                 </p>
                                 <small>
                                     <YAF:ThemeButton ID="ThemeButtonEdit" runat="server"
@@ -66,7 +72,7 @@
                                                      CommandArgument='<%# Container.DataItemToField<DateTime>("Edited") %>'
                                                      TitleLocalizedTag="RESTORE_MESSAGE" 
                                                      TextLocalizedTag="RESTORE_MESSAGE"
-                                                     Visible='<%# (this.PageContext.IsAdmin || this.PageContext.IsModeratorInAnyForum) && !Container.ItemIndex.Equals(this.RevisionsCount-1) %>'
+                                                     Visible="<%# (this.PageContext.IsAdmin || this.PageContext.IsModeratorInAnyForum) && !Container.ItemIndex.Equals(this.RevisionsCount-1) %>"
                                                      ReturnConfirmText='<%# this.GetText("MESSAGEHISTORY", "CONFIRM_RESTORE") %>'
                                                      Type="Secondary" 
                                                      Size="Small" 
@@ -116,10 +122,12 @@
             </div>
             <div class="card-body">
                 <h6 class="card-subtitle mb-2 text-muted">
-                    <YAF:LocalizedLabel ID="LocalizedLabel8" runat="server" LocalizedTag="TEXT_CHANGES" />
+                    <YAF:LocalizedLabel ID="LocalizedLabel8" runat="server" 
+                                        LocalizedTag="TEXT_CHANGES" />
                 </h6>
                 <div id="diffContent">
                     <YAF:Alert runat="server" Type="info">
+                        <YAF:Icon runat="server" IconName="info-circle" />
                         <%# this.GetText("MESSAGEHISTORY","SELECT_DIFFERENT") %>
                     </YAF:Alert>
                 </div>

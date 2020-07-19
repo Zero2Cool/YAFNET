@@ -425,9 +425,9 @@ namespace YAF.Lucene.Net.Util
         {
             if (clazz.IsArray)
             {
-                throw new System.ArgumentException("this method does not work with array classes.");
+                throw new ArgumentException("this method does not work with array classes.");
             }
-            if (clazz.GetTypeInfo().IsPrimitive)
+            if (clazz.IsPrimitive)
             {
                 return primitiveSizes[clazz];
             }
@@ -435,7 +435,7 @@ namespace YAF.Lucene.Net.Util
             long size = NUM_BYTES_OBJECT_HEADER;
 
             // Walk type hierarchy
-            for (; clazz != null; clazz = clazz.GetTypeInfo().BaseType)
+            for (; clazz != null; clazz = clazz.BaseType)
             {
                 FieldInfo[] fields = clazz.GetFields(
                     BindingFlags.Instance | 
@@ -464,7 +464,7 @@ namespace YAF.Lucene.Net.Util
             if (len > 0)
             {
                 Type arrayElementClazz = array.GetType().GetElementType();
-                if (arrayElementClazz.GetTypeInfo().IsPrimitive)
+                if (arrayElementClazz.IsPrimitive)
                 {
                     size += (long)len * primitiveSizes[arrayElementClazz];
                 }
@@ -525,7 +525,7 @@ namespace YAF.Lucene.Net.Util
                     if (len > 0)
                     {
                         Type componentClazz = obClazz.GetElementType();
-                        if (componentClazz.GetTypeInfo().IsPrimitive)
+                        if (componentClazz.IsPrimitive)
                         {
                             size += (long)len * primitiveSizes[componentClazz];
                         }
@@ -596,7 +596,7 @@ namespace YAF.Lucene.Net.Util
             ClassCache cachedInfo;
             long shallowInstanceSize = NUM_BYTES_OBJECT_HEADER;
             List<FieldInfo> referenceFields = new List<FieldInfo>(32);
-            for (Type c = clazz; c != null; c = c.GetTypeInfo().BaseType)
+            for (Type c = clazz; c != null; c = c.BaseType)
             {
                 FieldInfo[] fields = c.GetFields(
                     BindingFlags.Instance | 
@@ -610,7 +610,7 @@ namespace YAF.Lucene.Net.Util
                     {
                         shallowInstanceSize = AdjustForField(shallowInstanceSize, f);
 
-                        if (!f.FieldType.GetTypeInfo().IsPrimitive)
+                        if (!f.FieldType.IsPrimitive)
                         {
                             referenceFields.Add(f);
                         }
@@ -635,7 +635,7 @@ namespace YAF.Lucene.Net.Util
             int fsize = 0;
             
             if (!typeof(IntPtr).Equals(type) && !typeof(UIntPtr).Equals(type))
-                fsize = type.GetTypeInfo().IsPrimitive ? primitiveSizes[type] : NUM_BYTES_OBJECT_REF;
+                fsize = type.IsPrimitive ? primitiveSizes[type] : NUM_BYTES_OBJECT_REF;
 
             // LUCENENET NOTE: I dont think this will ever not be null
             //if (ObjectFieldOffsetMethod != null)
@@ -731,8 +731,8 @@ namespace YAF.Lucene.Net.Util
             [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
             public object[] Keys
             {
-                get { return keys; }
-                set { keys = value; }
+                get => keys;
+                set => keys = value;
             }
             private object[] keys;
 
@@ -933,10 +933,7 @@ namespace YAF.Lucene.Net.Util
                 Array.Clear(keys, 0, keys.Length);
             }
 
-            public int Count // LUCENENET NOTE: This was size() in Lucene.
-            {
-                get { return Assigned; }
-            }
+            public int Count => Assigned; // LUCENENET NOTE: This was size() in Lucene.
 
             //public bool IsEmpty // LUCENENET NOTE: in .NET we can just use !Any() on IEnumerable<T>
             //{
@@ -984,15 +981,9 @@ namespace YAF.Lucene.Net.Util
                     return true;
                 }
 
-                public KType Current
-                {
-                    get { return current; }
-                }
+                public KType Current => current;
 
-                object System.Collections.IEnumerator.Current
-                {
-                    get { return Current; }
-                }
+                object System.Collections.IEnumerator.Current => Current;
 
                 private object FetchNext()
                 {

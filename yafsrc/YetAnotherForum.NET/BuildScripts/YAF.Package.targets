@@ -36,11 +36,14 @@
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.blockUI.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.fileupload.comb.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.ForumExtensions.js" />
+      <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.ForumAdminExtensionsDnn.js" />
+      <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.ForumAdminExtensionsDnn.min.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.hovercard.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.selectedQuoting.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\blueimp-gallery.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\blueimp-gallery-indicator.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\bootstrap.bundle.js" />
+      <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\bootstrap.bundle.min.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\bootstrap-tagsinput.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\bootstrap-typeahead.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\bootstrap-datetimepicker.js" />
@@ -50,9 +53,11 @@
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.blueimp-gallery.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.bootstrap-touchspin.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.ForumAdminExtensions.js" />
+      <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.ForumAdminExtensionsDnn.js" />
+      <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery.ForumAdminExtensionsDnn.min.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\moment-with-locales.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\moment-with-locales.min.js" />
-      <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery-3.5.0.js" />
+      <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jquery-3.5.1.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jsdifflib.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\jsdifflib.min.js" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Scripts\ladda.js" />
@@ -97,7 +102,6 @@
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Content\jsdifflib.min.css" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Content\prism.css" />
       <DefaultExclude Include="$(MSBuildProjectDirectory)\Content\select2\select2.css" />
-      <DefaultExclude Include="$(MSBuildProjectDirectory)\Content\select2\select2-bootstrap.css" />
     </ItemGroup>
 
     <ItemGroup>
@@ -131,7 +135,7 @@
       <yafInstall-Include Include="$(MSBuildProjectDirectory)\**\*.woff2" Exclude="$(MSBuildProjectDirectory)\**\_source\**;$(MSBuildProjectDirectory)\**\obj\**;$(MSBuildProjectDirectory)\**\_ReSharper*\**;$(MSBuildProjectDirectory)\**\bin\**;$(MSBuildProjectDirectory)\**\*.zip;$(MSBuildProjectDirectory)\**\Thumbs.db;" />
       <yafInstall-Include Include="$(MSBuildProjectDirectory)\**\*.ico" Exclude="$(MSBuildProjectDirectory)\**\_source\**;$(MSBuildProjectDirectory)\**\obj\**;$(MSBuildProjectDirectory)\**\_ReSharper*\**;$(MSBuildProjectDirectory)\**\bin\**;$(MSBuildProjectDirectory)\**\*.zip;$(MSBuildProjectDirectory)\**\Thumbs.db;" />
       <yafInstall-Include Include="$(MSBuildProjectDirectory)\**\*.webmanifest" Exclude="$(MSBuildProjectDirectory)\**\_source\**;$(MSBuildProjectDirectory)\**\obj\**;$(MSBuildProjectDirectory)\**\_ReSharper*\**;$(MSBuildProjectDirectory)\**\bin\**;$(MSBuildProjectDirectory)\**\*.zip;$(MSBuildProjectDirectory)\**\Thumbs.db;" />
-      <yafInstall-Include Include="$(MSBuildProjectDirectory)\*.config" Exclude="$(MSBuildProjectDirectory)\packages.config;$(MSBuildProjectDirectory)\web.config;$(MSBuildProjectDirectory)\recommended.web.config;$(MSBuildProjectDirectory)\recommended-azure.web.config;$(MSBuildProjectDirectory)\v1.9.1.upgrade.web.config;$(MSBuildProjectDirectory)\..\.nuget\NuGet.Config" />
+      <yafInstall-Include Include="$(MSBuildProjectDirectory)\*.config" Exclude="$(MSBuildProjectDirectory)\packages.config;$(MSBuildProjectDirectory)\web.config;$(MSBuildProjectDirectory)\recommended.web.config;$(MSBuildProjectDirectory)\v1.9.1.upgrade.web.config;$(MSBuildProjectDirectory)\..\.nuget\NuGet.Config" />
       <yafInstall-Include Include="$(MSBuildProjectDirectory)\**\*.browser" />
       <yafInstall-Include Include="$(MSBuildProjectDirectory)\**\*.mdf" />
     </ItemGroup>
@@ -161,8 +165,6 @@
           DestinationFolder="$(MSBuildProjectDirectory)\Package\%(RecursiveDir)"/>
     <Copy SourceFiles="$(MSBuildProjectDirectory)\recommended.web.config" 
           DestinationFiles="$(MSBuildProjectDirectory)\Package\recommended.web.config"/>
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\recommended-azure.web.config" 
-          DestinationFiles="$(MSBuildProjectDirectory)\Package\recommended-azure.web.config"/>
     <Copy SourceFiles="$(MSBuildProjectDirectory)\robots.txt"
           DestinationFolder="$(MSBuildProjectDirectory)\Package\"/>
 
@@ -194,8 +196,6 @@
           DestinationFolder="$(MSBuildProjectDirectory)\Package\deploy\YetAnotherForum.NET\%(RecursiveDir)"/>
     <Copy SourceFiles="$(MSBuildProjectDirectory)\recommended.web.config" 
           DestinationFiles="$(MSBuildProjectDirectory)\Package\deploy\YetAnotherForum.NET\web.config"/>
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\recommended-azure.web.config" 
-          DestinationFiles="$(MSBuildProjectDirectory)\Package\deploy\YetAnotherForum.NET\recommended-azure.web.config"/>
     <Copy SourceFiles="$(MSBuildProjectDirectory)\robots.txt"
           DestinationFolder="$(MSBuildProjectDirectory)\Package\deploy\YetAnotherForum.NET\"/>
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\deploy\InstallSQL.sql" 
@@ -232,8 +232,6 @@
           DestinationFiles="$(MSBuildProjectDirectory)\Package\configs\mail.config"/>
     <Move SourceFiles="$(MSBuildProjectDirectory)\Package\recommended.web.config" 
           DestinationFiles="$(MSBuildProjectDirectory)\Package\configs\recommended.web.config"/>
-    <Move SourceFiles="$(MSBuildProjectDirectory)\Package\recommended-azure.web.config" 
-          DestinationFiles="$(MSBuildProjectDirectory)\Package\configs\recommended-azure.web.config"/>
 
     <Copy SourceFiles="$(MSBuildProjectDirectory)\v1.9.1.upgrade.web.config" 
           DestinationFiles="$(MSBuildProjectDirectory)\Package\v1.9.1.upgrade.web.config"/>

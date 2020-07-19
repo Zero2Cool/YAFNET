@@ -4,6 +4,8 @@ using YAF.Lucene.Net.Util.Fst;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Text;
 
 namespace YAF.Lucene.Net.Codecs
 {
@@ -282,19 +284,19 @@ namespace YAF.Lucene.Net.Codecs
         {
             if (minItemsInBlock <= 1)
             {
-                throw new System.ArgumentException("minItemsInBlock must be >= 2; got " + minItemsInBlock);
+                throw new ArgumentException("minItemsInBlock must be >= 2; got " + minItemsInBlock);
             }
             if (maxItemsInBlock <= 0)
             {
-                throw new System.ArgumentException("maxItemsInBlock must be >= 1; got " + maxItemsInBlock);
+                throw new ArgumentException("maxItemsInBlock must be >= 1; got " + maxItemsInBlock);
             }
             if (minItemsInBlock > maxItemsInBlock)
             {
-                throw new System.ArgumentException("maxItemsInBlock must be >= minItemsInBlock; got maxItemsInBlock=" + maxItemsInBlock + " minItemsInBlock=" + minItemsInBlock);
+                throw new ArgumentException("maxItemsInBlock must be >= minItemsInBlock; got maxItemsInBlock=" + maxItemsInBlock + " minItemsInBlock=" + minItemsInBlock);
             }
             if (2 * (minItemsInBlock - 1) > maxItemsInBlock)
             {
-                throw new System.ArgumentException("maxItemsInBlock must be at least 2*(minItemsInBlock-1); got maxItemsInBlock=" + maxItemsInBlock + " minItemsInBlock=" + minItemsInBlock);
+                throw new ArgumentException("maxItemsInBlock must be at least 2*(minItemsInBlock-1); got maxItemsInBlock=" + maxItemsInBlock + " minItemsInBlock=" + minItemsInBlock);
             }
 
             string termsFileName = IndexFileNames.SegmentFileName(state.SegmentInfo.Name, state.SegmentSuffix, TERMS_EXTENSION);
@@ -433,11 +435,54 @@ namespace YAF.Lucene.Net.Codecs
                 return "BLOCK: " + Prefix.Utf8ToString();
             }
 
+            // LUCENENET specific - to keep the Debug.Assert statement from throwing exceptions
+            // because of invalid UTF8 code in Prefix, we have a wrapper method that falls back
+            // to using PendingBlock.Prefix.ToString() if PendingBlock.ToString()
+            private string ToString(IList<PendingBlock> blocks) // For assert
+            {
+                if (blocks == null)
+                    return "null";
+
+
+                if (blocks.Count == 0)
+                    return "[]";
+
+                using (var it = blocks.GetEnumerator())
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append('[');
+                    it.MoveNext();
+                    while (true)
+                    {
+                        var e = it.Current;
+                        // There is a chance that the Prefix will contain invalid UTF8,
+                        // so we catch that and use the alternative way of displaying it
+                        try
+                        {
+                            sb.Append(e.ToString());
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            sb.Append("BLOCK: ");
+                            sb.Append(e.Prefix.ToString());
+                        }
+                        if (!it.MoveNext())
+                        {
+                            return sb.Append(']').ToString();
+                        }
+                        sb.Append(',').Append(' ');
+                    }
+                }
+            }
+
             public void CompileIndex(IList<PendingBlock> floorBlocks, RAMOutputStream scratchBytes)
             {
-                // LUCENENET TODO: floorBlocks cannot be converted using Arrays.ToString() here.
-                // It generates an IndexOutOfRangeException()
-                Debug.Assert((IsFloor && floorBlocks != null && floorBlocks.Count != 0) || (!IsFloor && floorBlocks == null), "isFloor=" + IsFloor + " floorBlocks=" + floorBlocks /*Arrays.ToString(floorBlocks)*/); 
+                // LUCENENET specific - we use a custom wrapper function to display floorBlocks, since
+                // it might contain garbage that cannot be converted into text. This is compiled out
+                // of the relese, though.
+                Debug.Assert(
+                    (IsFloor && floorBlocks != null && floorBlocks.Count != 0) || (!IsFloor && floorBlocks == null),
+                    "isFloor=" + IsFloor + " floorBlocks=" + ToString(floorBlocks));
 
                 Debug.Assert(scratchBytes.GetFilePointer() == 0);
 
@@ -1113,13 +1158,7 @@ namespace YAF.Lucene.Net.Codecs
                 this.longsSize = outerInstance.postingsWriter.SetField(fieldInfo);
             }
 
-            public override IComparer<BytesRef> Comparer
-            {
-                get
-                {
-                    return BytesRef.UTF8SortedAsUnicodeComparer;
-                }
-            }
+            public override IComparer<BytesRef> Comparer => BytesRef.UTF8SortedAsUnicodeComparer;
 
             public override PostingsConsumer StartTerm(BytesRef text)
             {
@@ -1206,7 +1245,7 @@ namespace YAF.Lucene.Net.Codecs
         {
             if (disposing)
             {
-                System.IO.IOException ioe = null;
+                IOException ioe = null;
                 try
                 {
                     long dirStart = @out.GetFilePointer();
@@ -1235,7 +1274,7 @@ namespace YAF.Lucene.Net.Codecs
                     WriteIndexTrailer(indexOut, indexDirStart);
                     CodecUtil.WriteFooter(indexOut);
                 }
-                catch (System.IO.IOException ioe2)
+                catch (IOException ioe2)
                 {
                     ioe = ioe2;
                 }

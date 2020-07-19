@@ -56,21 +56,12 @@ namespace YAF.Lucene.Net.Util.Packed
         }
 
         /// <returns> The Elias-Fano encoder that is decoded. </returns>
-        public virtual EliasFanoEncoder EliasFanoEncoder
-        {
-            get
-            {
-                return efEncoder;
-            }
-        }
+        public virtual EliasFanoEncoder EliasFanoEncoder => efEncoder;
 
         /// <summary>
         /// The number of values encoded by the encoder. </summary>
         /// <returns> The number of values encoded by the encoder. </returns>
-        public virtual long NumEncoded
-        {
-            get { return numEncoded; }
-        }
+        public virtual long NumEncoded => numEncoded;
 
         /// <summary>
         /// The current decoding index.
@@ -134,7 +125,7 @@ namespace YAF.Lucene.Net.Util.Packed
         ///  <returns> The low value for the current decoding index. </returns>
         private long CurrentLowValue()
         {
-            Debug.Assert(((efIndex >= 0) && (efIndex < numEncoded)), "efIndex " + efIndex);
+            Debug.Assert(((efIndex >= 0) && (efIndex < numEncoded)), $"efIndex {efIndex.ToString()}");
             return UnPackValue(efEncoder.lowerLongs, efEncoder.numLowBits, efIndex, efEncoder.lowerBitsMask);
         }
 

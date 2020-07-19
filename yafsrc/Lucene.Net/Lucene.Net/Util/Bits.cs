@@ -1,3 +1,5 @@
+using System;
+
 namespace YAF.Lucene.Net.Util
 {
     /*
@@ -40,8 +42,12 @@ namespace YAF.Lucene.Net.Util
 
     public static class Bits
     {
-        public static readonly IBits[] EMPTY_ARRAY = new IBits[0];
-
+        public static readonly IBits[] EMPTY_ARRAY =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<IBits>();
+#else
+            new IBits[0];
+#endif
         /// <summary>
         /// Bits impl of the specified length with all bits set.
         /// </summary>
@@ -59,10 +65,7 @@ namespace YAF.Lucene.Net.Util
                 return true;
             }
 
-            public int Length
-            {
-                get { return _len; }
-            }
+            public int Length => _len;
 
             public override int GetHashCode() // LUCENENET TODO: This wasn't in Lucene - is it needed ?
             {
@@ -87,10 +90,7 @@ namespace YAF.Lucene.Net.Util
                 return false;
             }
 
-            public int Length
-            {
-                get { return _len; }
-            }
+            public int Length => _len;
 
             public override int GetHashCode() // LUCENENET TODO: This wasn't in Lucene - is it needed ?
             {

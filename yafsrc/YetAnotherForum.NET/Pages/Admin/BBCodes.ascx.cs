@@ -45,7 +45,7 @@ namespace YAF.Pages.Admin
     #endregion
 
     /// <summary>
-    /// The Admin bbcode Page.
+    /// The Admin BBCode Page.
     /// </summary>
     public partial class BBCodes : AdminPage
     {
@@ -89,7 +89,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_BBCODE", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -97,7 +97,7 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
-        /// Bbs the code list item command.
+        /// The BBCode list item command.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
@@ -149,12 +149,12 @@ namespace YAF.Pages.Admin
 
                 var selectedList = new List<Types.Models.BBCode>();
 
-                foreach (var id in codeIDs)
+                codeIDs.ForEach(id =>
                 {
                     var found = list.First(e => e.ID == id);
 
                     selectedList.Add(found);
-                }
+                });
 
                 var element = new XElement(
                     "YafBBCodeList",

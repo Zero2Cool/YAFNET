@@ -29,9 +29,7 @@ namespace YAF.Pages.Admin
     using System;
 
     using YAF.Core.BasePages;
-    using YAF.RegisterV2;
     using YAF.Types;
-    using YAF.Types.Constants;
     using YAF.Types.Interfaces;
     using YAF.Utils;
     using YAF.Web.Extensions;
@@ -43,40 +41,6 @@ namespace YAF.Pages.Admin
     /// </summary>
     public partial class Version : AdminPage
     {
-        #region Fields
-
-        /// <summary>
-        ///     The _last version.
-        /// </summary>
-        private byte[] lastVersion;
-
-        /// <summary>
-        ///     The _last version date.
-        /// </summary>
-        private DateTime lastVersionDate;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the last version.
-        /// </summary>
-        /// <value>
-        /// The last version.
-        /// </value>
-        protected string LastVersion => BoardInfo.AppVersionNameFromCode(this.lastVersion);
-
-        /// <summary>
-        /// Gets the last version date.
-        /// </summary>
-        /// <value>
-        /// The last version date.
-        /// </value>
-        protected string LastVersionDate => this.Get<IDateTime>().FormatDateShort(this.lastVersionDate);
-
-        #endregion
-
         #region Methods
 
         /// <summary>
@@ -90,19 +54,20 @@ namespace YAF.Pages.Admin
             {
                 try
                 {
-                    using (var reg = new RegisterV2())
-                    {
-                        this.lastVersion = reg.LatestVersion();
-                        this.lastVersionDate = reg.LatestVersionDate();
-                    }
+                    var version = this.Get<IDataCache>().GetOrSet(
+                          "LatestVersion",
+                          () => this.Get<ILatestInformation>().GetLatestVersion(),
+                          TimeSpan.FromDays(1));
 
-                    this.LatestVersion.Text = this.GetTextFormatted(
-                        "LATEST_VERSION",
-                        this.LastVersion,
-                        this.LastVersionDate);
+                    string lastVersion = version.Version;
+                    string lastVersionDate = this.Get<IDateTime>().FormatDateShort(version.VersionDate);
 
-                    this.UpgradeVersionHolder.Visible = BitConverter.ToInt64(this.lastVersion, 0)
-                                                        > BitConverter.ToInt64(BoardInfo.AppVersionCode, 0);
+                    this.LatestVersion.Text = this.GetTextFormatted("LATEST_VERSION", lastVersion, lastVersionDate);
+
+                    this.UpgradeVersionHolder.Visible = version.VersionDate > BoardInfo.AppVersionDate;
+
+                    this.Download.NavigateUrl = version.UpgradeUrl;
+                    this.Download.DataBind();
                 }
                 catch (Exception)
                 {
@@ -124,9 +89,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_VERSION", "TITLE"), string.Empty);
 
             this.Page.Header.Title = this.GetText("ADMIN_VERSION", "TITLE");

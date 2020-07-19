@@ -36,21 +36,8 @@ namespace YAF.Types.Models
     /// </summary>
     [Serializable]
     [UniqueConstraint(nameof(CategoryID), nameof(Name))]
-    public partial class Forum : IEntity, IHaveID
+    public class Forum : IEntity, IHaveID
     {
-        /// <summary>
-        /// The on created.
-        /// </summary>
-        partial void OnCreated();
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Forum"/> class.
-        /// </summary>
-        public Forum()
-        {
-            this.OnCreated();
-        }
-
         #region Properties
 
         /// <summary>
@@ -175,12 +162,6 @@ namespace YAF.Types.Models
         /// </summary>
         [StringLength(50)]
         public string ThemeURL { get; set; }
-
-        /// <summary>
-        /// Gets or sets the poll group id.
-        /// </summary>
-        [References(typeof(PollGroupCluster))]
-        public int? PollGroupID { get; set; }
 
         /// <summary>
         /// Gets or sets the image url.

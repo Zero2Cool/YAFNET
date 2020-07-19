@@ -24,20 +24,21 @@
     <div class="col">
         <div class="card mb-3">
             <div class="card-header">
-                <div class="row justify-content-between">
-                    <div class="col-md-3">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-auto">
                         <YAF:IconHeader runat="server"
                                         IconName="users"></YAF:IconHeader>
                     </div>
-                    <div class="col-md-3 mt-1">
+                    <div class="col-auto">
                         <div class="btn-toolbar" role="toolbar">
-                            <div class="btn-group mr-2" role="group" aria-label="sort">
+                            <div class="btn-group btn-group-sm mr-2" role="group" aria-label="sort">
                                 <YAF:ThemeButton ID="Sort" runat="server"
-                                     CssClass="dropdown-toggle"
-                                     Type="Secondary"
-                                     DataToggle="dropdown"
-                                     TextLocalizedTag="SORT_BY"
-                                     Icon="sort" />
+                                                 CssClass="dropdown-toggle"
+                                                 Size="Small"
+                                                 Type="Secondary"
+                                                 DataToggle="dropdown"
+                                                 TextLocalizedTag="SORT_BY"
+                                                 Icon="sort" />
                     <div class="dropdown-menu">
                         <YAF:ThemeButton ID="SortUserNameAsc" runat="server"
                                          CssClass="dropdown-item"
@@ -99,6 +100,7 @@
                         <YAF:ThemeButton runat="server"
                                          CssClass="dropdown-toggle"
                                          DataToggle="dropdown"
+                                         Size="Small"
                                          Type="Secondary"
                                          Icon="filter"
                                          TextLocalizedTag="FILTER_DROPDOWN"
@@ -106,8 +108,8 @@
                         
                         <div class="dropdown-menu">
                             <div class="px-3 py-1" style="min-width:max-content">
-                                <div class="form-row">
-                                    <div class="form-group col-md-6">
+                                <div class="row">
+                                    <div class="mb-3 col-md-6">
                                         <asp:Label runat="server" AssociatedControlID="Group">
                                             <YAF:LocalizedLabel ID="SearchRolesLocalizedLabel" runat="server" 
                                                                 LocalizedTag="Search_Role" />
@@ -116,7 +118,7 @@
                                                           CssClass="select2-select">
                                         </asp:DropDownList>
                                     </div>
-                                    <div class="form-group col-md-6">
+                                    <div class="mb-3 col-md-6">
                                         <asp:Label runat="server" AssociatedControlID="Ranks">
                                             <YAF:LocalizedLabel ID="SearchRankLocalizedLabel" runat="server" 
                                                                 LocalizedTag="Search_Rank" />
@@ -126,8 +128,8 @@
                                         </asp:DropDownList>
                                     </div>
                                 </div>
-                                <div class="form-row">
-                                    <div class="form-group col-md-6">
+                                <div class="row">
+                                    <div class="mb-3 col-md-6">
                                         <asp:Label runat="server" AssociatedControlID="NumPostDDL">
                                             <YAF:LocalizedLabel ID="NumPostsLabel" runat="server" 
                                                                 LocalizedTag="NUMPOSTS" />
@@ -136,14 +138,14 @@
                                                           CssClass="select2-select">
                                         </asp:DropDownList>
                                     </div>
-                                    <div class="form-group col-md-6">
+                                    <div class="mb-3 col-md-6">
                                         <asp:Label runat="server" AssociatedControlID="NumPostsTB">&nbsp;</asp:Label>
                                         <asp:TextBox ID="NumPostsTB" runat="server"
                                                      CssClass="form-control"
                                                      TextMode="Number"></asp:TextBox>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="mb-3">
                                     <asp:Label runat="server" AssociatedControlID="UserSearchName">
                                         <YAF:LocalizedLabel ID="SearchMemberLocalizedLabel" runat="server" 
                                                             LocalizedTag="Search_Member" />
@@ -151,14 +153,14 @@
                                     <asp:TextBox ID="UserSearchName" runat="server" 
                                                  CssClass="form-control"></asp:TextBox>
                                 </div>
-                                <div class="form-group">
+                                <div class="mb-3">
                                     <YAF:ThemeButton ID="SearchByUserName" runat="server"
                                                      OnClick="Search_Click"
+                                                     CssClass="mr-2"
                                                      TextLocalizedTag="BTNSEARCH"
                                                      Type="Primary"
                                                      Icon="search">
                                     </YAF:ThemeButton>
-                                    &nbsp;
                                     <YAF:ThemeButton ID="ResetUserSearch" runat="server"
                                                      OnClick="Reset_Click"
                                                      TextLocalizedTag="CLEAR"
@@ -191,6 +193,7 @@
                                              title="<%# this.HtmlEncode(this.Eval(this.Get<BoardSettings>().EnableDisplayName ? "DisplayName" : "Name").ToString()) %>" 
                                              class="rounded img-fluid" />
                                         <YAF:UserLink ID="UserProfileLink" runat="server" 
+                                                      Suspended='<%# this.Eval("Suspended").ToType<DateTime?>() %>'
                                                       IsGuest="False" 
                                                       ReplaceName='<%# this.Eval(this.Get<BoardSettings>().EnableDisplayName ? "DisplayName" : "Name").ToString() %>' 
                                                       UserID='<%# this.Eval("UserID").ToType<int>() %>'

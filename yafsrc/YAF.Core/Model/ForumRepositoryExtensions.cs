@@ -232,17 +232,17 @@ namespace YAF.Core.Model
                 .Where<Forum, Category, ActiveAccess>(
                     (forum, category, active) =>
                         active.UserID == userId && category.BoardID == boardId && active.ReadAccess)
-                .Select<Forum, Category, Active>(
+                .OrderBy<Category>(c => c.SortOrder).ThenBy<Forum>(f => f.SortOrder).ThenBy<Category>(c => c.ID)
+                .ThenBy<Forum>(f => f.ID).Select<Forum, Category, Active>(
                     (forum, category, active) => new
-                                                     {
-                                                         CategoryID = category.ID,
-                                                         Category = category.Name,
-                                                         ForumID = forum.ID,
-                                                         Forum = forum.Name,
-                                                         Indent = 0,
-                                                         forum.ParentID,
-                                                         forum.PollGroupID
-                                                     });
+                    {
+                        CategoryID = category.ID,
+                        Category = category.Name,
+                        ForumID = forum.ID,
+                        Forum = forum.Name,
+                        Indent = 0,
+                        forum.ParentID
+                    });
 
             return repository.DbAccess.Execute(
                 db => db.Connection.SelectMulti<Forum, Category, ActiveAccess>(expression));
@@ -346,9 +346,9 @@ namespace YAF.Core.Model
             [NotNull] int userID,
             bool emptyFirstRow)
         {
-            var dataTable = repository.ListAll(boardID, userID);
+            var list = repository.ListAll(boardID, userID);
 
-            return repository.SortList(dataTable, 0, 0, 0, emptyFirstRow);
+            return repository.SortList(list, 0, 0, 0, emptyFirstRow);
         }
 
         /// <summary>
@@ -445,31 +445,6 @@ namespace YAF.Core.Model
 
                 return repository.DbAccess.Execute(db => db.Connection.Select(expression));
             }
-        }
-
-        /// <summary>
-        /// The simple list as data table.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="startId">
-        /// The start id.
-        /// </param>
-        /// <param name="limit">
-        /// The limit.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable SimpleListAsDataTable(
-            this IRepository<Forum> repository,
-            [CanBeNull] int startId = 0,
-            [CanBeNull] int limit = 500)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.DbFunction.GetData.forum_simplelist(StartID: startId, Limit: limit);
         }
 
         /// <summary>
@@ -692,6 +667,7 @@ namespace YAF.Core.Model
 
             listDestination.Columns.Add("ForumID", typeof(int));
             listDestination.Columns.Add("Title", typeof(string));
+            listDestination.Columns.Add("Category", typeof(string));
             listDestination.Columns.Add("Icon", typeof(string));
 
             if (emptyFirstRow)
@@ -699,6 +675,7 @@ namespace YAF.Core.Model
                 var blankRow = listDestination.NewRow();
                 blankRow["ForumID"] = 0;
                 blankRow["Title"] = BoardContext.Current.Get<ILocalization>().GetText("NONE");
+                blankRow["Category"] = string.Empty;
                 blankRow["Icon"] = string.Empty;
                 listDestination.Rows.Add(blankRow);
             }
@@ -740,10 +717,7 @@ namespace YAF.Core.Model
             foreach (var (item1, item2, _) in listSource)
             {
                 // see if this is a root-forum
-                if (!item1.ParentID.HasValue)
-                {
-                    item1.ParentID = 0;
-                }
+                item1.ParentID ??= 0;
 
                 if (item1.ParentID != parentID)
                 {
@@ -758,6 +732,7 @@ namespace YAF.Core.Model
                     newRow = listDestination.NewRow();
                     newRow["ForumID"] = -categoryID;
                     newRow["Title"] = $"{item2.Name}";
+                    newRow["Category"] = $"{item2.Name}";
                     newRow["Icon"] = "folder";
                     listDestination.Rows.Add(newRow);
                 }
@@ -766,14 +741,15 @@ namespace YAF.Core.Model
 
                 for (var j = 0; j < currentIndent; j++)
                 {
-                    indent += "--";
+                    indent += "-";
                 }
 
                 // import the row into the destination
                 newRow = listDestination.NewRow();
 
                 newRow["ForumID"] = item1.ID;
-                newRow["Title"] = $" -{indent} {item1.Name}";
+                newRow["Title"] = $" {indent} {item1.Name}";
+                newRow["Category"] = $"{item2.Name}";
                 newRow["Icon"] = "comments";
 
                 listDestination.Rows.Add(newRow);
@@ -812,10 +788,7 @@ namespace YAF.Core.Model
                 forum =>
                     {
                         // see if this is a root-forum
-                        if (!forum.ParentID.HasValue)
-                        {
-                            forum.ParentID = 0;
-                        }
+                        forum.ParentID ??= 0;
 
                         if (forum.ParentID != parentID)
                         {
@@ -867,10 +840,7 @@ namespace YAF.Core.Model
             listSource.ForEach(
                 row =>
                     {
-                        if (!row.ParentID.HasValue)
-                        {
-                            row.ParentID = 0;
-                        }
+                        row.ParentID ??= 0;
 
                         if (row.ParentID != parentId)
                         {

@@ -33,13 +33,40 @@ namespace YAF.Pages
         protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel2;
 
         /// <summary>
-        /// MessageList control.
+        /// MessagePreview control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater MessageList;
+        protected global::YAF.Web.Controls.MessagePostData MessagePreview;
+
+        /// <summary>
+        /// PostedByLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.LocalizedLabel PostedByLabel;
+
+        /// <summary>
+        /// UserLink1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.UserLink UserLink1;
+
+        /// <summary>
+        /// Posted control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.DisplayDateTime Posted;
 
         /// <summary>
         /// EnterReportTextLabel control.
@@ -60,15 +87,6 @@ namespace YAF.Pages
         protected global::System.Web.UI.WebControls.PlaceHolder EditorLine;
 
         /// <summary>
-        /// IncorrectReportLabel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label IncorrectReportLabel;
-
-        /// <summary>
         /// Report control.
         /// </summary>
         /// <remarks>
@@ -76,15 +94,6 @@ namespace YAF.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox Report;
-
-        /// <summary>
-        /// LocalizedLabel4 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel4;
 
         /// <summary>
         /// LocalizedLblMaxNumberOfPost control.

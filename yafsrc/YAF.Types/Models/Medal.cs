@@ -35,20 +35,8 @@ namespace YAF.Types.Models
     ///     A class which represents the Medal table.
     /// </summary>
     [Serializable]
-    public partial class Medal : IEntity, IHaveBoardID, IHaveID
+    public class Medal : IEntity, IHaveBoardID, IHaveID
     {
-        #region Constructors and Destructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Medal"/> class.
-        /// </summary>
-        public Medal()
-        {
-            this.OnCreated();
-        }
-
-        #endregion
-
         #region Public Properties
 
         [Required]
@@ -86,16 +74,6 @@ namespace YAF.Types.Models
         public string SmallRibbonURL { get; set; }
 
         [Required]
-        public short SmallMedalWidth { get; set; }
-
-        [Required]
-        public short SmallMedalHeight { get; set; }
-
-        public short? SmallRibbonWidth { get; set; }
-
-        public short? SmallRibbonHeight { get; set; }
-
-        [Required]
         [Default(255)]
         public byte SortOrder { get; set; }
 
@@ -110,15 +88,6 @@ namespace YAF.Types.Models
 
             set => this.Flags = value.BitValue;
         }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The on created.
-        /// </summary>
-        partial void OnCreated();
 
         #endregion
     }

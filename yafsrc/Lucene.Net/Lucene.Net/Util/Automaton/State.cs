@@ -43,16 +43,23 @@ namespace YAF.Lucene.Net.Util.Automaton
     /// </summary>
     public class State : IComparable<State>, IEquatable<State> // LUCENENET specific: Implemented IEquatable, since this class is used in hashtables
     {
+        // LUCENENET specific - optimized empty array creation
+        private static readonly Transition[] EMPTY_TRANSITIONS =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<Transition>();
+#else
+            new Transition[0];
+#endif
+
         internal bool accept;
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        public Transition[] TransitionsArray
-        {
-            get { return transitionsArray; }
-            // LUCENENET NOTE: Setter removed because it is apparently not in use outside of this class
-        }
-        private Transition[] transitionsArray;
-        internal int numTransitions; // LUCENENET NOTE: Made internal because we already have a public property for access
+        public Transition[] TransitionsArray => transitionsArray;
+
+        // LUCENENET NOTE: Setter removed because it is apparently not in use outside of this class
+        private Transition[] transitionsArray = EMPTY_TRANSITIONS;
+
+        internal int numTransitions = 0;// LUCENENET NOTE: Made internal because we already have a public property for access
 
         internal int number;
 
@@ -64,7 +71,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// </summary>
         public State()
         {
-            ResetTransitions();
+            //ResetTransitions(); // LUCENENET: Let class initializer set these
             id = next_id++;
         }
 
@@ -73,7 +80,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// </summary>
         internal void ResetTransitions()
         {
-            transitionsArray = new Transition[0];
+            transitionsArray = EMPTY_TRANSITIONS;
             numTransitions = 0;
         }
 
@@ -145,10 +152,7 @@ namespace YAF.Lucene.Net.Util.Automaton
             return new TransitionsEnumerable(this);
         }
 
-        public virtual int NumTransitions
-        {
-            get { return numTransitions; }
-        }
+        public virtual int NumTransitions => numTransitions;
 
         public virtual void SetTransitions(Transition[] transitions)
         {
@@ -164,9 +168,8 @@ namespace YAF.Lucene.Net.Util.Automaton
         {
             if (numTransitions == transitionsArray.Length)
             {
-                Transition[] newArray = new Transition[ArrayUtil.Oversize(1 + numTransitions, RamUsageEstimator.NUM_BYTES_OBJECT_REF)];
-                Array.Copy(transitionsArray, 0, newArray, 0, numTransitions);
-                transitionsArray = newArray;
+                // LUCENENET: Resize rather than copy
+                Array.Resize(ref transitionsArray, ArrayUtil.Oversize(1 + numTransitions, RamUsageEstimator.NUM_BYTES_OBJECT_REF));
             }
             transitionsArray[numTransitions++] = t;
         }
@@ -242,9 +245,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         {
             if (numTransitions < transitionsArray.Length)
             {
-                Transition[] newArray = new Transition[numTransitions];
-                Array.Copy(transitionsArray, 0, newArray, 0, numTransitions);
-                transitionsArray = newArray;
+                Array.Resize(ref transitionsArray, numTransitions); // LUCENENET: Resize rather than copy
             }
         }
 

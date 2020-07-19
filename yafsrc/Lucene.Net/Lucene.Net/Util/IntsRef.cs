@@ -45,7 +45,12 @@ namespace YAF.Lucene.Net.Util
         /// <para/>
         /// NOTE: This was EMPTY_INTS in Lucene
         /// </summary>
-        public static readonly int[] EMPTY_INT32S = new int[0];
+        public static readonly int[] EMPTY_INT32S =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<int>();
+#else
+            new int[0];
+#endif
 
         /// <summary>
         /// The contents of the <see cref="Int32sRef"/>. Should never be <c>null</c>. 
@@ -56,7 +61,7 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public int[] Int32s // LUCENENET TODO: API - change to indexer
         {
-            get { return ints; }
+            get => ints;
             set
             {
                 if (value == null)

@@ -32,7 +32,6 @@ namespace YAF.Core.Services
     using System.Web;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
@@ -164,13 +163,13 @@ namespace YAF.Core.Services
 
             if (detectedHtmlTag.IsSet() && detectedHtmlTag != "ALL")
             {
-                return BoardContext.Current.Get<ILocalization>().GetTextFormatted(
+                return this.Get<ILocalization>().GetTextFormatted(
                     "HTMLTAG_WRONG",
                     HttpUtility.HtmlEncode(detectedHtmlTag));
             }
 
             return detectedHtmlTag == "ALL"
-                       ? BoardContext.Current.Get<ILocalization>().GetText("HTMLTAG_FORBIDDEN")
+                       ? this.Get<ILocalization>().GetText("HTMLTAG_FORBIDDEN")
                        : string.Empty;
         }
 
@@ -561,17 +560,14 @@ namespace YAF.Core.Services
             CodeContracts.VerifyNotNull(postfix, "postfix");
 
             wordList.Where(w => w.Length > 3).ForEach(
-                word =>
-                    {
-                        MatchAndPerformAction(
-                            $"({word.ToLower().ToRegExString()})",
-                            message,
-                            (inner, index, length) =>
-                                {
-                                    message = message.Insert(index + length, postfix);
-                                    message = message.Insert(index, prefix);
-                                });
-                    });
+                word => MatchAndPerformAction(
+                    $"({word.ToLower().ToRegExString()})",
+                    message,
+                    (inner, index, length) =>
+                        {
+                            message = message.Insert(index + length, postfix);
+                            message = message.Insert(index, prefix);
+                        }));
 
             return message;
         }

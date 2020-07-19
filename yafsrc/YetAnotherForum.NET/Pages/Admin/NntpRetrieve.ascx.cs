@@ -27,6 +27,7 @@ namespace YAF.Pages.Admin
     #region Using
 
     using System;
+    using System.Linq;
 
     using YAF.Core.BasePages;
     using YAF.Core.Model;
@@ -34,8 +35,6 @@ namespace YAF.Pages.Admin
     using YAF.Types.Constants;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Types.Objects;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -48,18 +47,18 @@ namespace YAF.Pages.Admin
         #region Methods
 
         /// <summary>
-        /// The last message no.
+        /// Gets the last message number
         /// </summary>
-        /// <param name="_o">
-        /// The _o.
+        /// <param name="forum">
+        /// The forum.
         /// </param>
         /// <returns>
         /// The last message no.
         /// </returns>
-        protected string LastMessageNo([NotNull] object _o)
+        protected string LastMessageNo([NotNull] object forum)
         {
-            var row = (TypedNntpForum)_o;
-            return $"{row.LastMessageNo:N0}";
+            var row = (Tuple<NntpForum, NntpServer, Forum>)forum;
+            return $"{row.Item1.LastMessageNo:N0}";
         }
 
         /// <summary>
@@ -83,9 +82,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_NNTPRETRIEVE", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -125,14 +122,15 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void BindData()
         {
-            this.List.DataSource = this.GetRepository<NntpForum>()
-                .NntpForumList(this.PageContext.PageBoardID, 10, null, true);
+            this.List.DataSource = this.GetRepository<NntpForum>().NntpForumList(this.PageContext.PageBoardID, true)
+                .Where(n => (n.Item1.LastUpdate - DateTime.UtcNow).Minutes > 10);
 
             this.DataBind();
 
             if (this.List.Items.Count == 0)
             {
-                this.Retrieve.Visible = false;
+                this.RetrievePanel.Visible = false;
+                this.Footer.Visible = false;
             }
         }
 

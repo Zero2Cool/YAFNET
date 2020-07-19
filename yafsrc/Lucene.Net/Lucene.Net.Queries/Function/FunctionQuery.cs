@@ -3,6 +3,7 @@ using YAF.Lucene.Net.Search;
 using YAF.Lucene.Net.Util;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace YAF.Lucene.Net.Queries.Function
 {
@@ -40,13 +41,7 @@ namespace YAF.Lucene.Net.Queries.Function
         }
 
         /// <returns> The associated <see cref="Function.ValueSource"/> </returns>
-        public virtual ValueSource ValueSource
-        {
-            get
-            {
-                return func;
-            }
-        }
+        public virtual ValueSource ValueSource => func;
 
         public override Query Rewrite(IndexReader reader)
         {
@@ -74,13 +69,7 @@ namespace YAF.Lucene.Net.Queries.Function
                 outerInstance.func.CreateWeight(m_context, searcher);
             }
 
-            public override Query Query
-            {
-                get
-                {
-                    return outerInstance;
-                }
-            }
+            public override Query Query => outerInstance;
 
             public override float GetValueForNormalization()
             {
@@ -117,7 +106,7 @@ namespace YAF.Lucene.Net.Queries.Function
             private readonly FunctionValues vals;
             private readonly IBits acceptDocs;
 
-            /// <exception cref="System.IO.IOException"/>
+            /// <exception cref="IOException"/>
             public AllScorer(FunctionQuery outerInstance, AtomicReaderContext context, IBits acceptDocs, FunctionWeight w, float qWeight)
                 : base(w)
             {
@@ -130,10 +119,7 @@ namespace YAF.Lucene.Net.Queries.Function
                 vals = outerInstance.func.GetValues(weight.m_context, context);
             }
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             // instead of matching all docs, we could also embed a query.
             // the score could either ignore the subscore, or boost it.
@@ -178,10 +164,7 @@ namespace YAF.Lucene.Net.Queries.Function
                 return maxDoc;
             }
 
-            public override int Freq
-            {
-                get { return 1; }
-            }
+            public override int Freq => 1;
 
             public virtual Explanation Explain(int d)
             {

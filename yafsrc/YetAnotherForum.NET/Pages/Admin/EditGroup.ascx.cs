@@ -29,13 +29,13 @@ namespace YAF.Pages.Admin
     using System.Collections.Generic;
     using System.Linq;
     using System.Web;
-    using System.Web.Security;
     using System.Web.UI.WebControls;
 
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -44,6 +44,8 @@ namespace YAF.Pages.Admin
     using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Web.Extensions;
+
+    using Constants = YAF.Types.Constants.Constants;
 
     #endregion
 
@@ -107,9 +109,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // admin index
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(
                 this.GetText("ADMIN_GROUPS", "TITLE"),
@@ -129,6 +129,10 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.Save.ClientID));
+
             // this needs to be done just once, not during post-backs
             if (this.IsPostBack)
             {
@@ -295,30 +299,30 @@ namespace YAF.Pages.Admin
             this.GetRepository<ActiveAccess>().DeleteAll();
 
             // see if need to rename an existing role...
-            if (oldRoleName.IsSet() && roleName != oldRoleName && RoleMembershipHelper.RoleExists(oldRoleName)
-                && !RoleMembershipHelper.RoleExists(roleName) && !this.IsGuestX.Checked)
+            if (oldRoleName.IsSet() && roleName != oldRoleName && AspNetRolesHelper.RoleExists(oldRoleName)
+                && !AspNetRolesHelper.RoleExists(roleName) && !this.IsGuestX.Checked)
             {
                 // transfer users in addition to changing the name of the role...
-                var users = this.Get<RoleProvider>().GetUsersInRole(oldRoleName);
+                var users = AspNetRolesHelper.GetUsersInRole(oldRoleName);
 
                 // delete the old role...
-                RoleMembershipHelper.DeleteRole(oldRoleName, false);
+                AspNetRolesHelper.DeleteRole(oldRoleName);
 
                 // create new role...
-                RoleMembershipHelper.CreateRole(roleName);
+                AspNetRolesHelper.CreateRole(roleName);
 
                 if (users.Any())
                 {
                     // put users into new role...
-                    this.Get<RoleProvider>().AddUsersToRoles(users, new[] { roleName });
+                    users.ForEach(user => AspNetRolesHelper.AddUserToRole(user, roleName));
                 }
             }
-            else if (!RoleMembershipHelper.RoleExists(roleName) && !this.IsGuestX.Checked)
+            else if (!AspNetRolesHelper.RoleExists(roleName) && !this.IsGuestX.Checked)
             {
                 // if role doesn't exist in provider's data source, create it
 
                 // simply create it
-                RoleMembershipHelper.CreateRole(roleName);
+                AspNetRolesHelper.CreateRole(roleName);
             }
 
             // Access masks for a newly created or an existing role

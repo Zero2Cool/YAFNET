@@ -105,7 +105,12 @@ namespace YAF.Lucene.Net.Util.Fst
         /// <seealso cref= #shouldExpand(UnCompiledNode) </seealso>
         internal const int FIXED_ARRAY_NUM_ARCS_DEEP = 10;*/
 
-        private int[] bytesPerArc = new int[0];
+        private int[] bytesPerArc =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<int>();
+#else
+            new int[0];
+#endif
 
         /*// Increment version to change it
         private const string FILE_FORMAT_NAME = "FST";
@@ -241,7 +246,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
             if (maxBlockBits < 1 || maxBlockBits > 30)
             {
-                throw new System.ArgumentException("maxBlockBits should be 1 .. 30; got " + maxBlockBits);
+                throw new ArgumentException("maxBlockBits should be 1 .. 30; got " + maxBlockBits);
             }
 
             // NOTE: only reads most recent format; we don't have
@@ -332,13 +337,7 @@ namespace YAF.Lucene.Net.Util.Fst
             */
         }
 
-        public FST.INPUT_TYPE InputType
-        {
-            get
-            {
-                return inputType;
-            }
-        }
+        public FST.INPUT_TYPE InputType => inputType;
 
         /// <summary>
         /// Returns bytes used to represent the FST </summary>
@@ -452,12 +451,12 @@ namespace YAF.Lucene.Net.Util.Fst
                     // LUCENENET NOTE: In .NET, IEnumerable will not equal another identical IEnumerable
                     // because it checks for reference equality, not that the list contents
                     // are the same. StructuralEqualityComparer.Default.Equals() will make that check.
-                    Debug.Assert(typeof(T).GetTypeInfo().IsValueType 
+                    Debug.Assert(typeof(T).IsValueType 
                         ? JCG.EqualityComparer<T>.Default.Equals(root.NextFinalOutput, asserting.NextFinalOutput)
                         : StructuralEqualityComparer.Default.Equals(root.NextFinalOutput, asserting.NextFinalOutput));
                     Debug.Assert(root.Node == asserting.Node);
                     Debug.Assert(root.NumArcs == asserting.NumArcs);
-                    Debug.Assert(typeof(T).GetTypeInfo().IsValueType
+                    Debug.Assert(typeof(T).IsValueType
                         ? JCG.EqualityComparer<T>.Default.Equals(root.Output, asserting.Output)
                         : StructuralEqualityComparer.Default.Equals(root.Output, asserting.Output));
                     Debug.Assert(root.PosArcsStart == asserting.PosArcsStart);
@@ -473,10 +472,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
         public T EmptyOutput
         {
-            get
-            {
-                return emptyOutput;
-            }
+            get => emptyOutput;
             set
             {
                 if (emptyOutput != null)
@@ -1096,7 +1092,7 @@ namespace YAF.Lucene.Net.Util.Fst
                 // this was a fake inserted "final" arc
                 if (arc.NextArc <= 0)
                 {
-                    throw new System.ArgumentException("cannot readNextArc when arc.isLast()=true");
+                    throw new ArgumentException("cannot readNextArc when arc.isLast()=true");
                 }
                 return ReadFirstRealTargetArc(arc.NextArc, arc, @in);
             }
@@ -1451,30 +1447,13 @@ namespace YAF.Lucene.Net.Util.Fst
             }
         }
 
-        public long NodeCount
-        {
-            get
-            {
-                // 1+ in order to count the -1 implicit final node
-                return 1 + nodeCount;
-            }
-        }
+        public long NodeCount =>
+            // 1+ in order to count the -1 implicit final node
+            1 + nodeCount;
 
-        public long ArcCount
-        {
-            get
-            {
-                return arcCount;
-            }
-        }
+        public long ArcCount => arcCount;
 
-        public long ArcWithOutputCount
-        {
-            get
-            {
-                return arcWithOutputCount;
-            }
-        }
+        public long ArcWithOutputCount => arcWithOutputCount;
 
         /// <summary>
         /// Nodes will be expanded if their depth (distance from the root node) is
@@ -1691,7 +1670,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
             if (nodeAddress == null)
             {
-                throw new System.ArgumentException("this FST was not built with willPackFST=true");
+                throw new ArgumentException("this FST was not built with willPackFST=true");
             }
 
             FST.Arc<T> arc = new FST.Arc<T>();
@@ -2305,15 +2284,9 @@ namespace YAF.Lucene.Net.Util.Fst
                 return FST<T>.Flag(Flags, flag);
             }
 
-            public virtual bool IsLast
-            {
-                get { return Flag(BIT_LAST_ARC); }
-            }
+            public virtual bool IsLast => Flag(BIT_LAST_ARC);
 
-            public virtual bool IsFinal
-            {
-                get { return Flag(BIT_FINAL_ARC); }
-            }
+            public virtual bool IsFinal => Flag(BIT_FINAL_ARC);
 
             public override string ToString()
             {

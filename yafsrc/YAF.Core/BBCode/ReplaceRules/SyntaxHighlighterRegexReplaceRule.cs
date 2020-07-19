@@ -58,7 +58,7 @@ namespace YAF.Core.BBCode.ReplaceRules
         public SyntaxHighlighterRegexReplaceRule(bool isEditMode, Regex regExSearch, string regExReplace)
             : base(regExSearch, regExReplace)
         {
-            this.isEditMode = isEditMode;
+            this.IsEditMode = isEditMode;
             this.syntaxHighlighter.ReplaceEnter = true;
             this.RuleRank = 1;
         }
@@ -66,9 +66,9 @@ namespace YAF.Core.BBCode.ReplaceRules
         #endregion
 
         /// <summary>
-        /// Indicates if the formatting is for the Editor.
+        /// Gets a value indicating whether the formatting is for the Editor.
         /// </summary>
-        private bool isEditMode { get; set; }
+        private bool IsEditMode { get; }
 
         #region Public Methods
 
@@ -88,17 +88,15 @@ namespace YAF.Core.BBCode.ReplaceRules
             while (m.Success)
             {
                 var inner = this.syntaxHighlighter.ColorText(
-                    this.GetInnerValue(m.Groups["inner"].Value), m.Groups["language"].Value, this.isEditMode);
+                    this.GetInnerValue(m.Groups["inner"].Value), m.Groups["language"].Value, this.IsEditMode);
 
                 var replaceItem = this.RegExReplace.Replace("${inner}", inner);
 
                 // pulls the html's into the replacement collection before it's inserted back into the main text
                 var replaceIndex = replacement.Add(replaceItem);
 
-                text = string.Format("{0}{1}{2}",
-                    text.Substring(0, m.Groups[0].Index),
-                    replacement.Get(replaceIndex),
-                    text.Substring(m.Groups[0].Index + m.Groups[0].Length));
+                text =
+                    $"{text.Substring(0, m.Groups[0].Index)}{replacement.Get(replaceIndex)}{text.Substring(m.Groups[0].Index + m.Groups[0].Length)}";
 
                 m = this.RegExSearch.Match(text);
             }

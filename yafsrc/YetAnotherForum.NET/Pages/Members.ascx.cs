@@ -33,7 +33,6 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
@@ -136,9 +135,6 @@ namespace YAF.Pages
         /// <param name="literals">
         /// The literals.
         /// </param>
-        /// <param name="lastUserId">
-        /// The last User Id.
-        /// </param>
         /// <param name="specialSymbol">
         /// The special Symbol.
         /// </param>
@@ -148,7 +144,7 @@ namespace YAF.Pages
         /// <returns>
         /// The Members List
         /// </returns>
-        protected DataTable GetUserList(string literals, int lastUserId, bool specialSymbol, out int totalCount)
+        protected DataTable GetUserList(string literals, bool specialSymbol, out int totalCount)
         {
             this.userListDataTable = this.GetRepository<User>().ListMembersAsDataTable(
                 this.PageContext.PageBoardID,
@@ -157,7 +153,6 @@ namespace YAF.Pages
                 this.Group.SelectedIndex <= 0 ? null : this.Group.SelectedValue,
                 this.Ranks.SelectedIndex <= 0 ? null : this.Ranks.SelectedValue,
                 this.Get<BoardSettings>().UseStyledNicks,
-                lastUserId,
                 literals,
                 specialSymbol,
                 specialSymbol,
@@ -196,8 +191,6 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void Page_Load(object sender, EventArgs e)
         {
-            //this.Page.Form.DefaultButton = this.SearchByUserName.UniqueID;
-
             this.UserSearchName.Focus();
 
             if (this.IsPostBack)
@@ -469,23 +462,23 @@ namespace YAF.Pages
             // get the user list...
             var selectedLetter = this.UserSearchName.Text.IsSet() ? this.UserSearchName.Text.Trim() : selectedCharLetter.ToString();
 
-            if (this.NumPostsTB.Text.Trim().IsSet() &&
-                (!int.TryParse(this.NumPostsTB.Text.Trim(), out var numpostsTb) || numpostsTb < 0 || numpostsTb > int.MaxValue))
-            {
-                this.PageContext.AddLoadMessage(this.GetText("MEMBERS", "INVALIDPOSTSVALUE"), MessageTypes.warning);
-                return;
-            }
+            var numberOfPosts = this.NumPostsTB.Text.ToType<int>();
 
-            if (this.NumPostsTB.Text.Trim().IsNotSet())
+            if (this.NumPostsTB.Text.IsNotSet())
             {
                 this.NumPostsTB.Text = "0";
                 this.NumPostDDL.SelectedValue = "3";
             }
 
+            if (numberOfPosts < 0)
+            {
+                this.PageContext.AddLoadMessage(this.GetText("MEMBERS", "INVALIDPOSTSVALUE"), MessageTypes.warning);
+                return;
+            }
+
             // get the user list...
             this.userListDataTable = this.GetUserList(
                 selectedLetter,
-                0,
                 this.UserSearchName.Text.IsNotSet() || selectedCharLetter == char.MinValue && selectedCharLetter == '#',
                 out var totalCount);
             

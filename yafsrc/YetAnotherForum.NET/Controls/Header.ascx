@@ -10,9 +10,10 @@
     <asp:Label id="GuestMessage" runat="server"></asp:Label>
 </YAF:Alert>
     
-<header class="mb-3">
+<header class="mb-2">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand mb-1" href="<%=BuildLink.GetLink(ForumPages.forum) %>">
+        <div class="container-fluid">
+        <a class="navbar-brand mb-1" href="<%=BuildLink.GetLink(ForumPages.Board) %>">
             <%= this.PageContext.BoardSettings.Name %>
         </a>
         
@@ -41,26 +42,33 @@
                                              Type="None"
                                              CssClass="nav-link dropdown-toggle"
                                              TextLocalizedTag="HOST"
-                                             TextLocalizedPage="TOOLBAR" />
+                                             TextLocalizedPage="TOOLBAR"
+                                             NavigateUrl="#"/>
                             <div class="dropdown-menu" aria-labelledby="hostDropdown">
-                            <a href="<%= BuildLink.GetLink(ForumPages.Admin_HostSettings) %>"
-                               class="<%= this.PageContext.ForumPageType == ForumPages.Admin_HostSettings ? "dropdown-item active" : "dropdown-item" %>">
-                            <i class="fa fa-cog fa-fw"></i>&nbsp;
-                                <YAF:LocalizedLabel runat="server" 
-                                                    LocalizedTag="admin_hostsettings"></YAF:LocalizedLabel>
-                            </a>
-                            <a href="<%= BuildLink.GetLink(ForumPages.Admin_Boards) %>"
-                               class="<%= this.PageContext.ForumPageType == ForumPages.Admin_Boards || this.PageContext.ForumPageType == ForumPages.Admin_EditBoard ? "dropdown-item active" : "dropdown-item" %>">
-                                <i class="fa fa-globe fa-fw"></i>&nbsp;
-                                <YAF:LocalizedLabel runat="server" 
-                                                    LocalizedTag="admin_boards" LocalizedPage="adminmenu"></YAF:LocalizedLabel>
-                            </a>
-                            <a href="<%= BuildLink.GetLink(ForumPages.Admin_PageAccessList) %>"
-                               class="<%= this.PageContext.ForumPageType == ForumPages.Admin_PageAccessList || this.PageContext.ForumPageType == ForumPages.Admin_PageAccessEdit ? "dropdown-item active" : "dropdown-item" %>">
-                                <i class="fa fa-building fa-fw"></i>&nbsp;
-                                <YAF:LocalizedLabel runat="server" 
-                                                    LocalizedTag="admin_pageaccesslist"></YAF:LocalizedLabel>
-                            </a>
+                                <a href="<%= BuildLink.GetLink(ForumPages.Admin_HostSettings) %>"
+                                   class="<%= this.PageContext.ForumPageType == ForumPages.Admin_HostSettings ? "dropdown-item active" : "dropdown-item" %>">
+                                    <i class="fa fa-cog fa-fw"></i>&nbsp;
+                                    <YAF:LocalizedLabel runat="server" 
+                                                        LocalizedTag="admin_hostsettings"></YAF:LocalizedLabel>
+                                </a>
+                                <a href="<%= BuildLink.GetLink(ForumPages.Admin_Boards) %>"
+                                   class="<%= this.PageContext.ForumPageType == ForumPages.Admin_Boards || this.PageContext.ForumPageType == ForumPages.Admin_EditBoard ? "dropdown-item active" : "dropdown-item" %>">
+                                    <i class="fa fa-globe fa-fw"></i>&nbsp;
+                                    <YAF:LocalizedLabel runat="server" 
+                                                        LocalizedTag="admin_boards" LocalizedPage="adminmenu"></YAF:LocalizedLabel>
+                                </a>
+                                <a href="<%= BuildLink.GetLink(ForumPages.Admin_PageAccessList) %>"
+                                   class="<%= this.PageContext.ForumPageType == ForumPages.Admin_PageAccessList || this.PageContext.ForumPageType == ForumPages.Admin_PageAccessEdit ? "dropdown-item active" : "dropdown-item" %>">
+                                    <i class="fa fa-building fa-fw"></i>&nbsp;
+                                    <YAF:LocalizedLabel runat="server" 
+                                                        LocalizedTag="admin_pageaccesslist"></YAF:LocalizedLabel>
+                                </a>
+                                <a href="<%= BuildLink.GetLink(ForumPages.Admin_Profiler) %>"
+                                   class="<%= this.PageContext.ForumPageType == ForumPages.Admin_Profiler ? "dropdown-item active" : "dropdown-item" %>">
+                                    <i class="fa fa-diagnoses fa-fw"></i>&nbsp;
+                                    <YAF:LocalizedLabel runat="server" 
+                                                        LocalizedTag="admin_profiler"></YAF:LocalizedLabel>
+                                </a>
                         </div>
                   </li>
                     </asp:PlaceHolder>
@@ -96,17 +104,17 @@
                     <YAF:UserMenu runat="server"></YAF:UserMenu>
                 </asp:PlaceHolder>
             </ul>
-            <asp:Panel ID="quickSearch" runat="server" CssClass="form-inline" Visible="false">
+            <asp:Panel ID="quickSearch" runat="server" CssClass="d-flex" Visible="false">
                 <asp:TextBox ID="searchInput" Type="Search" runat="server" 
-                             CssClass="form-control"
-                             aria-label="Search"></asp:TextBox>&nbsp;
+                             CssClass="form-control mb-1 mr-2"
+                             aria-label="Search"></asp:TextBox>
                 <YAF:ThemeButton ID="doQuickSearch" runat="server"
-                                 CssClass="my-2 my-sm-0"
                                  Type="OutlineInfo"
                                  OnClick="QuickSearchClick"
                                  Icon="search">
                 </YAF:ThemeButton>
             </asp:Panel>
+        </div>
         </div>
     </nav>
 </header>

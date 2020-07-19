@@ -16,10 +16,10 @@
                 </HeaderTemplate>
             <ItemTemplate>
                 <li class="list-group-item pt-2 pb-0 list-group-item-action">
-                    <h6>
-                        <asp:Label runat="server" ID="PostIcon"></asp:Label>
+                    <asp:Label runat="server" ID="PostIcon" Visible="False"></asp:Label>
                         <asp:HyperLink ID="TextMessageLink" runat="server" 
                                        CssClass="font-weight-bold" />
+                        <asp:HyperLink runat="server" ID="ForumLink"></asp:HyperLink>
                         <YAF:ThemeButton runat="server" ID="Info"
                                          Icon="info-circle"
                                          IconColor="text-secondary"
@@ -45,7 +45,6 @@
                                              TitleLocalizedTag="GO_LAST_POST">
                             </YAF:ThemeButton>
                         </div>
-                    </h6>
                 </li>
             </ItemTemplate>
             <FooterTemplate>

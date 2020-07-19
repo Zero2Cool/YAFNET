@@ -87,6 +87,15 @@ namespace YAF.Pages.Admin
         protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel10;
 
         /// <summary>
+        /// LocalizedLabel11 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel11;
+
+        /// <summary>
         /// LocalizedLabel4 control.
         /// </summary>
         /// <remarks>
@@ -112,15 +121,6 @@ namespace YAF.Pages.Admin
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel7;
-
-        /// <summary>
-        /// LocalizedLabel6 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel6;
 
         /// <summary>
         /// LocalizedLabel8 control.
@@ -177,6 +177,15 @@ namespace YAF.Pages.Admin
         protected global::YAF.Controls.EditUsersSettings ProfileSettings;
 
         /// <summary>
+        /// UserAttachments control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Controls.EditUsersAttachments UserAttachments;
+
+        /// <summary>
         /// AvatarEditControl control.
         /// </summary>
         /// <remarks>
@@ -211,15 +220,6 @@ namespace YAF.Pages.Admin
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.PlaceHolder FielsNoGuests;
-
-        /// <summary>
-        /// ResetPasswordControl control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::YAF.Controls.EditUsersResetPass ResetPasswordControl;
 
         /// <summary>
         /// SuspendUserControl control.

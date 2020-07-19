@@ -30,16 +30,13 @@ namespace YAF.Pages.Admin
     using System.Web.UI.WebControls;
 
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
-    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -60,7 +57,7 @@ namespace YAF.Pages.Admin
         {
             this.EditDialog.BindData(null);
 
-            BoardContext.Current.PageElements.RegisterJsBlockStartup(
+            this.PageContext.PageElements.RegisterJsBlockStartup(
                 "openModalJs",
                 JavaScriptBlocks.OpenModalJs("NntpForumEditDialog"));
         }
@@ -85,9 +82,7 @@ namespace YAF.Pages.Admin
         {
             this.PageLinks.AddRoot();
 
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_NNTPFORUMS", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -106,7 +101,7 @@ namespace YAF.Pages.Admin
                 case "edit":
                     this.EditDialog.BindData(e.CommandArgument.ToType<int>());
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("NntpForumEditDialog"));
                     break;
@@ -126,7 +121,8 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void BindData()
         {
-            this.RankList.DataSource = this.GetRepository<NntpForum>().NntpForumList(this.PageContext.PageBoardID, null, null, null);
+            this.RankList.DataSource = this.GetRepository<NntpForum>()
+                .NntpForumList(this.PageContext.PageBoardID, null);
             this.DataBind();
         }
 

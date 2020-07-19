@@ -25,7 +25,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
+using Microsoft.Owin;
+
 using YAF.Types.Attributes;
+
+using Startup = YAF.Core.Context.Start.Startup;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -47,5 +51,4 @@ using YAF.Types.Attributes;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("5d0e8405-371c-4cf8-817d-bd1000631c65")]
 
-[assembly: AssemblyDelaySign(false)]
-[assembly: AssemblyKeyFile("..\\YetAnotherForum.NET.snk")]
+[assembly: OwinStartup(typeof(Startup))]

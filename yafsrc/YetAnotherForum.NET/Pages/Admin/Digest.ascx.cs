@@ -26,17 +26,17 @@ namespace YAF.Pages.Admin
     #region Using
 
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
+    using System.Net.Mail;
 
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -64,7 +64,7 @@ namespace YAF.Pages.Admin
         protected void ForceSendClick([NotNull] object sender, [NotNull] EventArgs e)
         {
             this.Get<BoardSettings>().ForceDigestSend = true;
-            ((LoadBoardSettings)BoardContext.Current.BoardSettings).SaveRegistry();
+            ((LoadBoardSettings)this.PageContext.BoardSettings).SaveRegistry();
 
             this.PageContext.AddLoadMessage(this.GetText("ADMIN_DIGEST", "MSG_FORCE_SEND"), MessageTypes.success);
         }
@@ -112,8 +112,7 @@ namespace YAF.Pages.Admin
             // forum index
             this.PageLinks.AddRoot();
 
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_DIGEST", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -136,14 +135,14 @@ namespace YAF.Pages.Admin
                         .GetDigestHtml(this.PageContext.PageUserID, this.PageContext.BoardSettings, true);
 
                     // send....
-                    this.Get<IDigest>()
-                        .SendDigest(
-                            string.Format(this.GetText("DIGEST", "SUBJECT"), this.PageContext.BoardSettings.Name),
-                            digestHtml,
-                            this.PageContext.BoardSettings.Name,
-                            this.PageContext.BoardSettings.ForumEmail,
-                            this.TextSendEmail.Text.Trim(),
-                            "Digest Send Test");
+                    var message = this.Get<IDigest>().CreateDigestMessage(
+                        string.Format(this.GetText("DIGEST", "SUBJECT"), this.PageContext.BoardSettings.Name),
+                        digestHtml,
+                        new MailAddress(this.PageContext.BoardSettings.ForumEmail, this.PageContext.BoardSettings.Name),
+                        this.TextSendEmail.Text.Trim(),
+                        "Digest Send Test");
+
+                    this.Get<ISendMail>().SendAll(new List<MailMessage> { message });
 
                     this.PageContext.AddLoadMessage(
                         this.GetTextFormatted("MSG_SEND_SUC", "Direct"),

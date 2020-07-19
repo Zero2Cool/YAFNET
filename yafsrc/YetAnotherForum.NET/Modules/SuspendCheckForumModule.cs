@@ -87,12 +87,9 @@ namespace YAF.Modules
             {
                 this.GetRepository<User>().Suspend(this.PageContext.PageUserID);
 
-                this.Get<ISendNotification>()
-                    .SendUserSuspensionEndedNotification(
-                        this.PageContext.CurrentUserData.Email,
-                        this.PageContext.BoardSettings.EnableDisplayName
-                            ? this.PageContext.CurrentUserData.DisplayName
-                            : this.PageContext.CurrentUserData.UserName);
+                this.Get<ISendNotification>().SendUserSuspensionEndedNotification(
+                    this.PageContext.CurrentUser.Email,
+                    this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser));
 
                 this.Get<IRaiseEvent>().Raise(new UpdateUserEvent(this.PageContext.PageUserID));
             }

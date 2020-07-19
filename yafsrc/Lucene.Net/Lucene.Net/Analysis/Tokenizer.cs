@@ -46,7 +46,7 @@ namespace YAF.Lucene.Net.Analysis
         {
             if (input == null)
             {
-                throw new System.ArgumentNullException("input", "input must not be null");
+                throw new ArgumentNullException("input", "input must not be null");
             }
             this.inputPending = input;
         }
@@ -59,7 +59,7 @@ namespace YAF.Lucene.Net.Analysis
         {
             if (input == null)
             {
-                throw new System.ArgumentNullException("input", "input must not be null");
+                throw new ArgumentNullException("input", "input must not be null");
             }
             this.inputPending = input;
         }
@@ -108,14 +108,14 @@ namespace YAF.Lucene.Net.Analysis
         {
             if (input == null)
             {
-                throw new System.ArgumentNullException("value", "input must not be null");
+                throw new ArgumentNullException("value", "input must not be null");
             }
             else if (this.m_input != ILLEGAL_STATE_READER)
             {
                 throw new InvalidOperationException("TokenStream contract violation: Close() call missing");
             }
             this.inputPending = input;
-            Debug.Assert(SetReaderTestPoint());
+            if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) SetReaderTestPoint();
         }
 
         public override void Reset()

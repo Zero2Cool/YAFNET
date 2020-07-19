@@ -57,10 +57,7 @@ namespace YAF.Lucene.Net.Index
 
         private static readonly IndexingChain defaultIndexingChain = new IndexingChainAnonymousInnerClassHelper();
 
-        public static IndexingChain DefaultIndexingChain
-        {
-            get { return defaultIndexingChain; }
-        }
+        public static IndexingChain DefaultIndexingChain => defaultIndexingChain;
 
         private class IndexingChainAnonymousInnerClassHelper : IndexingChain
         {
@@ -276,7 +273,8 @@ namespace YAF.Lucene.Net.Index
 
         public virtual void UpdateDocument(IEnumerable<IIndexableField> doc, Analyzer analyzer, Term delTerm)
         {
-            Debug.Assert(TestPoint("DocumentsWriterPerThread addDocument start"));
+            // LUCENENET: .NET doesn't support asserts in release mode
+            if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("DocumentsWriterPerThread addDocument start");
             Debug.Assert(deleteQueue != null);
             docState.doc = doc;
             docState.analyzer = analyzer;
@@ -332,7 +330,8 @@ namespace YAF.Lucene.Net.Index
 
         public virtual int UpdateDocuments(IEnumerable<IEnumerable<IIndexableField>> docs, Analyzer analyzer, Term delTerm)
         {
-            Debug.Assert(TestPoint("DocumentsWriterPerThread addDocuments start"));
+            // LUCENENET: .NET doesn't support asserts in release mode
+            if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("DocumentsWriterPerThread addDocuments start");
             Debug.Assert(deleteQueue != null);
             docState.analyzer = analyzer;
             if (INFO_VERBOSE && infoStream.IsEnabled("DWPT"))

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using JCG = J2N.Collections.Generic;
 
@@ -130,23 +129,11 @@ namespace YAF.Lucene.Net.Store
 
         /// <summary>
         /// Returns the directory of the compound file. </summary>
-        internal Directory Directory
-        {
-            get
-            {
-                return directory;
-            }
-        }
+        internal Directory Directory => directory;
 
         /// <summary>
         /// Returns the name of the compound file. </summary>
-        internal string Name
-        {
-            get
-            {
-                return dataFileName;
-            }
-        }
+        internal string Name => dataFileName;
 
         /// <summary>
         /// Disposes all resources and writes the entry table
@@ -203,7 +190,7 @@ namespace YAF.Lucene.Net.Store
         {
             if (closed)
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "CFS Directory is already closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "CFS Directory is already closed");
             }
         }
 
@@ -437,13 +424,7 @@ namespace YAF.Lucene.Net.Store
                 @delegate.WriteBytes(b, offset, length);
             }
 
-            public override long Checksum
-            {
-                get
-                {
-                    return @delegate.Checksum;
-                }
-            }
+            public override long Checksum => @delegate.Checksum;
         }
     }
 }

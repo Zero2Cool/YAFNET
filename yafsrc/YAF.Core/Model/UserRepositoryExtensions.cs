@@ -33,14 +33,15 @@ namespace YAF.Core.Model
 
     using ServiceStack.OrmLite;
 
+    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
-    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Extensions.Data;
+    using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
-    using YAF.Types.Objects;
+    using YAF.Types.Models.Identity;
     using YAF.Utils.Helpers;
 
     /// <summary>
@@ -49,7 +50,31 @@ namespace YAF.Core.Model
     public static class UserRepositoryExtensions
     {
         /// <summary>
-        /// Checks if the User has replied to the specific topic.
+        /// List the reporters as data table.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="messageId">
+        /// The message id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="DataTable"/>.
+        /// </returns>
+        public static List<Tuple<MessageReportedAudit, User>> MessageReporters(
+            this IRepository<User> repository,
+            [NotNull] int messageId)
+        {
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<MessageReportedAudit>();
+
+            expression.Join<User>((m, u) => u.ID == m.UserID)
+                .Where<MessageReportedAudit>(m => m.MessageID == messageId);
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<MessageReportedAudit, User>(expression));
+        }
+
+        /// <summary>
+        /// List the reporters as data table.
         /// </summary>
         /// <param name="repository">
         /// The repository.
@@ -61,16 +86,19 @@ namespace YAF.Core.Model
         /// The user id.
         /// </param>
         /// <returns>
-        /// Returns if true or not
+        /// The <see cref="DataTable"/>.
         /// </returns>
-        public static bool RepliedTopic(
+        public static List<Tuple<User, MessageReportedAudit>> MessageReporter(
             this IRepository<User> repository,
             [NotNull] int messageId,
             [NotNull] int userId)
         {
-            var messageCount = repository.DbFunction.Scalar.user_repliedtopic(MessageID: messageId, UserID: userId);
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<User>();
 
-            return messageCount > 0;
+            expression.Join<MessageReportedAudit>((user, m) => m.UserID == userId && m.MessageID == messageId)
+                .Where<User>(user => user.ID == userId);
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<User, MessageReportedAudit>(expression));
         }
 
         /// <summary>
@@ -198,14 +226,14 @@ namespace YAF.Core.Model
         {
             repository.UpdateOnly(
                 () => new User
-                          {
-                              BoardID = boardID,
-                              Name = name,
-                              DisplayName = displayName,
-                              Email = email,
-                              Flags = flags,
-                              RankID = rankID
-                          },
+                {
+                    BoardID = boardID,
+                    Name = name,
+                    DisplayName = displayName,
+                    Email = email,
+                    Flags = flags,
+                    RankID = rankID
+                },
                 u => u.ID == userId);
         }
 
@@ -238,7 +266,7 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// The user_aspnet.
+        /// The user_AspNet.
         /// </summary>
         /// <param name="repository">
         /// The repository.
@@ -264,7 +292,7 @@ namespace YAF.Core.Model
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public static int Aspnet(
+        public static int AspNet(
             this IRepository<User> repository,
             int boardID,
             [NotNull] string userName,
@@ -284,7 +312,7 @@ namespace YAF.Core.Model
                     IsApproved: isApproved,
                     UTCTIMESTAMP: DateTime.UtcNow);
             }
-            catch (Exception x)
+            catch (Exception)
             {
                 return 0;
             }
@@ -313,12 +341,14 @@ namespace YAF.Core.Model
         /// <param name="userId">
         /// The user id.
         /// </param>
-        public static void DeleteAvatar(this IRepository<User> repository, [NotNull] int userId)
-        {
+        public static void DeleteAvatar(this IRepository<User> repository, [NotNull] int userId) =>
             repository.UpdateOnly(
-                () => new User { AvatarImage = null, Avatar = null, AvatarImageType = null },
+                () => 
+                    new User
+                    {
+                        AvatarImage = null, Avatar = null, AvatarImageType = null
+                    },
                 u => u.ID == userId);
-        }
 
         /// <summary>
         /// Deletes all unapproved users older than x days
@@ -355,32 +385,33 @@ namespace YAF.Core.Model
         public static DataTable WatchMailListAsDataTable(
             this IRepository<User> repository,
             [NotNull] int topicId,
-            [NotNull] int userId)
-        {
-            return repository.DbFunction.GetData.mail_list(TopicID: topicId, UserID: userId, UTCTIMESTAMP: DateTime.UtcNow);
-        }
+            [NotNull] int userId) =>
+            repository.DbFunction.GetData.mail_list(TopicID: topicId, UserID: userId, UTCTIMESTAMP: DateTime.UtcNow);
 
         /// <summary>
-        /// The user_emails.
+        /// Gets all Emails from User in Group
         /// </summary>
         /// <param name="repository">
         /// The repository.
-        /// </param>
-        /// <param name="boardID">
-        /// The board id.
         /// </param>
         /// <param name="groupID">
         /// The group id.
         /// </param>
         /// <returns>
-        /// The <see cref="DataTable"/>.
+        /// The <see cref="List"/>.
         /// </returns>
-        public static DataTable EmailsAsDataTable(
+        public static List<string> GroupEmails(
             this IRepository<User> repository,
-            [NotNull] int boardID,
-            [NotNull] int? groupID)
+            [NotNull] int groupID)
         {
-            return repository.DbFunction.GetData.user_emails(BoardID: boardID, GroupID: groupID);
+             var expression = OrmLiteConfig.DialectProvider.SqlExpression<User>();
+
+             expression.Join<UserGroup>((u, b) => b.UserID == u.ID).Join<UserGroup, Group>((b, c) => c.ID == b.GroupID)
+                 .Where<User, UserGroup, Group>(
+                     (a, b, c) => b.GroupID == groupID && (c.Flags & 2) == 0 && a.Email != null)
+                 .Select(u => new { u.Email });
+
+            return repository.DbAccess.Execute(db => db.Connection.SqlList<string>(expression));
         }
 
         /// <summary>
@@ -423,10 +454,8 @@ namespace YAF.Core.Model
         public static DataTable AlbumsDataAsDataTable(
             this IRepository<User> repository,
             [NotNull] int userID,
-            [NotNull] int boardID)
-        {
-            return repository.DbFunction.GetData.user_getalbumsdata(BoardID: boardID, UserID: userID);
-        }
+            [NotNull] int boardID) =>
+            repository.DbFunction.GetData.user_getalbumsdata(BoardID: boardID, UserID: userID);
 
         /// <summary>
         /// Returns data about allowed signature tags and character limits
@@ -446,13 +475,12 @@ namespace YAF.Core.Model
         public static DataRow SignatureDataAsDataRow(
             this IRepository<User> repository,
             [NotNull] int userID,
-            [NotNull] int boardID)
-        {
-            return repository.DbFunction.GetAsDataTable(t => t.user_getsignaturedata(BoardID: boardID, UserID: userID)).GetFirstRow();
-        }
+            [NotNull] int boardID) =>
+            repository.DbFunction.GetAsDataTable(t => t.user_getsignaturedata(BoardID: boardID, UserID: userID))
+                .GetFirstRow();
 
         /// <summary>
-        /// Gets the Guest User Id
+        /// Gets the Guest User
         /// </summary>
         /// <param name="repository">
         /// The repository.
@@ -463,10 +491,8 @@ namespace YAF.Core.Model
         /// <returns>
         /// Returns the Guest User Id
         /// </returns>
-        public static int? GetGuestUserId(this IRepository<User> repository, [NotNull] int boardId)
-        {
-            return repository.DbFunction.Scalar.user_guest(BoardID: boardId, UTCTIMESTAMP: DateTime.UtcNow);
-        }
+        public static User GetGuestUser(this IRepository<User> repository, [NotNull] int boardId) =>
+            repository.GetSingle(u => u.BoardID == boardId && u.IsGuest == true);
 
         /// <summary>
         /// To return a rather rarely updated active user data
@@ -555,11 +581,9 @@ namespace YAF.Core.Model
         public static DataTable ListAsDataTable(
             this IRepository<User> repository,
             [NotNull] int boardID,
-            [NotNull] object userID,
-            [NotNull] object approved)
-        {
-            return repository.ListAsDataTable(boardID, userID, approved, null, null, false);
-        }
+            [NotNull] int? userID,
+            [NotNull] bool approved) =>
+            repository.ListAsDataTable(boardID, userID, approved, null, null, false);
 
         /// <summary>
         /// The user_list.
@@ -591,13 +615,12 @@ namespace YAF.Core.Model
         public static DataTable ListAsDataTable(
             this IRepository<User> repository,
             [NotNull] int boardID,
-            [NotNull] object userID,
-            [NotNull] object approved,
+            [NotNull] int? userID,
+            [NotNull] bool approved,
             [NotNull] object groupID,
             [NotNull] object rankID,
-            [CanBeNull] bool useStyledNicks)
-        {
-            return repository.DbFunction.GetData.user_list(
+            [CanBeNull] bool useStyledNicks) =>
+            repository.DbFunction.GetData.user_list(
                 BoardID: boardID,
                 UserID: userID,
                 Approved: approved,
@@ -605,7 +628,6 @@ namespace YAF.Core.Model
                 RankID: rankID,
                 StyledNicks: useStyledNicks,
                 UTCTIMESTAMP: DateTime.UtcNow);
-        }
 
         /// <summary>
         /// The user_list20members.
@@ -630,9 +652,6 @@ namespace YAF.Core.Model
         /// </param>
         /// <param name="useStyledNicks">
         /// Return style info.
-        /// </param>
-        /// <param name="lastUserId">
-        /// The last user Id.
         /// </param>
         /// <param name="literals">
         /// The literals.
@@ -665,10 +684,10 @@ namespace YAF.Core.Model
         /// The sort Last Visit.
         /// </param>
         /// <param name="numPosts">
-        /// The num Posts.
+        /// The number of Posts.
         /// </param>
         /// <param name="numPostCompare">
-        /// The num Post Compare.
+        /// The number of Post Compare.
         /// </param>
         /// <returns>
         /// The <see cref="DataTable"/>.
@@ -681,7 +700,6 @@ namespace YAF.Core.Model
             [NotNull] object groupId,
             [NotNull] object rankId,
             [NotNull] bool useStyledNicks,
-            [NotNull] int lastUserId,
             [NotNull] string literals,
             [NotNull] bool exclude,
             [NotNull] bool beginsWith,
@@ -693,9 +711,8 @@ namespace YAF.Core.Model
             [NotNull] int? sortPosts,
             [NotNull] int? sortLastVisit,
             [NotNull] int numPosts,
-            [NotNull] int numPostCompare)
-        {
-             return repository.DbFunction.GetData.user_listmembers(
+            [NotNull] int numPostCompare) =>
+            repository.DbFunction.GetData.user_listmembers(
                 BoardID: boardId,
                 UserID: userId,
                 Approved: approved,
@@ -714,38 +731,13 @@ namespace YAF.Core.Model
                 SortLastVisit: sortLastVisit,
                 NumPosts: numPosts,
                 NumPostsCompare: numPostCompare);
-        }
 
         /// <summary>
-        /// Migrate Users
+        /// Create NNTP User
         /// </summary>
         /// <param name="repository">
         /// The repository.
         /// </param>
-        /// <param name="userID">
-        /// The user id.
-        /// </param>
-        /// <param name="providerUserKey">
-        /// The provider user key.
-        /// </param>
-        /// <param name="updateProvider">
-        /// The update provider.
-        /// </param>
-        public static void Migrate(
-            this IRepository<User> repository,
-            [NotNull] int userID,
-            [NotNull] string providerUserKey,
-            [NotNull] bool updateProvider)
-        {
-            repository.DbFunction.Scalar.user_migrate(
-                ProviderUserKey: providerUserKey,
-                UserID: userID,
-                UpdateProvider: updateProvider);
-        }
-
-        /// <summary>
-        /// The user_nntp.
-        /// </summary>
         /// <param name="boardID">
         /// The board id.
         /// </param>
@@ -759,26 +751,27 @@ namespace YAF.Core.Model
         /// The time Zone.
         /// </param>
         /// <returns>
-        /// The user_nntp.
+        /// Returns the User ID of the created user.
         /// </returns>
-        public static int Nntp(
+        public static int CreateNntpUser(
             this IRepository<User> repository,
             [NotNull] int boardID,
             [NotNull] string userName,
             [NotNull] string email,
-            int? timeZone)
-        {
-            return repository.DbFunction.Scalar.user_nntp(
+            int? timeZone) =>
+            repository.DbFunction.Scalar.user_nntp(
                 BoardID: boardID,
                 UserName: userName,
                 Email: email,
                 TimeZone: timeZone,
                 UTCTIMESTAMP: DateTime.UtcNow);
-        }
 
         /// <summary>
         /// The user_save.
         /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
         /// <param name="userID">
         /// The user id.
         /// </param>
@@ -804,29 +797,15 @@ namespace YAF.Core.Model
         /// the user culture
         /// </param>
         /// <param name="themeFile">
-        /// The theme file.
-        /// <param name="approved">
-        /// The approved.
-        /// </param>
-        /// <param name="pmNotification">
-        /// The pm notification.
-        /// </param>
-        /// <param name="autoWatchTopics">
-        /// The auto Watch Topics.
-        /// </param>
-        /// <param name="dSTUser">
-        /// The d ST User.
+        /// The theme File.
         /// </param>
         /// <param name="hideUser">
         /// The hide User.
         /// </param>
-        /// <param name="notificationType">
-        /// The notification Type.
-        /// </param>
         public static void Save(
             this IRepository<User> repository,
-            [NotNull] object userID,
-            [NotNull] object boardID,
+            [NotNull] int userID,
+            [NotNull] int boardID,
             [NotNull] object userName,
             [NotNull] object displayName,
             [NotNull] object email,
@@ -834,13 +813,7 @@ namespace YAF.Core.Model
             [NotNull] object languageFile,
             [NotNull] object culture,
             [NotNull] object themeFile,
-            [NotNull] object approved,
-            [NotNull] object pmNotification,
-            [NotNull] object autoWatchTopics,
-            [NotNull] object dSTUser,
-            [NotNull] object hideUser,
-            [NotNull] object notificationType)
-        {
+            [NotNull] bool? hideUser) =>
             repository.DbFunction.Scalar.user_save(
                 UserID: userID,
                 BoardID: boardID,
@@ -851,14 +824,9 @@ namespace YAF.Core.Model
                 LanguageFile: languageFile,
                 Culture: culture,
                 ThemeFile: themeFile,
-                Approved: approved,
-                PMNotification: pmNotification,
-                AutoWatchTopics: autoWatchTopics,
-                DSTUser: dSTUser,
+                Approved: null,
                 HideUser: hideUser,
-                NotificationType: notificationType,
                 UTCTIMESTAMP: DateTime.UtcNow);
-        }
 
         /// <summary>
         /// Save the User Avatar
@@ -917,7 +885,7 @@ namespace YAF.Core.Model
         /// <param name="userId">
         /// The user id.
         /// </param>
-        /// <param name="pmNotification">
+        /// <param name="privateNotification">
         /// The pm Notification.
         /// </param>
         /// <param name="autoWatchTopics">
@@ -932,19 +900,19 @@ namespace YAF.Core.Model
         public static void SaveNotification(
             this IRepository<User> repository,
             [NotNull] int userId,
-            [NotNull] bool pmNotification,
+            [NotNull] bool privateNotification,
             [NotNull] bool autoWatchTopics,
             [CanBeNull] int? notificationType,
             [NotNull] bool dailyDigest)
         {
             repository.UpdateOnly(
                 () => new User
-                          {
-                              PMNotification = pmNotification,
-                              AutoWatchTopics = autoWatchTopics,
-                              NotificationType = notificationType,
-                              DailyDigest = dailyDigest
-                          },
+                {
+                    PMNotification = privateNotification,
+                    AutoWatchTopics = autoWatchTopics,
+                    NotificationType = notificationType,
+                    DailyDigest = dailyDigest
+                },
                 u => u.ID == userId);
         }
 
@@ -973,99 +941,51 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// The simple list as data table.
+        /// Gets the List of Administrators
         /// </summary>
         /// <param name="repository">
         /// The repository.
-        /// </param>
-        /// <param name="startId">
-        /// The start id.
-        /// </param>
-        /// <param name="limit">
-        /// The limit.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable SimpleListAsDataTable(
-            this IRepository<User> repository,
-            [CanBeNull] int startId = 0,
-            [CanBeNull] int limit = 500)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.DbFunction.GetData.user_simplelist(StartID: startId, Limit: limit);
-        }
-
-        /// <summary>
-        /// Get the user list as a typed list.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="boardID">
-        /// The board id.
-        /// </param>
-        /// <param name="userID">
-        /// The user id.
-        /// </param>
-        /// <param name="approved">
-        /// The approved.
-        /// </param>
-        /// <param name="groupID">
-        /// The group id.
-        /// </param>
-        /// <param name="rankID">
-        /// The rank id.
         /// </param>
         /// <param name="useStyledNicks">
         /// The use styled nicks.
         /// </param>
+        /// <param name="boardId">
+        /// The board identifier.
+        /// </param>
         /// <returns>
-        /// The <see cref="IEnumerable"/>.
+        /// The <see cref="List"/>.
         /// </returns>
-        [NotNull]
-        public static IEnumerable<TypedUserList> UserList(
-            this IRepository<User> repository,
-            int boardID,
-            int? userID,
-            bool? approved,
-            int? groupID,
-            int? rankID,
-            bool? useStyledNicks)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.DbFunction
-                .GetAsDataTable(
-                    cdb => cdb.user_list(
-                        BoardID: boardID,
-                        UserID: userID,
-                        Approved: approved,
-                        GroupID: groupID,
-                        RankID: rankID,
-                        StyledNicks: useStyledNicks,
-                        UTCTIMESTAMP: DateTime.UtcNow)).SelectTypedList(t => new TypedUserList(t));
-        }
-
-        /// <summary>
-        /// Gets the List of Administrators
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        /// <param name="useStyledNicks">The use styled nicks.</param>
-        /// <param name="boardId">The board identifier.</param>
-        /// <returns>Returns a Data Table of Administrators</returns>
-        public static DataTable AdminList(
+        public static List<User> ListAdmins(
             this IRepository<User> repository,
             bool? useStyledNicks = null,
             int? boardId = null)
         {
             CodeContracts.VerifyNotNull(repository, "repository");
 
-            return repository.DbFunction.GetData.admin_list(
-                BoardID: boardId ?? repository.BoardID,
-                StyledNicks: useStyledNicks,
-                UTCTIMESTAMP: DateTime.UtcNow);
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<User>();
+
+            expression.Join<vaccess>((u, v) => v.UserID == u.ID).Where<vaccess, User>(
+                (v, u) => u.BoardID == (boardId ?? repository.BoardID) && u.IsGuest == false && v.IsAdmin &&
+                          v.ForumID == 0).OrderBy<User>(u => u.DisplayName);
+
+            return repository.DbAccess.Execute(db => db.Connection.Select(expression));
+        }
+
+        /// <summary>
+        /// Gets all Unapproved Users by Board Id.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="boardId">
+        /// The board id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<User> UnApprovedUsers(this IRepository<User> repository, int? boardId = null)
+        {
+            return repository.Get(u => u.BoardID == (boardId ?? repository.BoardID) && !u.UserFlags.IsApproved);
         }
 
         /// <summary>
@@ -1093,15 +1013,15 @@ namespace YAF.Core.Model
             return repository.SqlList(
                 "user_find",
                 new
-                    {
-                        BoardID = boardId ?? repository.BoardID,
-                        Filter = filter,
-                        UserName = userName,
-                        Email = email,
-                        DisplayName = displayName,
-                        NotificationType = notificationType,
-                        DailyDigest = dailyDigest
-                    });
+                {
+                    BoardID = boardId ?? repository.BoardID,
+                    Filter = filter,
+                    UserName = userName,
+                    Email = email,
+                    DisplayName = displayName,
+                    NotificationType = notificationType,
+                    DailyDigest = dailyDigest
+                });
         }
 
         /// <summary>
@@ -1182,44 +1102,6 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// Updates the authentication service status.
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="authService">The authentication service.</param>
-        public static void UpdateAuthServiceStatus(
-            this IRepository<User> repository,
-            [NotNull] int userId,
-            [NotNull] AuthService authService)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            bool isFacebookUser = false, isTwitterUser = false, isGoogleUser = false;
-
-            switch (authService)
-            {
-                case AuthService.facebook:
-                    isFacebookUser = true;
-                    break;
-                case AuthService.twitter:
-                    isTwitterUser = true;
-                    break;
-                case AuthService.google:
-                    isGoogleUser = true;
-                    break;
-            }
-
-            repository.UpdateOnly(
-                () => new User
-                          {
-                              IsFacebookUser = isFacebookUser,
-                              IsTwitterUser = isTwitterUser,
-                              IsGoogleUser = isGoogleUser
-                          },
-                u => u.ID == userId);
-        }
-
-        /// <summary>
         /// Updates Block Flags for the User.
         /// </summary>
         /// <param name="repository">
@@ -1239,7 +1121,7 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// Gets if User is Suspended
+        /// The get board user.
         /// </summary>
         /// <param name="repository">
         /// The repository.
@@ -1247,19 +1129,85 @@ namespace YAF.Core.Model
         /// <param name="userId">
         /// The user id.
         /// </param>
+        /// <param name="boardId">
+        /// The board id.
+        /// </param>
         /// <returns>
-        /// The <see cref="User"/>.
+        /// The <see cref="Tuple"/>.
         /// </returns>
-        public static DateTime? GetSuspended(this IRepository<User> repository, int userId)
+        public static Tuple<User, AspNetUsers, Rank, vaccess> GetBoardUser(
+            this IRepository<User> repository,
+            int userId,
+            int? boardId = null)
         {
             CodeContracts.VerifyNotNull(repository, "repository");
 
             var expression = OrmLiteConfig.DialectProvider.SqlExpression<User>();
 
-            expression.Where<User>(u => u.ID == userId).Select(u => u.Suspended);
+            expression.Join<vaccess>((u, v) => v.UserID == u.ID).Join<AspNetUsers>((u, a) => a.Id == u.ProviderUserKey)
+                .Join<Rank>((u, r) => r.ID == u.RankID).Where<vaccess, User>(
+                    (v, u) => u.ID == userId && u.BoardID == (boardId ?? repository.BoardID) && (u.Flags & 2) == 2 && v.ForumID == 0);
 
-            return repository.DbAccess.Execute(
-                db => db.Connection.ColumnDistinct<DateTime?>(expression).FirstOrDefault());
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<User, AspNetUsers, Rank, vaccess>(expression)).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Get the list of recently logged in users.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="timeSinceLastLogin">
+        /// The time since last login in minutes.
+        /// </param>
+        /// <param name="useStyledNicks">
+        /// The use Styled Nicks.
+        /// </param>
+        /// <returns>
+        /// The list of users in Data table format.
+        /// </returns>
+        public static DataTable GetRecentUsersAsDataTable(
+            this IRepository<User> repository,
+            [NotNull] int timeSinceLastLogin,
+            [NotNull] bool useStyledNicks)
+        {
+            CodeContracts.VerifyNotNull(repository, "repository");
+
+            var users = repository.DbFunction.GetData.recent_users(
+                BoardID: repository.BoardID,
+                TimeSinceLastLogin: timeSinceLastLogin,
+                StyledNicks: useStyledNicks);
+
+            if (!useStyledNicks)
+            {
+                return users;
+            }
+
+            BoardContext.Current.Get<IStyleTransform>().DecodeStyleByTable(users, true);
+
+            return users;
+        }
+
+        /// <summary>
+        /// Gets the forum moderators as data table.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="useStyledNicks">
+        /// The use styled nicks.
+        /// </param>
+        /// <returns>
+        /// The <see cref="DataTable"/>.
+        /// </returns>
+        public static DataTable GetForumModeratorsAsDataTable(
+            this IRepository<User> repository,
+            [NotNull] bool useStyledNicks)
+        {
+            CodeContracts.VerifyNotNull(repository, "repository");
+
+            return repository.DbFunction.GetAsDataTable(
+                x => x.forum_moderators(repository.BoardID, useStyledNicks));
         }
     }
 }

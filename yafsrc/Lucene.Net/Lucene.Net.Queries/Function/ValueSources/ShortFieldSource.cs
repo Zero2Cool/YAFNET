@@ -2,6 +2,7 @@
 using YAF.Lucene.Net.Search;
 using System;
 using System.Collections;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Queries.Function.ValueSources
 {
@@ -109,9 +110,9 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
                 return arr.Get(doc);
             }
 
-            public override string StrVal(int doc) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+            public override string StrVal(int doc)
             {
-                return Convert.ToString(arr.Get(doc));
+                return Convert.ToString(arr.Get(doc), CultureInfo.InvariantCulture);
             }
 
             public override string ToString(int doc)
@@ -122,8 +123,7 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
 
         public override bool Equals(object o)
         {
-            var other = o as Int16FieldSource;
-            if (other == null)
+            if (!(o is Int16FieldSource other))
                 return false;
             return base.Equals(other) 
                 && (parser == null ? other.parser == null : 

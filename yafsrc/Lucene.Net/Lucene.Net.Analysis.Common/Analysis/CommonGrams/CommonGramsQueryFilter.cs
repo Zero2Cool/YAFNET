@@ -66,7 +66,7 @@ namespace YAF.Lucene.Net.Analysis.CommonGrams
         /// <para/>
         /// If you override this method, always call <c>base.Reset()</c>, otherwise
         /// some internal state will not be correctly reset (e.g., <see cref="Tokenizer"/> will
-        /// throw <see cref="System.InvalidOperationException"/> on further usage).
+        /// throw <see cref="InvalidOperationException"/> on further usage).
         /// </summary>
         /// <remarks>
         /// <b>NOTE:</b>
@@ -134,12 +134,6 @@ namespace YAF.Lucene.Net.Analysis.CommonGrams
         /// Convenience method to check if the current type is a gram type
         /// </summary>
         /// <returns> <c>true</c> if the current type is a gram type, <c>false</c> otherwise </returns>
-        public bool IsGramType
-        {
-            get
-            {
-                return CommonGramsFilter.GRAM_TYPE.Equals(typeAttribute.Type, StringComparison.Ordinal);
-            }
-        }
+        public bool IsGramType => CommonGramsFilter.GRAM_TYPE.Equals(typeAttribute.Type, StringComparison.Ordinal);
     }
 }

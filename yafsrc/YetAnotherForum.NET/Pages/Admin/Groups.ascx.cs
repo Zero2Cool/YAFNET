@@ -33,10 +33,9 @@ namespace YAF.Pages.Admin
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -75,7 +74,7 @@ namespace YAF.Pages.Admin
         protected string GetItemColorString(string item)
         {
             // show enabled flag red
-            return item.IsSet() ? "badge badge-success" : "badge badge-danger";
+            return item.IsSet() ? "badge bg-success" : "badge bg-danger";
         }
 
         /// <summary>
@@ -90,7 +89,7 @@ namespace YAF.Pages.Admin
         protected string GetItemColor(bool enabled)
         {
             // show enabled flag red
-            return enabled ? "badge badge-success" : "badge badge-danger";
+            return enabled ? "badge bg-success" : "badge bg-danger";
         }
 
         /// <summary>
@@ -116,9 +115,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // admin index
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             // roles
             this.PageLinks.AddLink(this.GetText("ADMIN_GROUPS", "TITLE"), string.Empty);
@@ -128,7 +125,7 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
-        /// Get status of provider role vs YAF roles.
+        /// Get status of provider role VS YAF roles.
         /// </summary>
         /// <param name="currentRow">
         /// Data row which contains data about role.
@@ -178,7 +175,7 @@ namespace YAF.Pages.Admin
             }
 
             // sync roles just in case...
-            RoleMembershipHelper.SyncRoles(BoardContext.Current.PageBoardID);
+            AspNetRolesHelper.SyncRoles(this.PageContext.PageBoardID);
 
             // bind data
             this.BindData();
@@ -228,7 +225,7 @@ namespace YAF.Pages.Admin
                 case "delete":
 
                     // delete role from provider data
-                    RoleMembershipHelper.DeleteRole(e.CommandArgument.ToString(), false);
+                    AspNetRolesHelper.DeleteRole(e.CommandArgument.ToString());
 
                     // re-bind data
                     this.BindData();
@@ -280,33 +277,29 @@ namespace YAF.Pages.Admin
         private void BindData()
         {
             // list roles of this board
-            var dt = this.GetRepository<Group>().List(boardId: this.PageContext.PageBoardID);
+            var groups = this.GetRepository<Group>().List(boardId: this.PageContext.PageBoardID);
 
             // set repeater data-source
-            this.RoleListYaf.DataSource = dt;
+            this.RoleListYaf.DataSource = groups;
 
             // clear cached list of roles
             this.availableRoles.Clear();
 
             // get all provider roles
-            foreach (var role in from role in RoleMembershipHelper.GetAllRoles()
-                                 let rows = dt.Select(g => g.Name == role)
-                                 where dt.Count == 0
-                                 select role)
-            {
-                // doesn't exist in the Yaf Groups
-                this.availableRoles.Add(role);
-            }
+            (from role in AspNetRolesHelper.GetAllRoles()
+                                 let rows = groups.Select(g => g.Name == role)
+                                 where groups.Count == 0
+                                 select role).ForEach(role1 => this.availableRoles.Add(role1));
 
             // check if there are any roles for syncing
             if (this.availableRoles.Count > 0 && !Config.IsDotNetNuke)
             {
-                // make it datasource
+                // make it data-source
                 this.RoleListNet.DataSource = this.availableRoles;
             }
             else
             {
-                // no datasource for provider roles
+                // no data-source for provider roles
                 this.RoleListNet.DataSource = null;
             }
 

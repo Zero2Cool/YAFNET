@@ -12,7 +12,6 @@
 // --Bootstrap extensions
 @import "select2/select2";
 @import "bootstrap-tagsinput";
-@import "select2/select2-bootstrap";
 @import "bootstrap-datetimepicker";
 
 @import "blueimp-gallery.scss";
@@ -39,8 +38,9 @@
 }
 
 // -- MultiQuote Button
-.MultiQuoteButton {
+.btn-multiquote {
     display: inline-block;
+    margin-left: 10px !important;
 
     label {
         margin-top: -1px;
@@ -74,16 +74,6 @@
     overflow-y: scroll;
 }
 
-#passwordStrength {
-    padding: 0 .7em;
-
-    .PasswordStrengthMessageIcon {
-        display: inline-block;
-        vertical-align: bottom;
-        margin-right: .3em;
-    }
-}
-
 // -- Scrollable Mobile Dropdowns
 .scrollable-dropdown {
     height: auto;
@@ -111,6 +101,10 @@
 .blockquote-custom {
     position: relative;
     margin-top: .25rem;
+
+    .blockquote-footer {
+        margin-top:0px;
+    }
 
     > .blockquote-custom {
         margin-top: 2rem;

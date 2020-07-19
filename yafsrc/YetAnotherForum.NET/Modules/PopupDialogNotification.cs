@@ -29,9 +29,8 @@ namespace YAF.Modules
     using System;
 
     using YAF.Configuration;
-    using YAF.Core;
+    
     using YAF.Core.BaseControls;
-    using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Interfaces;
 
@@ -95,7 +94,7 @@ namespace YAF.Modules
                                   element: 'body', position: null, placement: {{ from: 'top', align: 'center' }}, delay: {this.Get<BoardSettings>().MessageNotifcationDuration} * 1000
                         }});}} }}";
 
-            BoardContext.Current.PageElements.RegisterJsBlock(
+            this.PageContext.PageElements.RegisterJsBlock(
                 this,
                 this.ShowModalFunction,
                 javaScriptFunction);

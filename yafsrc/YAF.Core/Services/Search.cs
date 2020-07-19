@@ -247,7 +247,7 @@ namespace YAF.Core.Services
         {
             try
             {
-                messageList.ForEach(message => { this.UpdateSearchIndexItemAsync(message).Wait(); });
+                messageList.ForEach(message => this.UpdateSearchIndexItemAsync(message).Wait());
             }
             finally
             {
@@ -548,13 +548,13 @@ namespace YAF.Core.Services
                        {
                            Topic = doc.Get("Topic"),
                            TopicId = doc.Get("TopicId").ToType<int>(),
-                           TopicUrl = BuildLink.GetLink(ForumPages.Posts, "t={0}", doc.Get("TopicId").ToType<int>()),
+                           TopicUrl = BuildLink.GetTopicLink(doc.Get("TopicId").ToType<int>(), doc.Get("Topic")),
                            Posted = doc.Get("Posted"),
                            UserId = doc.Get("UserId").ToType<int>(),
                            UserName = doc.Get("Author"),
                            UserDisplayName = doc.Get("AuthorDisplay"),
                            ForumName = doc.Get("ForumName"),
-                           ForumUrl = BuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
+                           ForumUrl = BuildLink.GetForumLink(doc.Get("ForumId").ToType<int>(), doc.Get("ForumName")),
                            UserStyle = doc.Get("AuthorStyle")
                        };
         }
@@ -711,26 +711,33 @@ namespace YAF.Core.Services
             }
 
             return new SearchMessage
-                       {
-                           MessageId = doc.Get("MessageId").ToType<int>(),
-                           Message = message,
-                           Flags = flags,
-                           Posted = doc.Get("Posted"),
-                           UserName = doc.Get("Author"),
-                           UserId = doc.Get("UserId").ToType<int>(),
-                           TopicId = doc.Get("TopicId").ToType<int>(),
-                           Topic = topic.IsSet() ? topic : doc.Get("Topic"),
-                           TopicTags = doc.Get("TopicTags"),
-                           ForumId = doc.Get("ForumId").ToType<int>(),
-                           Description = doc.Get("Description"),
-                           TopicUrl = BuildLink.GetLink(ForumPages.Posts, "t={0}", doc.Get("TopicId").ToType<int>()),
-                           MessageUrl =
-                               BuildLink.GetLink(ForumPages.Posts, "m={0}#post{0}", doc.Get("MessageId").ToType<int>()),
-                           ForumUrl = BuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
-                           UserDisplayName = doc.Get("AuthorDisplay"),
-                           ForumName = doc.Get("ForumName"),
-                           UserStyle = doc.Get("AuthorStyle")
-                       };
+            {
+                MessageId = doc.Get("MessageId").ToType<int>(),
+                Message = message,
+                Flags = flags,
+                Posted = doc.Get("Posted"),
+                UserName = doc.Get("Author"),
+                UserId = doc.Get("UserId").ToType<int>(),
+                TopicId = doc.Get("TopicId").ToType<int>(),
+                Topic = topic.IsSet() ? topic : doc.Get("Topic"),
+                TopicTags = doc.Get("TopicTags"),
+                ForumId = doc.Get("ForumId").ToType<int>(),
+                Description = doc.Get("Description"),
+                TopicUrl =
+                    BuildLink.GetTopicLink(
+                        doc.Get("TopicId").ToType<int>(),
+                        topic.IsSet() ? topic : doc.Get("Topic")),
+                MessageUrl =
+                    BuildLink.GetLink(
+                        ForumPages.Posts,
+                        "m={0}&name={1}#post{0}",
+                        doc.Get("MessageId").ToType<int>(),
+                        topic.IsSet() ? topic : doc.Get("Topic")),
+                ForumUrl = BuildLink.GetForumLink(doc.Get("ForumId").ToType<int>(), doc.Get("ForumName")),
+                UserDisplayName = doc.Get("AuthorDisplay"),
+                ForumName = doc.Get("ForumName"),
+                UserStyle = doc.Get("AuthorStyle")
+            };
         }
 
         /// <summary>
@@ -876,13 +883,10 @@ namespace YAF.Core.Services
                     if (userAccessList.Any())
                     {
                         userAccessList.Where(a => !a.ReadAccess).ForEach(
-                            access =>
-                                {
-                                    fil.Add(
-                                        new FilterClause(
-                                            new TermsFilter(new Term("ForumId", access.ForumID.ToString())),
-                                            Occur.MUST_NOT));
-                                });
+                            access => fil.Add(
+                                new FilterClause(
+                                    new TermsFilter(new Term("ForumId", access.ForumID.ToString())),
+                                    Occur.MUST_NOT)));
                     }
                 }
 

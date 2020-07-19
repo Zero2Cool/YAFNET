@@ -133,16 +133,16 @@ namespace YAF.Lucene.Net.Util
                 MethodInfo mi = GetMethod(baseClass, method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, parameters);
                 if (mi == null)
                 {
-                    throw new System.ArgumentException(baseClass.Name + " has no such method.");
+                    throw new ArgumentException(baseClass.Name + " has no such method.");
                 }
                 else if (!singletonSet.Add(mi))
                 {
-                    throw new System.NotSupportedException("VirtualMethod instances must be singletons and therefore " + "assigned to static final members in the same class, they use as baseClass ctor param.");
+                    throw new NotSupportedException("VirtualMethod instances must be singletons and therefore " + "assigned to static final members in the same class, they use as baseClass ctor param.");
                 }
             }
             catch (NotSupportedException nsme)
             {
-                throw new System.ArgumentException(baseClass.Name + " has no such method: " + nsme.Message);
+                throw new ArgumentException(baseClass.Name + " has no such method: " + nsme.Message);
             }
         }
 
@@ -169,13 +169,13 @@ namespace YAF.Lucene.Net.Util
 
         private int ReflectImplementationDistance(Type subclazz)
         {
-            if (!baseClass.GetTypeInfo().IsAssignableFrom(subclazz))
+            if (!baseClass.IsAssignableFrom(subclazz))
             {
-                throw new System.ArgumentException(subclazz.Name + " is not a subclass of " + baseClass.Name);
+                throw new ArgumentException(subclazz.Name + " is not a subclass of " + baseClass.Name);
             }
             bool overridden = false;
             int distance = 0;
-            for (Type clazz = subclazz; clazz != baseClass && clazz != null; clazz = clazz.GetTypeInfo().BaseType)
+            for (Type clazz = subclazz; clazz != baseClass && clazz != null; clazz = clazz.BaseType)
             {
                 // lookup method, if success mark as overridden
                 if (!overridden)

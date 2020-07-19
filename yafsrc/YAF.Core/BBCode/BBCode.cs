@@ -37,8 +37,9 @@ namespace YAF.Core.BBCode
     using YAF.Configuration;
     using YAF.Core.BBCode.ReplaceRules;
     using YAF.Core.Context;
-    using YAF.Core.Services;
+    using YAF.Core.Extensions;
     using YAF.Types;
+    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
@@ -108,7 +109,7 @@ namespace YAF.Core.BBCode
                     "CustomBBCodeRegExDictionary",
                     () =>
                         {
-                            var bbcodeTable = this.Get<DataBroker>().GetCustomBBCode();
+                            var bbcodeTable = this.GetCustomBBCode();
                             return bbcodeTable
                                 .Where(b => (b.UseModule ?? false) && b.ModuleClass.IsSet() && b.SearchRegex.IsSet())
                                 .ToDictionary(codeRow => codeRow, codeRow => new Regex(codeRow.SearchRegex, Options));
@@ -837,7 +838,7 @@ namespace YAF.Core.BBCode
                     @"\[quote=(?<quote>(.*?))]",
                     @"<blockquote class=""blockquote blockquote-custom pt-3 px-1 pb-1 mb-4 border border-secondary rounded"">
                                          <div class=""blockquote-custom-icon bg-secondary"">
-                                             <i class=""fa fa-quote-left fa-sm text-white""></i>
+                                             <i class=""fa fa-quote-left fa-sm link-light""></i>
                                          </div>${quote}",
                     Options));
 
@@ -845,7 +846,7 @@ namespace YAF.Core.BBCode
             var simpleOpenQuoteReplace =
                 $@"<blockquote class=""blockquote blockquote-custom pt-3 px-1 pb-1 mb-4 border border-secondary rounded"">
                           <div class=""blockquote-custom-icon bg-secondary"">
-                              <i class=""fa fa-quote-left fa-sm text-white""></i>
+                              <i class=""fa fa-quote-left fa-sm link-light""></i>
                           </div>
                           <footer class=""blockquote-footer""><cite>{localQuoteStr}</cite></footer>
                           <p class=""mb-0"">";
@@ -856,19 +857,6 @@ namespace YAF.Core.BBCode
             // and finally the closing quote tag
             ruleEngine.AddRule(
                 new SingleRegexReplaceRule(@"\[/quote\]", "</p></blockquote>", Options) { RuleRank = 63 });
-
-            // post and topic rules...
-            ruleEngine.AddRule(
-                new PostTopicRegexReplaceRule(
-                    @"\[post=(?<post>[0-9]*)\](?<inner>(.*?))\[/post\]",
-                    @"<a href=""${post}"" title=""${inner}"">${inner}</a>",
-                    Options));
-
-            ruleEngine.AddRule(
-                new PostTopicRegexReplaceRule(
-                    @"\[topic=(?<topic>[0-9]*)\](?<inner>(.*?))\[/topic\]",
-                    @"<a href=""${topic}"" title=""${inner}"">${inner}</a>",
-                    Options));
         }
 
         /// <summary>
@@ -976,7 +964,7 @@ namespace YAF.Core.BBCode
         /// </param>
         public void RegisterCustomBBCodePageElements(Page currentPage, Type currentType, string editorID)
         {
-            var codes = this.Get<DataBroker>().GetCustomBBCode();
+            var codes = this.GetCustomBBCode();
             const string ScriptID = "custombbcode";
             var javaScriptScriptBuilder = new StringBuilder();
             var cssBuilder = new StringBuilder();
@@ -1031,6 +1019,17 @@ namespace YAF.Core.BBCode
             }
         }
 
+        /// <summary>
+        ///     The get custom bb code.
+        /// </summary>
+        /// <returns> Returns List with Custom BBCodes </returns>
+        public IEnumerable<Types.Models.BBCode> GetCustomBBCode()
+        {
+            return this.Get<IDataCache>().GetOrSet(
+                Constants.Cache.CustomBBCode,
+                () => this.GetRepository<Types.Models.BBCode>().GetByBoardId());
+        }
+
         #endregion
 
         #endregion
@@ -1045,7 +1044,7 @@ namespace YAF.Core.BBCode
         /// </param>
         protected void AddCustomBBCodeRules(IProcessReplaceRules rulesEngine)
         {
-            var bbcodeTable = this.Get<DataBroker>().GetCustomBBCode();
+            var bbcodeTable = this.GetCustomBBCode();
 
             // handle custom bbcodes row by row...
             bbcodeTable.Where(codeRow => !(codeRow.UseModule ?? false) && codeRow.SearchRegex.IsSet()).ForEach(

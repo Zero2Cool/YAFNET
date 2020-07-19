@@ -163,6 +163,20 @@ namespace YAF.Configuration
         public static bool EnableURLRewriting => GetConfigValueAsBool("YAF.EnableUrlRewriting", true);
 
         /// <summary>
+        /// The GitHub client id.
+        /// </summary>
+        public static string GitHubClientID => GetConfigValueAsString("YAF.GithubClientID");
+
+        /// <summary>
+        /// The GitHub client secret.
+        /// </summary>
+        public static string GitHubClientSecret => GetConfigValueAsString("YAF.GithubClientSecret");
+
+        // public static string MicrosoftAccountClientID => GetConfigValueAsString("YAF.MicrosoftAccountClientID");
+
+        // public static string MicrosoftAccountClientSecret => GetConfigValueAsString("YAF.MicrosoftAccountClientSecret");
+
+        /// <summary>
         /// Gets the google client ID.
         /// </summary>
         /// <value>
@@ -196,7 +210,7 @@ namespace YAF.Configuration
         /// <summary>
         ///     Gets a value indicating whether IsAnyPortal.
         /// </summary>
-        public static bool IsAnyPortal => IsDotNetNuke || IsMojoPortal || IsRainbow || IsPortal;
+        public static bool IsAnyPortal => IsDotNetNuke || IsMojoPortal || IsPortal;
 
         /// <summary>
         ///     Gets a value indicating whether IsDotNetNuke.
@@ -239,23 +253,6 @@ namespace YAF.Configuration
         public static bool IsPortal => HttpContext.Current.Session != null && HttpContext.Current.Session["YetAnotherPortal.net"] != null;
 
         /// <summary>
-        ///     Gets a value indicating whether IsRainbow.
-        /// </summary>
-        public static bool IsRainbow
-        {
-            get
-            {
-                if (HttpContext.Current == null)
-                {
-                    return false;
-                }
-
-                var obj = HttpContext.Current.Items["PortalSettings"];
-                return obj != null && obj.ToString().ToLower().IndexOf("rainbow", StringComparison.Ordinal) >= 0;
-            }
-        }
-
-        /// <summary>
         ///     Gets jQuery Alias
         /// </summary>
         [NotNull]
@@ -289,13 +286,7 @@ namespace YAF.Configuration
         /// The j query version.
         /// </summary>
         public static string JQueryVersion => GetConfigValueAsString("YAF.JQueryVersion")
-                                                   ?? "3.5.0";
-
-        /// <summary>
-        ///     Gets MembershipProvider.
-        /// </summary>
-        [NotNull]
-        public static string MembershipProvider => GetConfigValueAsString("YAF.MembershipProvider") ?? string.Empty;
+                                                   ?? "3.5.1";
 
         /// <summary>
         ///     Gets MobileUserAgents.
@@ -308,24 +299,6 @@ namespace YAF.Configuration
         ///     Gets a value indicating whether Boolean to force uploads, and images, themes etc.. from a specific BoardID folder within BoardRoot Example : true /false
         /// </summary>
         public static bool MultiBoardFolders => GetConfigValueAsBool("YAF.MultiBoardFolders", false);
-
-        /// <summary>
-        ///     Gets ProviderKeyType.
-        /// </summary>
-        [NotNull]
-        public static string ProviderKeyType => GetConfigValueAsString("YAF.ProviderKeyType") ?? "System.Guid";
-
-        /// <summary>
-        ///     Gets ProfileProvider.
-        /// </summary>
-        [NotNull]
-        public static string ProviderProvider => GetConfigValueAsString("YAF.ProfileProvider") ?? string.Empty;
-
-        /// <summary>
-        ///     Gets RoleProvider.
-        /// </summary>
-        [NotNull]
-        public static string RoleProvider => GetConfigValueAsString("YAF.RoleProvider") ?? string.Empty;
 
         /// <summary>
         ///     Gets ServerFileRoot.
@@ -359,31 +332,6 @@ namespace YAF.Configuration
         ///     Gets TwitterConsumerSecret
         /// </summary>
         public static string TwitterConsumerSecret => GetConfigValueAsString("YAF.TwitterConsumerSecret");
-
-        /// <summary>
-        /// Gets the twitter token.
-        /// </summary>
-        /// <value>
-        /// The twitter token.
-        /// </value>
-        public static string TwitterToken => GetConfigValueAsString("YAF.TwitterToken");
-
-        /// <summary>
-        /// Gets the twitter token secret.
-        /// </summary>
-        /// <value>
-        /// The twitter token secret.
-        /// </value>
-        public static string TwitterTokenSecret => GetConfigValueAsString("YAF.TwitterTokenSecret");
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is twitter enabled.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is twitter enabled; otherwise, <c>false</c>.
-        /// </value>
-        public static bool IsTwitterEnabled => TwitterConsumerKey.IsSet() && TwitterConsumerSecret.IsSet() && TwitterToken.IsSet()
-                                               && TwitterTokenSecret.IsSet();
 
         /// <summary>
         ///     Gets the Url Rewriting URLRewritingMode? -- default is Unicode.

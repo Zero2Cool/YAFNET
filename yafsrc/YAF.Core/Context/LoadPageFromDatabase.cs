@@ -28,8 +28,8 @@ namespace YAF.Core.Context
     using System.Data;
     using System.Web;
 
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Attributes;
     using YAF.Types.Constants;
@@ -111,9 +111,9 @@ namespace YAF.Core.Context
             {
                 object userKey = null;
 
-                if (BoardContext.Current.User != null)
+                if (BoardContext.Current.MembershipUser != null)
                 {
-                    userKey = BoardContext.Current.User.ProviderUserKey;
+                    userKey = BoardContext.Current.MembershipUser.Id;
                 }
 
                 var tries = 0;
@@ -146,15 +146,14 @@ namespace YAF.Core.Context
                         (bool)@event.Data.IsSearchEngine,
                         (bool)@event.Data.IsMobileDevice,
                         (bool)@event.Data.DontTrack);
-                        
-
+                    
                     // if the user doesn't exist...
                     if (userKey != null && pageRow == null)
                     {
                         // create the user...
                         if (
-                            !RoleMembershipHelper.DidCreateForumUser(
-                                BoardContext.Current.User, BoardContext.Current.PageBoardID))
+                            !AspNetRolesHelper.DidCreateForumUser(
+                                BoardContext.Current.MembershipUser, BoardContext.Current.PageBoardID))
                         {
                             throw new ApplicationException("Failed to create new user.");
                         }

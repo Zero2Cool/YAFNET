@@ -27,10 +27,8 @@ namespace YAF.Pages
 
     using System;
 
-    using YAF.Configuration;
     using YAF.Controls;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -68,7 +66,7 @@ namespace YAF.Pages
         protected override void OnPreRender([NotNull] EventArgs e)
         {
             // setup jQuery and Jquery Ui Tabs.
-            BoardContext.Current.PageElements.RegisterJsBlock(
+            this.PageContext.PageElements.RegisterJsBlock(
                 "yafBuddiesTabsJs",
                 JavaScriptBlocks.BootstrapTabsLoadJs(this.BuddiesTabs.ClientID, this.hidLastTab.ClientID));
 
@@ -92,10 +90,8 @@ namespace YAF.Pages
         {
             this.PageLinks.AddRoot();
             this.PageLinks.AddLink(
-                this.Get<BoardSettings>().EnableDisplayName
-                    ? this.PageContext.CurrentUserData.DisplayName
-                    : this.PageContext.PageUserName,
-                BuildLink.GetLink(ForumPages.Account));
+                this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser),
+                BuildLink.GetLink(ForumPages.MyAccount));
             this.PageLinks.AddLink(this.GetText("BUDDYLIST_TT"), string.Empty);
         }
 

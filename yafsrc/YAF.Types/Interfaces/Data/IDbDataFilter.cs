@@ -27,14 +27,34 @@ namespace YAF.Types.Interfaces.Data
 
     using System.Collections.Generic;
 
+    using YAF.Types.Constants;
+
     #endregion
 
+    /// <summary>
+    /// The DbDataFilter interface.
+    /// </summary>
     public interface IDbDataFilter : IDbSortableOperation
     {
         #region Public Methods and Operators
 
+        /// <summary>
+        /// The run.
+        /// </summary>
+        /// <param name="dbfunctionType">
+        /// The dbfunction type.
+        /// </param>
+        /// <param name="operationName">
+        /// The operation name.
+        /// </param>
+        /// <param name="parameters">
+        /// The parameters.
+        /// </param>
+        /// <param name="data">
+        /// The data.
+        /// </param>
         void Run(
-            DbFunctionType dbfunctionType,
+            DBFunctionType dbfunctionType,
             string operationName,
             IEnumerable<KeyValuePair<string, object>> parameters,
             object data);

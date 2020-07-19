@@ -26,7 +26,7 @@ namespace YAF.Pages
     #region Using
 
     using System;
-    using System.Data;
+    using System.Linq;
     using System.Web;
     using System.Web.UI.WebControls;
 
@@ -34,10 +34,10 @@ namespace YAF.Pages
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
-    using YAF.Types.Flags;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
     using YAF.Utils;
@@ -54,29 +54,14 @@ namespace YAF.Pages
         #region Constants and Fields
 
         /// <summary>
-        ///   The _forum flags.
+        ///   The is moderator changed.
         /// </summary>
-        protected ForumFlags _forumFlags;
+        private bool isModeratorChanged;
 
         /// <summary>
-        ///   The _is moderator changed.
+        ///   The message row.
         /// </summary>
-        protected bool _isModeratorChanged;
-
-        /// <summary>
-        ///   The _message row.
-        /// </summary>
-        protected DataRow _messageRow;
-
-        /// <summary>
-        ///   The _owner user id.
-        /// </summary>
-        protected int _ownerUserId;
-
-        /// <summary>
-        ///   The _topic flags.
-        /// </summary>
-        protected TopicFlags _topicFlags;
+        private Tuple<Topic, Message, User, Forum> message;
 
         #endregion
 
@@ -98,27 +83,14 @@ namespace YAF.Pages
         ///   Gets a value indicating whether CanDeletePost.
         /// </summary>
         public bool CanDeletePost =>
-            (!this.PostLocked && !this._forumFlags.IsLocked && !this._topicFlags.IsLocked
-             && this._messageRow["UserID"].ToType<int>() == this.PageContext.PageUserID
+            (!this.PostLocked && !this.message.Item4.ForumFlags.IsLocked && !this.message.Item1.TopicFlags.IsLocked
+             && this.message.Item1.UserID == this.PageContext.PageUserID
              || this.PageContext.ForumModeratorAccess) && this.PageContext.ForumDeleteAccess;
 
         /// <summary>
         ///   Gets a value indicating whether CanUnDeletePost.
         /// </summary>
-        public bool CanUnDeletePost => this.PostDeleted && this.CanDeletePost;
-
-        /// <summary>
-        ///   Gets a value indicating whether PostDeleted.
-        /// </summary>
-        private bool PostDeleted
-        {
-            get
-            {
-                var deleted = this._messageRow["Flags"].ToType<int>() & 8;
-
-                return deleted == 8;
-            }
-        }
+        public bool CanUnDeletePost => this.message.Item2.MessageFlags.IsDeleted && this.CanDeletePost;
 
         /// <summary>
         ///   Gets a value indicating whether PostLocked.
@@ -132,7 +104,7 @@ namespace YAF.Pages
                     return false;
                 }
 
-                var edited = this._messageRow["Edited"].ToType<DateTime>();
+                var edited = this.message.Item2.Edited.Value;
 
                 return edited.AddDays(this.Get<BoardSettings>().LockPosts) < DateTime.UtcNow;
             }
@@ -153,12 +125,20 @@ namespace YAF.Pages
                 || this.Get<HttpRequestBase>().QueryString.Exists("m"))
             {
                 // reply to existing topic or editing of existing topic
-                BuildLink.Redirect(ForumPages.Posts, "t={0}", this.PageContext.PageTopicID);
+                BuildLink.Redirect(
+                    ForumPages.Posts,
+                    "t={0}&name={1}",
+                    this.PageContext.PageTopicID,
+                    this.PageContext.PageTopicName);
             }
             else
             {
                 // new topic -- cancel back to forum
-                BuildLink.Redirect(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
+                BuildLink.Redirect(
+                    ForumPages.Topics,
+                    "f={0}&name={1}",
+                    this.PageContext.PageForumID,
+                    this.PageContext.PageForumName);
             }
         }
 
@@ -196,10 +176,6 @@ namespace YAF.Pages
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit([NotNull] EventArgs e)
         {
-            /* get the forum editor based on the settings
-      Message = yaf.editor.EditorHelper.CreateEditorFromType(PageContext.BoardSettings.ForumEditor);
-      EditorLine.Controls.Add(Message); 
-       */
             this.LinkedPosts.ItemDataBound += this.LinkedPosts_ItemDataBound;
 
             base.OnInit(e);
@@ -212,25 +188,25 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this._messageRow = null;
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.Delete.ClientID));
+
+            this.message = null;
 
             if (this.Get<HttpRequestBase>().QueryString.Exists("m"))
             {
-                this._messageRow = this.GetRepository<Message>().ListAsDataTable(
-                        Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("m")))
-                    .GetFirstRowOrInvalid();
+                this.message = this.GetRepository<Message>().GetMessage(
+                        Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("m")));
+
+                this.isModeratorChanged = this.PageContext.PageUserID != this.message.Item1.UserID;
 
                 if (!this.PageContext.ForumModeratorAccess
-                    && this.PageContext.PageUserID != (int)this._messageRow["UserID"])
+                    && this.isModeratorChanged)
                 {
                     BuildLink.AccessDenied();
                 }
             }
-
-            this._forumFlags = new ForumFlags(this._messageRow["ForumFlags"]);
-            this._topicFlags = new TopicFlags(this._messageRow["TopicFlags"]);
-            this._ownerUserId = (int)this._messageRow["UserID"];
-            this._isModeratorChanged = this.PageContext.PageUserID != this._ownerUserId;
 
             if (this.PageContext.PageForumID == 0)
             {
@@ -268,13 +244,13 @@ namespace YAF.Pages
             // delete message...
             this.PreviewRow.Visible = true;
 
-            var tempdb = this.GetRepository<Message>().RepliesListAsDataTable(
+            var replies = this.GetRepository<Message>().Replies(
                 this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("m").ToType<int>());
 
-            if (tempdb.HasRows() && (this.PageContext.ForumModeratorAccess || this.PageContext.IsAdmin))
+            if (replies.Any() && (this.PageContext.ForumModeratorAccess || this.PageContext.IsAdmin))
             {
                 this.LinkedPosts.Visible = true;
-                this.LinkedPosts.DataSource = tempdb;
+                this.LinkedPosts.DataSource = replies;
                 this.LinkedPosts.DataBind();
             }
 
@@ -295,16 +271,14 @@ namespace YAF.Pages
                 this.Delete.Icon = "trash-restore";
             }
 
-            this.Subject.Text = Convert.ToString(this._messageRow["Topic"]);
+            this.Subject.Text = this.message.Item1.TopicName;
             this.DeleteReasonRow.Visible = true;
-            this.ReasonEditor.Text = Convert.ToString(this._messageRow["DeleteReason"]);
+            this.ReasonEditor.Text = this.message.Item2.DeleteReason;
 
             // populate the message preview with the message data-row...
-            this.MessagePreview.Message = this._messageRow["message"].ToString();
+            this.MessagePreview.Message = this.message.Item2.MessageText;
 
-            var messageFlags = new MessageFlags(this._messageRow["Flags"]) { IsDeleted = false };
-
-            this.MessagePreview.MessageFlags = messageFlags;
+            this.MessagePreview.MessageFlags = this.message.Item2.MessageFlags;
         }
 
         /// <summary>
@@ -314,9 +288,7 @@ namespace YAF.Pages
         {
             // setup page links
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.PageContext.PageCategoryName,
-                BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+            this.PageLinks.AddCategory(this.PageContext.PageCategoryName, this.PageContext.PageCategoryID);
             this.PageLinks.AddForum(this.PageContext.PageForumID);
         }
 
@@ -325,17 +297,12 @@ namespace YAF.Pages
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ToogleDeleteStatus_Click([NotNull] object sender, [NotNull] EventArgs e)
+        protected void ToggleDeleteStatus_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
             if (!this.CanDeletePost)
             {
                 return;
             }
-
-            // Create objects for easy access
-            var tmpMessageID = this._messageRow["MessageID"];
-            var tmpForumID = this._messageRow["ForumID"];
-            var tmpTopicID = this._messageRow["TopicID"];
 
             var deleteAllLinked = false;
 
@@ -355,24 +322,25 @@ namespace YAF.Pages
             // Toggle delete message -- if the message is currently deleted it will be un-deleted.
             // If it's not deleted it will be marked deleted.
             // If it is the last message of the topic, the topic is also deleted
-            this.GetRepository<Message>().Delete(tmpMessageID.ToType<int>(),
-                this._isModeratorChanged,
+            this.GetRepository<Message>().Delete(
+                this.message.Item1.ID,
+                this.isModeratorChanged,
                 HttpUtility.HtmlEncode(this.ReasonEditor.Text),
-                this.PostDeleted ? 0 : 1,
+                this.message.Item2.MessageFlags.IsDeleted ? 0 : 1,
                 deleteAllLinked,
                 this.EraseMessage.Checked);
 
             // retrieve topic information.
-            var topic = this.GetRepository<Topic>().GetById(tmpTopicID.ToType<int>());
+            var topic = this.GetRepository<Topic>().GetById(this.message.Item2.TopicID);
 
             // If topic has been deleted, redirect to topic list for active forum, else show remaining posts for topic
             if (topic == null)
             {
-                BuildLink.Redirect(ForumPages.topics, "f={0}", tmpForumID);
+                BuildLink.Redirect(ForumPages.Topics, "f={0}&name={1}", this.message.Item3.ID, this.message.Item3.Name);
             }
             else
             {
-                BuildLink.Redirect(ForumPages.Posts, "t={0}", tmpTopicID);
+                BuildLink.Redirect(ForumPages.Posts, "t={0}&name={1}", topic.ID, topic.TopicName);
             }
         }
 

@@ -28,21 +28,22 @@ namespace YAF.Controls
 
     using System;
     using System.Data;
-    
+    using System.Web;
+
     using YAF.Configuration;
     using YAF.Core.BaseControls;
     using YAF.Core.BaseModules;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Events;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
+    using YAF.Types.Models.Identity;
     using YAF.Utils;
-    using YAF.Utils.Helpers;
     using YAF.Web.Controls;
     using YAF.Web.Editors;
 
@@ -75,6 +76,11 @@ namespace YAF.Controls
         /// </summary>
         private SignaturePreview signaturePreview;
 
+        /// <summary>
+        /// The user.
+        /// </summary>
+        private Tuple<User, AspNetUsers, Rank, vaccess> user;
+
         #endregion
 
         #region Properties
@@ -102,20 +108,28 @@ namespace YAF.Controls
             get
             {
                 if (this.PageContext.CurrentForumPage.IsAdminPage && this.PageContext.IsAdmin
-                                                                  && this.PageContext.QueryIDs.ContainsKey("u"))
+                                                                  && this.Get<HttpRequestBase>().QueryString.Exists("u"))
                 {
-                    return this.PageContext.QueryIDs["u"].ToType<int>();
+                    return Security.StringToIntOrRedirect(
+                        this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
                 }
 
                 if (this.InModeratorMode && (this.PageContext.IsAdmin || this.PageContext.IsForumModerator)
-                                         && this.PageContext.QueryIDs.ContainsKey("u"))
+                                         && this.Get<HttpRequestBase>().QueryString.Exists("u"))
                 {
-                    return this.PageContext.QueryIDs["u"].ToType<int>();
+                    return Security.StringToIntOrRedirect(
+                        this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
                 }
 
                 return this.PageContext.PageUserID;
             }
         }
+
+        /// <summary>
+        /// Gets the User Data.
+        /// </summary>
+        [NotNull]
+        private Tuple<User, AspNetUsers, Rank, vaccess> User => this.user ??= this.GetRepository<User>().GetBoardUser(this.CurrentUserID);
 
         #endregion
 
@@ -138,8 +152,6 @@ namespace YAF.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit([NotNull] EventArgs e)
         {
-            this.PageContext.QueryIDs = new QueryStringIDHelper("u");
-
             var sigData = this.GetRepository<User>()
                 .SignatureDataAsDataRow(this.CurrentUserID, this.PageContext.PageBoardID);
 
@@ -204,11 +216,15 @@ namespace YAF.Controls
         {
             if (this.InModeratorMode)
             {
-                BuildLink.Redirect(ForumPages.Profile, "u={0}", this.CurrentUserID);
+                BuildLink.Redirect(
+                    ForumPages.UserProfile,
+                    "u={0}&name={1}",
+                    this.CurrentUserID,
+                    this.Get<IUserDisplayName>().GetName(this.CurrentUserID));
             }
             else
             {
-                BuildLink.Redirect(ForumPages.Account);
+                BuildLink.Redirect(ForumPages.MyAccount);
             }
         }
 
@@ -249,16 +265,11 @@ namespace YAF.Controls
             {
                 if (this.signatureEditor.Text.Length <= this.allowedNumberOfCharacters)
                 {
-                    var userData = new CombinedUserDataHelper(this.CurrentUserID);
-
-                    if (userData.NumPosts < this.Get<BoardSettings>().IgnoreSpamWordCheckPostCount)
+                    if (this.User.Item1.NumPosts < this.Get<BoardSettings>().IgnoreSpamWordCheckPostCount)
                     {
                         // Check for spam
                         if (this.Get<ISpamWordCheck>().CheckForSpamWord(body, out var result))
                         {
-                            var user = UserMembershipHelper.GetMembershipUserById(this.CurrentUserID);
-                            var userId = this.CurrentUserID;
-
                             // Log and Send Message to Admins
                             if (this.Get<BoardSettings>().BotHandlingOnRegister.Equals(1))
                             {
@@ -266,7 +277,7 @@ namespace YAF.Controls
                                     null,
                                     "Bot Detected",
                                     $@"Internal Spam Word Check detected a SPAM BOT: (
-                                                      user name : '{user.UserName}', 
+                                                      user name : '{this.User.Item1.Name}', 
                                                       user id : '{this.CurrentUserID}') 
                                                  after the user included a spam word in his/her signature: {result}",
                                     EventLogTypes.SpamBotDetected);
@@ -277,7 +288,7 @@ namespace YAF.Controls
                                     null,
                                     "Bot Detected",
                                     $@"Internal Spam Word Check detected a SPAM BOT: (
-                                                       user name : '{user.UserName}', 
+                                                       user name : '{this.User.Item1.Name}', 
                                                        user id : '{this.CurrentUserID}') 
                                                  after the user included a spam word in his/her signature: {result}, user was deleted and the name, email and IP Address are banned.",
                                     EventLogTypes.SpamBotDetected);
@@ -285,9 +296,7 @@ namespace YAF.Controls
                                 // Kill user
                                 if (!this.PageContext.CurrentForumPage.IsAdminPage)
                                 {
-                                    var userIp = new CombinedUserDataHelper(user, userId).LastIP;
-
-                                    UserMembershipHelper.DeleteAndBanUser(this.CurrentUserID, user, userIp);
+                                    this.Get<IAspNetUsersHelper>().DeleteAndBanUser(this.CurrentUserID, this.User.Item2, this.User.Item1.IP);
                                 }
                             }
                         }

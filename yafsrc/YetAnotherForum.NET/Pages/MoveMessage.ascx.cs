@@ -60,6 +60,12 @@ namespace YAF.Pages
 
         #endregion
 
+        /// <summary>
+        /// The move message id.
+        /// </summary>
+        protected int MoveMessageId =>
+            Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("m"));
+
         #region Methods
 
         /// <summary>
@@ -71,8 +77,8 @@ namespace YAF.Pages
             base.OnPreRender(e);
 
             this.PageContext.PageElements.RegisterJsBlockStartup(
-                "fileUploadjs",
-                JavaScriptBlocks.SelectTopicsLoadJs(this.ForumList.ClientID));
+                nameof(JavaScriptBlocks.SelectTopicsLoadJs),
+                JavaScriptBlocks.SelectTopicsLoadJs(this.TopicsList.ClientID, this.ForumList.ClientID));
         }
 
         /// <summary>
@@ -85,16 +91,20 @@ namespace YAF.Pages
             if (this.TopicSubject.Text.IsSet())
             {
                 var topicId = this.GetRepository<Topic>().CreateByMessage(
-                    this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("m"),
+                    this.MoveMessageId,
                     this.ForumList.SelectedValue.ToType<int>(),
                     this.TopicSubject.Text);
 
                 this.GetRepository<Message>().Move(
-                    this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("m"),
+                    this.MoveMessageId,
                     topicId.ToType<int>(),
                     true);
 
-                BuildLink.Redirect(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
+                BuildLink.Redirect(
+                    ForumPages.Topics,
+                    "f={0}&name={1}",
+                    this.PageContext.PageForumID,
+                    this.PageContext.PageForumName);
             }
             else
             {
@@ -139,12 +149,16 @@ namespace YAF.Pages
             if (this.TopicsList.SelectedValue.ToType<int>() != this.PageContext.PageTopicID)
             {
                 this.GetRepository<Message>().Move(
-                    this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("m"),
+                    this.MoveMessageId,
                     this.TopicsList.SelectedValue.ToType<int>(),
                     true);
             }
 
-            BuildLink.Redirect(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
+            BuildLink.Redirect(
+                ForumPages.Topics,
+                "f={0}&name={1}",
+                this.PageContext.PageForumID,
+                this.PageContext.PageForumName);
         }
 
         /// <summary>
@@ -184,14 +198,9 @@ namespace YAF.Pages
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-
-            this.PageLinks.AddLink(
-                this.PageContext.PageCategoryName,
-                BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+            this.PageLinks.AddCategory(this.PageContext.PageCategoryName, this.PageContext.PageCategoryID);
             this.PageLinks.AddForum(this.PageContext.PageForumID);
-            this.PageLinks.AddLink(
-                this.PageContext.PageTopicName,
-                BuildLink.GetLink(ForumPages.Posts, "t={0}", this.PageContext.PageTopicID));
+            this.PageLinks.AddTopic(this.PageContext.PageTopicName, this.PageContext.PageTopicID);
 
             this.PageLinks.AddLink(this.GetText("MOVE_MESSAGE"));
         }

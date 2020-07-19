@@ -26,8 +26,6 @@ namespace YAF.Pages.Admin
     #region Using
 
     using System;
-    using System.Data;
-    using System.Linq;
     using System.Net.Mail;
     using System.Threading.Tasks;
     using System.Web.UI.WebControls;
@@ -36,12 +34,12 @@ namespace YAF.Pages.Admin
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -65,6 +63,10 @@ namespace YAF.Pages.Admin
                 return;
             }
 
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.Send.ClientID));
+
             this.BindData();
         }
 
@@ -74,9 +76,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_MAIL", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -97,40 +97,30 @@ namespace YAF.Pages.Admin
                 groupId = this.ToList.SelectedValue.ToType<int>();
             }
 
-            var subject = this.Subject.Text.Trim();
+            var emails = this.GetRepository<User>().GroupEmails(groupId.Value);
 
-            if (subject.IsNotSet())
-            {
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_MAIL", "MSG_SUBJECT"), MessageTypes.danger);
-            }
-            else
-            {
-                using (var dt = this.GetRepository<User>().EmailsAsDataTable(this.PageContext.PageBoardID, groupId))
+            Parallel.ForEach(
+                emails,
+                email =>
                 {
-                    Parallel.ForEach(
-                        dt.Rows.Cast<DataRow>(),
-                        row =>
-                            {
-                                var from = new MailAddress(
-                                    this.Get<BoardSettings>().ForumEmail,
-                                    this.Get<BoardSettings>().Name);
+                    var from = new MailAddress(
+                        this.Get<BoardSettings>().ForumEmail,
+                        this.Get<BoardSettings>().Name);
 
-                                var to = new MailAddress(row.Field<string>("Email"));
+                    var to = new MailAddress(email);
 
-                                this.Get<ISendMail>().Send(
-                                    from,
-                                    to,
-                                    from,
-                                    this.Subject.Text.Trim(),
-                                    this.Body.Text.Trim(),
-                                    null);
-                            });
-                }
+                    this.Get<ISendMail>().Send(
+                        from,
+                        to,
+                        from,
+                        this.Subject.Text.Trim(),
+                        this.Body.Text.Trim(),
+                        null);
+                });
 
-                this.Subject.Text = string.Empty;
-                this.Body.Text = string.Empty;
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_MAIL", "MSG_QUEUED"), MessageTypes.success);
-            }
+            this.Subject.Text = string.Empty;
+            this.Body.Text = string.Empty;
+            this.PageContext.AddLoadMessage(this.GetText("ADMIN_MAIL", "MSG_QUEUED"), MessageTypes.success);
         }
 
         /// <summary>

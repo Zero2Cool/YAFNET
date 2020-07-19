@@ -32,9 +32,7 @@ namespace YAF.Pages.Admin
     using System.Web.UI.WebControls;
     using System.Xml.Linq;
 
-    using YAF.Core;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -42,7 +40,6 @@ namespace YAF.Pages.Admin
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -78,7 +75,7 @@ namespace YAF.Pages.Admin
             }
 
             this.PageLinks.AddRoot()
-                .AddLink(this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin))
+                .AddAdminIndex()
                 .AddLink(this.GetText("ADMIN_REPLACEWORDS", "TITLE"));
 
             this.Page.Header.Title =
@@ -108,7 +105,7 @@ namespace YAF.Pages.Admin
                 case "add":
                     this.EditDialog.BindData(null);
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("ReplaceWordsEditDialog"));
 
@@ -116,7 +113,7 @@ namespace YAF.Pages.Admin
                 case "edit":
                     this.EditDialog.BindData(e.CommandArgument.ToType<int>());
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("ReplaceWordsEditDialog"));
                     break;
@@ -148,11 +145,11 @@ namespace YAF.Pages.Admin
                 "content-disposition",
                 "attachment; filename=ReplaceWordsExport.xml");
 
-            var spamwordList = this.GetRepository<Replace_Words>().GetByBoardId();
+            var spamWordList = this.GetRepository<Replace_Words>().GetByBoardId();
 
             var element = new XElement(
                 "YafReplaceWordsList",
-                from spamWord in spamwordList
+                from spamWord in spamWordList
                 select new XElement(
                     "YafReplaceWords",
                     new XElement("BadWord", spamWord.BadWord),

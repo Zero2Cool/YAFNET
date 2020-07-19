@@ -63,7 +63,7 @@
                         <asp:HiddenField ID="MessageID" runat="server" Value='<%# this.Eval("UserPMessageID") %>' />
                         <asp:CheckBox runat="server" ID="ItemCheck" 
                                        Text="&nbsp;"
-                                       CssClass="custom-control custom-checkbox d-inline-flex"/>
+                                       CssClass="form-check d-inline-flex"/>
                         <YAF:Icon runat="server"
                                   IconName='<%# this.Eval("IsRead").ToType<bool>() ? "envelope-open" : "envelope" %>'
                                   IconType='<%# this.Eval("IsRead").ToType<bool>() ? "text-secondary" : "text-success" %>'></YAF:Icon>
@@ -84,7 +84,9 @@
                         <YAF:LocalizedLabel ID="LocalizedLabel6" runat="server" LocalizedTag='<%# this.View == PmView.Outbox ? "TO" : "FROM" %>' />:
                     </span>
                     <YAF:UserLink ID="UserLink1" runat="server" 
-                                  UserID='<%# (this.View == PmView.Outbox ? this.Eval("ToUserID") : this.Eval("FromUserID" )).ToType<int>() %>' />
+                                  Suspended='<%# this.Eval(this.View == PmView.Outbox ? "ToSuspended" : "FromSuspended").ToType<DateTime?>()  %>'
+                                  Style='<%# this.Eval(this.View == PmView.Outbox ? "ToStyle" : "FromStyle") %>'
+                                  UserID='<%# this.Eval(this.View == PmView.Outbox ? "ToUserID" : "FromUserID").ToType<int>() %>' />
                 </p>
             </li>
     </ItemTemplate>
@@ -157,7 +159,7 @@
 <YAF:Pager ID="PagerBottom" runat="server" LinkedPager="PagerTop" />
 
 <asp:Label id="lblExportType" runat="server"></asp:Label>
-<div class="custom-control custom-radio custom-control-inline">
+<div class="form-check form-check-inline">
     <asp:RadioButtonList runat="server" id="ExportType" 
                          RepeatLayout="UnorderedList"
                          CssClass="list-unstyled">
@@ -168,7 +170,10 @@
 </div>
 
 <YAF:Alert runat="server" ID="NoMessage" Type="info">
-    <YAF:LocalizedLabel runat="server" LocalizedTag="NO_MESSAGES"></YAF:LocalizedLabel>
+    <YAF:Icon runat="server" 
+              IconName="info-circle" />
+    <YAF:LocalizedLabel runat="server" 
+                        LocalizedTag="NO_MESSAGES" />
 </YAF:Alert>
 
 </div>

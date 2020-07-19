@@ -2,6 +2,7 @@ using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace YAF.Lucene.Net.Codecs
 {
@@ -34,7 +35,7 @@ namespace YAF.Lucene.Net.Codecs
     /// <list type="number">
     ///     <item><description>Subclass this class.</description></item>
     ///     <item><description>Subclass <see cref="DefaultPostingsFormatFactory"/>, override <see cref="DefaultPostingsFormatFactory.Initialize()"/>,
-    ///         and add the line <c>base.ScanForPostingsFormats(typeof(YourPostingsFormat).GetTypeInfo().Assembly)</c>. 
+    ///         and add the line <c>base.ScanForPostingsFormats(typeof(YourPostingsFormat).Assembly)</c>. 
     ///         If you have any format classes in your assembly 
     ///         that are not meant for reading, you can add the <see cref="ExcludePostingsFormatFromScanAttribute"/> 
     ///         to them so they are ignored by the scan.</description></item>
@@ -68,7 +69,12 @@ namespace YAF.Lucene.Net.Codecs
 
         /// <summary>
         /// Zero-length <see cref="PostingsFormat"/> array. </summary>
-        public static readonly PostingsFormat[] EMPTY = new PostingsFormat[0];
+        public static readonly PostingsFormat[] EMPTY =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<PostingsFormat>();
+#else
+            new PostingsFormat[0];
+#endif
 
         /// <summary>
         /// Unique name that's used to retrieve this format when
@@ -113,13 +119,7 @@ namespace YAF.Lucene.Net.Codecs
 
         /// <summary>
         /// Returns this posting format's name. </summary>
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-        }
+        public string Name => name;
 
         /// <summary>
         /// Writes a new segment. </summary>
@@ -131,8 +131,8 @@ namespace YAF.Lucene.Net.Codecs
         /// use; else, those files may be deleted.
         /// Additionally, required files may be deleted during the execution of
         /// this call before there is a chance to open them. Under these
-        /// circumstances an <see cref="System.IO.IOException"/> should be thrown by the implementation.
-        /// <see cref="System.IO.IOException"/>s are expected and will automatically cause a retry of the
+        /// circumstances an <see cref="IOException"/> should be thrown by the implementation.
+        /// <see cref="IOException"/>s are expected and will automatically cause a retry of the
         /// segment opening logic with the newly revised segments.
         /// </summary>
         public abstract FieldsProducer FieldsProducer(SegmentReadState state);

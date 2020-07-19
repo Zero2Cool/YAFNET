@@ -31,7 +31,6 @@ namespace YAF.Pages.Admin
     using YAF.Configuration;
     using YAF.Core;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Helpers;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -64,7 +63,7 @@ namespace YAF.Pages.Admin
         protected void IndexSearch_OnClick(object sender, EventArgs e)
         {
             this.Get<BoardSettings>().ForceUpdateSearchIndex = true;
-            ((LoadBoardSettings)BoardContext.Current.BoardSettings).SaveRegistry();
+            ((LoadBoardSettings)this.PageContext.BoardSettings).SaveRegistry();
 
             this.PageContext.AddLoadMessage(this.GetText("FORCE_SEARCHINDED"), MessageTypes.info);
         }
@@ -154,7 +153,7 @@ namespace YAF.Pages.Admin
         protected override void OnPreRender([NotNull] EventArgs e)
         {
             // setup jQuery and YAF JS...
-            BoardContext.Current.PageElements.RegisterJsBlock(
+            this.PageContext.PageElements.RegisterJsBlock(
                 "yafTabsJs",
                 JavaScriptBlocks.BootstrapTabLoadJs("v-pills-tab", this.hidLastTab.ClientID));
 
@@ -204,9 +203,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_HOSTSETTINGS", "TITLE"), string.Empty);
 
             this.Page.Header.Title =

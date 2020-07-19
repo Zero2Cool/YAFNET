@@ -34,15 +34,19 @@ namespace YAF.Lucene.Net.Util
 #if FEATURE_SERIALIZABLE
     [Serializable]
 #endif
-    public sealed class CharsRef : IComparable<CharsRef>, ICharSequence
+    public sealed class CharsRef : IComparable<CharsRef>, ICharSequence, IEquatable<CharsRef> // LUCENENET specific - implemented IEquatable<CharsRef>
 #if FEATURE_CLONEABLE
         , System.ICloneable
 #endif
     {
         /// <summary>
         /// An empty character array for convenience </summary>
-        public static readonly char[] EMPTY_CHARS = new char[0];
-
+        public static readonly char[] EMPTY_CHARS =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<char>();
+#else
+            new char[0];
+#endif
         bool ICharSequence.HasValue => true;
 
         /// <summary>
@@ -52,7 +56,7 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public char[] Chars
         {
-            get { return chars; }
+            get => chars;
             set
             {
                 if (value == null)
@@ -148,6 +152,9 @@ namespace YAF.Lucene.Net.Util
             }
             return false;
         }
+
+        bool IEquatable<CharsRef>.Equals(CharsRef other) // LUCENENET specific - implemented IEquatable<CharsRef>
+            => CharsEquals(other);
 
         public bool CharsEquals(CharsRef other)
         {
@@ -319,13 +326,7 @@ namespace YAF.Lucene.Net.Util
 
         /// @deprecated this comparer is only a transition mechanism
         [Obsolete("this comparer is only a transition mechanism")]
-        public static IComparer<CharsRef> UTF16SortedAsUTF8Comparer
-        {
-            get
-            {
-                return utf16SortedAsUTF8SortOrder;
-            }
-        }
+        public static IComparer<CharsRef> UTF16SortedAsUTF8Comparer => utf16SortedAsUTF8SortOrder;
 
         /// @deprecated this comparer is only a transition mechanism
         [Obsolete("this comparer is only a transition mechanism")]

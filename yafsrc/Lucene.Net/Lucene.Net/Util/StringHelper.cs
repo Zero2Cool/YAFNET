@@ -44,7 +44,8 @@ namespace YAF.Lucene.Net.Util
         // instances:
         private static int InitializeHashSeed()
         {
-            string prop = SystemProperties.GetProperty("tests.seed", null);
+            // LUCENENET specific - reformatted with :
+            string prop = SystemProperties.GetProperty("tests:seed", null);
 
             if (prop != null)
             {
@@ -94,13 +95,7 @@ namespace YAF.Lucene.Net.Util
         /// <para/>
         /// @lucene.internal
         /// </summary>
-        public static IComparer<string> VersionComparer
-        {
-            get
-            {
-                return versionComparer;
-            }
-        }
+        public static IComparer<string> VersionComparer => versionComparer;
 
         private static readonly IComparer<string> versionComparer = Comparer<string>.Create((a, b) =>
         {

@@ -38,9 +38,11 @@ $(document).on("click",
         e.preventDefault();
         var link = $(this).attr("href");
         var text = $(this).data("title");
+        var title = $(this).html();
         var blockUI = $(this).data("confirm-event");
         bootbox.confirm({
-                centerVertical: true,
+            centerVertical: true,
+                title: title,
                 message: text,
                 buttons: {
                     confirm: {
@@ -77,5 +79,22 @@ $(function () {
     $(".btn-scroll").click(function () {
         $("html,body").animate({ scrollTop: $("header").offset().top }, "1000");
         return false;
+    });
+});
+
+// Toggle password visibility 
+$(document).ready(function () {
+    $("#PasswordToggle").on("click", function (event) {
+        event.preventDefault();
+        var pass = $("input[id*='Password']");
+        if (pass.attr("type") === "text") {
+            pass.attr("type", "password");
+            $("#PasswordToggle i").addClass("fa-eye-slash");
+            $("#PasswordToggle i").removeClass("fa-eye");
+        } else if (pass.attr("type") === "password") {
+            pass.attr("type", "text");
+            $("#PasswordToggle i").removeClass("fa-eye-slash");
+            $("#PasswordToggle i").addClass("fa-eye");
+        }
     });
 });

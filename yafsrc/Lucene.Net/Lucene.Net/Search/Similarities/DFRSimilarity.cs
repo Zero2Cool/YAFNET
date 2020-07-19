@@ -1,3 +1,5 @@
+using System;
+
 namespace YAF.Lucene.Net.Search.Similarities
 {
     /*
@@ -110,7 +112,7 @@ namespace YAF.Lucene.Net.Search.Similarities
         {
             if (basicModel == null || afterEffect == null || normalization == null)
             {
-                throw new System.NullReferenceException("null parameters not allowed.");
+                throw new NullReferenceException("null parameters not allowed.");
             }
             this.m_basicModel = basicModel;
             this.m_afterEffect = afterEffect;
@@ -145,34 +147,16 @@ namespace YAF.Lucene.Net.Search.Similarities
         /// <summary>
         /// Returns the basic model of information content
         /// </summary>
-        public virtual BasicModel BasicModel
-        {
-            get
-            {
-                return m_basicModel;
-            }
-        }
+        public virtual BasicModel BasicModel => m_basicModel;
 
         /// <summary>
         /// Returns the first normalization
         /// </summary>
-        public virtual AfterEffect AfterEffect
-        {
-            get
-            {
-                return m_afterEffect;
-            }
-        }
+        public virtual AfterEffect AfterEffect => m_afterEffect;
 
         /// <summary>
         /// Returns the second normalization
         /// </summary>
-        public virtual Normalization Normalization
-        {
-            get
-            {
-                return m_normalization;
-            }
-        }
+        public virtual Normalization Normalization => m_normalization;
     }
 }

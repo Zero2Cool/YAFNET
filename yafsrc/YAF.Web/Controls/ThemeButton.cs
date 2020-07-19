@@ -47,7 +47,7 @@ namespace YAF.Web.Controls
     /// <summary>
     /// The theme button.
     /// </summary>
-    public sealed class ThemeButton : BaseControl, IPostBackEventHandler
+    public class ThemeButton : BaseControl, IPostBackEventHandler, IButtonControl
     {
         #region Constants and Fields
 
@@ -82,6 +82,8 @@ namespace YAF.Web.Controls
         #endregion
 
         #region Events
+
+        public string ValidationGroup { get; set; }
 
         /// <summary>
         ///   The click.
@@ -145,6 +147,13 @@ namespace YAF.Web.Controls
         ///   Gets Attributes.
         /// </summary>
         public AttributeCollection Attributes { get; }
+        
+        [DefaultValue(false)]
+        public bool CausesValidation
+        {
+            get => this.ViewState["CausesValidation"]?.ToType<bool>() ?? false;
+            set => this.ViewState["CausesValidation"] = value;
+        }
 
         /// <summary>
         ///   Gets or sets CommandArgument.
@@ -165,6 +174,8 @@ namespace YAF.Web.Controls
 
             set => this.ViewState["commandName"] = value;
         }
+
+        public string PostBackUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the text.
@@ -438,8 +449,30 @@ namespace YAF.Web.Controls
         /// </param>
         void IPostBackEventHandler.RaisePostBackEvent([NotNull] string eventArgument)
         {
-            this.OnCommand(new CommandEventArgs(this.CommandName, this.CommandArgument));
-            this.OnClick(EventArgs.Empty);
+            if (this.CausesValidation)
+            {
+                if (this.ValidationGroup.IsSet())
+                {
+                    this.Page.Validate(this.ValidationGroup);
+                }
+                else
+                {
+                    this.Page.Validate();
+                }
+
+                if (!this.Page.IsValid)
+                {
+                    return;
+                }
+
+                this.OnCommand(new CommandEventArgs(this.CommandName, this.CommandArgument));
+                this.OnClick(EventArgs.Empty);
+            }
+            else
+            {
+                this.OnCommand(new CommandEventArgs(this.CommandName, this.CommandArgument));
+                this.OnClick(EventArgs.Empty);
+            }
         }
 
         #endregion
@@ -456,12 +489,30 @@ namespace YAF.Web.Controls
         /// </param>
         protected override void Render([NotNull] HtmlTextWriter output)
         {
+            if (this.CausesValidation)
+            {
+                var postBackOptions = new PostBackOptions(this)
+                {
+                    PerformValidation = true,
+                    ValidationGroup = this.ValidationGroup,
+                    RequiresJavaScriptProtocol = true,
+                    ClientSubmit = false,
+                    AutoPostBack = false
+                };
+
+                this.Page.ClientScript.RegisterForEventValidation(postBackOptions);
+            }
+            
             // get the title...
             var title = this.GetLocalizedTitle();
 
             output.BeginRender();
             output.WriteBeginTag("a");
-            output.WriteAttribute("id", this.ClientID);
+            output.WriteAttribute(HtmlTextWriterAttribute.Id.ToString(), this.ClientID);
+
+            string uniqueID = this.UniqueID;
+
+            output.WriteAttribute(HtmlTextWriterAttribute.Name.ToString(), uniqueID);
 
             var actionClass = GetAttributeValue(this.Type);
 
@@ -497,6 +548,13 @@ namespace YAF.Web.Controls
             else if (this.TitleNonLocalized.IsSet())
             {
                 output.WriteAttribute("title", HttpUtility.HtmlEncode(this.TitleNonLocalized));
+            }
+
+            output.WriteAttribute("role", "button");
+
+            if (this.DataToggle.IsSet() && (this.DataToggle == "dropdown" || this.DataToggle == "popover"))
+            {
+                this.NavigateUrl = "#";
             }
 
             output.WriteAttribute(
@@ -600,11 +658,9 @@ namespace YAF.Web.Controls
             // render the optional controls (if any)
             base.Render(output);
 
-            // output.WriteEndTag("span");
             output.WriteEndTag("a");
             output.EndRender();
         }
-
         /// <summary>
         /// Gets the CSS class value.
         /// </summary>
@@ -613,37 +669,23 @@ namespace YAF.Web.Controls
         /// <exception cref="InvalidOperationException">Exception when other value</exception>
         private static string GetAttributeValue(ButtonStyle mode)
         {
-            switch (mode)
+            return mode switch
             {
-                case ButtonStyle.Primary:
-                    return "btn btn-primary";
-                case ButtonStyle.Secondary:
-                    return "btn btn-secondary";
-                case ButtonStyle.OutlineSecondary:
-                    return "btn btn-outline-secondary";
-                case ButtonStyle.Success:
-                    return "btn btn-success";
-                case ButtonStyle.OutlineSuccess:
-                    return "btn btn-outline-success";
-                case ButtonStyle.Danger:
-                    return "btn btn-danger";
-                case ButtonStyle.Warning:
-                    return "btn btn-warning";
-                case ButtonStyle.Info:
-                    return "btn btn-info";
-                case ButtonStyle.OutlineInfo:
-                    return "btn btn-outline-info";
-                case ButtonStyle.Light:
-                    return "btn btn-light";
-                case ButtonStyle.Dark:
-                    return "btn btn-dark";
-                case ButtonStyle.Link:
-                    return "btn btn-link";
-                case ButtonStyle.None:
-                    return string.Empty;
-                default:
-                    throw new InvalidOperationException();
-            }
+                ButtonStyle.Primary => "btn btn-primary",
+                ButtonStyle.Secondary => "btn btn-secondary",
+                ButtonStyle.OutlineSecondary => "btn btn-outline-secondary",
+                ButtonStyle.Success => "btn btn-success",
+                ButtonStyle.OutlineSuccess => "btn btn-outline-success",
+                ButtonStyle.Danger => "btn btn-danger",
+                ButtonStyle.Warning => "btn btn-warning",
+                ButtonStyle.Info => "btn btn-info",
+                ButtonStyle.OutlineInfo => "btn btn-outline-info",
+                ButtonStyle.Light => "btn btn-light",
+                ButtonStyle.Dark => "btn btn-dark",
+                ButtonStyle.Link => "btn btn-link",
+                ButtonStyle.None => string.Empty,
+                _ => throw new InvalidOperationException()
+            };
         }
 
         /// <summary>
@@ -660,17 +702,13 @@ namespace YAF.Web.Controls
         /// </exception>
         private static string GetButtonSizeClass(ButtonSize size)
         {
-            switch (size)
+            return size switch
             {
-                case ButtonSize.Normal:
-                    return string.Empty;
-                case ButtonSize.Large:
-                    return "btn-lg";
-                case ButtonSize.Small:
-                    return "btn-sm";
-                default:
-                    throw new InvalidOperationException();
-            }
+                ButtonSize.Normal => string.Empty,
+                ButtonSize.Large => "btn-lg",
+                ButtonSize.Small => "btn-sm",
+                _ => throw new InvalidOperationException()
+            };
         }
 
         /// <summary>

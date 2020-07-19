@@ -27,7 +27,7 @@ namespace YAF.Pages.Moderate
     #region Using
 
     using System;
-    using System.Data;
+    using System.Linq;
     using System.Web.UI.WebControls;
 
     using YAF.Core.BasePages;
@@ -36,7 +36,6 @@ namespace YAF.Pages.Moderate
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
-    using YAF.Types.Flags;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
     using YAF.Utils;
@@ -84,16 +83,16 @@ namespace YAF.Pages.Moderate
         /// <summary>
         /// Format message.
         /// </summary>
-        /// <param name="row">
-        /// Message data row.
+        /// <param name="item">
+        /// The item.
         /// </param>
         /// <returns>
         /// Formatted string with escaped HTML markup and formatted.
         /// </returns>
-        protected string FormatMessage([NotNull] DataRowView row)
+        protected string FormatMessage([NotNull] Tuple<Topic, Message, User> item)
         {
             // get message flags
-            var messageFlags = new MessageFlags(row["Flags"]);
+            var messageFlags = item.Item2.MessageFlags;
 
             // message
             string msg;
@@ -102,15 +101,15 @@ namespace YAF.Pages.Moderate
             if (messageFlags.NotFormatted)
             {
                 // just encode it for HTML output
-                msg = this.HtmlEncode(row["Message"].ToString());
+                msg = this.HtmlEncode(item.Item2.MessageText);
             }
             else
             {
                 // fully format message (YafBBCode)
                 msg = this.Get<IFormatMessage>().Format(
-                    row["Message"].ToString(),
+                    item.Item2.MessageText,
                     messageFlags,
-                    row["IsModeratorChanged"].ToType<bool>());
+                    item.Item2.IsModeratorChanged.Value);
             }
 
             // return formatted message
@@ -149,9 +148,9 @@ namespace YAF.Pages.Moderate
         /// </summary>
         private void BindData()
         {
-            var messageList = this.GetRepository<Message>().UnapprovedAsDataTable(this.PageContext.PageForumID);
+            var messageList = this.GetRepository<Message>().Unapproved(this.PageContext.PageForumID);
 
-            if (!messageList.HasRows())
+            if (!messageList.Any())
             {
                 // redirect back to the moderate main if no messages found
                 BuildLink.Redirect(ForumPages.Moderate_Index);

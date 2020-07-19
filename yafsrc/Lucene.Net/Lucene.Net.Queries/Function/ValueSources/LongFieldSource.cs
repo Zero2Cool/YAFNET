@@ -5,6 +5,7 @@ using YAF.Lucene.Net.Util;
 using YAF.Lucene.Net.Util.Mutable;
 using System;
 using System.Collections;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Queries.Function.ValueSources
 {
@@ -54,9 +55,9 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
         /// <summary>
         /// NOTE: This was externalToLong() in Lucene
         /// </summary>
-        public virtual long ExternalToInt64(string extVal) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+        public virtual long ExternalToInt64(string extVal)
         {
-            return Convert.ToInt64(extVal);
+            return Convert.ToInt64(extVal, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -70,9 +71,9 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
         /// <summary>
         /// NOTE: This was longToString() in Lucene
         /// </summary>
-        public virtual string Int64ToString(long val) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+        public virtual string Int64ToString(long val)
         {
-            return Int64ToObject(val).ToString();
+            return string.Format(CultureInfo.InvariantCulture, "{0}", Int64ToObject(val));
         }
 
         public override FunctionValues GetValues(IDictionary context, AtomicReaderContext readerContext)
@@ -115,7 +116,7 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
                 return valid.Get(doc) ? outerInstance.Int64ToObject(arr.Get(doc)) : null;
             }
 
-            public override string StrVal(int doc) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+            public override string StrVal(int doc)
             {
                 return valid.Get(doc) ? outerInstance.Int64ToString(arr.Get(doc)) : null;
             }
@@ -130,34 +131,11 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
 
             public override ValueFiller GetValueFiller()
             {
-                return new ValueFillerAnonymousInnerClassHelper(this);
-            }
-
-            private class ValueFillerAnonymousInnerClassHelper : ValueFiller
-            {
-                private readonly Int64DocValuesAnonymousInnerClassHelper outerInstance;
-
-                public ValueFillerAnonymousInnerClassHelper(Int64DocValuesAnonymousInnerClassHelper outerInstance)
+                return new ValueFiller.AnonymousValueFiller<MutableValueInt64>(outerInstance.NewMutableValueInt64(), fillValue: (doc, mutableValue) =>
                 {
-                    this.outerInstance = outerInstance;
-                    mval = outerInstance.outerInstance.NewMutableValueInt64();
-                }
-
-                private readonly MutableValueInt64 mval;
-
-                public override MutableValue Value
-                {
-                    get
-                    {
-                        return mval;
-                    }
-                }
-
-                public override void FillValue(int doc)
-                {
-                    mval.Value = outerInstance.arr.Get(doc);
-                    mval.Exists = mval.Value != 0 || outerInstance.valid.Get(doc);
-                }
+                    mutableValue.Value = arr.Get(doc);
+                    mutableValue.Exists = mutableValue.Value != 0 || valid.Get(doc);
+                });
             }
         }
 
@@ -175,8 +153,7 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
             {
                 return false;
             }
-            var other = o as Int64FieldSource;
-            if (other == null)
+            if (!(o is Int64FieldSource other))
                 return false;
             return base.Equals(other) && (this.m_parser == null ? other.m_parser == null : this.m_parser.GetType() == other.m_parser.GetType());
         }

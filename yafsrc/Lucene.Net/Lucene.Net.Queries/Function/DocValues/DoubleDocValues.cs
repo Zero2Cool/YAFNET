@@ -1,6 +1,7 @@
 ﻿using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Util.Mutable;
 using System;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Queries.Function.DocValues
 {
@@ -78,9 +79,9 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
 
         public override abstract double DoubleVal(int doc);
 
-        public override string StrVal(int doc) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+        public override string StrVal(int doc)
         {
-            return Convert.ToString(DoubleVal(doc));
+            return DoubleVal(doc).ToString("R", CultureInfo.InvariantCulture);
         }
 
         public override object ObjectVal(int doc)
@@ -94,7 +95,7 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
         }
 
         public override ValueSourceScorer GetRangeScorer(IndexReader reader, string lowerVal, string upperVal,
-            bool includeLower, bool includeUpper) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+            bool includeLower, bool includeUpper)
         {
             double lower, upper;
 
@@ -104,7 +105,7 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
             }
             else
             {
-                lower = Convert.ToDouble(lowerVal);
+                lower = Convert.ToDouble(lowerVal, CultureInfo.InvariantCulture);
             }
 
             if (upperVal == null)
@@ -113,148 +114,52 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
             }
             else
             {
-                upper = Convert.ToDouble(upperVal);
+                upper = Convert.ToDouble(upperVal, CultureInfo.InvariantCulture);
             }
 
             double l = lower;
             double u = upper;
             if (includeLower && includeUpper)
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper(this, reader, this, l, u);
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    double docVal = DoubleVal(doc);
+                    return docVal >= l && docVal <= u;
+                });
             }
             else if (includeLower && !includeUpper)
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper2(this, reader, this, l, u);
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    double docVal = DoubleVal(doc);
+                    return docVal >= l && docVal < u;
+                });
             }
             else if (!includeLower && includeUpper)
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper3(this, reader, this, l, u);
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    double docVal = DoubleVal(doc);
+                    return docVal > l && docVal <= u;
+                });
             }
             else
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper4(this, reader, this, l, u);
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper : ValueSourceScorer
-        {
-            private readonly DoubleDocValues outerInstance;
-
-            private double l;
-            private double u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper(DoubleDocValues outerInstance, IndexReader reader, DoubleDocValues @this, double l, double u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                double docVal = outerInstance.DoubleVal(doc);
-                return docVal >= l && docVal <= u;
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper2 : ValueSourceScorer
-        {
-            private readonly DoubleDocValues outerInstance;
-
-            private double l;
-            private double u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper2(DoubleDocValues outerInstance, IndexReader reader, DoubleDocValues @this, double l, double u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                double docVal = outerInstance.DoubleVal(doc);
-                return docVal >= l && docVal < u;
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper3 : ValueSourceScorer
-        {
-            private readonly DoubleDocValues outerInstance;
-
-            private double l;
-            private double u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper3(DoubleDocValues outerInstance, IndexReader reader, DoubleDocValues @this, double l, double u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                double docVal = outerInstance.DoubleVal(doc);
-                return docVal > l && docVal <= u;
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper4 : ValueSourceScorer
-        {
-            private readonly DoubleDocValues outerInstance;
-
-            private double l;
-            private double u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper4(DoubleDocValues outerInstance, IndexReader reader,
-                DoubleDocValues @this, double l, double u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                double docVal = outerInstance.DoubleVal(doc);
-                return docVal > l && docVal < u;
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    double docVal = DoubleVal(doc);
+                    return docVal > l && docVal < u;
+                });
             }
         }
 
         public override ValueFiller GetValueFiller()
         {
-            return new ValueFillerAnonymousInnerClassHelper(this);
-        }
-
-        private class ValueFillerAnonymousInnerClassHelper : ValueFiller
-        {
-            private readonly DoubleDocValues outerInstance;
-
-            public ValueFillerAnonymousInnerClassHelper(DoubleDocValues outerInstance)
+            return new ValueFiller.AnonymousValueFiller<MutableValueDouble>(new MutableValueDouble(), fillValue: (doc, mutableValue) =>
             {
-                this.outerInstance = outerInstance;
-                mval = new MutableValueDouble();
-            }
-
-            private readonly MutableValueDouble mval;
-
-            public override MutableValue Value
-            {
-                get
-                {
-                    return mval;
-                }
-            }
-
-            public override void FillValue(int doc)
-            {
-                mval.Value = outerInstance.DoubleVal(doc);
-                mval.Exists = outerInstance.Exists(doc);
-            }
+                mutableValue.Value = DoubleVal(doc);
+                mutableValue.Exists = Exists(doc);
+            });
         }
     }
 }

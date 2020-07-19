@@ -28,15 +28,16 @@
             </div>
             <asp:Panel runat="server" ID="Footer" 
                        CssClass="card-footer">
-                <div class="mb-1 form-inline">
-                    <asp:Label runat="server" AssociatedControlID="Since">
+                <div class="input-group align-items-center">
+                    <asp:Label runat="server" AssociatedControlID="Since"
+                               CssClass="input-group-text">
                         <YAF:LocalizedLabel ID="SinceLabel" runat="server"
                                             LocalizedTag="SINCE"/>
-                    </asp:Label>&nbsp;
+                    </asp:Label>
                     <asp:DropDownList ID="Since" runat="server" 
                                       AutoPostBack="True" 
                                       OnSelectedIndexChanged="Since_SelectedIndexChanged" 
-                                      CssClass="select2-select custom-select" />
+                                      CssClass="form-select" />
                 </div>
             </asp:Panel>
     </div>

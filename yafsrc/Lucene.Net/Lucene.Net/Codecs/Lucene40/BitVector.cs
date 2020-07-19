@@ -96,7 +96,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         {
             if (bit >= size)
             {
-                throw new System.IndexOutOfRangeException("bit=" + bit + " size=" + size);
+                throw new IndexOutOfRangeException("bit=" + bit + " size=" + size);
             }
             bits[bit >> 3] |= (byte)(1 << (bit & 7));
             count = -1;
@@ -110,7 +110,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         {
             if (bit >= size)
             {
-                throw new System.IndexOutOfRangeException("bit=" + bit + " size=" + size);
+                throw new IndexOutOfRangeException("bit=" + bit + " size=" + size);
             }
             int pos = bit >> 3;
             int v = bits[pos];
@@ -137,7 +137,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         {
             if (bit >= size)
             {
-                throw new System.IndexOutOfRangeException(bit.ToString());
+                throw new IndexOutOfRangeException(bit.ToString());
             }
             bits[bit >> 3] &= (byte)(~(1 << (bit & 7)));
             count = -1;
@@ -147,7 +147,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         {
             if (bit >= size)
             {
-                throw new System.IndexOutOfRangeException(bit.ToString());
+                throw new IndexOutOfRangeException(bit.ToString());
             }
             int pos = bit >> 3;
             int v = bits[pos];
@@ -185,7 +185,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         ///// </summary>
         //public int Size()
         //{
-        //    return Size_Renamed;
+        //    return size;
         //}
 
         /// <summary>
@@ -194,10 +194,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         /// <para/>
         /// This is the equivalent of either size() or length() in Lucene.
         /// </summary>
-        public int Length
-        {
-            get { return size; }
-        }
+        public int Length => size;
 
         /// <summary>
         /// Returns the total number of one bits in this vector.  This is efficiently
@@ -252,13 +249,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         // Increment version to change it:
         public readonly static int VERSION_CURRENT = VERSION_CHECKSUM;
 
-        public int Version
-        {
-            get
-            {
-                return version;
-            }
-        }
+        public int Version => version;
 
         /// <summary>
         /// Writes this vector to the file <paramref name="name"/> in Directory

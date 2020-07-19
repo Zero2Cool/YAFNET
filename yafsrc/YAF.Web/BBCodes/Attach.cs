@@ -59,8 +59,8 @@ namespace YAF.Web.BBCodes
                 return;
             }
 
-            if (this.PageContext.ForumPageType == ForumPages.Profile
-                || this.PageContext.ForumPageType == ForumPages.forum)
+            if (this.PageContext.ForumPageType == ForumPages.UserProfile
+                || this.PageContext.ForumPageType == ForumPages.Board)
             {
                 writer.Write(@"<i class=""fa fa-file fa-fw""></i>&nbsp;{0}", attachment.FileName);
 
@@ -82,7 +82,7 @@ namespace YAF.Web.BBCodes
             if (!this.UserHasDownloadAccess())
             {
                 writer.Write(
-                    @"<i class=""fa fa-file fa-fw""></i>&nbsp;{0} <span class=""badge badge-warning"" role=""alert"">{1}</span>",
+                    @"<i class=""fa fa-file fa-fw""></i>&nbsp;{0} <span class=""badge bg-warning text-dark"" role=""alert"">{1}</span>",
                     attachment.FileName,
                     this.GetText("ATTACH_NO"));
 

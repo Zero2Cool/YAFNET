@@ -80,27 +80,25 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// The list read.
+        /// Get Categories as data table.
         /// </summary>
-        /// <param name="repository">The repository.</param>
-        /// <param name="userID">The user id.</param>
-        /// <param name="categoryID">The category id.</param>
-        /// <param name="boardId">The board id.</param>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="categoryId">
+        /// The category id.
+        /// </param>
         /// <returns>
-        /// The <see cref="DataTable" />.
+        /// The <see cref="DataTable"/>.
         /// </returns>
-        public static DataTable ListReadAsDataTable(
+        public static DataTable ListAsDataTable(
             this IRepository<Category> repository,
-            int userID,
-            int? categoryID,
-            int? boardId = null)
+            [CanBeNull] int? categoryId = null)
         {
             CodeContracts.VerifyNotNull(repository, "repository");
 
-            return repository.DbFunction.GetData.category_listread(
-                BoardID: boardId ?? repository.BoardID,
-                UserID: userID,
-                CategoryID: categoryID);
+            return repository.DbFunction.GetAsDataTable(
+                x => x.category_list(repository.BoardID, categoryId));
         }
 
         /// <summary>
@@ -131,33 +129,6 @@ namespace YAF.Core.Model
                         SortOrder = sortOrder,
                         CategoryImage = categoryImage
                     });
-        }
-
-        /// <summary>
-        /// Get All Categories by Limit 
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="startId">
-        /// The start id.
-        /// </param>
-        /// <param name="limit">
-        /// The limit.
-        /// </param>
-        /// <returns>
-        /// Returns the Categories list
-        /// </returns>
-        public static DataTable SimpleListAsDataTable(
-            this IRepository<Category> repository,
-            [CanBeNull] int startId = 0,
-            [CanBeNull] int limit = 500)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.DbFunction.GetData.category_simplelist(StartID: startId, Limit: limit);
-
-            // return repository.Get(c => c.ID >= startId && c.ID < 0 + limit).Take(limit).OrderBy(c => c.ID).ToList();
         }
 
         #endregion

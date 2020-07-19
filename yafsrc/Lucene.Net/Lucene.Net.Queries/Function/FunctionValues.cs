@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Search;
 using YAF.Lucene.Net.Util;
@@ -38,7 +39,7 @@ namespace YAF.Lucene.Net.Queries.Function
     {
         public virtual byte ByteVal(int doc)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual short Int16Val(int doc) 
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -54,7 +55,7 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual float SingleVal(int doc)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual int Int32Val(int doc)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -70,18 +71,18 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual long Int64Val(int doc)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         public virtual double DoubleVal(int doc)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         // TODO: should we make a termVal, returns BytesRef?
         public virtual string StrVal(int doc)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         public virtual bool BoolVal(int doc)
@@ -123,14 +124,11 @@ namespace YAF.Lucene.Net.Queries.Function
         /// TODO: Maybe we can just use intVal for this... </returns>
         public virtual int OrdVal(int doc)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <returns> the number of unique sort ordinals this instance has </returns>
-        public virtual int NumOrd
-        {
-            get { throw new System.NotSupportedException(); }
-        }
+        public virtual int NumOrd => throw new NotSupportedException();
 
         public abstract string ToString(int doc);
 
@@ -151,42 +149,45 @@ namespace YAF.Lucene.Net.Queries.Function
             /// <summary>
             /// <see cref="MutableValue"/> will be reused across calls.  Returns <c>true</c> if the value exists. </summary>
             public abstract void FillValue(int doc);
+
+            /// <summary>
+            /// This class may be used to create <see cref="ValueFiller"/> instances anonymously.
+            /// </summary>
+            // LUCENENET specific - used to mimick the inline class behavior in Java.
+            internal class AnonymousValueFiller<T> : ValueFiller where T : MutableValue
+            {
+                private readonly T mutableValue;
+                private readonly Action<int, T> fillValue;
+
+                public AnonymousValueFiller(T mutableValue, Action<int, T> fillValue)
+                {
+                    this.mutableValue = mutableValue ?? throw new ArgumentNullException(nameof(mutableValue));
+                    this.fillValue = fillValue ?? throw new ArgumentNullException(nameof(fillValue));
+                }
+
+                public override MutableValue Value => mutableValue;
+
+                public override void FillValue(int doc)
+                {
+                    fillValue(doc, mutableValue);
+                }
+            }
         }
 
         /// <summary>
         /// @lucene.experimental </summary>
         public virtual ValueFiller GetValueFiller()
         {
-            return new ValueFillerAnonymousInnerClassHelper(this);
-        }
-
-        private class ValueFillerAnonymousInnerClassHelper : ValueFiller
-        {
-            private readonly FunctionValues outerInstance;
-
-            public ValueFillerAnonymousInnerClassHelper(FunctionValues outerInstance)
+            return new ValueFiller.AnonymousValueFiller<MutableValueSingle>(new MutableValueSingle(), fillValue: (doc, mutableValue) =>
             {
-                this.outerInstance = outerInstance;
-                mval = new MutableValueSingle();
-            }
-
-            private readonly MutableValueSingle mval;
-
-            public override MutableValue Value
-            {
-                get { return mval; }
-            }
-
-            public override void FillValue(int doc)
-            {
-                mval.Value = outerInstance.SingleVal(doc);
-            }
+                mutableValue.Value = SingleVal(doc);
+            });
         }
 
         //For Functions that can work with multiple values from the same document.  This does not apply to all functions
         public virtual void ByteVal(int doc, byte[] vals)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -194,7 +195,7 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual void Int16Val(int doc, short[] vals)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual void SingleVal(int doc, float[] vals)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -210,7 +211,7 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual void Int32Val(int doc, int[] vals)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -218,18 +219,18 @@ namespace YAF.Lucene.Net.Queries.Function
         /// </summary>
         public virtual void Int64Val(int doc, long[] vals)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         public virtual void DoubleVal(int doc, double[] vals)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         // TODO: should we make a termVal, fills BytesRef[]?
-        public virtual void StrVal(int doc, string[] vals) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+        public virtual void StrVal(int doc, string[] vals)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         public virtual Explanation Explain(int doc)
@@ -247,7 +248,7 @@ namespace YAF.Lucene.Net.Queries.Function
         // a setup cost - parsing and normalizing params, and doing a binary search on the StringIndex.
         // TODO: change "reader" to AtomicReaderContext
         public virtual ValueSourceScorer GetRangeScorer(IndexReader reader, string lowerVal, string upperVal,
-            bool includeLower, bool includeUpper) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+            bool includeLower, bool includeUpper)
         {
             float lower;
             float upper;
@@ -258,7 +259,7 @@ namespace YAF.Lucene.Net.Queries.Function
             }
             else
             {
-                lower = Convert.ToSingle(lowerVal);
+                lower = Convert.ToSingle(lowerVal, CultureInfo.InvariantCulture);
             }
             if (upperVal == null)
             {
@@ -266,7 +267,7 @@ namespace YAF.Lucene.Net.Queries.Function
             }
             else
             {
-                upper = Convert.ToSingle(upperVal);
+                upper = Convert.ToSingle(upperVal, CultureInfo.InvariantCulture);
             }
 
             float l = lower;
@@ -274,111 +275,35 @@ namespace YAF.Lucene.Net.Queries.Function
 
             if (includeLower && includeUpper)
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper(this, reader, this, l, u);
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    float docVal = SingleVal(doc);
+                    return docVal >= l && docVal <= u;
+                });
             }
             else if (includeLower && !includeUpper)
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper2(this, reader, this, l, u);
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    float docVal = SingleVal(doc);
+                    return docVal >= l && docVal < u;
+                });
             }
             else if (!includeLower && includeUpper)
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper3(this, reader, this, l, u);
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    float docVal = SingleVal(doc);
+                    return docVal > l && docVal <= u;
+                });
             }
             else
             {
-                return new ValueSourceScorerAnonymousInnerClassHelper4(this, reader, this, l, u);
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper : ValueSourceScorer
-        {
-            private readonly FunctionValues outerInstance;
-
-            private readonly float l;
-            private readonly float u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper(FunctionValues outerInstance, IndexReader reader,
-                FunctionValues @this, float l, float u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                float docVal = outerInstance.SingleVal(doc);
-                return docVal >= l && docVal <= u;
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper2 : ValueSourceScorer
-        {
-            private readonly FunctionValues outerInstance;
-
-            private readonly float l;
-            private readonly float u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper2(FunctionValues outerInstance, IndexReader reader,
-                FunctionValues @this, float l, float u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                float docVal = outerInstance.SingleVal(doc);
-                return docVal >= l && docVal < u;
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper3 : ValueSourceScorer
-        {
-            private readonly FunctionValues outerInstance;
-
-            private readonly float l;
-            private readonly float u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper3(FunctionValues outerInstance, IndexReader reader,
-                FunctionValues @this, float l, float u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                float docVal = outerInstance.SingleVal(doc);
-                return docVal > l && docVal <= u;
-            }
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper4 : ValueSourceScorer
-        {
-            private readonly FunctionValues outerInstance;
-
-            private readonly float l;
-            private readonly float u;
-
-            public ValueSourceScorerAnonymousInnerClassHelper4(FunctionValues outerInstance, IndexReader reader,
-                FunctionValues @this, float l, float u)
-                : base(reader, @this)
-            {
-                this.outerInstance = outerInstance;
-                this.l = l;
-                this.u = u;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                float docVal = outerInstance.SingleVal(doc);
-                return docVal > l && docVal < u;
+                return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
+                {
+                    float docVal = SingleVal(doc);
+                    return docVal > l && docVal < u;
+                });
             }
         }
     }

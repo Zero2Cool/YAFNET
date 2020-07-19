@@ -37,8 +37,9 @@
                                                 CssClass="rounded img-fluid"/>
                                      <YAF:UserLink ID="AdminLink" runat="server" 
                                                    IsGuest="False" 
-                                                   UserID='<%# this.Eval("UserID").ToType<int>() %>' 
-                                                   Style='<%# this.Eval("Style") %>'  />
+                                                   Suspended='<%# this.Eval("Suspended").ToType<DateTime?>() %>'
+                                                   UserID='<%# this.Eval("ID").ToType<int>() %>' 
+                                                   Style='<%# this.Eval("UserStyle") %>'  />
                                  </h5>
                                  <small>
                                      <span class="font-weight-bold">
@@ -64,9 +65,11 @@
                                     <YAF:ThemeButton ID="AdminUserButton" runat="server" 
                                                      TitleLocalizedPage="PROFILE" TitleLocalizedTag="ADMIN_USER"
                                                      TextLocalizedTag="ADMIN_USER" TextLocalizedPage="PROFILE" 
-                                                     Size="Small" Visible="false"
-                                                     Icon="user-cog" Type="Secondary"
-                                                     NavigateUrl='<%# BuildLink.GetLinkNotEscaped( ForumPages.Admin_EditUser,"u={0}", this.Eval("UserID").ToType<int>() ) %>'>
+                                                     Size="Small" 
+                                                     Visible="false"
+                                                     Icon="user-cog" 
+                                                     Type="Danger"
+                                                     NavigateUrl='<%# BuildLink.GetLink(ForumPages.Admin_EditUser,"u={0}", this.Eval("ID").ToType<int>() ) %>'>
                                     </YAF:ThemeButton>
                                 </div>
                             </small>
@@ -104,6 +107,7 @@
                                                 Height="40px"
                                                 CssClass="rounded img-fluid"/>
                                      <YAF:UserLink ID="ModLink" runat="server" 
+                                                   Suspended='<%# this.Eval("Suspended").ToType<DateTime?>() %>'
                                                    ReplaceName='<%#  this.Eval(this.Get<BoardSettings>().EnableDisplayName ? "DisplayName" : "Name").ToString() %>' 
                                                    UserID='<%# this.Eval("ModeratorID").ToType<int>() %>' 
                                                    IsGuest="False" 
@@ -116,14 +120,12 @@
                                                                 LocalizedTag="FORUMS" />:
                                         </span>
                                     <div class="input-group">
-                                        <span class="input-group-prepend">
-                                            <YAF:ThemeButton ID="GoToForumButton" runat="server" 
-                                                             Icon="external-link-alt" 
-                                                             Type="Secondary"
-                                                             TextLocalizedTag="GO" 
-                                                             OnClick="GoToForum"></YAF:ThemeButton>
-                                        </span>
-                                        <asp:DropDownList ID="ModForums" runat="server" CssClass="select2-select form-control">
+                                        <YAF:ThemeButton ID="GoToForumButton" runat="server" 
+                                                         Icon="external-link-alt" 
+                                                         Type="Secondary"
+                                                         TextLocalizedTag="GO" 
+                                                         OnClick="GoToForum"></YAF:ThemeButton>
+                                        <asp:DropDownList ID="ModForums" runat="server" CssClass="form-control mb-1">
                                         </asp:DropDownList>
                                     </div>
                                 </p>
@@ -140,11 +142,13 @@
                                                      TitleLocalizedPage="POSTS" TitleLocalizedTag="EMAIL_TITLE"
                                                      Icon="at" Type="Secondary" />
                                     <YAF:ThemeButton ID="AdminUserButton" runat="server" 
-                                                     Size="Small" Visible="false"
+                                                     Size="Small" 
+                                                     Visible="false"
                                                      TitleLocalizedPage="PROFILE" TitleLocalizedTag="ADMIN_USER"
                                                      TextLocalizedTag="ADMIN_USER" TextLocalizedPage="PROFILE"
-                                                     Icon="user-cog" Type="Secondary"
-                                                     NavigateUrl='<%# BuildLink.GetLinkNotEscaped( ForumPages.Admin_EditUser,"u={0}", this.Eval("ModeratorID").ToType<int>() ) %>'>
+                                                     Icon="user-cog" 
+                                                     Type="Danger"
+                                                     NavigateUrl='<%# BuildLink.GetLink( ForumPages.Admin_EditUser,"u={0}", this.Eval("ModeratorID").ToType<int>() ) %>'>
                                     </YAF:ThemeButton>
                                 </div>
                             </small>

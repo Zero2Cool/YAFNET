@@ -34,9 +34,9 @@ namespace YAF.Core.Services.Localization
     using YAF.Core.Context;
     using YAF.Core.Helpers;
     using YAF.Core.Services.Startup;
-    using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Objects;
 
     #endregion
 
@@ -108,8 +108,8 @@ namespace YAF.Core.Services.Localization
         /// <returns>
         /// The Nodes.
         /// </returns>
-        public IEnumerable<LanuageResourcesPageResource> GetNodesUsingQuery(
-            Func<LanuageResourcesPageResource, bool> predicate)
+        public IEnumerable<LanguageResourcesPageResource> GetNodesUsingQuery(
+            Func<LanguageResourcesPageResource, bool> predicate)
         {
             var pagePointer =
                 this.localizationLanguageResources.page.FirstOrDefault(p => p.name.ToUpper().Equals(this.currentPage));
@@ -128,8 +128,8 @@ namespace YAF.Core.Services.Localization
         /// <returns>
         /// The Nodes.
         /// </returns>
-        public IEnumerable<LanuageResourcesPageResource> GetCountryNodesUsingQuery(
-            Func<LanuageResourcesPageResource, bool> predicate)
+        public IEnumerable<LanguageResourcesPageResource> GetCountryNodesUsingQuery(
+            Func<LanguageResourcesPageResource, bool> predicate)
         {
             var pagePointer =
                 this.localizationLanguageResources.page.FirstOrDefault(p => p.name.ToUpper().Equals(this.currentPage));
@@ -154,20 +154,15 @@ namespace YAF.Core.Services.Localization
             var pagePointer =
                 this.localizationLanguageResources.page.FirstOrDefault(p => p.name.Equals(this.currentPage));
 
-            LanuageResourcesPageResource pageResource = null;
+            LanguageResourcesPageResource pageResource = null;
 
             if (pagePointer != null)
             {
                 pageResource = pagePointer.Resource.FirstOrDefault(r => r.tag.Equals(tag));
             }
 
-            if (pageResource == null)
-            {
-                // attempt to find the tag anywhere...
-                pageResource =
-                    this.localizationLanguageResources.page.SelectMany(p => p.Resource)
-                        .FirstOrDefault(r => r.tag.Equals(tag));
-            }
+            pageResource ??= this.localizationLanguageResources.page.SelectMany(p => p.Resource)
+                .FirstOrDefault(r => r.tag.Equals(tag));
 
             if (pageResource != null && pageResource.Value.IsSet())
             {

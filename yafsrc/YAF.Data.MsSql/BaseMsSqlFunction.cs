@@ -25,9 +25,11 @@ namespace YAF.Data.MsSql
 {
     using System.Collections.Generic;
     using System.Data;
+
     using System.Data.SqlClient;
 
     using YAF.Types;
+    using YAF.Types.Constants;
     using YAF.Types.Extensions.Data;
     using YAF.Types.Interfaces.Data;
 
@@ -102,7 +104,7 @@ namespace YAF.Data.MsSql
         /// The execute.
         /// </returns>
         public virtual bool Execute(
-            DbFunctionType dbfunctionType,
+            DBFunctionType dbfunctionType,
             [NotNull] string operationName,
             [NotNull] IEnumerable<KeyValuePair<string, object>> parameters,
             [CanBeNull] out object result,
@@ -116,10 +118,7 @@ namespace YAF.Data.MsSql
 
                 try
                 {
-                    if (transaction == null)
-                    {
-                        transaction = this.DbAccess.BeginTransaction();
-                    }
+                    transaction ??= this.DbAccess.BeginTransaction();
 
                     if (transaction.Connection is SqlConnection sqlConnection)
                     {
@@ -198,7 +197,7 @@ namespace YAF.Data.MsSql
         protected abstract bool RunOperation(
             [NotNull] SqlConnection sqlConnection,
             [NotNull] IDbTransaction dbTransaction,
-            DbFunctionType dbfunctionType,
+            DBFunctionType dbfunctionType,
             [NotNull] string operationName,
             [NotNull] IEnumerable<KeyValuePair<string, object>> parameters,
             [CanBeNull] out object result);

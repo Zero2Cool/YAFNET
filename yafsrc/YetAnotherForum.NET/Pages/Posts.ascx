@@ -18,12 +18,8 @@
 
 <YAF:PageLinks ID="PageLinks" runat="server" />
 
-<YAF:PollList ID="PollList" TopicId="<%# this.PageContext.PageTopicID %>"
-    ShowButtons="<%# this.ShowPollButtons() %>"
-    Visible="<%# this.PollGroupId() > 0 %>"
-    PollGroupId="<%# this.PollGroupId() %>" runat="server" />
-
-<a id="top"></a>
+<YAF:PollList ID="PollList" runat="server"
+              Visible="False" />
 
 <div class="row mb-3 d-flex justify-content-between">
     <div class="col-md-4">
@@ -44,6 +40,7 @@
                              DataToggle="dropdown"
                              TextLocalizedTag="MANAGE_TOPIC"
                              TextLocalizedPage="POSTS"
+                             NavigateUrl="#"
                              Icon="cogs" />
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="<%# this.Tools1.ClientID %>">
                 <YAF:ThemeButton ID="MoveTopic1" runat="server"
@@ -96,8 +93,9 @@
 </div>
 <div class="row mb-3">
     <div class="col">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border rounded border-light">
-            <asp:HyperLink ID="TopicLink" runat="server" 
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <asp:HyperLink ID="TopicLink" runat="server" 
                            CssClass="navbar-brand pt-0">
                 <asp:Label ID="TopicTitle" runat="server" 
                            CssClass="topic-title" />
@@ -126,15 +124,14 @@
                 </ul>
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item dropdown">
-                        <div id="fb-root"></div>
                         <YAF:ThemeButton runat="server" ID="ShareLink"
                                          TextLocalizedTag="SHARE" TitleLocalizedTag="SHARE_TOOLTIP"
                                          Icon="share-alt"
                                          Type="Link"
                                          CssClass="dropdown-toggle"
-                                         DataToggle="dropdown" />
+                                         DataToggle="dropdown"
+                                         NavigateUrl="#" />
                         <YAF:PopMenu ID="ShareMenu" runat="server" 
-                                     Control="ShareLink" 
                                      AlignRight="true" />
                     </li>
                     <li class="nav-item dropdown">
@@ -143,17 +140,13 @@
                                          Icon="cog"
                                          Type="Link"
                                          CssClass="dropdown-toggle"
-                                         DataToggle="dropdown" />
-                        <asp:UpdatePanel ID="PopupMenuUpdatePanel" runat="server" style="display: inline">
-                            <ContentTemplate>
-                                <span id="WatchTopicID" runat="server" visible="false"></span>
-                            </ContentTemplate>
-                        </asp:UpdatePanel>
+                                         DataToggle="dropdown"
+                                         NavigateUrl="#" />
                         <YAF:PopMenu runat="server" ID="OptionsMenu" 
-                                     Control="OptionsLink"
                                      AlignRight="true" />
                     </li>
                 </ul>
+            </div>
             </div>
         </nav>
     </div>
@@ -177,7 +170,7 @@
         <div class="col">
             <YAF:RssFeedLink ID="RssFeed" runat="server"
                              FeedType="Posts"
-                             AdditionalParameters='<%# "t={0}".Fmt(this.PageContext.PageTopicID) %>'
+                             AdditionalParameters='<%# "t={0}&name={1}".Fmt(this.PageContext.PageTopicID, this.PageContext.PageTopicName) %>'
                              Visible="<%# this.Get<IPermissions>().Check(this.Get<BoardSettings>().PostsFeedAccess) %>" />
         </div>
     </div>
@@ -202,6 +195,7 @@
                              Type="Danger"
                              DataToggle="dropdown"
                              TextLocalizedTag="MANAGE_TOPIC"
+                             NavigateUrl="#"
                              Icon="cogs" />
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="<%# this.Tools1.ClientID %>">
                 <YAF:ThemeButton ID="MoveTopic2" runat="server"

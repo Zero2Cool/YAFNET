@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace YAF.Lucene.Net.Queries.Function.ValueSources
+﻿namespace YAF.Lucene.Net.Queries.Function.ValueSources
 {
     /*
      * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -31,14 +29,16 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
         {
         }
 
-        protected override string Name
-        {
-            get { return "sum"; }
-        }
+        protected override string Name => "sum";
 
         protected override float Func(int doc, FunctionValues[] valsArr)
         {
-            return valsArr.Sum(vals => vals.SingleVal(doc));
+            float val = 0.0f;
+            foreach (FunctionValues vals in valsArr)
+            {
+                val += vals.SingleVal(doc);
+            }
+            return val;
         }
     }
 }

@@ -31,10 +31,10 @@ namespace YAF.Core.Services
 
     using YAF.Configuration;
     using YAF.Core.Context;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Models;
     using YAF.Utils;
 
     #endregion
@@ -49,7 +49,7 @@ namespace YAF.Core.Services
         /// <summary>
         /// The YAF board settings.
         /// </summary>
-        private readonly BoardSettings _yafBoardSettings;
+        private readonly BoardSettings boardSettings;
 
         #endregion
 
@@ -63,7 +63,7 @@ namespace YAF.Core.Services
         /// </param>
         public Avatars(BoardSettings boardSettings)
         {
-            this._yafBoardSettings = boardSettings;
+            this.boardSettings = boardSettings;
         }
 
         #endregion
@@ -78,45 +78,21 @@ namespace YAF.Core.Services
         /// </returns>
         public string GetAvatarUrlForCurrentUser()
         {
-            return this.GetAvatarUrlForUser(BoardContext.Current.CurrentUserData);
+            return this.GetAvatarUrlForUser(BoardContext.Current.CurrentUser);
         }
 
         /// <summary>
         /// The get avatar url for user.
         /// </summary>
-        /// <param name="userId">
-        /// The user id. 
+        /// <param name="user">
+        /// The user.
         /// </param>
         /// <returns>
         /// Returns the Avatar Url 
         /// </returns>
-        public string GetAvatarUrlForUser(int userId)
+        public string GetAvatarUrlForUser([NotNull] User user)
         {
-            try
-            {
-                var userData = new CombinedUserDataHelper(userId);
-
-                return this.GetAvatarUrlForUser(userData);
-            }
-            catch (Exception)
-            {
-                // Return NoAvatar Image if there something wrong with the user
-                return $"{BoardInfo.ForumClientFileRoot}images/noavatar.svg";
-            }
-        }
-
-        /// <summary>
-        /// The get avatar url for user.
-        /// </summary>
-        /// <param name="userData">
-        /// The user data. 
-        /// </param>
-        /// <returns>
-        /// Returns the Avatar Url 
-        /// </returns>
-        public string GetAvatarUrlForUser([NotNull] IUserData userData)
-        {
-            CodeContracts.VerifyNotNull(userData, "userData");
+            CodeContracts.VerifyNotNull(user, "user");
 
             var getUserEmail = new Func<string>(
                 () =>
@@ -124,7 +100,7 @@ namespace YAF.Core.Services
                         string userEmail;
                         try
                         {
-                            userEmail = userData.Email;
+                            userEmail = user.Email;
                         }
                         catch (Exception)
                         {
@@ -135,10 +111,10 @@ namespace YAF.Core.Services
                     });
 
             return this.GetAvatarUrlForUser(
-                userData.UserID,
-                userData.Avatar,
-                userData.HasAvatarImage,
-                this._yafBoardSettings.AvatarGravatar ? getUserEmail() : string.Empty);
+                user.ID,
+                user.Avatar,
+                user.AvatarImage != null,
+                this.boardSettings.AvatarGravatar ? getUserEmail() : string.Empty);
         }
 
         /// <summary>
@@ -163,7 +139,7 @@ namespace YAF.Core.Services
         {
             var avatarUrl = string.Empty;
 
-            if (this._yafBoardSettings.AvatarUpload && hasAvatarImage)
+            if (this.boardSettings.AvatarUpload && hasAvatarImage)
             {
                 avatarUrl = $"{BoardInfo.ForumClientFileRoot}resource.ashx?u={userId}";
             }
@@ -171,18 +147,18 @@ namespace YAF.Core.Services
             {
                 // Took out PageContext.BoardSettings.AvatarRemote
                 avatarUrl =
-                    $"{BoardInfo.ForumClientFileRoot}resource.ashx?url={HttpUtility.UrlEncode(avatarString)}&width={this._yafBoardSettings.AvatarWidth}&height={this._yafBoardSettings.AvatarHeight}";
+                    $"{BoardInfo.ForumClientFileRoot}resource.ashx?url={HttpUtility.UrlEncode(avatarString)}&width={this.boardSettings.AvatarWidth}&height={this.boardSettings.AvatarHeight}";
             }
-            else if (this._yafBoardSettings.AvatarGravatar && email.IsSet())
+            else if (this.boardSettings.AvatarGravatar && email.IsSet())
             {
                 const string GravatarBaseUrl = "https://www.gravatar.com/avatar/";
 
                 // JoeOuts added 8/17/09 for Gravatar use
                 var gravatarUrl =
-                    $@"{GravatarBaseUrl}{email.StringToHexBytes()}.jpg?r={this._yafBoardSettings.GravatarRating}&s={this._yafBoardSettings.AvatarWidth}";
+                    $@"{GravatarBaseUrl}{email.StringToHexBytes()}.jpg?r={this.boardSettings.GravatarRating}&s={this.boardSettings.AvatarWidth}";
 
                 avatarUrl =
-                    $@"{BoardInfo.ForumClientFileRoot}resource.ashx?url={HttpUtility.UrlEncode(gravatarUrl)}&width={this._yafBoardSettings.AvatarWidth}&height={this._yafBoardSettings.AvatarHeight}";
+                    $@"{BoardInfo.ForumClientFileRoot}resource.ashx?url={HttpUtility.UrlEncode(gravatarUrl)}&width={this.boardSettings.AvatarWidth}&height={this.boardSettings.AvatarHeight}";
             }
 
             // Return NoAvatar Image is no Avatar available for that user.

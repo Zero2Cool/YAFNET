@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -35,13 +33,13 @@ namespace YAF.Lucene.Net.Index
      */
 
     using Analyzer = YAF.Lucene.Net.Analysis.Analyzer;
-    using IBits = YAF.Lucene.Net.Util.IBits;
     using BytesRef = YAF.Lucene.Net.Util.BytesRef;
     using Codec = YAF.Lucene.Net.Codecs.Codec;
     using CompoundFileDirectory = YAF.Lucene.Net.Store.CompoundFileDirectory;
     using Constants = YAF.Lucene.Net.Util.Constants;
     using Directory = YAF.Lucene.Net.Store.Directory;
     using FieldNumbers = YAF.Lucene.Net.Index.FieldInfos.FieldNumbers;
+    using IBits = YAF.Lucene.Net.Util.IBits;
     using InfoStream = YAF.Lucene.Net.Util.InfoStream;
     using IOContext = YAF.Lucene.Net.Store.IOContext;
     using IOUtils = YAF.Lucene.Net.Util.IOUtils;
@@ -398,7 +396,7 @@ namespace YAF.Lucene.Net.Index
                             }
                         }
                     }
-                    catch (System.OutOfMemoryException oom)
+                    catch (OutOfMemoryException oom)
                     {
                         HandleOOM(oom, "getReader");
                         // never reached but javac disagrees:
@@ -772,7 +770,7 @@ namespace YAF.Lucene.Net.Index
         {
             if (closed || (failIfDisposing && closing))
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "this IndexWriter is closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "this IndexWriter is closed");
             }
         }
 
@@ -1280,7 +1278,7 @@ namespace YAF.Lucene.Net.Index
                 }
                 Debug.Assert(docWriter.perThreadPool.NumDeactivatedThreadStates() == docWriter.perThreadPool.MaxThreadStates, "" + docWriter.perThreadPool.NumDeactivatedThreadStates() + " " + docWriter.perThreadPool.MaxThreadStates);
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "closeInternal");
             }
@@ -1310,13 +1308,7 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// Gets the <see cref="Store.Directory"/> used by this index. </summary>
-        public virtual Directory Directory
-        {
-            get
-            {
-                return directory;
-            }
-        }
+        public virtual Directory Directory => directory;
 
         /// <summary>
         /// Gets the analyzer used by this index. </summary>
@@ -1362,7 +1354,12 @@ namespace YAF.Lucene.Net.Index
                 lock (this)
                 {
                     EnsureOpen();
-                    return docWriter.NumDocs + segmentInfos.Segments.Sum(info => info.Info.DocCount - NumDeletedDocs(info));
+                    int count = docWriter.NumDocs;
+                    foreach (SegmentCommitInfo info in segmentInfos)
+                    {
+                        count += info.Info.DocCount - NumDeletedDocs(info);
+                    }
+                    return count;
                 }
             }
         }
@@ -1580,7 +1577,7 @@ namespace YAF.Lucene.Net.Index
                     }
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "updateDocuments");
             }
@@ -1606,7 +1603,7 @@ namespace YAF.Lucene.Net.Index
                     ProcessEvents(true, false);
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "deleteDocuments(Term)");
             }
@@ -1651,7 +1648,7 @@ namespace YAF.Lucene.Net.Index
 
                 if (!(reader is SegmentReader))
                 {
-                    throw new System.ArgumentException("the reader must be a SegmentReader or composite reader containing only SegmentReaders");
+                    throw new ArgumentException("the reader must be a SegmentReader or composite reader containing only SegmentReaders");
                 }
 
                 SegmentCommitInfo info = ((SegmentReader)reader).SegmentInfo;
@@ -1730,7 +1727,7 @@ namespace YAF.Lucene.Net.Index
                     ProcessEvents(true, false);
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "deleteDocuments(Term..)");
             }
@@ -1756,7 +1753,7 @@ namespace YAF.Lucene.Net.Index
                     ProcessEvents(true, false);
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "deleteDocuments(Query)");
             }
@@ -1784,7 +1781,7 @@ namespace YAF.Lucene.Net.Index
                     ProcessEvents(true, false);
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "deleteDocuments(Query..)");
             }
@@ -1854,7 +1851,7 @@ namespace YAF.Lucene.Net.Index
                     }
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "updateDocument");
             }
@@ -1887,7 +1884,7 @@ namespace YAF.Lucene.Net.Index
             EnsureOpen();
             if (!globalFieldNumberMap.Contains(field, DocValuesType.NUMERIC))
             {
-                throw new System.ArgumentException("can only update existing numeric-docvalues fields!");
+                throw new ArgumentException("can only update existing numeric-docvalues fields!");
             }
             try
             {
@@ -1896,7 +1893,7 @@ namespace YAF.Lucene.Net.Index
                     ProcessEvents(true, false);
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "updateNumericDocValue");
             }
@@ -1933,7 +1930,7 @@ namespace YAF.Lucene.Net.Index
             EnsureOpen();
             if (!globalFieldNumberMap.Contains(field, DocValuesType.BINARY))
             {
-                throw new System.ArgumentException("can only update existing binary-docvalues fields!");
+                throw new ArgumentException("can only update existing binary-docvalues fields!");
             }
             try
             {
@@ -1942,7 +1939,7 @@ namespace YAF.Lucene.Net.Index
                     ProcessEvents(true, false);
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "updateBinaryDocValue");
             }
@@ -2307,7 +2304,7 @@ namespace YAF.Lucene.Net.Index
                             Exception t = merge.Exception;
                             if (t != null)
                             {
-                                throw new System.IO.IOException("background merge hit exception: " + merge.SegString(directory), t);
+                                throw new IOException("background merge hit exception: " + merge.SegString(directory), t);
                             }
                         }
 
@@ -2573,8 +2570,8 @@ namespace YAF.Lucene.Net.Index
                         infoStream.Message("IW", "rollback: infos=" + SegString(segmentInfos.Segments));
                     }
 
-                    var tpResult = TestPoint("rollback before checkpoint");
-                    Debug.Assert(tpResult);
+                    // LUCENENET: .NET doesn't support asserts in release mode
+                    if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("rollback before checkpoint");
 
                     // Ask deleter to locate unreferenced files & remove
                     // them:
@@ -2594,7 +2591,7 @@ namespace YAF.Lucene.Net.Index
 
                 success = true;
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "rollbackInternal");
             }
@@ -2705,7 +2702,7 @@ namespace YAF.Lucene.Net.Index
                             globalFieldNumberMap.Clear();
                             success = true;
                         }
-                        catch (System.OutOfMemoryException oom)
+                        catch (OutOfMemoryException oom)
                         {
                             HandleOOM(oom, "deleteAll");
                         }
@@ -2943,11 +2940,11 @@ namespace YAF.Lucene.Net.Index
             {
                 if (dups.Contains(dirs[i]))
                 {
-                    throw new System.ArgumentException("Directory " + dirs[i] + " appears more than once");
+                    throw new ArgumentException("Directory " + dirs[i] + " appears more than once");
                 }
                 if (dirs[i] == directory)
                 {
-                    throw new System.ArgumentException("Cannot add directory to itself");
+                    throw new ArgumentException("Cannot add directory to itself");
                 }
                 dups.Add(dirs[i]);
             }
@@ -3136,7 +3133,7 @@ namespace YAF.Lucene.Net.Index
 
                 successTop = true;
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "addIndexes(Directory...)");
             }
@@ -3323,7 +3320,7 @@ namespace YAF.Lucene.Net.Index
                     Checkpoint();
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "addIndexes(IndexReader...)");
             }
@@ -3406,7 +3403,7 @@ namespace YAF.Lucene.Net.Index
             {
                 currentCodec.SegmentInfoFormat.SegmentInfoWriter.Write(trackingDir, newInfo, fis, context);
             }
-            catch (System.NotSupportedException /*uoe*/)
+            catch (NotSupportedException /*uoe*/)
             {
 #pragma warning disable 612, 618
                 if (currentCodec is Lucene3xCodec)
@@ -3541,8 +3538,8 @@ namespace YAF.Lucene.Net.Index
                 }
 
                 DoBeforeFlush();
-                var tpResult = TestPoint("startDoFlush");
-                Debug.Assert(tpResult);
+                // LUCENENET: .NET doesn't support asserts in release mode
+                if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("startDoFlush");
                 SegmentInfos toCommit = null;
                 bool anySegmentsFlushed = false;
 
@@ -3608,7 +3605,7 @@ namespace YAF.Lucene.Net.Index
                         }
                     }
                 }
-                catch (System.OutOfMemoryException oom)
+                catch (OutOfMemoryException oom)
                 {
                     HandleOOM(oom, "prepareCommit");
                 }
@@ -3858,8 +3855,8 @@ namespace YAF.Lucene.Net.Index
             }
 
             DoBeforeFlush();
-            var tpResult = TestPoint("startDoFlush");
-            Debug.Assert(tpResult);
+            // LUCENENET: .NET doesn't support asserts in release mode
+            if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("startDoFlush");
             bool success = false;
             try
             {
@@ -3897,7 +3894,7 @@ namespace YAF.Lucene.Net.Index
                     return anySegmentFlushed;
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "doFlush");
                 // never hit
@@ -4101,8 +4098,8 @@ namespace YAF.Lucene.Net.Index
         {
             lock (this)
             {
-                var tpResult = TestPoint("startCommitMergeDeletes");
-                Debug.Assert(tpResult);
+                // LUCENENET: .NET doesn't support asserts in release mode
+                if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("startCommitMergeDeletes");
 
                 IList<SegmentCommitInfo> sourceSegments = merge.Segments;
 
@@ -4338,8 +4335,8 @@ namespace YAF.Lucene.Net.Index
         {
             lock (this)
             {
-                var tpResult = TestPoint("startCommitMerge");
-                Debug.Assert(tpResult);
+                // LUCENENET: .NET doesn't support asserts in release mode
+                if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("startCommitMerge");
 
                 if (hitOOM)
                 {
@@ -4594,7 +4591,7 @@ namespace YAF.Lucene.Net.Index
                     }
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "merge");
             }
@@ -4759,8 +4756,8 @@ namespace YAF.Lucene.Net.Index
         {
             lock (this)
             {
-                var testPointResult = TestPoint("startMergeInit");
-                Debug.Assert(testPointResult);
+                // LUCENENET: .NET doesn't support asserts in release mode
+                if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("startMergeInit");
 
                 Debug.Assert(merge.registerDone);
                 Debug.Assert(merge.MaxNumSegments == -1 || merge.MaxNumSegments > 0);
@@ -5116,7 +5113,7 @@ namespace YAF.Lucene.Net.Index
                         filesToRemove = CreateCompoundFile(infoStream, directory, checkAbort, merge.info.Info, context);
                         success = true;
                     }
-                    catch (System.IO.IOException ioe)
+                    catch (IOException ioe)
                     {
                         lock (this)
                         {
@@ -5273,22 +5270,10 @@ namespace YAF.Lucene.Net.Index
         }
 
         // For test purposes.
-        internal int BufferedDeleteTermsSize
-        {
-            get
-            {
-                return docWriter.BufferedDeleteTermsSize;
-            }
-        }
+        internal int BufferedDeleteTermsSize => docWriter.BufferedDeleteTermsSize;
 
         // For test purposes.
-        internal int NumBufferedDeleteTerms
-        {
-            get
-            {
-                return docWriter.NumBufferedDeleteTerms;
-            }
-        }
+        internal int NumBufferedDeleteTerms => docWriter.NumBufferedDeleteTerms;
 
         // utility routines for tests
         internal virtual SegmentCommitInfo NewestSegment()
@@ -5384,14 +5369,8 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public virtual bool KeepFullyDeletedSegments
         {
-            set
-            {
-                keepFullyDeletedSegments = value;
-            }
-            get
-            {
-                return keepFullyDeletedSegments;
-            }
+            get => keepFullyDeletedSegments;
+            set => keepFullyDeletedSegments = value;
         }
 
         // called only from assert
@@ -5446,8 +5425,8 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         private void StartCommit(SegmentInfos toSync)
         {
-            var tpResult = TestPoint("startStartCommit");
-            Debug.Assert(tpResult);
+            // LUCENENET: .NET doesn't support asserts in release mode
+            if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("startStartCommit");
             Debug.Assert(pendingCommit == null);
 
             if (hitOOM)
@@ -5485,15 +5464,15 @@ namespace YAF.Lucene.Net.Index
                     Debug.Assert(FilesExist(toSync));
                 }
 
-                tpResult = TestPoint("midStartCommit");
-                Debug.Assert(tpResult);
+                // LUCENENET: .NET doesn't support asserts in release mode
+                if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("midStartCommit");
 
                 bool pendingCommitSet = false;
 
                 try
                 {
-                    tpResult = TestPoint("midStartCommit2");
-                    Debug.Assert(tpResult);
+                    // LUCENENET: .NET doesn't support asserts in release mode
+                    if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("midStartCommit2");
 
                     lock (this)
                     {
@@ -5536,8 +5515,8 @@ namespace YAF.Lucene.Net.Index
                         infoStream.Message("IW", "done all syncs: " + string.Format(J2N.Text.StringFormatter.InvariantCulture, "{0}", filesToSync));
                     }
 
-                    tpResult = TestPoint("midStartCommitSuccess");
-                    Debug.Assert(tpResult);
+                    // LUCENENET: .NET doesn't support asserts in release mode
+                    if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("midStartCommitSuccess");
                 }
                 finally
                 {
@@ -5563,12 +5542,12 @@ namespace YAF.Lucene.Net.Index
                     }
                 }
             }
-            catch (System.OutOfMemoryException oom)
+            catch (OutOfMemoryException oom)
             {
                 HandleOOM(oom, "startCommit");
             }
-            tpResult = TestPoint("finishStartCommit");
-            Debug.Assert(tpResult);
+            // LUCENENET: .NET doesn't support asserts in release mode
+            if (Lucene.Net.Diagnostics.Debugging.AssertsEnabled) TestPoint("finishStartCommit");
         }
 
         /// <summary>
@@ -5626,7 +5605,7 @@ namespace YAF.Lucene.Net.Index
             public abstract void Warm(AtomicReader reader);
         }
 
-        private void HandleOOM(System.OutOfMemoryException oom, string location)
+        private void HandleOOM(OutOfMemoryException oom, string location)
         {
             if (infoStream.IsEnabled("IW"))
             {
@@ -5751,7 +5730,7 @@ namespace YAF.Lucene.Net.Index
                     checkAbort.Work(directory.FileLength(file));
                 }
             }
-            catch (System.IO.IOException ex)
+            catch (IOException ex)
             {
                 prior = ex;
             }
@@ -5933,7 +5912,7 @@ namespace YAF.Lucene.Net.Index
             //}
             // LUCENENET specific - since NoSuchDirectoryException subclasses FileNotFoundException
             // in Lucene, we need to catch it here to be on the safe side.
-            catch (System.IO.DirectoryNotFoundException)
+            catch (DirectoryNotFoundException)
             {
                 return false;
             }

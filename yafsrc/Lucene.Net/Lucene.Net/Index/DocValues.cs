@@ -1,3 +1,5 @@
+using System;
+
 namespace YAF.Lucene.Net.Index
 {
     /*
@@ -90,13 +92,7 @@ namespace YAF.Lucene.Net.Index
                 result.Length = 0;
             }
 
-            public override int ValueCount
-            {
-                get
-                {
-                    return 0;
-                }
-            }
+            public override int ValueCount => 0;
         }
 
         /// <summary>
@@ -121,20 +117,14 @@ namespace YAF.Lucene.Net.Index
 
             public override void LookupOrd(long ord, BytesRef result)
             {
-                throw new System.IndexOutOfRangeException();
+                throw new IndexOutOfRangeException();
             }
 
-            public override long ValueCount
-            {
-                get
-                {
-                    return 0;
-                }
-            }
+            public override long ValueCount => 0;
 
             public override long OrdAt(int index)
             {
-                throw new System.IndexOutOfRangeException();
+                throw new IndexOutOfRangeException();
             }
 
             public override int Cardinality()
@@ -191,10 +181,7 @@ namespace YAF.Lucene.Net.Index
                 return dv.GetOrd(index) >= 0;
             }
 
-            public virtual int Length
-            {
-                get { return maxDoc; }
-            }
+            public virtual int Length => maxDoc;
         }
 
         /// <summary>
@@ -222,10 +209,7 @@ namespace YAF.Lucene.Net.Index
                 return dv.NextOrd() != SortedSetDocValues.NO_MORE_ORDS;
             }
 
-            public virtual int Length
-            {
-                get { return maxDoc; }
-            }
+            public virtual int Length => maxDoc;
         }
     }
 }

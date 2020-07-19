@@ -74,11 +74,6 @@ namespace YAF.Core.Context
         public string CultureUser => this.PageValueAsString("CultureUser");
 
         /// <summary>
-        ///   Gets a value indicating whether the time zone offset for the user
-        /// </summary>
-        public bool DSTUser => this.userFlags != null && this.userFlags.IsDST;
-
-        /// <summary>
         ///   Gets a value indicating whether the current user can delete own messages in the current forum (True).
         /// </summary>
         public bool ForumDeleteAccess => this.AccessNotNull("DeleteAccess");
@@ -183,21 +178,6 @@ namespace YAF.Core.Context
         ///   Gets a value indicating whether the current user personal data was changed and not handled by a code;
         /// </summary>
         public bool IsDirty => this.PageValueAsBool("IsDirty");
-
-        /// <summary>
-        ///   Gets a value indicating whether the current user is logged in via Facebook
-        /// </summary>
-        public bool IsFacebookUser => this.PageValueAsBool("IsFacebookUser");
-
-        /// <summary>
-        ///   Gets a value indicating whether the current user is logged in via Twitter
-        /// </summary>
-        public bool IsTwitterUser => this.PageValueAsBool("IsTwitterUser");
-
-        /// <summary>
-        ///   Gets a value indicating whether the current user is logged in via Google
-        /// </summary>
-        public bool IsGoogleUser => this.PageValueAsBool("IsGoogleUser");
 
         /// <summary>
         ///   Gets a value indicating whether the current user is suspended (True).

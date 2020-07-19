@@ -40,8 +40,6 @@ namespace YAF.Pages
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
-    using YAF.Core.Services;
-    using YAF.Core.Services.Auth;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -143,7 +141,11 @@ namespace YAF.Pages
 
             this.GetRepository<Topic>().Delete(this.PageContext.PageTopicID, true);
 
-            BuildLink.Redirect(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
+            BuildLink.Redirect(
+                ForumPages.Topics,
+                "f={0}&name={1}",
+                this.PageContext.PageForumID,
+                this.PageContext.PageForumName);
         }
 
         /// <summary>
@@ -235,7 +237,7 @@ namespace YAF.Pages
                 return;
             }
 
-            BuildLink.Redirect(ForumPages.Posts, "t={0}", nextTopic.ID.ToString());
+            BuildLink.Redirect(ForumPages.Posts, "t={0}&name={1}", nextTopic.ID.ToString(), nextTopic.TopicName);
         }
 
         /// <summary>
@@ -264,8 +266,12 @@ namespace YAF.Pages
 
             if (this.Get<IPermissions>().Check(this.Get<BoardSettings>().ShowShareTopicTo))
             {
-                var topicUrl = BuildLink.GetLinkNotEscaped(
-                    ForumPages.Posts, true, "t={0}", this.PageContext.PageTopicID);
+                var topicUrl = BuildLink.GetLink(
+                    ForumPages.Posts,
+                    true,
+                    "t={0}&name={1}",
+                    this.PageContext.PageTopicID,
+                    this.PageContext.PageTopicName);
 
                 if (this.Get<BoardSettings>().AllowEmailTopic)
                 {
@@ -275,13 +281,12 @@ namespace YAF.Pages
 
                 this.ShareMenu.AddClientScriptItem(
                     this.GetText("LINKBACK_TOPIC"),
-                    $@"bootbox.prompt({{ 
-                                      title: '{this.GetText("LINKBACK_TOPIC")}',
-                                      message: '{this.GetText("LINKBACK_TOPIC_PROMT")}',
-	                                  value: '{topicUrl}',
-                                      buttons: {{cancel:{{label:'{this.GetText("CANCEL")}'}}, confirm:{{label:'{this.GetText("OK")}'}}}},
-                                      callback: function(){{}}
-	                              }});",
+                    JavaScriptBlocks.BootBoxPromptJs(
+                        this.GetText("LINKBACK_TOPIC"),
+                        this.GetText("LINKBACK_TOPIC_PROMT"),
+                        this.GetText("CANCEL"),
+                        this.GetText("OK"),
+                        topicUrl),
                     "fa fa-link");
                 this.ShareMenu.AddPostBackItem("retweet", this.GetText("RETWEET_TOPIC"), "fab fa-twitter");
 
@@ -314,12 +319,14 @@ namespace YAF.Pages
                 }
             }
 
-            // options menu...
-            this.OptionsMenu.AddPostBackItem(
-                "watch",
-                isWatched ? this.GetText("UNWATCHTOPIC") : this.GetText("WATCHTOPIC"),
-                isWatched ? "fa fa-eye-slash" : "fa fa-eye");
-
+            if (!this.PageContext.IsGuest)
+            {
+                this.OptionsMenu.AddPostBackItem(
+                    isWatched ? "unwatch" : "watch",
+                    isWatched ? this.GetText("UNWATCHTOPIC") : this.GetText("WATCHTOPIC"),
+                    isWatched ? "fa fa-eye-slash" : "fa fa-eye");
+            }
+            
             this.OptionsMenu.AddPostBackItem(
                 "print", this.GetText("PRINTTOPIC"), "fa fa-print");
 
@@ -358,7 +365,7 @@ namespace YAF.Pages
         {
             if (!this.PageContext.IsGuest)
             {
-                if (this.PageContext.CurrentUserData.Activity)
+                if (this.PageContext.CurrentUser.Activity)
                 {
                     this.GetRepository<Activity>().UpdateTopicNotification(
                         this.PageContext.PageUserID,
@@ -414,11 +421,15 @@ namespace YAF.Pages
                 BuildLink.RedirectInfoPage(InfoMessage.Invalid);
             }
 
-            var dt = this.GetRepository<Forum>().List(
-                this.PageContext.PageBoardID,
-                this.PageContext.PageForumID);
+            if (this.topic.PollID.HasValue)
+            {
+                this.PollList.TopicId = this.PageContext.PageTopicID;
+                this.PollList.Visible = true;
+                this.PollList.PollId = this.topic.PollID.Value;
+            }
 
-            this.forum = dt.FirstOrDefault();
+            this.forum = this.GetRepository<Forum>().GetById(
+                this.PageContext.PageForumID);
             
             this.forumFlags = this.forum.ForumFlags;
 
@@ -447,11 +458,11 @@ namespace YAF.Pages
 
                 this.NewTopic2.NavigateUrl =
                     this.NewTopic1.NavigateUrl =
-                    BuildLink.GetLinkNotEscaped(ForumPages.PostTopic, "f={0}", this.PageContext.PageForumID);
+                    BuildLink.GetLink(ForumPages.PostTopic, "f={0}", this.PageContext.PageForumID);
 
                 this.PostReplyLink1.NavigateUrl =
                     this.PostReplyLink2.NavigateUrl =
-                    BuildLink.GetLinkNotEscaped(
+                    BuildLink.GetLink(
                         ForumPages.PostMessage,
                         "t={0}&f={1}",
                         this.PageContext.PageTopicID,
@@ -459,21 +470,17 @@ namespace YAF.Pages
 
                 var topicSubject = this.Get<IBadWordReplace>().Replace(this.HtmlEncode(this.topic.TopicName));
 
-                if (this.topic.Description.IsSet()
-                    && yafBoardSettings.EnableTopicDescription)
-                {
-                    this.TopicTitle.Text =
-                        $"{topicSubject} - <em>{this.Get<IBadWordReplace>().Replace(this.HtmlEncode(this.topic.Description))}</em>";
-                }
-                else
-                {
-                    this.TopicTitle.Text = this.Get<IBadWordReplace>().Replace(topicSubject);
-                }
+                this.TopicTitle.Text = this.topic.Description.IsSet()
+                    ? $"{topicSubject} - <em>{this.Get<IBadWordReplace>().Replace(this.HtmlEncode(this.topic.Description))}</em>"
+                    : this.Get<IBadWordReplace>().Replace(topicSubject);
 
                 this.TopicLink.ToolTip = this.Get<IBadWordReplace>().Replace(
                     this.HtmlEncode(this.topic.Description));
-                this.TopicLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
-                    ForumPages.Posts, "t={0}", this.PageContext.PageTopicID);
+                this.TopicLink.NavigateUrl = BuildLink.GetLink(
+                    ForumPages.Posts,
+                    "t={0}&name={1}",
+                    this.PageContext.PageTopicID,
+                    this.PageContext.PageTopicName);
 
                 this.QuickReplyDialog.Visible = yafBoardSettings.ShowQuickAnswer;
                 this.QuickReplyLink1.Visible = yafBoardSettings.ShowQuickAnswer;
@@ -543,26 +550,13 @@ namespace YAF.Pages
             if (this.PageContext.Settings.LockedForum == 0)
             {
                 this.PageLinks.AddRoot();
-                this.PageLinks.AddLink(
-                    this.PageContext.PageCategoryName,
-                    BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+                this.PageLinks.AddCategory(this.PageContext.PageCategoryName, this.PageContext.PageCategoryID);
             }
 
             this.PageLinks.AddForum(this.PageContext.PageForumID);
             this.PageLinks.AddLink(
                 this.Get<IBadWordReplace>().Replace(this.Server.HtmlDecode(this.PageContext.PageTopicName)),
                 string.Empty);
-        }
-
-        /// <summary>
-        /// The poll group id.
-        /// </summary>
-        /// <returns>
-        /// Returns The poll group id.
-        /// </returns>
-        protected int PollGroupId()
-        {
-            return this.topic.PollID ?? 0;
         }
 
         /// <summary>
@@ -607,24 +601,15 @@ namespace YAF.Pages
                 return;
             }
 
-            BuildLink.Redirect(ForumPages.Posts, "t={0}", previousTopic.ID.ToString());
+            BuildLink.Redirect(
+                ForumPages.Posts,
+                "t={0}&name={1}",
+                previousTopic.ID.ToString(),
+                previousTopic.TopicName);
         }
 
         /// <summary>
-        /// The show poll buttons.
-        /// </summary>
-        /// <returns>
-        /// Returns The show poll buttons.
-        /// </returns>
-        protected bool ShowPollButtons()
-        {
-            return false;
-
-            /* return (Convert.ToInt32(_topic["UserID"]) == PageContext.PageUserID) || PageContext.IsModerator || PageContext.IsAdmin; */
-        }
-
-        /// <summary>
-        /// The track topic_ click.
+        /// Watch Topic
         /// </summary>
         /// <param name="sender">
         /// The source of the event.
@@ -632,27 +617,29 @@ namespace YAF.Pages
         /// <param name="e">
         /// The <see cref="System.EventArgs"/> instance containing the event data.
         /// </param>
-        protected void TrackTopic_Click([NotNull] object sender, [NotNull] EventArgs e)
+        protected void TrackTopicClick([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (this.PageContext.IsGuest)
-            {
-                this.PageContext.AddLoadMessage(this.GetText("WARN_WATCHLOGIN"), MessageTypes.warning);
-                return;
-            }
+            this.GetRepository<WatchTopic>().Add(this.PageContext.PageUserID, this.PageContext.PageTopicID);
+            this.PageContext.AddLoadMessage(this.GetText("INFO_WATCH_TOPIC"), MessageTypes.warning);
 
-            if (this.WatchTopicID.InnerText == string.Empty)
-            {
-                this.GetRepository<WatchTopic>().Add(this.PageContext.PageUserID, this.PageContext.PageTopicID);
-                this.PageContext.AddLoadMessage(this.GetText("INFO_WATCH_TOPIC"), MessageTypes.warning);
-            }
-            else
-            {
-                var tmpID = this.WatchTopicID.InnerText.ToType<int>();
+            this.HandleWatchTopic();
+        }
 
-                this.GetRepository<WatchTopic>().DeleteById(tmpID);
+        /// <summary>
+        /// Un-Watch Topic
+        /// </summary>
+        /// <param name="sender">
+        /// The source of the event.
+        /// </param>
+        /// <param name="e">
+        /// The <see cref="System.EventArgs"/> instance containing the event data.
+        /// </param>
+        protected void UnTrackTopicClick([NotNull] object sender, [NotNull] EventArgs e)
+        {
+            this.GetRepository<WatchTopic>().Delete(
+                w => w.TopicID == this.PageContext.PageTopicID && w.UserID == this.PageContext.PageUserID);
 
-                this.PageContext.AddLoadMessage(this.GetText("INFO_UNWATCH_TOPIC"), MessageTypes.info);
-            }
+            this.PageContext.AddLoadMessage(this.GetText("INFO_UNWATCH_TOPIC"), MessageTypes.info);
 
             this.HandleWatchTopic();
         }
@@ -797,7 +784,11 @@ namespace YAF.Pages
         {
             if (this.topic == null)
             {
-                BuildLink.Redirect(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
+                BuildLink.Redirect(
+                    ForumPages.Topics,
+                    "f={0}&name={1}",
+                    this.PageContext.PageForumID,
+                    this.PageContext.PageForumName);
             }
 
             this.dataBound = true;
@@ -835,11 +826,11 @@ namespace YAF.Pages
                 this.IsPostBack || this.PageContext.IsCrawler ? 0 : 1,
                 showDeleted,
                 this.Get<BoardSettings>().UseStyledNicks,
-                !this.PageContext.IsGuest && this.Get<BoardSettings>().DisplayPoints,
+                !this.PageContext.IsGuest && this.Get<BoardSettings>().EnableUserReputation,
                 DateTimeHelper.SqlDbMinTime(),
-                System.DateTime.UtcNow,
+                DateTime.UtcNow,
                 DateTimeHelper.SqlDbMinTime(),
-                System.DateTime.UtcNow,
+                DateTime.UtcNow,
                 this.Pager.CurrentPageIndex,
                 this.Pager.PageSize,
                 1,
@@ -850,8 +841,7 @@ namespace YAF.Pages
 
             if (this.Get<BoardSettings>().EnableThanksMod)
             {
-                // Add necessary columns for later use in displaypost.ascx (Prevent repetitive
-                // calls to database.)
+                // Add necessary columns for later use in DisplayPost (Prevent repetitive calls to database.)
                 if (!postListDataTable.Columns.Contains("ThanksInfo"))
                 {
                     postListDataTable.Columns.Add("ThanksInfo", typeof(string));
@@ -894,11 +884,11 @@ namespace YAF.Pages
                     this.IsPostBack || this.PageContext.IsCrawler ? 0 : 1,
                     showDeleted,
                     this.Get<BoardSettings>().UseStyledNicks,
-                    !this.PageContext.IsGuest && this.Get<BoardSettings>().DisplayPoints,
+                    !this.PageContext.IsGuest && this.Get<BoardSettings>().EnableUserReputation,
                     DateTimeHelper.SqlDbMinTime(),
-                    System.DateTime.UtcNow,
+                    DateTime.UtcNow,
                     DateTimeHelper.SqlDbMinTime(),
-                    System.DateTime.UtcNow,
+                    DateTime.UtcNow,
                     this.Pager.CurrentPageIndex,
                     this.Pager.PageSize,
                     1,
@@ -939,12 +929,12 @@ namespace YAF.Pages
                 }
             }
 
-            var pagedData = rowList; // .Skip(this.Pager.SkipIndex).Take(this.Pager.PageSize);
+            var pagedData = rowList;
 
             // Add thanks info and styled nicks if they are enabled
             if (this.Get<BoardSettings>().EnableThanksMod)
             {
-                this.Get<DataBroker>().AddThanksInfo(pagedData);
+                this.Get<IThankYou>().AddThanksInfo(pagedData);
             }
 
             // if current index is 0 we are on the first page and the metadata can be added.
@@ -981,7 +971,6 @@ namespace YAF.Pages
 
             try
             {
-                // temporary find=lastpost code until all last/unread post links are find=lastpost and find=unread
                 if (!this.Get<HttpRequestBase>().QueryString.Exists("find"))
                 {
                     if (this.Get<HttpRequestBase>().QueryString.Exists("m") && int.TryParse(
@@ -1027,7 +1016,7 @@ namespace YAF.Pages
                                                    ? this.Get<IReadTrackCurrentUser>().GetForumTopicRead(
                                                        this.PageContext.PageForumID,
                                                        this.PageContext.PageTopicID)
-                                                   : System.DateTime.UtcNow;
+                                                   : DateTime.UtcNow;
 
                                 using (var unread = this.GetRepository<Message>().FindUnreadAsDataTable(
                                     this.PageContext.PageTopicID,
@@ -1049,7 +1038,7 @@ namespace YAF.Pages
                                         findMessageId = unreadFirst.Field<int>("MessageID");
                                         messagePosition = unreadFirst.Field<int>("MessagePosition");
 
-                                        if (this.Get<HttpRequestBase>().QueryString.Exists("m") && this.PageContext.CurrentUserData.Activity)
+                                        if (this.Get<HttpRequestBase>().QueryString.Exists("m") && this.PageContext.CurrentUser.Activity)
                                         {
                                             this.GetRepository<Activity>().UpdateNotification(this.PageContext.PageUserID, findMessageId);
                                         }
@@ -1062,7 +1051,7 @@ namespace YAF.Pages
                             using (var unread = this.GetRepository<Message>().FindUnreadAsDataTable(
                                 this.PageContext.PageTopicID,
                                 0,
-                                System.DateTime.UtcNow,
+                                DateTime.UtcNow,
                                 showDeleted,
                                 userId))
                             {
@@ -1109,18 +1098,7 @@ namespace YAF.Pages
             var watchTopicId = this.GetRepository<WatchTopic>().Check(this.PageContext.PageUserID, this.PageContext.PageTopicID);
 
             // check if this forum is being watched by this user
-            if (watchTopicId.HasValue)
-            {
-                // subscribed to this forum
-                this.WatchTopicID.InnerText = watchTopicId.Value.ToString();
-
-                return true;
-            }
-
-            // not subscribed
-            this.WatchTopicID.InnerText = string.Empty;
-
-            return false;
+            return watchTopicId.HasValue;
         }
 
         /// <summary>
@@ -1141,7 +1119,12 @@ namespace YAF.Pages
         /// <param name="e">The Pop Event Arguments.</param>
         private void ShareMenuItemClick([NotNull] object sender, [NotNull] PopEventArgs e)
         {
-            var topicUrl = BuildLink.GetLinkNotEscaped(ForumPages.Posts, true, "t={0}", this.PageContext.PageTopicID);
+            var topicUrl = BuildLink.GetLink(
+                ForumPages.Posts,
+                true,
+                "t={0}&name={1}",
+                this.PageContext.PageTopicID,
+                this.PageContext.PageTopicName);
 
             switch (e.Item.ToLower())
             {
@@ -1189,31 +1172,7 @@ namespace YAF.Pages
                         var tweetUrl =
                             $"http://twitter.com/share?url={this.Server.UrlEncode(topicUrl)}&text={this.Server.UrlEncode(string.Format("RT {1}Thread: {0}", twitterMsg.Truncate(100), twitterName))}";
 
-                        // Send Re-tweet directly thru the Twitter API if User is Twitter User
-                        if (Config.TwitterConsumerKey.IsSet() && Config.TwitterConsumerSecret.IsSet()
-                            && this.Get<ISession>().TwitterToken.IsSet()
-                            && this.Get<ISession>().TwitterTokenSecret.IsSet() && this.PageContext.IsTwitterUser)
-                        {
-                            var auth = new OAuthTwitter
-                                {
-                                    ConsumerKey = Config.TwitterConsumerKey,
-                                    ConsumerSecret = Config.TwitterConsumerSecret,
-                                    Token = this.Get<ISession>().TwitterToken,
-                                    TokenSecret = this.Get<ISession>().TwitterTokenSecret
-                                };
-
-                            var tweets = new TweetAPI(auth);
-
-                            tweets.UpdateStatus(
-                                TweetAPI.ResponseFormat.json,
-                                this.Server.UrlEncode(
-                                    string.Format("RT {1}: {0} {2}", twitterMsg.Truncate(100), twitterName, topicUrl)),
-                                string.Empty);
-                        }
-                        else
-                        {
-                            this.Get<HttpResponseBase>().Redirect(tweetUrl);
-                        }
+                        this.Get<HttpResponseBase>().Redirect(tweetUrl);
                     }
 
                     break;
@@ -1244,7 +1203,10 @@ namespace YAF.Pages
                     BuildLink.Redirect(ForumPages.PrintTopic, "t={0}", this.PageContext.PageTopicID);
                     break;
                 case "watch":
-                    this.TrackTopic_Click(sender, e);
+                    this.TrackTopicClick(sender, e);
+                    break;
+                case "unwatch":
+                    this.UnTrackTopicClick(sender, e);
                     break;
                 case "email":
                     this.EmailTopic_Click(sender, e);

@@ -35,6 +35,7 @@ namespace YAF.Controls
     using YAF.Configuration;
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -61,7 +62,7 @@ namespace YAF.Controls
         {
             var returnUrl = string.Empty;
 
-            if (this.PageContext.ForumPageType != ForumPages.Login)
+            if (this.PageContext.ForumPageType != ForumPages.Account_Login)
             {
                 returnUrl = HttpContext.Current.Server.UrlEncode(General.GetSafeRawUrl());
             }
@@ -211,7 +212,7 @@ namespace YAF.Controls
                                                          ? $"<i class=\"fa fa-{icon} fa-fw\"></i>&nbsp;{linkText}&nbsp;"
                                                          : $"{linkText}&nbsp;"));*/
 
-                var unreadLabel = new Label { CssClass = "badge badge-danger ml-1", ToolTip = unreadText, Text = unread };
+                var unreadLabel = new Label { CssClass = "badge bg-danger ml-1", ToolTip = unreadText, Text = unread };
 
                 unreadLabel.Attributes.Add("data-toggle", "tooltip");
 
@@ -246,8 +247,10 @@ namespace YAF.Controls
 
             this.quickSearch.Visible = true;
 
-            this.searchInput.Attributes["onkeydown"] =
-                $"if(event.which || event.keyCode){{if ((event.which == 13) || (event.keyCode == 13)) {{document.getElementById('{this.doQuickSearch.ClientID}').click();return false;}}}} else {{return true}}; ";
+            this.searchInput.Attributes.Add(
+                "onkeydown",
+                JavaScriptBlocks.ClickOnEnterJs(this.doQuickSearch.ClientID));
+
             this.searchInput.Attributes["onfocus"] =
                 $"if (this.value == '{this.GetText("TOOLBAR", "SEARCHKEYWORD")}') {{this.value = '';}}";
             this.searchInput.Attributes["onblur"] =
@@ -300,7 +303,8 @@ namespace YAF.Controls
             if (this.PageContext.ForumPageType == ForumPages.Admin_HostSettings || this.PageContext.ForumPageType == ForumPages.Admin_Boards
                                                                                 || this.PageContext.ForumPageType == ForumPages.Admin_EditBoard
                                                                                 || this.PageContext.ForumPageType == ForumPages.Admin_PageAccessEdit
-                                                                                || this.PageContext.ForumPageType == ForumPages.Admin_PageAccessList)
+                                                                                || this.PageContext.ForumPageType == ForumPages.Admin_PageAccessList
+                                                                                || this.PageContext.ForumPageType == ForumPages.Admin_Profiler)
             {
                 this.hostDropdown.CssClass = "nav-link dropdown-toggle active";
             }
@@ -391,12 +395,19 @@ namespace YAF.Controls
             // Login
             if (Config.AllowLoginAndLogoff)
             {
+                var navigateUrl = "javascript:void(0);";
+
+                if (this.PageContext.CurrentForumPage.IsAccountPage)
+                {
+                    navigateUrl = BuildLink.GetLink(ForumPages.Account_Login);
+                }
+
                 RenderMenuItem(
                     this.menuListItems,
-                    "nav-link  LoginLink",
+                    "nav-link LoginLink",
                     this.GetText("TOOLBAR", "LOGIN"),
                     "LOGIN_TITLE",
-                    "javascript:void(0);",
+                    navigateUrl,
                     true,
                     false,
                     null,
@@ -416,13 +427,13 @@ namespace YAF.Controls
                     this.Get<BoardSettings>().ShowRulesForRegistration
                         ? BuildLink.GetLink(ForumPages.RulesAndPrivacy)
                         : !this.Get<BoardSettings>().UseSSLToRegister
-                            ? BuildLink.GetLink(ForumPages.Register)
-                            : BuildLink.GetLink(ForumPages.Register, true).Replace("http:", "https:"),
+                            ? BuildLink.GetLink(ForumPages.Account_Register)
+                            : BuildLink.GetLink(ForumPages.Account_Register, true).Replace("http:", "https:"),
                     true,
                     false,
                     null,
                     null,
-                    this.PageContext.ForumPageType == ForumPages.Register,
+                    this.PageContext.ForumPageType == ForumPages.Account_Register,
                     string.Empty);
             }
         }
@@ -456,13 +467,20 @@ namespace YAF.Controls
             {
                 if (Config.AllowLoginAndLogoff)
                 {
+                    var navigateUrl = "javascript:void(0);";
+
+                    if (this.PageContext.CurrentForumPage.IsAccountPage)
+                    {
+                        navigateUrl = BuildLink.GetLink(ForumPages.Account_Login);
+                    }
+
                     // show login
                     var loginLink = new HyperLink
-                                        {
-                                            Text = this.GetText("TOOLBAR", "LOGIN"),
-                                            ToolTip = this.GetText("TOOLBAR", "LOGIN"),
-                                            NavigateUrl = "javascript:void(0);",
-                                            CssClass = "alert-link LoginLink"
+                    {
+                        Text = this.GetText("TOOLBAR", "LOGIN"),
+                        ToolTip = this.GetText("TOOLBAR", "LOGIN"),
+                        NavigateUrl = navigateUrl,
+                        CssClass = "alert-link LoginLink"
                     };
 
                     this.GuestUserMessage.Controls.Add(loginLink);
@@ -486,9 +504,9 @@ namespace YAF.Controls
                                                    this.Get<BoardSettings>().ShowRulesForRegistration
                                                        ? BuildLink.GetLink(ForumPages.RulesAndPrivacy)
                                                        : !this.Get<BoardSettings>().UseSSLToRegister
-                                                           ? BuildLink.GetLink(ForumPages.Register)
+                                                           ? BuildLink.GetLink(ForumPages.Account_Register)
                                                            : BuildLink.GetLink(
-                                                               ForumPages.Register,
+                                                               ForumPages.Account_Register,
                                                                true).Replace("http:", "https:"),
                                                CssClass = "alert-link"
                                            };

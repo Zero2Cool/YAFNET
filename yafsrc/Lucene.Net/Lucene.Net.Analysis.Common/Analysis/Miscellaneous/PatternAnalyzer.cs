@@ -158,7 +158,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
         {
             if (pattern == null)
             {
-                throw new System.ArgumentException("pattern must not be null");
+                throw new ArgumentException("pattern must not be null");
             }
 
             if (EqPattern(NON_WORD_PATTERN, pattern))
@@ -376,7 +376,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
             {
                 if (!initialized)
                 {
-                    throw new System.InvalidOperationException("Consumer did not call reset().");
+                    throw new InvalidOperationException("Consumer did not call reset().");
                 }
                 if (matcher == null)
                 {
@@ -493,7 +493,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
             {
                 if (str == null)
                 {
-                    throw new System.InvalidOperationException("Consumer did not call reset().");
+                    throw new InvalidOperationException("Consumer did not call reset().");
                 }
                 ClearAttributes();
                 // cache loop instance vars (performance)
@@ -602,13 +602,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
                 this.s = s;
             }
 
-            internal string String
-            {
-                get
-                {
-                    return s;
-                }
-            }
+            internal string String => s;
         }
     }
 }

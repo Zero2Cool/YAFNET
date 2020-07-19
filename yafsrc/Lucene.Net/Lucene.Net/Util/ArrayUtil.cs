@@ -179,7 +179,7 @@ namespace YAF.Lucene.Net.Util
             if (minTargetSize < 0)
             {
                 // catch usage that accidentally overflows int
-                throw new System.ArgumentException("invalid array size " + minTargetSize);
+                throw new ArgumentException("invalid array size " + minTargetSize);
             }
 
             if (minTargetSize == 0)
@@ -839,7 +839,7 @@ namespace YAF.Lucene.Net.Util
             // implements IComparable<T>, otherwise use Comparer<T>.Default.
             // This allows the comparison to be customized, but it is not mandatory
             // to implement IComparable<T>.
-            else if (typeof(IComparable<T>).GetTypeInfo().IsAssignableFrom(genericClosingType))
+            else if (typeof(IComparable<T>).IsAssignableFrom(genericClosingType))
             {
                 return new NaturalComparer<T>();
             }

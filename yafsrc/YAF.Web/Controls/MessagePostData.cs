@@ -31,14 +31,13 @@ namespace YAF.Web.Controls
     using System.Web.UI;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.Context;
     using YAF.Core.Extensions;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
 
     #endregion
@@ -62,6 +61,7 @@ namespace YAF.Web.Controls
         /// <summary>
         ///   Sets the DataRow.
         /// </summary>
+        [Obsolete("Use CurrentMessage instead!")]    
         public DataRow DataRow
         {
             set => this.CurrentMessage = value != null ? new Message(value) : null;
@@ -171,30 +171,9 @@ namespace YAF.Web.Controls
             if (!this.MessageFlags.IsDeleted)
             {
                 // populate DisplayUserID
-                if (!UserMembershipHelper.IsGuestUser(this.CurrentMessage.UserID))
+                if (!this.Get<IAspNetUsersHelper>().IsGuestUser(this.CurrentMessage.UserID))
                 {
                     this.DisplayUserID = this.CurrentMessage.UserID;
-                }
-
-                if (this.ShowAttachments)
-                {
-                    if (this.CurrentMessage.HasAttachments ?? false)
-                    {
-                        // add attached files control...
-                        var attached = new MessageAttached { MessageID = this.CurrentMessage.ID };
-
-                        if (this.CurrentMessage.UserID > 0
-                            && BoardContext.Current.Get<BoardSettings>().EnableDisplayName)
-                        {
-                            attached.UserName = UserMembershipHelper.GetDisplayNameFromID(this.CurrentMessage.UserID);
-                        }
-                        else
-                        {
-                            attached.UserName = this.CurrentMessage.UserName;
-                        }
-
-                        this.Controls.Add(attached);
-                    }
                 }
             }
 

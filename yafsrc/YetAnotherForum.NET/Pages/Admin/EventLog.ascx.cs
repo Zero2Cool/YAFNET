@@ -63,7 +63,7 @@ namespace YAF.Pages.Admin
         protected void DeleteAllClick([NotNull] object sender, [NotNull] EventArgs e)
         {
             this.GetRepository<Types.Models.EventLog>()
-                .DeleteByUser(this.PageContext.PageUserID, this.PageContext.PageBoardID);
+                .DeleteAll();
 
             // re-bind controls
             this.BindData();
@@ -292,8 +292,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // administration index second
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMIN_EVENTLOG", "TITLE"), string.Empty);
 

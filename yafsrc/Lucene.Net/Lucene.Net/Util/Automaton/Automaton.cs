@@ -1,6 +1,5 @@
 using J2N;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -182,13 +181,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// default, the flag is not set.
         /// </summary>
         /// <returns> current value of the flag </returns>
-        internal static bool AllowMutate
-        {
-            get
-            {
-                return allow_mutation;
-            }
-        }
+        internal static bool AllowMutate => allow_mutation;
 
         internal virtual void CheckMinimizeAlways()
         {
@@ -281,9 +274,8 @@ namespace YAF.Lucene.Net.Util.Automaton
                             t.to.number = upto;
                             if (upto == states.Length)
                             {
-                                State[] newArray = new State[ArrayUtil.Oversize(1 + upto, RamUsageEstimator.NUM_BYTES_OBJECT_REF)];
-                                Array.Copy(states, 0, newArray, 0, upto);
-                                states = newArray;
+                                // LUCENENET: Resize rather than copy
+                                Array.Resize(ref states, ArrayUtil.Oversize(1 + upto, RamUsageEstimator.NUM_BYTES_OBJECT_REF));
                             }
                             states[upto] = t.to;
                             upto++;
@@ -292,9 +284,8 @@ namespace YAF.Lucene.Net.Util.Automaton
                 }
                 if (states.Length != upto)
                 {
-                    State[] newArray = new State[upto];
-                    Array.Copy(states, 0, newArray, 0, upto);
-                    states = newArray;
+                    // LUCENENET: Resize rather than copy
+                    Array.Resize(ref states, upto);
                 }
                 numberedStates = states;
             }
@@ -620,7 +611,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         {
             var other = obj as Automaton;
             return BasicOperations.SameLanguage(this, other);
-            //throw new System.NotSupportedException("use BasicOperations.sameLanguage instead");
+            //throw new NotSupportedException("use BasicOperations.sameLanguage instead");
         }
 
         // LUCENENET specific - in .NET, we can't simply throw an exception here because 
@@ -669,7 +660,7 @@ namespace YAF.Lucene.Net.Util.Automaton
             }
 
             return hash;
-            //throw new System.NotSupportedException();
+            //throw new NotSupportedException();
         }
 
         ///// <summary>
@@ -930,13 +921,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// <summary>
         /// See <see cref="BasicOperations.IsEmptyString(Automaton)"/>.
         /// </summary>
-        public virtual bool IsEmptyString
-        {
-            get
-            {
-                return BasicOperations.IsEmptyString(this);
-            }
-        }
+        public virtual bool IsEmptyString => BasicOperations.IsEmptyString(this);
 
         /// <summary>
         /// See <see cref="MinimizationOperations.Minimize(Automaton)"/>. Returns the

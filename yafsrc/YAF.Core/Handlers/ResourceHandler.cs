@@ -31,7 +31,7 @@ namespace YAF.Core.Handlers
     using System.Web;
     using System.Web.SessionState;
     using YAF.Configuration;
-    using YAF.Core;
+    
     using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Extensions;
@@ -95,11 +95,7 @@ namespace YAF.Core.Handlers
                 }
 
                 /////////////
-                if (context.Request.QueryString.Exists("twitterinfo"))
-                {
-                    this.Get<IResources>().GetTwitterUserInfo(context);
-                }
-                else if (context.Request.QueryString.Exists("userinfo"))
+                if (context.Request.QueryString.Exists("userinfo"))
                 {
                     this.Get<IResources>().GetUserInfo(context);
                 }

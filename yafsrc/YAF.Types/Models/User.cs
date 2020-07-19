@@ -29,6 +29,8 @@ namespace YAF.Types.Models
 
     using ServiceStack.DataAnnotations;
 
+    using YAF.Types.Constants;
+    using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
@@ -40,10 +42,8 @@ namespace YAF.Types.Models
 
     [UniqueConstraint(nameof(BoardID), nameof(Name))]
     [Table(Name = "User")]
-    public partial class User : IEntity, IHaveBoardID, IHaveID
+    public class User : IEntity, IHaveBoardID, IHaveID
     {
-        partial void OnCreated();
-
         public User()
         {
             try
@@ -55,8 +55,6 @@ namespace YAF.Types.Models
                 this.IsGuest = true;
                 this.ProviderUserKey = null;
             }
-
-            this.OnCreated();
         }
 
         #region Properties
@@ -105,6 +103,35 @@ namespace YAF.Types.Models
 
         public string TimeZone { get; set; }
 
+        /// <summary>
+        ///   Gets TimeZone.
+        /// </summary>
+        [Ignore]
+        public TimeZoneInfo TimeZoneInfo
+        {
+            get
+            {
+                TimeZoneInfo timeZoneInfo;
+
+                var tz = this.TimeZone;
+                if (System.Text.RegularExpressions.Regex.IsMatch(tz, @"^[\-?\+?\d]*$"))
+                {
+                    return TimeZoneInfo.Local;
+                }
+
+                try
+                {
+                    timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(tz);
+                }
+                catch (Exception)
+                {
+                    timeZoneInfo = TimeZoneInfo.Local;
+                }
+
+                return timeZoneInfo;
+            }
+        }
+
         [StringLength(255)]
         public string Avatar { get; set; }
 
@@ -145,6 +172,20 @@ namespace YAF.Types.Models
 
         [Default(10)]
         public int? NotificationType { get; set; }
+
+        /// <summary>
+        /// Gets NotificationSetting.
+        /// </summary>
+        [Ignore]
+        public UserNotificationSetting NotificationSetting
+        {
+            get
+            {
+                var value = this.NotificationType ?? 0;
+
+                return value.ToEnum<UserNotificationSetting>();
+            }
+        }
 
         [Required]
         [Default(0)]
@@ -198,14 +239,6 @@ namespace YAF.Types.Models
         [Compute]
         public bool? Moderated { get; set; }
 
-        [Required]
-        [Default(0)]
-        public bool IsFacebookUser { get; set; }
-
-        [Required]
-        [Default(0)]
-        public bool IsTwitterUser { get; set; }
-
         [Index]
         [StringLength(510)]
         public string UserStyle { get; set; }
@@ -222,10 +255,6 @@ namespace YAF.Types.Models
 
         [Compute]
         public bool? IsRankStyle { get; set; }
-
-        [Required]
-        [Default(0)]
-        public bool IsGoogleUser { get; set; }
 
         public string SuspendedReason { get; set; }
 

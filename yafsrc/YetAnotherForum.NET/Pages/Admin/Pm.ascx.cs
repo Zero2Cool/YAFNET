@@ -27,15 +27,14 @@ namespace YAF.Pages.Admin
     #region Using
 
     using System;
-
+    
     using YAF.Core.BasePages;
+    using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
-    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -67,8 +66,6 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            this.Days1.Text = "60";
-            this.Days2.Text = "180";
             this.BindData();
         }
 
@@ -78,9 +75,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_PM", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -92,10 +87,10 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void BindData()
         {
-            using (var dataTable = this.GetRepository<UserPMessage>().InfoAsDataTable())
-            {
-                this.Count.Text = dataTable.Rows[0]["NumTotal"].ToString();
-            }
+            this.Days1.Text = "60";
+            this.Days2.Text = "180";
+
+            this.Count.Text = this.GetRepository<UserPMessage>().Count(m => m.IsDeleted == false).ToString();
         }
 
         /// <summary>
@@ -105,9 +100,7 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void CommitClick([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.GetRepository<PMessage>().PruneAll(
-                this.Days1.Text.ToType<DateTime>(),
-                this.Days2.Text.ToType<DateTime>());
+            this.GetRepository<PMessage>().PruneAll(this.Days1.Text.ToType<int>(), this.Days2.Text.ToType<int>());
 
             this.BindData();
         }

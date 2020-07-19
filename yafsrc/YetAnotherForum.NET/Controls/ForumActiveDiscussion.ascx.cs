@@ -33,7 +33,6 @@ namespace YAF.Controls
 
     using YAF.Configuration;
     using YAF.Core.BaseControls;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
@@ -74,20 +73,24 @@ namespace YAF.Controls
 
             var currentRow = (DataRowView)e.Item.DataItem;
 
+            var topicSubject = this.Get<IBadWordReplace>().Replace(this.HtmlEncode(currentRow["Topic"]));
+
             // make message url...
-            var messageUrl = BuildLink.GetLinkNotEscaped(
-                ForumPages.Posts, "m={0}#post{0}", currentRow["LastMessageID"]);
+            var messageUrl = BuildLink.GetLink(
+                ForumPages.Posts,
+                "m={0}&name={1}#post{0}",
+                currentRow["LastMessageID"],
+                topicSubject);
 
             // get the controls
             var postIcon = e.Item.FindControlAs<Label>("PostIcon");
             var textMessageLink = e.Item.FindControlAs<HyperLink>("TextMessageLink");
+            var forumLink = e.Item.FindControlAs<HyperLink>("ForumLink");
             var info = e.Item.FindControlAs<ThemeButton>("Info");
             var imageMessageLink = e.Item.FindControlAs<ThemeButton>("GoToLastPost");
             var imageLastUnreadMessageLink = e.Item.FindControlAs<ThemeButton>("GoToLastUnread");
             var lastUserLink = new UserLink();
             var lastPostedDateLabel = new DisplayDateTime { Format = DateTimeFormat.BothTopic };
-
-            var topicSubject = this.Get<IBadWordReplace>().Replace(this.HtmlEncode(currentRow["Topic"]));
 
             var styles = this.Get<BoardSettings>().UseStyledTopicTitles
                              ? this.Get<IStyleTransform>().DecodeStyleByString(currentRow["Styles"].ToString())
@@ -110,17 +113,26 @@ namespace YAF.Controls
                 $"{startedByText} {inForumText}";
             textMessageLink.Attributes.Add("data-toggle", "tooltip");
 
-            textMessageLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
-                ForumPages.Posts, "t={0}&find=unread", currentRow["TopicID"]);
+            textMessageLink.NavigateUrl = BuildLink.GetLink(
+                ForumPages.Posts,
+                "t={0}&name={1}&find=unread",
+                currentRow["TopicID"],
+                topicSubject);
 
             imageMessageLink.NavigateUrl = messageUrl;
 
+            forumLink.Text = $"({currentRow["Forum"]})";
+            forumLink.NavigateUrl = BuildLink.GetForumLink(
+                currentRow["ForumID"].ToType<int>(),
+                currentRow["Forum"].ToString());
+
             if (imageLastUnreadMessageLink.Visible)
             {
-                imageLastUnreadMessageLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
+                imageLastUnreadMessageLink.NavigateUrl = BuildLink.GetLink(
                     ForumPages.Posts,
-                    "t={0}&find=unread",
-                    currentRow["TopicID"]);
+                    "t={0}&name={1}&find=unread",
+                    currentRow["TopicID"],
+                    topicSubject);
             }
             
             // Just in case...
@@ -146,7 +158,8 @@ namespace YAF.Controls
 
                 if (DateTime.Parse(currentRow["LastPosted"].ToString()) > lastRead)
                 {
-                    postIcon.CssClass = "badge badge-success";
+                    postIcon.Visible = true;
+                    postIcon.CssClass = "badge bg-success";
 
                     postIcon.Text = this.GetText("NEW_MESSAGE");
                 }
@@ -225,11 +238,11 @@ namespace YAF.Controls
             {
                 this.Get<ISession>().UnreadTopics = 0;
 
-                if (BoardContext.Current.Settings.CategoryID > 0)
+                if (this.PageContext.Settings.CategoryID > 0)
                 {
                     activeTopics = this.GetRepository<Topic>().LatestInCategoryAsDataTable(
                         this.PageContext.PageBoardID,
-                        BoardContext.Current.Settings.CategoryID,
+                        this.PageContext.Settings.CategoryID,
                         this.Get<BoardSettings>().ActiveDiscussionsCount,
                         this.PageContext.PageUserID,
                         this.Get<BoardSettings>().UseStyledNicks,

@@ -24,27 +24,32 @@
             <YAF:Pager ID="PagerTop" runat="server" OnPageChange="PagerTop_PageChange" />
             <div class="card mb-3">
                 <div class="card-header">
-                    <YAF:IconHeader runat="server"
-                                    IconName="hand-paper"
-                                    LocalizedPage="ADMIN_BANNEDIP"></YAF:IconHeader>
-                    <div class="float-right">
+                    
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-auto">
+                        <YAF:IconHeader runat="server"
+                                        IconName="hand-paper"
+                                        LocalizedPage="ADMIN_BANNEDIP"></YAF:IconHeader>
+                    </div>
+                        <div class="col-auto">
                         <YAF:ThemeButton runat="server"
                                          CssClass="dropdown-toggle"
                                          DataToggle="dropdown"
+                                         Size="Small"
                                          Type="Secondary"
                                          Icon="filter"
                                          TextLocalizedTag="FILTER_DROPDOWN"
                                          TextLocalizedPage="ADMIN_USERS"></YAF:ThemeButton>
                         <div class="dropdown-menu">
                             <div class="px-3 py-1">
-                                <div class="form-group">
+                                <div class="mb-3">
                                     <YAF:HelpLabel ID="HelpLabel1" runat="server"
                                                    AssociatedControlID="SearchInput"
                                                    LocalizedTag="MASK" LocalizedPage="ADMIN_BANNEDIP" />
                                     <asp:TextBox ID="SearchInput" runat="server" 
                                                  CssClass="form-control"></asp:TextBox>
                                 </div>
-                                <div class="form-group">
+                                <div class="mb-3">
                                     <YAF:ThemeButton ID="search" runat="server"  
                                                      Type="Primary"
                                                      CssClass="btn-block"
@@ -56,6 +61,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -90,7 +96,7 @@
                     </span>
                     <%# this.Eval("Reason") %>
                 </p>
-                <p class="mb-1">
+                <p class="mb-1" runat="server" Visible='<%# this.Eval("UserID").ToString().IsSet()%>'>
                     <span class="font-weight-bold">
                         <YAF:LocalizedLabel ID="LocalizedLabel7" runat="server" LocalizedTag="BAN_BY" LocalizedPage="ADMIN_BANNEDIP" />
                     </span>

@@ -35,10 +35,10 @@ namespace YAF.Pages.Admin
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -108,11 +108,10 @@ namespace YAF.Pages.Admin
         {
             using (var dt = new DataTable("Files"))
             {
-                dt.Columns.Add("FileID", typeof(long));
                 dt.Columns.Add("FileName", typeof(string));
                 dt.Columns.Add("Description", typeof(string));
+                
                 var dr = dt.NewRow();
-                dr["FileID"] = 0;
                 dr["FileName"] =
                     BoardInfo.GetURLToContent("images/spacer.gif"); // use spacer.gif for Description Entry
                 dr["Description"] = this.GetText("COMMON", "NONE");
@@ -123,23 +122,8 @@ namespace YAF.Pages.Admin
                 if (dir.Exists)
                 {
                     var files = dir.GetFiles("*.*");
-                    long fileId = 1;
 
-                    var filesList = from file in files
-                                    let sExt = file.Extension.ToLower()
-                                    where sExt == ".png" || sExt == ".gif" || sExt == ".jpg"
-                                    select file;
-
-                    filesList.ForEach(
-                        file =>
-                            {
-                                dr = dt.NewRow();
-                                dr["FileID"] = fileId++;
-                                dr["FileName"] =
-                                    $"{BoardInfo.ForumClientFileRoot}{BoardFolders.Current.Forums}/{file.Name}";
-                                dr["Description"] = file.Name;
-                                dt.Rows.Add(dr);
-                            });
+                    dt.AddImageFiles(files, BoardFolders.Current.Forums);
                 }
 
                 this.ForumImages.DataSource = dt;
@@ -159,7 +143,7 @@ namespace YAF.Pages.Admin
         {
             this.CategoryList.AutoPostBack = true;
             this.Save.Click += this.SaveClick;
-            this.Cancel.Click += this.CancelClick;
+            this.Cancel.Click += CancelClick;
             base.OnInit(e);
         }
 
@@ -189,6 +173,10 @@ namespace YAF.Pages.Admin
             {
                 return;
             }
+
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.Save.ClientID));
 
             this.accessMaskList = this.GetRepository<AccessMask>().GetByBoardId();
 
@@ -292,9 +280,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMINMENU", "ADMIN_FORUMS"), BuildLink.GetLink(ForumPages.Admin_Forums));
             this.PageLinks.AddLink(this.GetText("ADMIN_EDITFORUM", "TITLE"), string.Empty);
@@ -361,6 +347,20 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
+        /// Handles the Click event of the Cancel control.
+        /// </summary>
+        /// <param name="sender">
+        /// The source of the event.
+        /// </param>
+        /// <param name="e">
+        /// The <see cref="EventArgs"/> instance containing the event data.
+        /// </param>
+        private static void CancelClick([NotNull] object sender, [NotNull] EventArgs e)
+        {
+            BuildLink.Redirect(ForumPages.Admin_Forums);
+        }
+
+        /// <summary>
         /// Binds the data.
         /// </summary>
         private void BindData()
@@ -379,7 +379,7 @@ namespace YAF.Pages.Admin
             }
             else
             {
-                this.AccessList.DataSource = BoardContext.Current.GetRepository<Group>().GetByBoardId()
+                this.AccessList.DataSource = this.PageContext.GetRepository<Group>().GetByBoardId()
                     .Select(i => new { GroupID = i.ID, GroupName = i.Name, AccessMaskID = 0 });
                 this.AccessList.DataBind();
             }
@@ -413,20 +413,6 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
-        /// Handles the Click event of the Cancel control.
-        /// </summary>
-        /// <param name="sender">
-        /// The source of the event.
-        /// </param>
-        /// <param name="e">
-        /// The <see cref="EventArgs"/> instance containing the event data.
-        /// </param>
-        private void CancelClick([NotNull] object sender, [NotNull] EventArgs e)
-        {
-            BuildLink.Redirect(ForumPages.Admin_Forums);
-        }
-
-        /// <summary>
         /// Clears the caches.
         /// </summary>
         private void ClearCaches()
@@ -455,31 +441,11 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            if (this.Name.Text.Trim().Length == 0)
-            {
-                this.PageContext.AddLoadMessage(
-                    this.GetText("ADMIN_EDITFORUM", "MSG_NAME_FORUM"),
-                    MessageTypes.warning);
-                return;
-            }
-
-            if (this.SortOrder.Text.Trim().Length == 0)
-            {
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_EDITFORUM", "MSG_VALUE"), MessageTypes.warning);
-                return;
-            }
-
             if (!ValidationHelper.IsValidPosShort(this.SortOrder.Text.Trim()))
             {
                 this.PageContext.AddLoadMessage(
                     this.GetText("ADMIN_EDITFORUM", "MSG_POSITIVE_VALUE"),
                     MessageTypes.warning);
-                return;
-            }
-
-            if (!short.TryParse(this.SortOrder.Text.Trim(), out var sortOrder))
-            {
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_EDITFORUM", "MSG_NUMBER"), MessageTypes.warning);
                 return;
             }
 
@@ -542,7 +508,7 @@ namespace YAF.Pages.Admin
 
             int? moderatedPostCount = null;
 
-            if (this.ModerateAllPosts.Checked)
+            if (!this.ModerateAllPosts.Checked)
             {
                 moderatedPostCount = this.ModeratedPostCount.Text.ToType<int>();
             }
@@ -557,7 +523,7 @@ namespace YAF.Pages.Admin
                 parentId,
                 this.Name.Text.Trim(),
                 this.Description.Text.Trim(),
-                sortOrder.ToType<int>(),
+                this.SortOrder.Text.ToType<short>(),
                 this.Locked.Checked,
                 this.HideNoAccess.Checked,
                 this.IsTest.Checked,

@@ -207,26 +207,27 @@ namespace YAF.Pages
 
             if (this.ForumSearchHolder.Visible)
             {
-                this.forumSearch.Attributes["onkeydown"] =
-                    $"if(event.which || event.keyCode){{if ((event.which == 13) || (event.keyCode == 13)) {{document.getElementById('{this.forumSearchOK.ClientID}').click();return false;}}}} else {{return true}}; ";
+                this.forumSearch.Attributes.Add(
+                    "onkeydown",
+                    JavaScriptBlocks.ClickOnEnterJs(this.forumSearchOK.ClientID));
             }
 
             if (!this.IsPostBack)
             {
                 this.ShowList.DataSource = StaticDataHelper.TopicTimes();
-                this.ShowList.DataTextField = "TopicText";
-                this.ShowList.DataValueField = "TopicValue";
+                this.ShowList.DataTextField = "Name";
+                this.ShowList.DataValueField = "Value";
                 this.showTopicListSelected = this.Get<ISession>().ShowList == -1
                                                   ? this.Get<BoardSettings>().ShowTopicsDefault
                                                   : this.Get<ISession>().ShowList;
 
                 this.moderate1.NavigateUrl =
                     this.moderate2.NavigateUrl =
-                    BuildLink.GetLinkNotEscaped(ForumPages.Moderating, "f={0}", this.PageContext.PageForumID);
+                    BuildLink.GetLink(ForumPages.Moderate_Forums, "f={0}", this.PageContext.PageForumID);
 
                 this.NewTopic1.NavigateUrl =
                     this.NewTopic2.NavigateUrl =
-                    BuildLink.GetLinkNotEscaped(ForumPages.PostTopic, "f={0}", this.PageContext.PageForumID);
+                    BuildLink.GetLink(ForumPages.PostTopic, "f={0}", this.PageContext.PageForumID);
 
                 this.HandleWatchForum();
             }
@@ -287,13 +288,10 @@ namespace YAF.Pages
         /// </summary>
         protected override void CreatePageLinks()
         {
-            // PageLinks.Clear();
             if (this.PageContext.Settings.LockedForum == 0)
             {
                 this.PageLinks.AddRoot();
-                this.PageLinks.AddLink(
-                    this.PageContext.PageCategoryName,
-                    BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+                this.PageLinks.AddCategory(this.PageContext.PageCategoryName, this.PageContext.PageCategoryID);
             }
 
             this.PageLinks.AddForum(this.PageContext.PageForumID, true);
@@ -362,6 +360,7 @@ namespace YAF.Pages
                 this.PageContext.PageUserID,
                 this.PageContext.PageCategoryID,
                 this.PageContext.PageForumID);
+
             if (ds.Tables["Forum"].HasRows())
             {
                 this.ForumList.DataSource = ds.Tables["Forum"].Rows;

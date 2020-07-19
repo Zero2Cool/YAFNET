@@ -34,9 +34,8 @@ namespace YAF.Pages.Admin
     using System.Xml.Linq;
 
     using YAF.Configuration;
-    using YAF.Core;
+    
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -44,7 +43,6 @@ namespace YAF.Pages.Admin
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -107,8 +105,7 @@ namespace YAF.Pages.Admin
         /// </summary>
         protected override void CreatePageLinks()
         {
-            this.PageLinks.AddRoot()
-                .AddLink(this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin))
+            this.PageLinks.AddRoot().AddAdminIndex()
                 .AddLink(this.GetText("ADMIN_SPAMWORDS", "TITLE"));
 
             this.Page.Header.Title =
@@ -128,7 +125,7 @@ namespace YAF.Pages.Admin
         {
             this.EditDialog.BindData(null);
 
-            BoardContext.Current.PageElements.RegisterJsBlockStartup(
+            this.PageContext.PageElements.RegisterJsBlockStartup(
                 "openModalJs",
                 JavaScriptBlocks.OpenModalJs("SpamWordsEditDialog"));
         }
@@ -196,12 +193,12 @@ namespace YAF.Pages.Admin
                 "content-disposition",
                 "attachment; filename=SpamWordsExport.xml");
 
-            var spamwordList =
+            var spamWordList =
                 this.GetRepository<Spam_Words>().GetByBoardId();
 
             var element = new XElement(
                 "YafSpamWordsList",
-                from spamWord in spamwordList
+                from spamWord in spamWordList
                 select new XElement("YafSpamWords", new XElement("SpamWord", spamWord.SpamWord)));
 
             element.Save(this.Get<HttpResponseBase>().OutputStream);
@@ -222,7 +219,7 @@ namespace YAF.Pages.Admin
                 case "edit":
                     this.EditDialog.BindData(e.CommandArgument.ToType<int>());
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("SpamWordsEditDialog"));
 

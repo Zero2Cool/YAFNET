@@ -496,7 +496,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
 
             return $@"{Config.JQueryAlias}(document).ready(function() {{
                         {Config.JQueryAlias}('{selector}').tablesorter( 
-                                          {(options.IsSet() ? $"{{ theme: 'bootstrap', {options}{widgets} }}" : "{{ theme: 'bootstrap'{widgets} }}")} );
+                                          {(options.IsSet() ? $"{{ theme: 'bootstrap', {options}{widgets} }}" : $"{{ theme: 'bootstrap'{widgets} }}")} );
                     }});";
         }
 
@@ -667,7 +667,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                               {Config.JQueryAlias}('#dvThankBox' + response.MessageID).html({removeThankBoxHtml});
 
                               {Config.JQueryAlias}('.thanks-popover').popover({{
-                                     template: '<div class=""popover"" role=""tooltip""><div class=""arrow""></div><h3 class=""popover-header""></h3><div class=""popover-body popover-body-scrollable""></div></div>'}});
+                                     template: '<div class=""popover"" role=""tooltip""><div class=""popover-arrow""></div><h3 class=""popover-header""></h3><div class=""popover-body popover-body-scrollable""></div></div>'}});
                     }},
                     error: function(x, e)  {{
                              console.log('An Error has occured!');
@@ -1017,17 +1017,25 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         /// <summary>
         /// select2 topics load JS.
         /// </summary>
-        /// <param name="forumDropDownId">The forum drop down identifier.</param>
-        /// <returns>Returns the select2 topics load JS.</returns>
+        /// <param name="topicsId">
+        /// The topics Id.
+        /// </param>
+        /// <param name="forumDropDownId">
+        /// The forum drop down identifier.
+        /// </param>
+        /// <returns>
+        /// Returns the select2 topics load JS.
+        /// </returns>
         [NotNull]
-        public static string SelectTopicsLoadJs([NotNull] string forumDropDownId)
+        public static string SelectTopicsLoadJs([NotNull] string topicsId, [NotNull] string forumDropDownId)
         {
-            return $@"{Config.JQueryAlias}('.TopicsSelect2Menu').select2({{
+            return $@"{Config.JQueryAlias}('#{topicsId}').select2({{
             ajax: {{
                 url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/Topic/GetTopics',
                 type: 'POST',
                 dataType: 'json',
                 minimumInputLength: 0,
+                allowClear: false,
                 data: function(params) {{
                       var query = {{
                           ForumId : {Config.JQueryAlias}('#{forumDropDownId}').val(),
@@ -1058,9 +1066,8 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                     }}
                 }}
             }},
-            width: 'style',
+            width: '100%',
             theme: 'bootstrap4',
-            allowClear: true,
             cache: true,
             {BoardContext.Current.Get<ILocalization>().GetText("SELECT_LOCALE_JS")}
         }});";
@@ -1089,67 +1096,66 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
             [NotNull] string passwordStrongerText,
             [NotNull] string passwordWeakText)
         {
-            return $@"{Config.JQueryAlias}(document).ready(function() {{
+            return $@"{Config.JQueryAlias}(document).ready(function () {{
+        var password = {Config.JQueryAlias}('#{passwordClientId}');
+        var passwordConfirm = {Config.JQueryAlias}('#{confirmPasswordClientId}');
+        // Check if passwords match
+        {Config.JQueryAlias}('#{passwordClientId}, #{confirmPasswordClientId}').on('keyup', function () {{
+            if (password.val() !== '' && passwordConfirm.val() !== '' && password.val() === passwordConfirm.val()) {{
+                {Config.JQueryAlias}('#PasswordInvalid').hide();
+				password.removeClass('is-invalid');
+                passwordConfirm.removeClass('is-invalid');
+            }} else {{
+                {Config.JQueryAlias}('#PasswordInvalid').show();
+                {Config.JQueryAlias}('#PasswordInvalid').html('{notMatchText}');
+                password.addClass('is-invalid');
+                passwordConfirm.addClass('is-invalid');
+            }}
 
-    {Config.JQueryAlias}('#{confirmPasswordClientId}').on('keyup', function(e) {{
-        var password = {Config.JQueryAlias}('#{passwordClientId}').val();
-        var passwordConfirm = {Config.JQueryAlias}('#{confirmPasswordClientId}').val();
+            var strongRegex=new RegExp(""^(?=.{{8,}})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\\W).*$"",""g"");
+			var mediumRegex=new RegExp(""^(?=.{{7,}})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$"",""g"");
+			var okRegex=new RegExp(""(?=.{{{minimumChars},}}).*"",""g"");
 
-        if(password == '' && passwordConfirm == '') {{
-            {Config.JQueryAlias}('#passwordStrength').removeClass().empty();
-            {Config.JQueryAlias}('#passwordStrength').parent().parent('.post').hide();
+            {Config.JQueryAlias}('#passwordStrength').removeClass(""d-none"");
 
-            return false;
-        }}
-        else
-        {{
-             if(password != passwordConfirm) {{
-    		    {Config.JQueryAlias}('#passwordStrength').removeClass().addClass('alert alert-danger').html('<p><i class=""fas fa-exclamation-circle""></i> {notMatchText}</p>');
-                {Config.JQueryAlias}('#passwordStrength').parent().parent('.post').show();
-        	    return false;
-    	     }}
-             else {{
-                {Config.JQueryAlias}('#passwordStrength').removeClass().empty();
-                {Config.JQueryAlias}('#passwordStrength').parent().parent('.post').hide();
-             }}
-         }}
-    }});
+            if (okRegex.test(password.val()) === false) {{
+			   {Config.JQueryAlias}('#passwordHelp').html('{passwordMinText}');
+               {Config.JQueryAlias}('#progress-password').removeClass().addClass('progress-bar bg-danger w-25');
+               
 
-    {Config.JQueryAlias}('#{passwordClientId}').on('keyup', function(e) {{
-
-        var password = {Config.JQueryAlias}('#{passwordClientId}').val();
-        var passwordConfirm = {Config.JQueryAlias}('#{confirmPasswordClientId}').val();
-
-        if(password == '' && passwordConfirm == '')
-        {{
-            {Config.JQueryAlias}('#passwordStrength').removeClass().empty();
-            {Config.JQueryAlias}('#passwordStrength').parent().parent('.post').hide();
-
-            return false;
-        }}
-
-        var strongRegex = new RegExp(""^(?=.{{8,}})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\\W).*$"", ""g"");
-
-        var mediumRegex = new RegExp(""^(?=.{{7,}})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$"", ""g"");
-
-        var okRegex = new RegExp(""(?=.{{{minimumChars},}}).*"", ""g"");
-
-        if (okRegex.test(password) === false) {{
-            {Config.JQueryAlias}('#passwordStrength').removeClass().addClass('alert alert-danger').html('<p><i class=""fas fa-exclamation-circle""></i> {passwordMinText}</p>');
-
-        }} else if (strongRegex.test(password)) {{
-            {Config.JQueryAlias}('#passwordStrength').removeClass().addClass('alert alert-info').html('<p><i class=""fas fa-exclamation-circle""></i> {passwordGoodText}</p>');
-        }} else if (mediumRegex.test(password)) {{
-            {Config.JQueryAlias}('#passwordStrength').removeClass().addClass('alert alert-warning').html('<p><i class=""fas fa-exclamation-circle""></i> {passwordStrongerText}</p>');
-        }} else {{
-            {Config.JQueryAlias}('#passwordStrength').removeClass().addClass('alert alert-danger').html('<p><i class=""fas fa-exclamation-circle""></i> {passwordWeakText}</p>');
-        }}
-
-        {Config.JQueryAlias}('#passwordStrength').parent().parent('.post').show();
-
-        return true;
-    }});
-}});";
+            }} else if (strongRegex.test(password.val())) {{
+                {Config.JQueryAlias}('#passwordHelp').html('{passwordGoodText}');
+				{Config.JQueryAlias}('#progress-password').removeClass().addClass('progress-bar bg-success w-100');
+            }} else if (mediumRegex.test(password.val())) {{
+                {Config.JQueryAlias}('#passwordHelp').html('{passwordStrongerText}');
+				{Config.JQueryAlias}('#progress-password').removeClass().addClass('progress-bar bg-warning w-75');
+            }} else {{
+			    {Config.JQueryAlias}('#passwordHelp').html('{passwordWeakText}');
+                {Config.JQueryAlias}('#progress-password').removeClass().addClass('progress-bar bg-warning w-50');
+            }}
+        }});
+        let currForm1 = document.querySelector(""form"");
+        // Validate on submit:
+        currForm1.addEventListener('submit', function (event) {{
+            if (currForm1.checkValidity() === false) {{
+                event.preventDefault();
+                event.stopPropagation();
+            }}
+            currForm1.classList.add('was-validated');
+        }}, false);
+        // Validate on input:
+        currForm1.querySelectorAll('.form-control').forEach(input => {{
+            input.addEventListener(('input'), () => {{
+                if (input.checkValidity()) {{
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                }} else {{
+                    input.classList.remove('is-valid');
+                    input.classList.add('is-invalid');
+                }}
+            }});
+        }});
+    }});";
         }
 
         /// <summary>
@@ -1192,10 +1198,13 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         [NotNull]
         public static string ForumIconLegendPopoverJs([NotNull] string content, [NotNull] string cssClass)
         {
-            return $@"{Config.JQueryAlias}('.{cssClass}').popover({{
+            return $@"var popoverTriggerIconList = [].slice.call(document.querySelectorAll('.{cssClass}'));
+                      var popoverIconList = popoverTriggerIconList.map(function(popoverTriggerEl) {{
+                           return new bootstrap.Popover(popoverTriggerEl,{{
                            html: true,
                            content: ""{content}"",
-                           trigger: ""focus hover""
+                           trigger: ""focus""
+                           }});
                     }});";
         }
 
@@ -1221,7 +1230,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                            title: '{title}',
                            html: true,
                            trigger: '{trigger}',
-                           template: '<div class=""popover"" role=""tooltip""><h3 class=""popover-header""></h3><div class=""arrow""></div><div class=""popover-body""></div></div>'
+                           template: '<div class=""popover"" role=""tooltip""><div class=""popover-arrow""></div><h3 class=""popover-header""></h3><div class=""popover-body""></div></div>'
                 }});
                 {Config.JQueryAlias}('{cssClass}').on('inserted.bs.popover', function () {{
                       {Config.JQueryAlias}('.popover-timeago').each(function() {{
@@ -1245,12 +1254,241 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
         [NotNull]
         public static string ForumModsPopoverJs([NotNull] string title)
         {
-            return $@"{Config.JQueryAlias}('.forum-mods-popover').popover({{
+            return $@"var popoverTriggerModsList = [].slice.call(document.querySelectorAll('.forum-mods-popover'));
+                      var popoverModsList = popoverTriggerModsList.map(function(popoverTriggerEl) {{
+                           return new bootstrap.Popover(popoverTriggerEl,{{
                            title: '{title}',
                            html: true,
-                           trigger: 'focus hover',
-                           template: '<div class=""popover"" role=""tooltip""><h3 class=""popover-header""></h3><div class=""arrow""></div><div class=""popover-body popover-body-scrollable""></div></div>'
+                           trigger: 'focus',
+                           template: '<div class=""popover"" role=""tooltip""><div class=""popover-arrow""></div><h3 class=""popover-header""></h3><div class=""popover-body popover-body-scrollable""></div></div>'
+                           }});
                 }});";
+        }
+
+        /// <summary>
+        /// The Hover Card Load JS.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        [NotNull]
+        public static string HoverCardJs()
+        {
+            return $@"if (typeof(jQuery.fn.hovercard) != 'undefined'){{ 
+                      {Config.JQueryAlias}('.hc-user').hovercard({{
+                                      delay: {BoardContext.Current.Get<BoardSettings>().HoverCardOpenDelay}, 
+                                      width: 350,
+                                      loadingHTML: '{BoardContext.Current.Get<ILocalization>().GetText("DEFAULT", "LOADING_HOVERCARD").ToJsString()}',
+                                      errorHTML: '{BoardContext.Current.Get<ILocalization>().GetText("DEFAULT", "ERROR_HOVERCARD").ToJsString()}',
+                                      pointsText: '{BoardContext.Current.Get<ILocalization>().GetText("REPUTATION").ToJsString()}', 
+                                      postsText: '{BoardContext.Current.Get<ILocalization>().GetText("POSTS").ToJsString()}'
+                      }}); 
+                 }}";
+        }
+
+        /// <summary>
+        /// Form Validator JS.
+        /// </summary>
+        /// <param name="buttonClientId">
+        /// The button Client Id.
+        /// </param>
+        /// <returns>
+        /// Returns the JS String
+        /// </returns>
+        [NotNull]
+        public static string FormValidatorJs([NotNull] string buttonClientId)
+        {
+            return $@"(function() {{
+                'use strict';
+                window.addEventListener('load', function() {{
+                    var form = document.forms[0];
+
+                    var test = document.getElementById('{buttonClientId}');
+                    test.addEventListener('click', function(event) {{
+                        if (form.checkValidity() === false)
+                        {{
+                            event.preventDefault();
+                                event.stopPropagation();
+                        }}
+                        form.classList.add('was-validated');
+                    }}, false);
+                   
+                }}, false);
+            }})();";
+        }
+
+        /// <summary>
+        /// Click Button on Enter Key JS.
+        /// </summary>
+        /// <param name="buttonClientId">
+        /// The button Client Id.
+        /// </param>
+        /// <returns>
+        /// Returns the JS String
+        /// </returns>
+        [NotNull]
+        public static string ClickOnEnterJs([NotNull] string buttonClientId)
+        {
+            return $@"if(event.which || event.keyCode){{if ((event.which == 13) || (event.keyCode == 13)) {{
+                              document.getElementById('{buttonClientId}').click();return false;}}}} else {{return true}}; ";
+        }
+
+        /// <summary>
+        /// Opens the BootBox Confirm Dialog JS.
+        /// </summary>
+        /// <param name="title">
+        /// The title.
+        /// </param>
+        /// <param name="text">
+        /// The text.
+        /// </param>
+        /// <param name="yes">
+        /// The yes.
+        /// </param>
+        /// <param name="no">
+        /// The no.
+        /// </param>
+        /// <param name="link">
+        /// The link.
+        /// </param>
+        /// <returns>
+        /// Returns the JS String
+        /// </returns>
+        [NotNull]
+        public static string BootBoxConfirmJs(
+            [NotNull] string title,
+            [NotNull] string text,
+            [NotNull] string yes,
+            [NotNull] string no,
+            [NotNull] string link)
+        {
+            return $@"bootbox.confirm({{
+                centerVertical: true,
+                title: '{title}',
+                message: '{text}',
+                buttons: {{
+                    confirm: {{
+                        label: '<i class=""fa fa-check""></i> ' + '{yes}',
+                        className: ""btn-success""
+                    }},
+                    cancel: {{
+                        label: '<i class=""fa fa-times""></i> ' + '{no}',
+                        className: ""btn-danger""
+                    }}
+                }},
+                callback: function (confirmed) {{
+                    if (confirmed) {{
+                        document.location.href = '{link}';
+                    }}
+                }}
+            }}
+        );";
+        }
+
+        /// <summary>
+        /// Opens the BootBox Prompt Dialog JS.
+        /// </summary>
+        /// <param name="title">
+        /// The title.
+        /// </param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="cancel">
+        /// The cancel.
+        /// </param>
+        /// <param name="ok">
+        /// The ok.
+        /// </param>
+        /// <param name="value">
+        /// The value.
+        /// </param>
+        /// <returns>
+        /// Returns the JS String
+        /// </returns>
+        [NotNull]
+        public static string BootBoxPromptJs(
+            [NotNull] string title,
+            [NotNull] string message,
+            [NotNull] string cancel,
+            [NotNull] string ok,
+            [NotNull] string value)
+        {
+            return $@"bootbox.prompt({{ 
+                                      title: '{title}',
+                                      message: '{message}',
+	                                  value: '{value}',
+                                      buttons: {{cancel:{{label:'{cancel}'}}, confirm:{{label:'{ok}'}}}},
+                                      callback: function(){{}}
+	                              }});";
+        }
+
+        /// <summary>
+        /// select2 user load JS.
+        /// </summary>
+        /// <param name="selectClientId">
+        /// The select Client Id.
+        /// </param>
+        /// <param name="findUserClientId">
+        /// The find User Client Id.
+        /// </param>
+        /// <param name="userClientId">
+        /// The user Client Id.
+        /// </param>
+        /// <returns>
+        /// Returns the select2 user load JS.
+        /// </returns>
+        [NotNull]
+        public static string SelectUsersLoadJs([NotNull] string selectClientId, [NotNull] string findUserClientId, [NotNull] string userClientId)
+        {
+            return $@"{Config.JQueryAlias}('#{findUserClientId}').click(function() {{ 
+                              if ({Config.JQueryAlias}('#{userClientId}').val().lenth < 3)
+                              {{
+                                   return;
+                              }}
+
+                             {Config.JQueryAlias}('#{selectClientId}').show();
+                             {Config.JQueryAlias}('#{userClientId}').hide();
+                             {Config.JQueryAlias}('#{findUserClientId}').hide();
+                          
+                          {Config.JQueryAlias}('#{selectClientId}').select2({{
+            ajax: {{
+                url: '{BoardInfo.ForumClientFileRoot}{WebApiConfig.UrlPrefix}/User/GetUsers',
+                type: 'POST',
+                dataType: 'json',
+                allowClear: false,
+                minimumInputLength: 3,
+                data: function(params) {{
+                      var query = {{
+                          ForumId : 0,
+                          UserId: 0,
+                          SearchTerm : {Config.JQueryAlias}('#{userClientId}').val()
+                      }}
+                      return query;
+                }},
+                error: function(x, e)  {{
+                       console.log('An Error has occured!');
+                       console.log(x.responseText);
+                       console.log(x.status);
+                }},
+                processResults: function(data) {{
+                    return {{
+                        results: data.Results
+                    }}
+                }}
+            }},
+            width: '100%',
+            theme: 'bootstrap4',
+            allowClear: true,
+            cache: true,
+            {BoardContext.Current.Get<ILocalization>().GetText("SELECT_LOCALE_JS")}
+        }});
+              
+             {Config.JQueryAlias}('#{selectClientId}').on('select2:select', function (e) {{
+                 var data = e.params.data;
+                 {Config.JQueryAlias}('#{userClientId}').val(data.text);
+                }});
+            }});";
         }
     }
 }

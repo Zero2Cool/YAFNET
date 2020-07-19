@@ -43,7 +43,6 @@ namespace YAF.Pages.Admin
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -62,8 +61,7 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void DeleteAllClick([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.GetRepository<Types.Models.EventLog>()
-                .DeleteByUser(this.PageContext.PageUserID, this.PageContext.PageBoardID);
+            this.GetRepository<Types.Models.EventLog>().DeleteAll();
 
             // re-bind controls
             this.BindData();
@@ -186,8 +184,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // administration index second
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMIN_SPAMLOG", "TITLE"), string.Empty);
 

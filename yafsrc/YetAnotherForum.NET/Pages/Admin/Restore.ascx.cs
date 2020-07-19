@@ -31,7 +31,6 @@ namespace YAF.Pages.Admin
     using System.Web.UI.WebControls;
 
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
@@ -39,7 +38,6 @@ namespace YAF.Pages.Admin
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Web.Extensions;
 
@@ -71,9 +69,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_RESTORE", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -144,10 +140,7 @@ namespace YAF.Pages.Admin
                                         select hiddenId.Value.ToType<int>()).ToList();
 
                         topicIds.ForEach(
-                            topic =>
-                            {
-                                this.GetRepository<Topic>().Delete(topic, true);
-                            });
+                            topic => this.GetRepository<Topic>().Delete(topic, true));
 
                         this.PageContext.AddLoadMessage(this.GetText("MSG_DELETED"), MessageTypes.success);
 
@@ -160,13 +153,10 @@ namespace YAF.Pages.Admin
 
                 case "delete_complete":
                     {
-                        var deletedTopics = this.GetRepository<Topic>().GetDeletedTopics(BoardContext.Current.PageBoardID, this.Filter.Text);
+                        var deletedTopics = this.GetRepository<Topic>().GetDeletedTopics(this.PageContext.PageBoardID, this.Filter.Text);
 
                         deletedTopics.ForEach(
-                            topic =>
-                            {
-                                this.GetRepository<Topic>().Delete(topic.Item2.ID, true);
-                            });
+                            topic => this.GetRepository<Topic>().Delete(topic.Item2.ID, true));
 
                         this.PageContext.AddLoadMessage(this.GetText("MSG_DELETED"), MessageTypes.success);
 
@@ -179,10 +169,7 @@ namespace YAF.Pages.Admin
                         var deletedTopics = this.GetRepository<Topic>().Get(t => t.IsDeleted == true && t.NumPosts.Equals(0));
 
                         deletedTopics.ForEach(
-                            topic =>
-                                {
-                                    this.GetRepository<Topic>().Delete(topic.ID, true);
-                                });
+                            topic => this.GetRepository<Topic>().Delete(topic.ID, true));
 
                         this.PageContext.AddLoadMessage(this.GetText("MSG_DELETED"), MessageTypes.success);
 
@@ -243,10 +230,7 @@ namespace YAF.Pages.Admin
                                           select hiddenId.Value.ToType<int>()).ToList();
 
                         messageIds.ForEach(
-                            message =>
-                                {
-                                    this.GetRepository<Message>().Delete(message, true, string.Empty, 1, true, true);
-                                });
+                            message => this.GetRepository<Message>().Delete(message, true, string.Empty, 1, true, true));
 
                         this.PageContext.AddLoadMessage(this.GetText("MSG_DELETED"), MessageTypes.success);
 
@@ -293,7 +277,7 @@ namespace YAF.Pages.Admin
             this.PagerMessages.PageSize = this.PageContext.BoardSettings.TopicsPerPage;
 
             var deletedTopics = this.GetRepository<Topic>()
-                .GetDeletedTopics(BoardContext.Current.PageBoardID, this.Filter.Text);
+                .GetDeletedTopics(this.PageContext.PageBoardID, this.Filter.Text);
 
             var count = deletedTopics.Count;
 
@@ -307,7 +291,7 @@ namespace YAF.Pages.Admin
                                       : 0;
 
             var deletedMessages = this.GetRepository<Message>()
-                .GetDeletedMessages(BoardContext.Current.PageBoardID);
+                .GetDeletedMessages(this.PageContext.PageBoardID);
 
             count = deletedMessages.Count;
 

@@ -51,7 +51,12 @@ namespace YAF.Lucene.Net.Util
         private byte[] currentBlock;
         private readonly long bytesUsedPerBlock;
 
-        private static readonly byte[] EMPTY_BYTES = new byte[0];
+        private static readonly byte[] EMPTY_BYTES =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<byte>();
+#else
+            new byte[0];
+#endif
 
         /// <summary>
         /// Provides methods to read <see cref="BytesRef"/>s from a frozen
@@ -290,14 +295,14 @@ namespace YAF.Lucene.Net.Util
         {
             if (bytes.Length >= 32768)
             {
-                throw new System.ArgumentException("max length is 32767 (got " + bytes.Length + ")");
+                throw new ArgumentException("max length is 32767 (got " + bytes.Length + ")");
             }
 
             if (upto + bytes.Length + 2 > blockSize)
             {
                 if (bytes.Length + 2 > blockSize)
                 {
-                    throw new System.ArgumentException("block size " + blockSize + " is too small to store length " + bytes.Length + " bytes");
+                    throw new ArgumentException("block size " + blockSize + " is too small to store length " + bytes.Length + " bytes");
                 }
                 if (currentBlock != null)
                 {

@@ -2,7 +2,6 @@ using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Analysis
@@ -357,13 +356,7 @@ namespace YAF.Lucene.Net.Analysis
         /// <summary>
         /// Returns the used <see cref="ReuseStrategy"/>.
         /// </summary>
-        public ReuseStrategy Strategy
-        {
-            get
-            {
-                return reuseStrategy;
-            }
-        }
+        public ReuseStrategy Strategy => reuseStrategy;
 
         /// <summary>
         /// Frees persistent resources used by this <see cref="Analyzer"/> 
@@ -575,25 +568,13 @@ namespace YAF.Lucene.Net.Analysis
         /// Returns the sink <see cref="Analysis.TokenStream"/>
         /// </summary>
         /// <returns> the sink <see cref="Analysis.TokenStream"/> </returns>
-        public virtual TokenStream TokenStream
-        {
-            get
-            {
-                return m_sink;
-            }
-        }
+        public virtual TokenStream TokenStream => m_sink;
 
         /// <summary>
         /// Returns the component's <see cref="Analysis.Tokenizer"/>
         /// </summary>
         /// <returns> Component's <see cref="Analysis.Tokenizer"/> </returns>
-        public virtual Tokenizer Tokenizer
-        {
-            get
-            {
-                return m_source;
-            }
-        }
+        public virtual Tokenizer Tokenizer => m_source;
     }
 
     /// <summary>
@@ -632,7 +613,7 @@ namespace YAF.Lucene.Net.Analysis
         {
             if (analyzer.storedValue == null)
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "this Analyzer is closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "this Analyzer is closed");
             }
             return analyzer.storedValue.Get();
         }

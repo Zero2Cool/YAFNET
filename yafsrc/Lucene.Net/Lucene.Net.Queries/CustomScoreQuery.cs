@@ -3,6 +3,7 @@ using YAF.Lucene.Net.Queries.Function;
 using YAF.Lucene.Net.Search;
 using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -42,11 +43,27 @@ namespace YAF.Lucene.Net.Queries
         private Query[] scoringQueries; // never null (empty array if there are no valSrcQueries).
         private bool strict = false; // if true, valueSource part of query does not take part in weights normalization.
 
+        // LUCENENET specific - optimized empty array creation
+        private static readonly FunctionQuery[] EMPTY_FUNCTION_QUERIES =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<FunctionQuery>();
+#else
+            new FunctionQuery[0];
+#endif
+
+        // LUCENENET specific - optimized empty array creation
+        private static readonly Query[] EMPTY_QUERIES =
+#if FEATURE_ARRAYEMPTY
+            Array.Empty<Query>();
+#else
+            new Query[0];
+#endif
+
         /// <summary>
         /// Create a <see cref="CustomScoreQuery"/> over input <paramref name="subQuery"/>. </summary>
         /// <param name="subQuery"> the sub query whose scored is being customized. Must not be <c>null</c>.  </param>
         public CustomScoreQuery(Query subQuery)
-            : this(subQuery, new FunctionQuery[0])
+            : this(subQuery, EMPTY_FUNCTION_QUERIES)
         {
         }
 
@@ -56,7 +73,7 @@ namespace YAF.Lucene.Net.Queries
         /// <param name="scoringQuery"> a value source query whose scores are used in the custom score
         /// computation.  This parameter is optional - it can be null. </param>
         public CustomScoreQuery(Query subQuery, FunctionQuery scoringQuery)
-            : this(subQuery, scoringQuery != null ? new FunctionQuery[] { scoringQuery } : new FunctionQuery[0])
+            : this(subQuery, scoringQuery != null ? new FunctionQuery[] { scoringQuery } : EMPTY_FUNCTION_QUERIES)
         // don't want an array that contains a single null..
         {
         }
@@ -69,10 +86,10 @@ namespace YAF.Lucene.Net.Queries
         public CustomScoreQuery(Query subQuery, params FunctionQuery[] scoringQueries)
         {
             this.subQuery = subQuery;
-            this.scoringQueries = scoringQueries != null ? scoringQueries : new Query[0];
+            this.scoringQueries = scoringQueries != null ? scoringQueries : EMPTY_QUERIES;
             if (subQuery == null)
             {
-                throw new System.ArgumentException("<subquery> must not be null!");
+                throw new ArgumentException("<subquery> must not be null!");
             }
         }
 
@@ -217,12 +234,9 @@ namespace YAF.Lucene.Net.Queries
             }
 
             /// <summary>
-            /// <seealso cref="Weight.Query"/>
+            /// <see cref="Weight.Query"/>
             /// </summary>
-            public override Query Query
-            {
-                get { return outerInstance; }
-            }
+            public override Query Query => outerInstance;
 
             public override float GetValueForNormalization()
             {
@@ -243,7 +257,7 @@ namespace YAF.Lucene.Net.Queries
             }
 
             /// <summary>
-            /// <seealso cref="Weight.Normalize(float, float)"/>
+            /// <see cref="Weight.Normalize(float, float)"/>
             /// </summary>
             public override void Normalize(float norm, float topLevelBoost)
             {
@@ -312,11 +326,7 @@ namespace YAF.Lucene.Net.Queries
                 return res;
             }
 
-            public override bool ScoresDocsOutOfOrder
-            {
-                get { return false; }
-            }
-
+            public override bool ScoresDocsOutOfOrder => false;
         }
 
         //=========================== S C O R E R ============================
@@ -360,10 +370,7 @@ namespace YAF.Lucene.Net.Queries
                 return doc;
             }
 
-            public override int DocID
-            {
-                get { return subQueryScorer.DocID; }
-            }
+            public override int DocID => subQueryScorer.DocID;
 
             /// <summary>
             /// <seealso cref="Scorer.GetScore"/>
@@ -377,10 +384,7 @@ namespace YAF.Lucene.Net.Queries
                 return qWeight * provider.CustomScore(subQueryScorer.DocID, subQueryScorer.GetScore(), vScores);
             }
 
-            public override int Freq
-            {
-                get { return subQueryScorer.Freq; }
-            }
+            public override int Freq => subQueryScorer.Freq;
 
             public override ICollection<ChildScorer> GetChildren()
             {
@@ -422,33 +426,24 @@ namespace YAF.Lucene.Net.Queries
         /// </summary>
         public virtual bool IsStrict
         {
-            get { return strict; }
-            set { strict = value; }
+            get => strict;
+            set => strict = value;
         }
 
 
         /// <summary>
         /// The sub-query that <see cref="CustomScoreQuery"/> wraps, affecting both the score and which documents match. </summary>
-        public virtual Query SubQuery
-        {
-            get { return subQuery; }
-        }
+        public virtual Query SubQuery => subQuery;
 
         /// <summary>
         /// The scoring queries that only affect the score of <see cref="CustomScoreQuery"/>. </summary>
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        public virtual Query[] ScoringQueries
-        {
-            get { return scoringQueries; }
-        }
+        public virtual Query[] ScoringQueries => scoringQueries;
 
         /// <summary>
         /// A short name of this query, used in <see cref="ToString(string)"/>.
         /// </summary>
-        public virtual string Name
-        {
-            get { return "custom"; }
-        }
+        public virtual string Name => "custom";
     }
 }

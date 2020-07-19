@@ -28,16 +28,12 @@ namespace YAF.Pages.Admin
 
     using System;
     using System.Data;
-    using System.Drawing;
     using System.IO;
-    using System.Linq;
     using System.Web;
-    using System.Web.UI.HtmlControls;
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
@@ -50,8 +46,6 @@ namespace YAF.Pages.Admin
     using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Web.Extensions;
-
-    using Image = System.Drawing.Image;
 
     #endregion
 
@@ -98,7 +92,7 @@ namespace YAF.Pages.Admin
         {
             this.GroupEditDialog.BindData(null, this.CurrentMedalId);
 
-            BoardContext.Current.PageElements.RegisterJsBlockStartup(
+            this.PageContext.PageElements.RegisterJsBlockStartup(
                 "openModalJs",
                 JavaScriptBlocks.OpenModalJs("GroupEditDialog"));
         }
@@ -115,7 +109,7 @@ namespace YAF.Pages.Admin
         {
             this.UserEditDialog.BindData(null, this.CurrentMedalId);
 
-            BoardContext.Current.PageElements.RegisterJsBlockStartup(
+            this.PageContext.PageElements.RegisterJsBlockStartup(
                 "openModalJs",
                 JavaScriptBlocks.OpenModalJs("UserEditDialog"));
         }
@@ -140,9 +134,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // administration index
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(
                 this.GetText("ADMIN_MEDALS", "TITLE"),
@@ -166,12 +158,12 @@ namespace YAF.Pages.Admin
         /// </returns>
         protected string FormatGroupLink([NotNull] object data)
         {
-            var dr = (DataRowView)data;
+            var dr = (Tuple<Medal, GroupMedal, Group>)data;
 
             return string.Format(
                 "<a href=\"{1}\">{0}</a>",
-                dr["GroupName"],
-                BuildLink.GetLink(ForumPages.Admin_EditGroup, "i={0}", dr["GroupID"]));
+                dr.Item3.Name,
+                BuildLink.GetLink(ForumPages.Admin_EditGroup, "i={0}", dr.Item3.ID));
         }
 
         /// <summary>
@@ -185,13 +177,13 @@ namespace YAF.Pages.Admin
         /// </returns>
         protected string FormatUserLink([NotNull] object data)
         {
-            var dr = (DataRowView)data;
+            var dr = (Tuple<Medal, UserMedal, User>)data;
 
             return string.Format(
                 "<a href=\"{2}\">{0}&nbsp;({1})</a>",
-                this.HtmlEncode(dr["DisplayName"]),
-                this.HtmlEncode(dr["UserName"]),
-                BuildLink.GetLink(ForumPages.Admin_EditUser, "u={0}", dr["UserID"]));
+                this.HtmlEncode(dr.Item3.DisplayName),
+                this.HtmlEncode(dr.Item3.Name),
+                BuildLink.GetLink(ForumPages.Admin_EditUser, "u={0}", dr.Item3.ID));
         }
 
         /// <summary>
@@ -206,7 +198,7 @@ namespace YAF.Pages.Admin
                 case "edit":
                     this.GroupEditDialog.BindData(e.CommandArgument.ToType<int>(), this.CurrentMedalId);
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("GroupEditDialog"));
                     break;
@@ -230,18 +222,16 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.Save.ClientID));
+
             // this needs to be done just once, not during post-backs
             if (!this.IsPostBack)
             {
                 // bind data
                 this.BindData();
             }
-
-            // set previews
-            this.SetPreview(this.MedalImage, this.MedalPreview);
-            this.SetPreview(this.RibbonImage, this.RibbonPreview);
-            this.SetPreview(this.SmallMedalImage, this.SmallMedalPreview);
-            this.SetPreview(this.SmallRibbonImage, this.SmallRibbonPreview);
         }
 
         /// <summary>
@@ -274,59 +264,30 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            if (this.SortOrder.Text.Trim().Length == 0)
-            {
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_EDITFORUM", "MSG_VALUE"), MessageTypes.warning);
-                return;
-            }
-
-            if (!ValidationHelper.IsValidPosShort(this.SortOrder.Text.Trim()))
-            {
-                this.PageContext.AddLoadMessage(
-                    this.GetText("ADMIN_EDITFORUM", "MSG_POSITIVE_VALUE"),
-                    MessageTypes.warning);
-                return;
-            }
-
-            if (!byte.TryParse(this.SortOrder.Text.Trim(), out var sortOrder))
-            {
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_EDITFORUM", "MSG_CATEGORY"), MessageTypes.warning);
-                return;
-            }
-
             // data
             string ribbonUrl = null, smallRibbonUrl = null;
-            short? ribbonWidth = null, ribbonHeight = null;
-            Size imageSize;
-
+            
             // flags
             var flags = new MedalFlags(0)
                             {
                                 ShowMessage = this.ShowMessage.Checked,
                                 AllowRibbon = this.AllowRibbon.Checked,
-                                AllowReOrdering = this.AllowReOrdering.Checked,
+                                AllowReOrdering = false,
                                 AllowHiding = this.AllowHiding.Checked
                             };
 
             // get medal images
-            var imageUrl = this.MedalImage.SelectedValue;
-            var smallImageUrl = this.SmallMedalImage.SelectedValue;
+            var imageUrl = this.MedalImage.SelectedItem.Text;
+            var smallImageUrl = this.SmallMedalImage.SelectedItem.Text;
             if (this.RibbonImage.SelectedIndex > 0)
             {
-                ribbonUrl = this.RibbonImage.SelectedValue;
+                ribbonUrl = this.RibbonImage.SelectedItem.Text;
             }
 
             if (this.SmallRibbonImage.SelectedIndex > 0)
             {
-                smallRibbonUrl = this.SmallRibbonImage.SelectedValue;
-
-                imageSize = this.GetImageSize(smallRibbonUrl);
-                ribbonWidth = imageSize.Width.ToType<short>();
-                ribbonHeight = imageSize.Height.ToType<short>();
+                smallRibbonUrl = this.SmallRibbonImage.SelectedItem.Text;
             }
-
-            // get size of small image
-            imageSize = this.GetImageSize(smallImageUrl);
 
             // save medal
             this.GetRepository<Medal>().Save(
@@ -339,11 +300,6 @@ namespace YAF.Pages.Admin
                 ribbonUrl,
                 smallImageUrl,
                 smallRibbonUrl,
-                (short)imageSize.Width,
-                (short)imageSize.Height,
-                ribbonWidth,
-                ribbonHeight,
-                sortOrder,
                 flags.BitValue);
 
             // go back to medals administration
@@ -362,7 +318,7 @@ namespace YAF.Pages.Admin
                 case "edit":
                     this.UserEditDialog.BindData(e.CommandArgument.ToType<int>(), this.CurrentMedalId);
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("UserEditDialog"));
                     break;
@@ -391,6 +347,27 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
+        /// Select image in dropdown list and sets appropriate preview.
+        /// </summary>
+        /// <param name="list">
+        /// DropDownList where to search.
+        /// </param>
+        /// <param name="imageUrl">
+        /// URL to search for.
+        /// </param>
+        private static void SelectImage([NotNull] ListControl list, [NotNull] string imageUrl)
+        {
+            // try to find item in a list
+            var item = list.Items.FindByText(imageUrl);
+
+            if (item != null)
+            {
+                // select found item
+                item.Selected = true;
+            }
+        }
+
+        /// <summary>
         /// Bind data for this control.
         /// </summary>
         private void BindData()
@@ -399,13 +376,11 @@ namespace YAF.Pages.Admin
             using (var dt = new DataTable("Files"))
             {
                 // create structure
-                dt.Columns.Add("FileID", typeof(long));
                 dt.Columns.Add("FileName", typeof(string));
                 dt.Columns.Add("Description", typeof(string));
 
                 // add blank row
                 var dr = dt.NewRow();
-                dr["FileID"] = 0;
                 dr["FileName"] =
                     BoardInfo.GetURLToContent("images/spacer.gif"); // use spacer.gif for Description Entry
                 dr["Description"] = this.GetText("ADMIN_EDITMEDAL", "SELECT_IMAGE");
@@ -416,19 +391,7 @@ namespace YAF.Pages.Admin
                     this.Get<HttpRequestBase>().MapPath($"{BoardInfo.ForumServerFileRoot}{BoardFolders.Current.Medals}"));
                 var files = dir.GetFiles("*.*");
 
-                long fileId = 1;
-
-                foreach (var file in from file in files
-                                     let sExt = file.Extension.ToLower()
-                                     where sExt == ".png" || sExt == ".gif" || sExt == ".jpg"
-                                     select file)
-                {
-                    dr = dt.NewRow();
-                    dr["FileID"] = fileId++;
-                    dr["FileName"] = file.Name;
-                    dr["Description"] = file.Name;
-                    dt.Rows.Add(dr);
-                }
+                dt.AddImageFiles(files, BoardFolders.Current.Medals);
 
                 // medal image
                 this.MedalImage.DataSource = dt;
@@ -454,109 +417,38 @@ namespace YAF.Pages.Admin
             // bind data to controls
             this.DataBind();
 
-            // load existing medal if we are editing one
-            if (this.CurrentMedalId.HasValue)
+            if (!this.CurrentMedalId.HasValue)
             {
-                // load users and groups who has been assigned this medal
-                this.UserList.DataSource = this.GetRepository<UserMedal>().ListAsDataTable(null, this.CurrentMedalId);
-                this.UserList.DataBind();
+                // Hide user & group
+                this.UserAndGroupsHolder.Visible = false;
 
-                this.GroupList.DataSource =
-                    this.GetRepository<Medal>().GroupMedalListAsDataTable(null, this.CurrentMedalId);
-                this.GroupList.DataBind();
-
-                var medal = this.GetRepository<Medal>().GetSingle(m => m.ID == this.CurrentMedalId);
-
-                // set controls
-                this.Name.Text = medal.Name;
-                this.Description.Text = medal.Description;
-                this.Message.Text = medal.Message;
-                this.Category.Text = medal.Category;
-                this.SortOrder.Text = medal.SortOrder.ToString();
-                this.ShowMessage.Checked = medal.MedalFlags.ShowMessage;
-                this.AllowRibbon.Checked = medal.MedalFlags.AllowRibbon;
-                this.AllowHiding.Checked = medal.MedalFlags.AllowHiding;
-                this.AllowReOrdering.Checked = medal.MedalFlags.AllowReOrdering;
-
-                // select images
-                this.SelectImage(this.MedalImage, this.MedalPreview, medal.MedalURL);
-                this.SelectImage(this.RibbonImage, this.RibbonPreview, medal.RibbonURL);
-                this.SelectImage(this.SmallMedalImage, this.SmallMedalPreview, medal.SmallMedalURL);
-                this.SelectImage(this.SmallRibbonImage, this.SmallRibbonPreview, medal.SmallRibbonURL);
+                return;
             }
-            else
-            {
-                // set all previews on blank image
-                var spacerPath =
-                    BoardInfo.GetURLToContent("images/spacer.gif"); // use spacer.gif for Description Entry
 
-                this.MedalPreview.Src = spacerPath;
-                this.RibbonPreview.Src = spacerPath;
-                this.SmallMedalPreview.Src = spacerPath;
-                this.SmallRibbonPreview.Src = spacerPath;
-            }
-        }
+            // load users and groups who has been assigned this medal
+            this.UserList.DataSource = this.GetRepository<UserMedal>().List(null, this.CurrentMedalId.Value);
+            this.UserList.DataBind();
 
-        /// <summary>
-        /// Gets size of image located in medals directory.
-        /// </summary>
-        /// <param name="filename">
-        /// Name of file.
-        /// </param>
-        /// <returns>
-        /// Size of image.
-        /// </returns>
-        private Size GetImageSize([NotNull] string filename)
-        {
-            using (var img = Image.FromFile(
-                this.Server.MapPath($"{BoardInfo.ForumServerFileRoot}{BoardFolders.Current.Medals}/{filename}")))
-            {
-                return img.Size;
-            }
-        }
+            this.GroupList.DataSource =
+                this.GetRepository<GroupMedal>().List(null, this.CurrentMedalId.Value);
+            this.GroupList.DataBind();
 
-        /// <summary>
-        /// Select image in dropdown list and sets appropriate preview.
-        /// </summary>
-        /// <param name="list">
-        /// DropDownList where to search.
-        /// </param>
-        /// <param name="preview">
-        /// Preview image.
-        /// </param>
-        /// <param name="imageUrl">
-        /// URL to search for.
-        /// </param>
-        private void SelectImage([NotNull] DropDownList list, [NotNull] HtmlImage preview, [NotNull] string imageUrl)
-        {
-            // try to find item in a list
-            var item = list.Items.FindByText(imageUrl);
+            var medal = this.GetRepository<Medal>().GetSingle(m => m.ID == this.CurrentMedalId.Value);
 
-            if (item != null)
-            {
-                // select found item
-                item.Selected = true;
-
-                // set preview image
-                preview.Src = $"{BoardInfo.ForumClientFileRoot}{BoardFolders.Current.Medals}/{imageUrl}";
-            }
-            else
-            {
-                // if we found nothing, set blank image as preview
-                preview.Src = BoardInfo.GetURLToContent("images/spacer.gif"); // use spacer.gif for Description Entry
-            }
-        }
-
-        /// <summary>
-        /// Sets the Image preview.
-        /// </summary>
-        /// <param name="imageSelector">DropDownList with image file listed.</param>
-        /// <param name="imagePreview">Image for showing preview.</param>
-        private void SetPreview([NotNull] WebControl imageSelector, [NotNull] HtmlControl imagePreview)
-        {
-            // create javascript
-            imageSelector.Attributes["onchange"] =
-                $"getElementById('{imagePreview.ClientID}').src='{BoardInfo.ForumClientFileRoot}{BoardFolders.Current.Medals}/' + this.value";
+            // set controls
+            this.Name.Text = medal.Name;
+            this.Description.Text = medal.Description;
+            this.Message.Text = medal.Message;
+            this.Category.Text = medal.Category;
+            this.ShowMessage.Checked = medal.MedalFlags.ShowMessage;
+            this.AllowRibbon.Checked = medal.MedalFlags.AllowRibbon;
+            this.AllowHiding.Checked = medal.MedalFlags.AllowHiding;
+            
+            // select images
+            SelectImage(this.MedalImage, medal.MedalURL);
+            SelectImage(this.RibbonImage, medal.RibbonURL);
+            SelectImage(this.SmallMedalImage, medal.SmallMedalURL);
+            SelectImage(this.SmallRibbonImage, medal.SmallRibbonURL);
         }
 
         #endregion

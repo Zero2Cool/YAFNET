@@ -30,10 +30,10 @@ namespace YAF.Core.Controllers
     using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils.Helpers.StringUtils;
 
@@ -65,31 +65,30 @@ namespace YAF.Core.Controllers
         [HttpPost]
         public IHttpActionResult AddThanks([NotNull] int messageId)
         {
-            var membershipUser = UserMembershipHelper.GetUser();
+            var membershipUser = this.Get<IAspNetUsersHelper>().GetUser();
 
             if (membershipUser == null)
             {
                 return this.NotFound();
             }
 
-            var fromUserId = UserMembershipHelper.GetUserIDFromProviderUserKey(membershipUser.ProviderUserKey);
+            var fromUserId = this.Get<IAspNetUsersHelper>().GetUserIDFromProviderUserKey(membershipUser.Id);
 
             var message = this.GetRepository<Message>().GetById(messageId);
 
-            var username = this.GetRepository<Thanks>().AddMessageThanks(
-                fromUserId,
-                messageId,
-                this.Get<BoardSettings>().EnableDisplayName);
+            var userName = this.Get<IUserDisplayName>().GetName(message.UserID);
+
+            this.GetRepository<Thanks>().AddMessageThanks(fromUserId, message.UserID, messageId);
 
             this.Get<IActivityStream>().AddThanksReceivedToStream(message.UserID, message.TopicID, messageId, fromUserId);
             this.Get<IActivityStream>().AddThanksGivenToStream(fromUserId, message.TopicID, messageId, message.UserID);
 
             // if the user is empty, return a null object...
-            return username.IsNotSet()
+            return userName.IsNotSet()
                        ? (IHttpActionResult)this.NotFound()
                        : this.Ok(
                            this.Get<IThankYou>().CreateThankYou(
-                               new UnicodeEncoder().XSSEncode(username),
+                               new UnicodeEncoder().XSSEncode(userName),
                                "BUTTON_THANKSDELETE",
                                "BUTTON_THANKSDELETE_TT",
                                messageId));
@@ -108,7 +107,11 @@ namespace YAF.Core.Controllers
         [HttpPost]
         public IHttpActionResult RemoveThanks([NotNull] int messageId)
         {
-            var username = this.GetRepository<Thanks>().RemoveMessageThanks(
+            var message = this.GetRepository<Message>().GetById(messageId);
+
+            var userName = this.Get<IUserDisplayName>().GetName(message.UserID);
+
+           this.GetRepository<Thanks>().RemoveMessageThanks(
                 BoardContext.Current.PageUserID,
                 messageId,
                 this.Get<BoardSettings>().EnableDisplayName);
@@ -117,7 +120,7 @@ namespace YAF.Core.Controllers
                 .Delete(a => a.MessageID == messageId && (a.Flags == 1024 || a.Flags == 2048));
 
             return this.Ok(
-                this.Get<IThankYou>().CreateThankYou(username, "BUTTON_THANKS", "BUTTON_THANKS_TT", messageId));
+                this.Get<IThankYou>().CreateThankYou(userName, "BUTTON_THANKS", "BUTTON_THANKS_TT", messageId));
         }
     }
 }

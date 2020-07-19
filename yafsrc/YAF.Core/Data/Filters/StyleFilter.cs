@@ -30,6 +30,7 @@ namespace YAF.Core.Data.Filters
     using System.Linq;
 
     using YAF.Configuration;
+    using YAF.Types.Constants;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
 
@@ -45,16 +46,11 @@ namespace YAF.Core.Data.Filters
         /// <summary>
         ///     The _styled nick operations.
         /// </summary>
-        private readonly string[] _styledNickOperations = {
-                                                                  "active_list", 
-                                                                  "active_listtopic", 
-                                                                  "active_listforum", 
-                                                                  "forum_moderators", 
-                                                                  "topic_latest", 
-                                                                  "topic_latest", 
-                                                                  "active_list_user", 
-                                                                  "admin_list"
-                                                              };
+        private readonly string[] _styledNickOperations =
+        {
+            "active_list", "active_listtopic", "active_listforum", "forum_moderators", "topic_latest",
+            "topic_latest", "active_list_user"
+        };
 
         #endregion
 
@@ -128,14 +124,12 @@ namespace YAF.Core.Data.Filters
         /// <param name="data">
         /// The data.
         /// </param>
-        public void Run(DbFunctionType dbfunctionType, string operationName, IEnumerable<KeyValuePair<string, object>> parameters, object data)
+        public void Run(DBFunctionType dbfunctionType, string operationName, IEnumerable<KeyValuePair<string, object>> parameters, object data)
         {
-            if (!this.ServiceLocator.IsBoardContext() || !this._styledNickOperations.Contains(operationName.ToLower()) || dbfunctionType != DbFunctionType.DataTable)
+            if (!this.ServiceLocator.IsBoardContext() || !this._styledNickOperations.Contains(operationName.ToLower()) || dbfunctionType != DBFunctionType.DataTable)
             {
                 return;
             }
-
-            var colorOnly = false;
 
             if (!this.BoardSettings.UseStyledNicks)
             {

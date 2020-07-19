@@ -1,6 +1,7 @@
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace YAF.Lucene.Net.Codecs
 {
@@ -36,7 +37,7 @@ namespace YAF.Lucene.Net.Codecs
     /// <list type="number">
     ///     <item><description>Subclass this class.</description></item>
     ///     <item><description>Subclass <see cref="DefaultDocValuesFormatFactory"/>, override the <see cref="DefaultDocValuesFormatFactory.Initialize()"/> method,
-    ///         and add the line <c>base.ScanForDocValuesFormats(typeof(YourDocValuesFormat).GetTypeInfo().Assembly)</c>. 
+    ///         and add the line <c>base.ScanForDocValuesFormats(typeof(YourDocValuesFormat).Assembly)</c>. 
     ///         If you have any format classes in your assembly 
     ///         that are not meant for reading, you can add the <see cref="ExcludeDocValuesFormatFromScanAttribute"/> 
     ///         to them so they are ignored by the scan.</description></item>
@@ -123,8 +124,8 @@ namespace YAF.Lucene.Net.Codecs
         /// NOTE: by the time this call returns, it must hold open any files it will
         /// need to use; else, those files may be deleted. Additionally, required files
         /// may be deleted during the execution of this call before there is a chance
-        /// to open them. Under these circumstances an <see cref="System.IO.IOException"/> should be thrown by
-        /// the implementation. <see cref="System.IO.IOException"/>s are expected and will automatically cause
+        /// to open them. Under these circumstances an <see cref="IOException"/> should be thrown by
+        /// the implementation. <see cref="IOException"/>s are expected and will automatically cause
         /// a retry of the segment opening logic with the newly revised segments.
         /// </summary>
         public abstract DocValuesProducer FieldsProducer(SegmentReadState state);
@@ -133,13 +134,7 @@ namespace YAF.Lucene.Net.Codecs
         /// Unique name that's used to retrieve this format when
         /// reading the index.
         /// </summary>
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-        }
+        public string Name => name;
 
         public override string ToString()
         {

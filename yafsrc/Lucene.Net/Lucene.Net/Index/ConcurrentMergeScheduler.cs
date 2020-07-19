@@ -3,6 +3,7 @@ using J2N.Threading;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Security;
 using System.Text;
 using System.Threading;
 
@@ -114,15 +115,15 @@ namespace YAF.Lucene.Net.Index
         {
             if (maxThreadCount < 1)
             {
-                throw new System.ArgumentException("maxThreadCount should be at least 1");
+                throw new ArgumentException("maxThreadCount should be at least 1");
             }
             if (maxMergeCount < 1)
             {
-                throw new System.ArgumentException("maxMergeCount should be at least 1");
+                throw new ArgumentException("maxMergeCount should be at least 1");
             }
             if (maxThreadCount > maxMergeCount)
             {
-                throw new System.ArgumentException("maxThreadCount should be <= maxMergeCount (= " + maxMergeCount + ")");
+                throw new ArgumentException("maxThreadCount should be <= maxMergeCount (= " + maxMergeCount + ")");
             }
             this.maxThreadCount = maxThreadCount;
             this.maxMergeCount = maxMergeCount;
@@ -132,23 +133,11 @@ namespace YAF.Lucene.Net.Index
         /// Returns <see cref="maxThreadCount"/>.
         /// </summary>
         /// <seealso cref="SetMaxMergesAndThreads(int, int)"/>
-        public virtual int MaxThreadCount
-        {
-            get
-            {
-                return maxThreadCount;
-            }
-        }
+        public virtual int MaxThreadCount => maxThreadCount;
 
         /// <summary>
         /// See <see cref="SetMaxMergesAndThreads(int, int)"/>. </summary>
-        public virtual int MaxMergeCount
-        {
-            get
-            {
-                return maxMergeCount;
-            }
-        }
+        public virtual int MaxMergeCount => maxMergeCount;
 
         /// <summary>
         /// Return the priority that merge threads run at.  By
@@ -182,7 +171,7 @@ namespace YAF.Lucene.Net.Index
             {
                 if (priority > (int)ThreadPriority.Highest || priority < (int)ThreadPriority.Lowest)
                 {
-                    throw new System.ArgumentException("priority must be in range " + (int)ThreadPriority.Highest + " .. " + (int)ThreadPriority.Lowest + " inclusive");
+                    throw new ArgumentException("priority must be in range " + (int)ThreadPriority.Highest + " .. " + (int)ThreadPriority.Lowest + " inclusive");
                 }
                 mergeThreadPriority = priority;
                 UpdateMergeThreads();
@@ -293,10 +282,7 @@ namespace YAF.Lucene.Net.Index
         /// }
         /// </code>
         /// </summary>
-        protected virtual bool IsVerbose
-        {
-            get { return m_writer != null && m_writer.infoStream.IsEnabled("CMS"); }
-        }
+        protected virtual bool IsVerbose => m_writer != null && m_writer.infoStream.IsEnabled("CMS");
 
         /// <summary>
         /// Outputs the given message - this method assumes <see cref="IsVerbose"/> was
@@ -614,12 +600,12 @@ namespace YAF.Lucene.Net.Index
                     Priority = priority;
                 }
 #pragma warning disable 168
-                catch (System.NullReferenceException npe)
+                catch (NullReferenceException npe)
                 {
                     // Strangely, Sun's JDK 1.5 on Linux sometimes
                     // throws NPE out of here...
                 }
-                catch (System.Security.SecurityException se)
+                catch (SecurityException se)
 #pragma warning restore 168
                 {
                     // Ignore this because we will still run fine with
