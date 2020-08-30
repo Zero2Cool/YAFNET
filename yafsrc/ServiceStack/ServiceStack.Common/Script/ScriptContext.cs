@@ -636,8 +636,8 @@ namespace ServiceStack.Script
                 underlyingEx = te.InnerException;
             
 #if DEBUG
-            var logEx = underlyingEx.GetInnerMostException();
-            Logging.LogManager.GetLogger(typeof(ScriptContextUtils)).Error(logEx.Message + "\n" + logEx.StackTrace, logEx);
+            //var logEx = underlyingEx.GetInnerMostException();
+            //Logging.LogManager.GetLogger(typeof(ScriptContextUtils)).Error(logEx.Message + "\n" + logEx.StackTrace, logEx);
 #endif
             
             if (underlyingEx is ScriptException)

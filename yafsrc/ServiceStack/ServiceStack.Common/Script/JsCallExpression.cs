@@ -91,8 +91,8 @@ namespace ServiceStack.Script
 #if DEBUG            
             catch (Exception e)
             {
-                var ex = e.GetInnerMostException().UnwrapIfSingleException().GetInnerMostException();
-                Logging.LogManager.GetLogger(typeof(JsCallExpression)).Error(ex.Message + "\n" + ex.StackTrace, ex);
+               // var ex = e.GetInnerMostException().UnwrapIfSingleException().GetInnerMostException();
+                // Logging.LogManager.GetLogger(typeof(JsCallExpression)).Error(ex.Message + "\n" + ex.StackTrace, ex);
                 throw;
             }
 #endif            
