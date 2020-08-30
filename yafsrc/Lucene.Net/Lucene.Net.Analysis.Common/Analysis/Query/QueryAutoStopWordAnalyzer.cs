@@ -1,11 +1,11 @@
-﻿using YAF.Lucene.Net.Analysis.Core;
+﻿using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Analysis.Core;
 using YAF.Lucene.Net.Analysis.Util;
 using YAF.Lucene.Net.Index;
+using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Analysis.Query
@@ -171,16 +171,8 @@ namespace YAF.Lucene.Net.Analysis.Query
         public string[] GetStopWords(string fieldName)
         {            
             var stopWords = stopWordsPerField[fieldName];
-            return stopWords != null ? stopWords.ToArray() : EMPTY_STRINGS;
+            return stopWords != null ? stopWords.ToArray() : Arrays.Empty<string>();
         }
-
-        // LUCENENET specific - optimized empty array creation
-        private static readonly string[] EMPTY_STRINGS =
-#if FEATURE_ARRAYEMPTY
-                Array.Empty<string>();
-#else
-                new string[0];
-#endif
 
         /// <summary>
         /// Provides information on which stop words have been identified for all fields

@@ -1,5 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -50,8 +51,11 @@ namespace YAF.Lucene.Net.Search
                 float score = scorer.GetScore();
 
                 // this collector cannot handle these scores:
-                Debug.Assert(score != float.NegativeInfinity);
-                Debug.Assert(!float.IsNaN(score));
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(!float.IsNegativeInfinity(score));
+                    Debugging.Assert(!float.IsNaN(score));
+                }
 
                 m_totalHits++;
                 if (score <= pqTop.Score)
@@ -89,9 +93,12 @@ namespace YAF.Lucene.Net.Search
             {
                 float score = scorer.GetScore();
 
-                // this collector cannot handle these scores:
-                Debug.Assert(score != float.NegativeInfinity);
-                Debug.Assert(!float.IsNaN(score));
+                if (Debugging.AssertsEnabled)
+                {
+                    // this collector cannot handle these scores:
+                    Debugging.Assert(!float.IsNegativeInfinity(score));
+                    Debugging.Assert(!float.IsNaN(score));
+                }
 
                 m_totalHits++;
 
@@ -127,17 +134,9 @@ namespace YAF.Lucene.Net.Search
             protected override TopDocs NewTopDocs(ScoreDoc[] results, int start)
             {
                 // LUCENENET specific - optimized empty array creation
-                return results == null ? new TopDocs(m_totalHits, EMPTY_SCOREDOCS, float.NaN) : new TopDocs(m_totalHits, results);
+                return results == null ? new TopDocs(m_totalHits, Arrays.Empty<ScoreDoc>(), float.NaN) : new TopDocs(m_totalHits, results);
             }
         }
-
-        // LUCENENET specific - optimized empty array creation
-        private static readonly ScoreDoc[] EMPTY_SCOREDOCS =
-#if FEATURE_ARRAYEMPTY
-            Array.Empty<ScoreDoc>();
-#else
-            new ScoreDoc[0];
-#endif
 
         // Assumes docs are scored out of order.
         private class OutOfOrderTopScoreDocCollector : TopScoreDocCollector
@@ -152,7 +151,7 @@ namespace YAF.Lucene.Net.Search
                 float score = scorer.GetScore();
 
                 // this collector cannot handle NaN
-                Debug.Assert(!float.IsNaN(score));
+                if (Debugging.AssertsEnabled) Debugging.Assert(!float.IsNaN(score));
 
                 m_totalHits++;
                 if (score < pqTop.Score)
@@ -195,7 +194,7 @@ namespace YAF.Lucene.Net.Search
                 float score = scorer.GetScore();
 
                 // this collector cannot handle NaN
-                Debug.Assert(!float.IsNaN(score));
+                if (Debugging.AssertsEnabled) Debugging.Assert(!float.IsNaN(score));
 
                 m_totalHits++;
                 if (score > after.Score || (score == after.Score && doc <= afterDoc))
@@ -233,7 +232,7 @@ namespace YAF.Lucene.Net.Search
             protected override TopDocs NewTopDocs(ScoreDoc[] results, int start)
             {
                 // LUCENENET specific - optimized empty array creation
-                return results == null ? new TopDocs(m_totalHits, EMPTY_SCOREDOCS, float.NaN) : new TopDocs(m_totalHits, results);
+                return results == null ? new TopDocs(m_totalHits, Arrays.Empty<ScoreDoc>(), float.NaN) : new TopDocs(m_totalHits, results);
             }
         }
 

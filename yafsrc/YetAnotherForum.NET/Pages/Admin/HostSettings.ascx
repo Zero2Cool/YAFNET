@@ -4,14 +4,6 @@
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
 <div class="row">
-    <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel41" runat="server" 
-                                LocalizedTag="TITLE" 
-                                LocalizedPage="ADMIN_HOSTSETTINGS" /></h1>
-    </div>
-</div>
-
-<div class="row">
     <div class="col flex-grow-1 ml-lg-3 d-lg-none">
         <div class="dropdown">
             <YAF:ThemeButton runat="server" 
@@ -122,7 +114,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel56" runat="server" LocalizedTag="HEADER_SERVER_INFO" LocalizedPage="ADMIN_HOSTSETTINGS" />
                     </div>
                     <div class="card-body">
@@ -176,7 +168,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel58" runat="server" 
                                               LocalizedTag="HEADER_SETUP" 
                                               LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -655,7 +647,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel60" runat="server" 
                                               LocalizedTag="HEADER_SERVER_INFO" 
                                               LocalizedPage="HEADER_FEATURES" />
@@ -827,21 +819,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="mb-3 col-md-6">
-                                <YAF:HelpLabel ID="HelpLabel98" runat="server" 
-                                               AssociatedControlID="MemberListPageSize"
-                                               LocalizedTag="MEMBERLIST_PAGE_SIZE" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                                <asp:TextBox CssClass="form-control" runat="server" ID="MemberListPageSize" />
-                            </div>
-                            <div class="mb-3 col-md-6">
-                                <YAF:HelpLabel ID="HelpLabel139" runat="server" 
-                                               AssociatedControlID="MyTopicsListPageSize"
-                                               LocalizedTag="MYTOPICSLIST_PAGE_SIZE" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                                <asp:TextBox CssClass="form-control" runat="server" ID="MyTopicsListPageSize" />
-                            </div>
-                        </div>
-                        <div class="row">
+                            <div class="row">
                             <div class="mb-3 col-md-6">
                                 <YAF:HelpLabel ID="HelpLabel100" runat="server"
                                                AssociatedControlID="EnableThanksMod"
@@ -1256,7 +1234,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel62" runat="server" 
                                               LocalizedTag="HEADER_DISPLAY" 
                                               LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -1479,12 +1457,6 @@
             <asp:TextBox CssClass="form-control" ID="PostsPerPage" runat="server"></asp:TextBox>
         </div>
         <div class="mb-3 col-md-6">
-            <YAF:HelpLabel ID="HelpLabel179" runat="server" 
-                           AssociatedControlID="TopicsPerPage" 
-                           LocalizedTag="TOPICS_PER_PAGE" LocalizedPage="ADMIN_HOSTSETTINGS" />
-            <asp:TextBox CssClass="form-control" ID="TopicsPerPage" runat="server"></asp:TextBox>
-        </div>
-        <div class="mb-3 col-md-6">
             <YAF:HelpLabel ID="HelpLabel236" runat="server" 
                            AssociatedControlID="SubForumsInForumList"
                            LocalizedTag="AMOUNT_OF_SUBFORUMS" LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -1520,7 +1492,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel64" runat="server" 
                                               LocalizedTag="HEADER_ADVERTS" 
                                               LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -1556,7 +1528,7 @@
             <div class="card-header">
                 <YAF:IconHeader runat="server"
                                 IconName="cog"
-                                LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                 - <YAF:LocalizedLabel ID="LocalizedLabel66" runat="server" 
                                       LocalizedTag="HEADER_EDITORS" 
                                       LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -1592,7 +1564,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel68" runat="server" 
                                               LocalizedTag="HEADER_PERMISSION" 
                                               LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -1734,7 +1706,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel72" runat="server" 
                                               LocalizedTag="HEADER_AVATARS" 
                                               LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -1822,107 +1794,94 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel74" runat="server" 
                                               LocalizedTag="HEADER_CACHE" 
                                               LocalizedPage="ADMIN_HOSTSETTINGS" />
                     </div>
                     <div class="card-body">
-                        <div class="row">
-            <div class="mb-3 col-md-6">
-                <YAF:HelpLabel ID="HelpLabel41" runat="server"  
-                               AssociatedControlID="ForumStatisticsCacheTimeout" 
-                               LocalizedTag="STATS_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                <asp:TextBox CssClass="form-control" runat="server" ID="ForumStatisticsCacheTimeout" />
-            </div>
-            <div class="mb-3 col-md-6">
-                <YAF:ThemeButton ID="ForumStatisticsCacheReset" runat="server" 
-                                 Type="Primary" 
-                                 TextLocalizedTag="CLEAR" 
-                                 CssClass="mt-1"
-                                 Icon="trash"
-                                 OnClick="ForumStatisticsCacheResetClick" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="mb-3 col-md-6">
-                <YAF:HelpLabel ID="HelpLabel42" runat="server" 
-                               LocalizedTag="USRSTATS_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                <asp:TextBox CssClass="form-control" runat="server" ID="BoardUserStatsCacheTimeout" />
-            </div>
-            <div class="mb-3 col-md-6">
-                <YAF:ThemeButton Type="Primary" ID="BoardUserStatsCacheReset" 
-                                 TextLocalizedTag="CLEAR"  runat="server" 
-                                 Icon="trash"
-                                 OnClick="BoardUserStatsCacheResetClick" /></div>
-        </div>
-        <div class="row">
-            <div class="mb-3 col-md-6">
-                <YAF:HelpLabel ID="HelpLabel43" runat="server" 
-                               LocalizedTag="DISCUSSIONS_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                <asp:TextBox CssClass="form-control" runat="server" ID="ActiveDiscussionsCacheTimeout" />
-            </div>
-            <div class="mb-3 col-md-6">
-                <YAF:ThemeButton Type="Primary" ID="ActiveDiscussionsCacheReset" 
-                                 TextLocalizedTag="CLEAR"  
-                                 runat="server" 
-                                 Icon="trash"
-                                 OnClick="ActiveDiscussionsCacheResetClick" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="mb-3 col-md-6">
-                <YAF:HelpLabel ID="HelpLabel44" runat="server" 
-                               LocalizedTag="CAT_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                <asp:TextBox CssClass="form-control" runat="server" ID="BoardCategoriesCacheTimeout" />
-            </div>
-            <div class="mb-3 col-md-6">
-                <YAF:ThemeButton Type="Primary" ID="BoardCategoriesCacheReset" 
-                                 TextLocalizedTag="CLEAR"  runat="server" 
-                                 Icon="trash"
-                                 OnClick="BoardCategoriesCacheResetClick" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="mb-3 col-md-6">
-                <YAF:HelpLabel ID="HelpLabel45" runat="server" 
-                               LocalizedTag="MOD_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                <asp:TextBox CssClass="form-control" runat="server" ID="BoardModeratorsCacheTimeout" />
-            </div>
-            <div class="mb-3 col-md-6">
-                <YAF:ThemeButton Type="Primary" ID="BoardModeratorsCacheReset" 
-                                 TextLocalizedTag="CLEAR"  runat="server" 
-                                 Icon="trash"
-                                 OnClick="BoardModeratorsCacheResetClick" />
-            </div>
-        </div>
-        <div class="mb-3">
-                   
-            <YAF:HelpLabel ID="HelpLabel47" runat="server" 
-                           LocalizedTag="SEO_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-            <asp:TextBox CssClass="form-control" runat="server" ID="FirstPostCacheTimeout" />
-
-        </div>
-        <div class="mb-3">
-
-            <YAF:HelpLabel ID="HelpLabel48" runat="server" 
-                           LocalizedTag="ONLINE_STATUS_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-            <asp:TextBox CssClass="form-control" runat="server" ID="OnlineStatusCacheTimeout" />
-        </div>
-        <div class="row">
-            <div class="mb-3 col-md-6">
-                <YAF:HelpLabel ID="HelpLabel49" runat="server" 
-                               LocalizedTag="LAZY_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
-                <asp:TextBox CssClass="form-control" runat="server" ID="ActiveUserLazyDataCacheTimeout" />
-            </div>
-            <div class="mb-3 col-md-6">
-                <YAF:ThemeButton Type="Primary" ID="ActiveUserLazyDataCacheReset" 
-                                 TextLocalizedTag="CLEAR" runat="server" 
-                                 Icon="trash"
-                                 OnClick="UserLazyDataCacheResetClick" />
-            </div>
-        </div>
-        
+                        <div class="mb-3">
+                            <YAF:HelpLabel ID="HelpLabel41" runat="server"  
+                                           AssociatedControlID="ForumStatisticsCacheTimeout" 
+                                           LocalizedTag="STATS_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                            <div class="input-group">
+                                <asp:TextBox CssClass="form-control" runat="server" ID="ForumStatisticsCacheTimeout" />
+                                <YAF:ThemeButton ID="ForumStatisticsCacheReset" runat="server" 
+                                                 Type="Primary" 
+                                                 TextLocalizedTag="CLEAR"
+                                                 Icon="trash"
+                                                 OnClick="ForumStatisticsCacheResetClick" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <YAF:HelpLabel ID="HelpLabel42" runat="server" 
+                                           LocalizedTag="USRSTATS_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                            <div class="input-group">
+                                <asp:TextBox CssClass="form-control" runat="server" ID="BoardUserStatsCacheTimeout" />
+                                <YAF:ThemeButton Type="Primary" ID="BoardUserStatsCacheReset" 
+                                                 TextLocalizedTag="CLEAR"  runat="server" 
+                                                 Icon="trash"
+                                                 OnClick="BoardUserStatsCacheResetClick" />
+                            </div>
+                        </div>
+                    <div class="mb-3">
+                        <YAF:HelpLabel ID="HelpLabel43" runat="server" 
+                                       LocalizedTag="DISCUSSIONS_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                        <div class="input-group">
+                            <asp:TextBox CssClass="form-control" runat="server" ID="ActiveDiscussionsCacheTimeout" />
+                            <YAF:ThemeButton Type="Primary" ID="ActiveDiscussionsCacheReset" 
+                                             TextLocalizedTag="CLEAR"  
+                                             runat="server" 
+                                             Icon="trash"
+                                             OnClick="ActiveDiscussionsCacheResetClick" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <YAF:HelpLabel ID="HelpLabel44" runat="server" 
+                                       LocalizedTag="CAT_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                        <div class="input-group">
+                            <asp:TextBox CssClass="form-control" runat="server" ID="BoardCategoriesCacheTimeout" />
+                            <YAF:ThemeButton Type="Primary" ID="BoardCategoriesCacheReset" 
+                                             TextLocalizedTag="CLEAR"  runat="server" 
+                                             Icon="trash"
+                                             OnClick="BoardCategoriesCacheResetClick" />
+                        </div>
+                    </div>
+                        <div class="mb-3">
+                            <YAF:HelpLabel ID="HelpLabel45" runat="server" 
+                                           LocalizedTag="MOD_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                            <div class="input-group">
+                                <asp:TextBox CssClass="form-control" runat="server" ID="BoardModeratorsCacheTimeout" />
+                                <YAF:ThemeButton Type="Primary" ID="BoardModeratorsCacheReset" 
+                                                 TextLocalizedTag="CLEAR"  runat="server" 
+                                                 Icon="trash"
+                                                 OnClick="BoardModeratorsCacheResetClick" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <YAF:HelpLabel ID="HelpLabel47" runat="server" 
+                                           LocalizedTag="SEO_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                            <asp:TextBox CssClass="form-control" runat="server" ID="FirstPostCacheTimeout" />
+                        </div>
+                        <div class="mb-3">
+                            <YAF:HelpLabel ID="HelpLabel48" runat="server" 
+                                           LocalizedTag="ONLINE_STATUS_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                            <asp:TextBox runat="server" ID="OnlineStatusCacheTimeout"
+                                         CssClass="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <YAF:HelpLabel ID="HelpLabel49" runat="server" 
+                                           LocalizedTag="LAZY_CACHE_TIMEOUT" LocalizedPage="ADMIN_HOSTSETTINGS" />
+                            <div class="input-group">
+                                <asp:TextBox runat="server" ID="ActiveUserLazyDataCacheTimeout"
+                                             CssClass="form-control" />
+            
+                                <YAF:ThemeButton Type="Primary" ID="ActiveUserLazyDataCacheReset" 
+                                                 TextLocalizedTag="CLEAR" runat="server" 
+                                                 Icon="trash"
+                                                 OnClick="UserLazyDataCacheResetClick" />
+                            </div>
+                        </div>
                     </div>
                     <div class="card-footer text-lg-center">
                         <YAF:ThemeButton  Type="Primary" runat="server" ID="ResetCacheAll" 
@@ -1937,7 +1896,7 @@
                     <div class="card-header">
                         <YAF:IconHeader runat="server"
                                         IconName="cog"
-                                        LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                        LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                         - <YAF:LocalizedLabel ID="LocalizedLabel76" runat="server" 
                                               LocalizedTag="HEADER_SEARCH" 
                                               LocalizedPage="ADMIN_HOSTSETTINGS" />
@@ -1991,7 +1950,7 @@
                 <div class="card-header">
                     <YAF:IconHeader runat="server"
                                     IconName="cog"
-                                    LocalizedPage="ADMIN_HOSTSETTING"></YAF:IconHeader>
+                                    LocalizedPage="ADMIN_HOSTSETTINGS"></YAF:IconHeader>
                     - <YAF:LocalizedLabel ID="LocalizedLabel78" runat="server" 
                                           LocalizedTag="HEADER_LOG" 
                                           LocalizedPage="ADMIN_HOSTSETTINGS" />

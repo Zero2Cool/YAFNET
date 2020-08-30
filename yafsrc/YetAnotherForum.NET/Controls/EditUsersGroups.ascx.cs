@@ -34,7 +34,6 @@ namespace YAF.Controls
 
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
-    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -164,15 +163,15 @@ namespace YAF.Controls
                 }
 
                 // add/remove user from roles in membership provider
-                if (isChecked && !AspNetRolesHelper.IsUserInRole(user, roleName))
+                if (isChecked && !this.Get<IAspNetRolesHelper>().IsUserInRole(user, roleName))
                 {
-                    AspNetRolesHelper.AddUserToRole(user, roleName);
+                    this.Get<IAspNetRolesHelper>().AddUserToRole(user, roleName);
 
                     addedRoles.Add(roleName);
                 }
-                else if (!isChecked && AspNetRolesHelper.IsUserInRole(user, roleName))
+                else if (!isChecked && this.Get<IAspNetRolesHelper>().IsUserInRole(user, roleName))
                 {
-                    AspNetRolesHelper.RemoveUserFromRole(user.Id, roleName);
+                    this.Get<IAspNetRolesHelper>().RemoveUserFromRole(user.Id, roleName);
 
                     removedRoles.Add(roleName);
                 }
@@ -194,9 +193,6 @@ namespace YAF.Controls
                     this.Get<ISendNotification>().SendRoleUnAssignmentNotification(user, removedRoles);
                 }
             }
-
-            // update forum moderators cache just in case something was changed...
-            this.Get<IDataCache>().Remove(Constants.Cache.ForumModerators);
 
             // clear the cache for this user...
             this.Get<IRaiseEvent>().Raise(new UpdateUserEvent(this.CurrentUserID));

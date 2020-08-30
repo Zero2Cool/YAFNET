@@ -172,11 +172,6 @@ namespace YAF.Types.Constants
             public const string UserSignatureCache = "UserSignatureCache";
 
             /// <summary>
-            ///   The users display name collection.
-            /// </summary>
-            public const string UsersDisplayNameCollection = "UsersDisplayNameCollection";
-
-            /// <summary>
             ///   The users online status.
             /// </summary>
             public const string UsersOnlineStatus = "UsersOnlineStatus";
@@ -190,6 +185,16 @@ namespace YAF.Types.Constants
             /// The YAF Cache key.
             /// </summary>
             public const string YafCacheKey = "YAFCACHE";
+
+            /// <summary>
+            /// The version.
+            /// </summary>
+            public const string Version = "DBVersion";
+
+            /// <summary>
+            ///   Admin Page Access List.
+            /// </summary>
+            public const string AdminPageAccess = "AdminPageAccess{0}";
 
             #endregion
         }

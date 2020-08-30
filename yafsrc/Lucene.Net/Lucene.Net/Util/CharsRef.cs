@@ -1,7 +1,8 @@
 using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using WritableArrayAttribute = YAF.Lucene.Net.Support.WritableArrayAttribute;
 
@@ -41,12 +42,8 @@ namespace YAF.Lucene.Net.Util
     {
         /// <summary>
         /// An empty character array for convenience </summary>
-        public static readonly char[] EMPTY_CHARS =
-#if FEATURE_ARRAYEMPTY
-            Array.Empty<char>();
-#else
-            new char[0];
-#endif
+        public static readonly char[] EMPTY_CHARS = Arrays.Empty<char>();
+
         bool ICharSequence.HasValue => true;
 
         /// <summary>
@@ -102,7 +99,7 @@ namespace YAF.Lucene.Net.Util
             this.chars = chars;
             this.Offset = offset;
             this.Length = length;
-            Debug.Assert(IsValid());
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsValid());
         }
 
         /// <summary>
@@ -231,7 +228,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public void Grow(int newLength)
         {
-            Debug.Assert(Offset == 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(Offset == 0);
             if (chars.Length < newLength)
             {
                 chars = ArrayUtil.Grow(chars, newLength);
@@ -281,7 +278,7 @@ namespace YAF.Lucene.Net.Util
         //    // NOTE: must do a real check here to meet the specs of CharSequence
         //    if (index < 0 || index >= Length)
         //    {
-        //        throw new System.IndexOutOfRangeException();
+        //        throw new IndexOutOfRangeException();
         //    }
         //    return Chars[Offset + index];
         //}
@@ -305,7 +302,7 @@ namespace YAF.Lucene.Net.Util
             // NOTE: must do a real check here to meet the specs of CharSequence
             //if (start < 0 || end > Length || start > end)
             //{
-            //    throw new System.IndexOutOfRangeException();
+            //    throw new IndexOutOfRangeException();
             //}
 
             // LUCENENET specific - changed semantics from start/end to startIndex/length to match .NET

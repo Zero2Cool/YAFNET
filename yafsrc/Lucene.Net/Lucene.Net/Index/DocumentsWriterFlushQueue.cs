@@ -1,7 +1,8 @@
 using J2N.Threading.Atomic;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support.Threading;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading;
 
 namespace YAF.Lucene.Net.Index
 {
@@ -29,7 +30,7 @@ namespace YAF.Lucene.Net.Index
     /// </summary>
     internal class DocumentsWriterFlushQueue
     {
-        private readonly LinkedList<FlushTicket> queue = new LinkedList<FlushTicket>();
+        private readonly Queue<FlushTicket> queue = new Queue<FlushTicket>();
 
         // we track tickets separately since count must be present even before the ticket is
         // constructed ie. queue.size would not reflect it.
@@ -46,7 +47,7 @@ namespace YAF.Lucene.Net.Index
                 bool success = false;
                 try
                 {
-                    queue.AddLast(new GlobalDeletesTicket(deleteQueue.FreezeGlobalBuffer(null)));
+                    queue.Enqueue(new GlobalDeletesTicket(deleteQueue.FreezeGlobalBuffer(null)));
                     success = true;
                 }
                 finally
@@ -62,13 +63,13 @@ namespace YAF.Lucene.Net.Index
         private void IncTickets()
         {
             int numTickets = ticketCount.IncrementAndGet();
-            Debug.Assert(numTickets > 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numTickets > 0);
         }
 
         private void DecTickets()
         {
             int numTickets = ticketCount.DecrementAndGet();
-            Debug.Assert(numTickets >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numTickets >= 0);
         }
 
         internal virtual SegmentFlushTicket AddFlushTicket(DocumentsWriterPerThread dwpt)
@@ -83,7 +84,7 @@ namespace YAF.Lucene.Net.Index
                 {
                     // prepare flush freezes the global deletes - do in synced block!
                     SegmentFlushTicket ticket = new SegmentFlushTicket(dwpt.PrepareFlush());
-                    queue.AddLast(ticket);
+                    queue.Enqueue(ticket);
                     success = true;
                     return ticket;
                 }
@@ -120,14 +121,14 @@ namespace YAF.Lucene.Net.Index
         {
             get
             {
-                Debug.Assert(ticketCount >= 0, "ticketCount should be >= 0 but was: " + ticketCount);
+                if (Debugging.AssertsEnabled) Debugging.Assert(ticketCount >= 0, () => "ticketCount should be >= 0 but was: " + ticketCount);
                 return ticketCount != 0;
             }
         }
 
         private int InnerPurge(IndexWriter writer)
         {
-            //Debug.Assert(PurgeLock.HeldByCurrentThread);
+            if (Debugging.AssertsEnabled) Debugging.Assert(purgeLock.IsHeldByCurrentThread);
             int numPurged = 0;
             while (true)
             {
@@ -135,7 +136,7 @@ namespace YAF.Lucene.Net.Index
                 bool canPublish;
                 lock (this)
                 {
-                    head = queue.Count <= 0 ? null : queue.First.Value;
+                    head = queue.Count <= 0 ? null : queue.Peek();
                     canPublish = head != null && head.CanPublish; // do this synced
                 }
                 if (canPublish)
@@ -156,10 +157,9 @@ namespace YAF.Lucene.Net.Index
                         lock (this)
                         {
                             // finally remove the published ticket from the queue
-                            FlushTicket poll = queue.First.Value;
-                            queue.Remove(poll);
+                            FlushTicket poll = queue.Dequeue();
                             ticketCount.DecrementAndGet();
-                            Debug.Assert(poll == head);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(poll == head);
                         }
                     }
                 }
@@ -173,8 +173,11 @@ namespace YAF.Lucene.Net.Index
 
         internal virtual int ForcePurge(IndexWriter writer)
         {
-            //Debug.Assert(!Thread.HoldsLock(this));
-            //Debug.Assert(!Thread.holdsLock(writer));
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(!Monitor.IsEntered(this));
+                Debugging.Assert(!Monitor.IsEntered(writer));
+            }
             purgeLock.@Lock();
             try
             {
@@ -188,8 +191,11 @@ namespace YAF.Lucene.Net.Index
 
         internal virtual int TryPurge(IndexWriter writer)
         {
-            //Debug.Assert(!Thread.holdsLock(this));
-            //Debug.Assert(!Thread.holdsLock(writer));
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(!Monitor.IsEntered(this));
+                Debugging.Assert(!Monitor.IsEntered(writer));
+            }
             if (purgeLock.TryLock())
             {
                 try
@@ -222,7 +228,7 @@ namespace YAF.Lucene.Net.Index
 
             protected FlushTicket(FrozenBufferedUpdates frozenUpdates)
             {
-                Debug.Assert(frozenUpdates != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(frozenUpdates != null);
                 this.m_frozenUpdates = frozenUpdates;
             }
 
@@ -238,8 +244,11 @@ namespace YAF.Lucene.Net.Index
             /// </summary>
             protected void PublishFlushedSegment(IndexWriter indexWriter, FlushedSegment newSegment, FrozenBufferedUpdates globalPacket)
             {
-                Debug.Assert(newSegment != null);
-                Debug.Assert(newSegment.segmentInfo != null);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(newSegment != null);
+                    Debugging.Assert(newSegment.segmentInfo != null);
+                }
                 FrozenBufferedUpdates segmentUpdates = newSegment.segmentUpdates;
                 //System.out.println("FLUSH: " + newSegment.segmentInfo.info.name);
                 if (indexWriter.infoStream.IsEnabled("DW"))
@@ -260,7 +269,7 @@ namespace YAF.Lucene.Net.Index
                 // Finish the flushed segment and publish it to IndexWriter
                 if (newSegment == null)
                 {
-                    Debug.Assert(bufferedUpdates != null);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(bufferedUpdates != null);
                     if (bufferedUpdates != null && bufferedUpdates.Any())
                     {
                         indexWriter.PublishFrozenUpdates(bufferedUpdates);
@@ -286,7 +295,7 @@ namespace YAF.Lucene.Net.Index
 
             protected internal override void Publish(IndexWriter writer)
             {
-                Debug.Assert(!m_published, "ticket was already publised - can not publish twice");
+                if (Debugging.AssertsEnabled) Debugging.Assert(!m_published, "ticket was already publised - can not publish twice");
                 m_published = true;
                 // its a global ticket - no segment to publish
                 FinishFlush(writer, null, m_frozenUpdates);
@@ -307,20 +316,20 @@ namespace YAF.Lucene.Net.Index
 
             protected internal override void Publish(IndexWriter writer)
             {
-                Debug.Assert(!m_published, "ticket was already publised - can not publish twice");
+                if (Debugging.AssertsEnabled) Debugging.Assert(!m_published, "ticket was already publised - can not publish twice");
                 m_published = true;
                 FinishFlush(writer, segment, m_frozenUpdates);
             }
 
             internal void SetSegment(FlushedSegment segment) // LUCENENET NOTE: Made internal rather than protected because class is sealed
             {
-                Debug.Assert(!failed);
+                if (Debugging.AssertsEnabled) Debugging.Assert(!failed);
                 this.segment = segment;
             }
 
             internal void SetFailed() // LUCENENET NOTE: Made internal rather than protected because class is sealed
             {
-                Debug.Assert(segment == null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(segment == null);
                 failed = true;
             }
 

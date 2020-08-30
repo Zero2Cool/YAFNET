@@ -52,12 +52,14 @@
                                     <YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" 
                                                         LocalizedPage="POSTMESSAGE"
                                                         LocalizedTag="EDITEDBY" />: <YAF:UserLink ID="UserLink3" runat="server"
+                                                                                                  ReplaceName='<%# Container.DataItemToField<string>(this.PageContext.BoardSettings.EnableDisplayName ? "UserDisplayName" : "UserName") %>'
                                                                                                   Suspended='<%# Container.DataItemToField<DateTime?>("Suspended") %>'
                                                                                                   Style='<%# Container.DataItemToField<string>("UserStyle") %>'
                                                                                                   UserID='<%# Container.DataItemToField<int>("EditedBy") %>' />
                                     <asp:PlaceHolder runat="server" Visible="<%# this.PageContext.IsAdmin || this.Get<BoardSettings>().AllowModeratorsViewIPs && this.PageContext.ForumModeratorAccess%>">
-                                        <strong>
-                                            <%# this.GetText("IP") %>:</strong><a id="IPLink1" 
+                                        <span class="font-weight-bold mr-2">
+                                            <%# this.GetText("IP") %>:
+                                        </span><a id="IPLink1" 
                                                                                   href="<%# string.Format(this.Get<BoardSettings>().IPInfoPageURL, this.GetIpAddress(Container.DataItem)) %>"
                                                                                   title='<%# this.GetText("COMMON","TT_IPDETAILS") %>'
                                                                                   target="_blank" runat="server"><%# this.GetIpAddress(Container.DataItem) %></a>
@@ -92,6 +94,7 @@
                             <i class="fas fa-equals"></i>&nbsp;<%# this.GetText("MESSAGEHISTORY","COMPARE_VERSIONS") %>
                         </a>            
                         <YAF:ThemeButton ID="ReturnBtn" 
+                                         CssClass="mb-1"
                                          OnClick="ReturnBtn_OnClick"
                                          TextLocalizedTag="TOMESSAGE" 
                                          Visible="false" 
@@ -100,6 +103,7 @@
                                          runat="server">
                         </YAF:ThemeButton>
                         <YAF:ThemeButton ID="ReturnModBtn"  
+                                         CssClass="mb-1"
                                          OnClick="ReturnModBtn_OnClick"
                                          TextLocalizedTag="GOMODERATE" 
                                          Visible="false" 

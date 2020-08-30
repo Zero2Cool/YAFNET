@@ -109,7 +109,7 @@ namespace YAF.Pages
             this.PageLinks.AddRoot();
             this.PageLinks.AddUser(
                 this.UserID,
-                this.Get<IUserDisplayName>().GetName(userHe));
+                userHe.DisplayOrUserName());
             this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
 
             if (this.UserID == this.PageContext.PageUserID)
@@ -120,7 +120,7 @@ namespace YAF.Pages
             else
             {
                 // get full user data...
-                var userDataHe = this.Get<IAspNetUsersHelper>().GetMembershipUserById(this.UserID);
+                var userDataHe = this.Get<IAspNetUsersHelper>().GetUser(userHe.ProviderUserKey);
 
                 var serverHe = userDataHe.Profile_XMPP
                     .Substring(userDataHe.Profile_XMPP.IndexOf("@", StringComparison.Ordinal) + 1).Trim();

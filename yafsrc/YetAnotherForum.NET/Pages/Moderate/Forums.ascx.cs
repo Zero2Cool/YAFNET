@@ -34,6 +34,7 @@ namespace YAF.Pages.Moderate
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -113,21 +114,21 @@ namespace YAF.Pages.Moderate
         /// </summary>
         protected void BindData()
         {
-            this.PagerTop.PageSize = this.Get<BoardSettings>().TopicsPerPage;
+            this.PagerTop.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
-            var baseSize = this.Get<BoardSettings>().TopicsPerPage;
+            var baseSize = this.PagerTop.PageSize;
             var currentPageIndex = this.PagerTop.CurrentPageIndex;
 
             var topicList = this.GetRepository<Topic>().ListAsDataTable(
                 this.PageContext.PageForumID,
-                null,
+                this.PageContext.PageUserID,
                 DateTimeHelper.SqlDbMinTime(),
                 DateTime.UtcNow,
                 currentPageIndex,
                 baseSize,
                 false,
                 true,
-                false);
+                true);
 
             this.topiclist.DataSource = topicList;
             this.UserList.DataSource = this.GetRepository<UserForum>().List(null, this.PageContext.PageForumID);
@@ -255,8 +256,6 @@ namespace YAF.Pages.Moderate
 
             if (!this.IsPostBack)
             {
-                this.PagerTop.PageSize = 25;
-
                 var showMoved = this.Get<BoardSettings>().ShowMoved;
 
                 // Ederon : 7/14/2007 - by default, leave pointer is set on value defined on host level
@@ -271,6 +270,25 @@ namespace YAF.Pages.Moderate
                 }
             }
 
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
+            this.BindData();
+        }
+
+        /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
             this.BindData();
         }
 
@@ -321,8 +339,6 @@ namespace YAF.Pages.Moderate
 
                     this.BindData();
 
-                    // clear moderators cache
-                    this.Get<IDataCache>().Remove(Constants.Cache.ForumModerators);
                     break;
             }
         }

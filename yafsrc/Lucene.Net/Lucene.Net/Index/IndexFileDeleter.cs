@@ -1,11 +1,10 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Reflection;
 
 namespace YAF.Lucene.Net.Index
 {
@@ -122,14 +121,6 @@ namespace YAF.Lucene.Net.Index
             //LUCENENET TODO: This always returns true - probably incorrect
             writer == null || true /*Monitor.IsEntered(writer)*/;
 
-        // LUCENENET specific - optimized empty array creation
-        private static readonly string[] EMPTY_STRINGS =
-#if FEATURE_ARRAYEMPTY
-            Array.Empty<string>();
-#else
-            new string[0];
-#endif
-
         /// <summary>
         /// Initialize the deleter: find all previous commits in
         /// the <see cref="Directory"/>, incref the files they reference, call
@@ -166,7 +157,7 @@ namespace YAF.Lucene.Net.Index
 #pragma warning restore 168
             {
                 // it means the directory is empty, so ignore it.
-                files = EMPTY_STRINGS;
+                files = Arrays.Empty<string>();
             }
 
             if (currentSegmentsFile != null)
@@ -414,7 +405,7 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public void Refresh(string segmentName)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
 
             string[] files = directory.ListAll();
             string segmentPrefix1;
@@ -455,7 +446,7 @@ namespace YAF.Lucene.Net.Index
             // Set to null so that we regenerate the list of pending
             // files; else we can accumulate same file more than
             // once
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             deletable = null;
             Refresh(null);
         }
@@ -463,7 +454,7 @@ namespace YAF.Lucene.Net.Index
         public void Dispose()
         {
             // DecRef old files from the last checkpoint, if any:
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
 
             if (lastFiles.Count > 0)
             {
@@ -485,7 +476,7 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         internal void RevisitPolicy()
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             if (infoStream.IsEnabled("IFD"))
             {
                 infoStream.Message("IFD", "now revisitPolicy");
@@ -500,7 +491,7 @@ namespace YAF.Lucene.Net.Index
 
         public void DeletePendingFiles()
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             if (deletable != null)
             {
                 IList<string> oldDeletable = deletable;
@@ -539,9 +530,9 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public void Checkpoint(SegmentInfos segmentInfos, bool isCommit)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
 
-            //Debug.Assert(Thread.holdsLock(Writer));
+            if (Debugging.AssertsEnabled) Debugging.Assert(Monitor.IsEntered(writer));
             long t0 = 0;
             if (infoStream.IsEnabled("IFD"))
             {
@@ -585,7 +576,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void IncRef(SegmentInfos segmentInfos, bool isCommit)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             // If this is a commit point, also incRef the
             // segments_N file:
             foreach (string fileName in segmentInfos.GetFiles(directory, isCommit))
@@ -596,7 +587,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void IncRef(ICollection<string> files)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             foreach (string file in files)
             {
                 IncRef(file);
@@ -605,7 +596,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void IncRef(string fileName)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             RefCount rc = GetRefCount(fileName);
             if (infoStream.IsEnabled("IFD"))
             {
@@ -619,7 +610,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void DecRef(ICollection<string> files)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             foreach (string file in files)
             {
                 DecRef(file);
@@ -628,7 +619,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void DecRef(string fileName)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             RefCount rc = GetRefCount(fileName);
             if (infoStream.IsEnabled("IFD"))
             {
@@ -648,7 +639,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void DecRef(SegmentInfos segmentInfos)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             foreach (string file in segmentInfos.GetFiles(directory, false))
             {
                 DecRef(file);
@@ -657,14 +648,14 @@ namespace YAF.Lucene.Net.Index
 
         public bool Exists(string fileName)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             // LUCENENET: Using TryGetValue to eliminate extra lookup
-            return refCounts.TryGetValue(fileName, out RefCount value) ? value.count > 0 : false;
+            return refCounts.TryGetValue(fileName, out RefCount value) && value.count > 0;
         }
 
         private RefCount GetRefCount(string fileName)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             // LUCENENET: Using TryGetValue to eliminate extra lookup
             if (!refCounts.TryGetValue(fileName, out RefCount rc))
             {
@@ -676,7 +667,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void DeleteFiles(IList<string> files)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             foreach (string file in files)
             {
                 DeleteFile(file);
@@ -689,7 +680,7 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         internal void DeleteNewFiles(ICollection<string> files)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             foreach (string fileName in files)
             {
                 // NOTE: it's very unusual yet possible for the
@@ -714,7 +705,7 @@ namespace YAF.Lucene.Net.Index
 
         internal void DeleteFile(string fileName)
         {
-            Debug.Assert(IsLocked);
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsLocked);
             EnsureOpen();
             try
             {
@@ -733,7 +724,7 @@ namespace YAF.Lucene.Net.Index
                 // the file is open in another process, and queue
                 // the file for subsequent deletion.
 
-                //Debug.Assert(e.Message.Contains("cannot delete"));
+                //if (Debugging.AssertsEnabled) Debugging.Assert(e.Message.Contains("cannot delete"));
 
                 if (infoStream.IsEnabled("IFD"))
                 {
@@ -773,14 +764,14 @@ namespace YAF.Lucene.Net.Index
                 }
                 else
                 {
-                    Debug.Assert(count > 0, Thread.CurrentThread.Name + ": RefCount is 0 pre-increment for file \"" + fileName + "\"");
+                    if (Debugging.AssertsEnabled) Debugging.Assert(count > 0, () => Thread.CurrentThread.Name + ": RefCount is 0 pre-increment for file \"" + fileName + "\"");
                 }
                 return ++count;
             }
 
             public int DecRef()
             {
-                Debug.Assert(count > 0, Thread.CurrentThread.Name + ": RefCount is 0 pre-decrement for file \"" + fileName + "\"");
+                if (Debugging.AssertsEnabled) Debugging.Assert(count > 0, () => Thread.CurrentThread.Name + ": RefCount is 0 pre-decrement for file \"" + fileName + "\"");
                 return --count;
             }
         }

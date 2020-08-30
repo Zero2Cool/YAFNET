@@ -565,26 +565,6 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets Member ListPageSize.
-        /// </summary>
-        public int MemberListPageSize
-        {
-            get => this.Registry.GetValue("MemberListPageSize", 20);
-
-            set => this.Registry.SetValue("MemberListPageSize", value);
-        }
-
-        /// <summary>
-        /// Gets or sets MyTopics List PageSize.
-        /// </summary>
-        public int MyTopicsListPageSize
-        {
-            get => this.Registry.GetValue("MyTopicsListPageSize", 20);
-
-            set => this.Registry.SetValue("MyTopicsListPageSize", value);
-        }
-
-        /// <summary>
         /// Gets or sets PostLatestFeedAccess.
         /// </summary>
         public int PostLatestFeedAccess
@@ -735,16 +715,6 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets PostsPerPage.
-        /// </summary>
-        public int PostsPerPage
-        {
-            get => this.Registry.GetValue("PostsPerPage", 20);
-
-            set => this.Registry.SetValue("PostsPerPage", value);
-        }
-
-        /// <summary>
         /// Gets or sets the amount of Sub Forums In Forums List.
         /// </summary>
         public int SubForumsInForumList
@@ -755,13 +725,13 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets TopicsPerPage.
+        /// Gets or sets PostsPerPage.
         /// </summary>
-        public int TopicsPerPage
+        public int PostsPerPage
         {
-            get => this.Registry.GetValue("TopicsPerPage", 15);
+            get => this.Registry.GetValue("PostsPerPage", 20);
 
-            set => this.Registry.SetValue("TopicsPerPage", value);
+            set => this.Registry.SetValue("PostsPerPage", value);
         }
 
         /// <summary>

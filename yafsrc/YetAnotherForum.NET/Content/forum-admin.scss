@@ -17,8 +17,9 @@
 @import "forum/user-albums.scss";
 @import "forum/cookie-alert.scss";
 @import "forum/button-scroll.scss";
+@import "forum/editor.scss";
 
-// -- Main
+// Main
 #YafBody {
     padding-right: 15px;
     padding-left: 15px;
@@ -26,49 +27,21 @@
     margin-left: auto;
 }
 
-// -- Main Menu
-.dropdown-submenu {
-    position: relative;
-}
-
-.dropdown-submenu .dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -1px;
-}
-
 .list-inline {
     margin: 0;
 }
 
-// --Pager
+// Pager
 .gotoPageForm {
     z-index: 99999;
 }
 
-// --Spinner Input
+// Spinner Input
 .bootstrap-touchspin {
     width: 250px;
 }
 
-// user search
-.user-search-dropdown {
-    .form-control {
-        width: inherit;
-    }
-}
-
-// pagination
-.pagination {
-    margin-bottom: 0.30rem;
-}
-
-// menu dropdown
-.dropdown-menu > li > span > a {
-    color: #333;
-}
-
-// --Event log
+// Event log
 .pre-scrollable {
     overflow: auto;
     white-space: pre-line;
@@ -92,7 +65,7 @@
     left: 16px;
 }
 
-/* TABS */
+// Tabs
 .tab-content {
     padding-top: 10px;
 }

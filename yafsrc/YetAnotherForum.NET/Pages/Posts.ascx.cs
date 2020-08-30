@@ -365,7 +365,7 @@ namespace YAF.Pages
         {
             if (!this.PageContext.IsGuest)
             {
-                if (this.PageContext.CurrentUser.Activity)
+                if (this.PageContext.User.Activity)
                 {
                     this.GetRepository<Activity>().UpdateTopicNotification(
                         this.PageContext.PageUserID,
@@ -903,7 +903,6 @@ namespace YAF.Pages
 
             var firstPost = rowList.First();
 
-            // set the sorting
             this.Pager.Count = firstPost.Field<int>("TotalRows");
 
             if (findMessageId > 0)
@@ -1013,10 +1012,12 @@ namespace YAF.Pages
                             {
                                 // find first unread message
                                 var lastRead = !this.PageContext.IsCrawler
-                                                   ? this.Get<IReadTrackCurrentUser>().GetForumTopicRead(
-                                                       this.PageContext.PageForumID,
-                                                       this.PageContext.PageTopicID)
-                                                   : DateTime.UtcNow;
+                                    ? this.Get<IReadTrackCurrentUser>().GetForumTopicRead(
+                                        this.PageContext.PageForumID,
+                                        this.PageContext.PageTopicID,
+                                        null,
+                                        null)
+                                    : DateTime.UtcNow;
 
                                 using (var unread = this.GetRepository<Message>().FindUnreadAsDataTable(
                                     this.PageContext.PageTopicID,
@@ -1038,7 +1039,7 @@ namespace YAF.Pages
                                         findMessageId = unreadFirst.Field<int>("MessageID");
                                         messagePosition = unreadFirst.Field<int>("MessagePosition");
 
-                                        if (this.Get<HttpRequestBase>().QueryString.Exists("m") && this.PageContext.CurrentUser.Activity)
+                                        if (this.Get<HttpRequestBase>().QueryString.Exists("m") && this.PageContext.User.Activity)
                                         {
                                             this.GetRepository<Activity>().UpdateNotification(this.PageContext.PageUserID, findMessageId);
                                         }

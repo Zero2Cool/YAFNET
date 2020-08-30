@@ -28,11 +28,10 @@ namespace YAF.Pages
 
     using System;
 
-    using YAF.Configuration;
     using YAF.Core.BasePages;
+    using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Constants;
-    using YAF.Types.Interfaces;
     using YAF.Utils;
     using YAF.Web.Extensions;
 
@@ -70,7 +69,7 @@ namespace YAF.Pages
                 return;
             }
 
-            this.ActivityPlaceHolder.Visible = this.PageContext.CurrentUser.Activity;
+            this.ActivityPlaceHolder.Visible = this.PageContext.User.Activity;
         }
 
         /// <summary>
@@ -79,9 +78,7 @@ namespace YAF.Pages
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser),
-                BuildLink.GetLink(ForumPages.MyAccount));
+            this.PageLinks.AddLink(this.PageContext.User.DisplayOrUserName(), BuildLink.GetLink(ForumPages.MyAccount));
         }
 
         #endregion

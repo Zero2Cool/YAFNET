@@ -27,10 +27,12 @@ namespace YAF.Controls
     #region Using
 
     using System;
+    using System.Data;
     using System.Web.UI;
     using System.Web.UI.WebControls;
 
     using YAF.Core.BaseControls;
+    using YAF.Core.Helpers;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -66,6 +68,11 @@ namespace YAF.Controls
         /// </summary>
         public int Count { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Friends Table.
+        /// </summary>
+        public DataTable FriendsTable { get; set; }
+
         #endregion
 
         #region Methods
@@ -84,6 +91,25 @@ namespace YAF.Controls
                 return;
             }
 
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
+            this.BindData();
+        }
+
+        /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
             this.BindData();
         }
 
@@ -154,7 +180,7 @@ namespace YAF.Controls
                     break;
             }
 
-            // Update all buddy list controls in cp_editbuddies.ascx page.
+            // Update all buddy list controls in Friends.ascx page.
             this.UpdateBuddyList(this.Container.FindControlRecursiveAs<BuddyList>("BuddyList1"), 2);
             this.UpdateBuddyList(this.Container.FindControlRecursiveAs<BuddyList>("PendingBuddyList"), 3);
             this.UpdateBuddyList(this.Container.FindControlRecursiveAs<BuddyList>("BuddyRequested"), 4);
@@ -211,14 +237,29 @@ namespace YAF.Controls
         }
 
         /// <summary>
+        /// Renders the Icon Header Text
+        /// </summary>
+        protected string GetHeaderText()
+        {
+            return this.Mode switch
+            {
+                1 => this.GetText("FRIENDS", "BUDDYLIST"),
+                2 => this.GetText("FRIENDS", "BUDDYLIST"),
+                3 => this.GetText("FRIENDS", "PENDING_REQUESTS"),
+                4 => this.GetText("FRIENDS", "YOUR_REQUESTS"),
+                _ => this.GetText("FRIENDS", "BUDDYLIST")
+            };
+        }
+
+        /// <summary>
         /// The bind data.
         /// </summary>
         private void BindData()
         {
-            this.Pager.PageSize = 20;
+            this.Pager.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
             // set the Data table
-            var buddyListDataTable = this.Get<IFriends>().GetForUser(this.CurrentUserID);
+            var buddyListDataTable = this.FriendsTable;
 
             if (buddyListDataTable != null && buddyListDataTable.HasRows())
             {
@@ -228,13 +269,13 @@ namespace YAF.Controls
                 // In what mode should this control work?
                 // Refer to "rptBuddy_ItemCreate" event for more info.
                 buddyListDataView.RowFilter = this.Mode switch
-                    {
-                        1 => "Approved = 1",
-                        2 => "Approved = 1",
-                        3 => $"Approved = 0 AND FromUserID <> {this.CurrentUserID}",
-                        4 => $"Approved = 0 AND FromUserID = {this.CurrentUserID}",
-                        _ => buddyListDataView.RowFilter
-                    };
+                {
+                    1 => "Approved = 1",
+                    2 => "Approved = 1",
+                    3 => $"Approved = 0 AND FromUserID <> {this.CurrentUserID}",
+                    4 => $"Approved = 0 AND FromUserID = {this.CurrentUserID}",
+                    _ => buddyListDataView.RowFilter
+                };
 
                 this.Pager.Count = buddyListDataView.Count;
 

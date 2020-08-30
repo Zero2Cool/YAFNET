@@ -1,12 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="UserMenu.ascx.cs" Inherits="YAF.Controls.UserMenu" %>
 <%@ Import Namespace="YAF.Types.Constants" %>
+<%@ Import Namespace="YAF.Core.Extensions" %>
 
 <li class="nav-item dropdown">
     <YAF:Themebutton runat="server" ID="UserDropDown">
         <span class="badge bg-light text-dark p-0 border border-light mr-1">
             <asp:Image runat="server" ID="UserAvatar" CssClass="img-navbar-avatar rounded"/>
         </span>
-        <%= this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser) %>
+        <%= this.PageContext.User.DisplayOrUserName() %>
         <asp:PlaceHolder runat="server" id="UnreadPlaceHolder">
             <asp:Label runat="server" ID="UnreadLabel" 
                        CssClass="ml-1 badge bg-danger">
@@ -38,10 +39,13 @@
         <asp:PlaceHolder ID="MyTopicItem" runat="server"></asp:PlaceHolder>
         <asp:PlaceHolder ID="LogutItem" runat="server" Visible="false">
             <div class="dropdown-divider"></div>
-            <asp:LinkButton ID="LogOutButton" runat="server" 
-                            CssClass="dropdown-item"
-                            OnClick="LogOutClick">
-            </asp:LinkButton>
+            <YAF:ThemeButton ID="LogOutButton" runat="server" 
+                             TextLocalizedTag="LOGOUT"
+                             TextLocalizedPage="TOOLBAR"
+                             TitleLocalizedTag="LOGOUT"
+                             Icon="sign-out-alt"
+                             CssClass="dropdown-item">
+            </YAF:ThemeButton>
         </asp:PlaceHolder>
     </div>
 </li>

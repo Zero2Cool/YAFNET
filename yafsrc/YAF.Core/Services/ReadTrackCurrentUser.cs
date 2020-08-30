@@ -158,7 +158,7 @@ namespace YAF.Core.Services
         /// <returns>
         ///     Returns the DateTime object from the Forum ID.
         /// </returns>
-        public System.DateTime GetForumRead(int forumId, System.DateTime? readTimeOverride = null)
+        public System.DateTime GetForumRead(int forumId, System.DateTime? readTimeOverride)
         {
             System.DateTime? readTime;
 
@@ -167,13 +167,14 @@ namespace YAF.Core.Services
                 if (readTimeOverride.HasValue)
                 {
                     // use it if it's not the min value...
-                    readTime = readTimeOverride.Value > DateTimeHelper.SqlDbMinTime()
+                    /*readTime = readTimeOverride.Value > DateTimeHelper.SqlDbMinTime()
                                    ? readTimeOverride.Value
-                                   : this.GetRepository<ForumReadTracking>().Lastread(this.CurrentUserId, forumId);
+                                   : this.GetRepository<ForumReadTracking>().LastRead(this.CurrentUserId, forumId);*/
+                    readTime = readTimeOverride.Value;
                 }
                 else
                 {
-                    readTime = this.GetRepository<ForumReadTracking>().Lastread(this.CurrentUserId, forumId);
+                    readTime = this.GetRepository<ForumReadTracking>().LastRead(this.CurrentUserId, forumId);
                 }
             }
             else
@@ -192,7 +193,7 @@ namespace YAF.Core.Services
         /// <returns>
         ///     Returns the DateTime object from the topicID.
         /// </returns>
-        public System.DateTime GetTopicRead(int topicId, System.DateTime? readTimeOverride = null)
+        public System.DateTime GetTopicRead(int topicId, System.DateTime? readTimeOverride)
         {
             System.DateTime? readTime;
 
@@ -201,14 +202,16 @@ namespace YAF.Core.Services
                 if (readTimeOverride.HasValue)
                 {
                     // use it if it's not the min value...
-                    readTime = readTimeOverride.Value > DateTimeHelper.SqlDbMinTime()
+                    /*readTime = readTimeOverride.Value > DateTimeHelper.SqlDbMinTime()
                                    ? readTimeOverride.Value
-                                   : this.GetRepository<TopicReadTracking>().Lastread(this.CurrentUserId, topicId);
+                                   : this.GetRepository<TopicReadTracking>().LastRead(this.CurrentUserId, topicId);*/
+
+                    readTime = readTimeOverride.Value;
                 }
                 else
                 {
                     // last option is to load from the forum...
-                    readTime = this.GetRepository<TopicReadTracking>().Lastread(this.CurrentUserId, topicId);
+                    readTime = this.GetRepository<TopicReadTracking>().LastRead(this.CurrentUserId, topicId);
                 }
             }
             else

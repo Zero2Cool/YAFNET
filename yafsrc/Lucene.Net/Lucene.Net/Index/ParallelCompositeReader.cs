@@ -1,7 +1,8 @@
 using J2N.Runtime.CompilerServices;
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using JCG = J2N.Collections.Generic;
 
@@ -53,14 +54,6 @@ namespace YAF.Lucene.Net.Index
         private readonly bool closeSubReaders;
         private readonly ISet<IndexReader> completeReaderSet = new JCG.HashSet<IndexReader>(IdentityEqualityComparer<IndexReader>.Default);
 
-        // LUCENENET specific - optimized empty array creation
-        private static readonly IndexReader[] EMPTY_INDEXREADERS =
-#if FEATURE_ARRAYEMPTY
-            Array.Empty<IndexReader>();
-#else
-            new IndexReader[0];
-#endif
-
         /// <summary>
         /// Create a <see cref="ParallelCompositeReader"/> based on the provided
         /// readers; auto-disposes the given <paramref name="readers"/> on <see cref="IndexReader.Dispose()"/>.
@@ -111,7 +104,7 @@ namespace YAF.Lucene.Net.Index
                     throw new ArgumentException("There must be at least one main reader if storedFieldsReaders are used.");
                 }
                 // LUCENENET: Optimized empty string array creation
-                return EMPTY_INDEXREADERS;
+                return Arrays.Empty<IndexReader>();
             }
             else
             {
@@ -152,7 +145,7 @@ namespace YAF.Lucene.Net.Index
                     }
                     else
                     {
-                        Debug.Assert(firstSubReaders[i] is CompositeReader);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(firstSubReaders[i] is CompositeReader);
                         CompositeReader[] compositeSubs = new CompositeReader[readers.Length];
                         for (int j = 0; j < readers.Length; j++)
                         {

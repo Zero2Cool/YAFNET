@@ -63,7 +63,7 @@ namespace YAF.Core.Model
             string reason,
             int? boardId = null)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             if (id.HasValue)
             {
@@ -82,8 +82,8 @@ namespace YAF.Core.Model
                 if (banned == null)
                 {
                     repository.Insert(
-                        new BannedName()
-                            {
+                        new BannedName
+                        {
                                 BoardID = boardId ?? repository.BoardID,
                                 Mask = mask,
                                 Reason = reason,

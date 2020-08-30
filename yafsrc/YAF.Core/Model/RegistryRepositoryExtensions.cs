@@ -32,6 +32,7 @@ namespace YAF.Core.Model
     using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
+    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
@@ -52,7 +53,7 @@ namespace YAF.Core.Model
         /// </param>
         public static void IncrementDeniedRegistrations(this IRepository<Registry> repository)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             BoardContext.Current.Get<BoardSettings>().DeniedRegistrations++;
 
@@ -70,7 +71,7 @@ namespace YAF.Core.Model
         /// </param>
         public static void IncrementBannedUsers(this IRepository<Registry> repository)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             BoardContext.Current.Get<BoardSettings>().BannedUsers++;
 
@@ -88,7 +89,7 @@ namespace YAF.Core.Model
         /// </param>
         public static void IncrementReportedSpammers(this IRepository<Registry> repository)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             BoardContext.Current.Get<BoardSettings>().ReportedSpammers++;
 
@@ -128,7 +129,7 @@ namespace YAF.Core.Model
             object settingValue,
             int? boardId = null)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             repository.DbFunction.Query.registry_save(Name: settingName, Value: settingValue, BoardID: boardId);
 
@@ -146,7 +147,7 @@ namespace YAF.Core.Model
         /// </returns>
         public static string GetDbVersionName(this IRepository<Registry> repository)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             return repository.GetSingle(r => r.Name.ToLower() == "versionname").Value;
         }
@@ -162,7 +163,7 @@ namespace YAF.Core.Model
         /// </returns>
         public static int GetDbVersion(this IRepository<Registry> repository)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             int version;
 
@@ -201,15 +202,15 @@ namespace YAF.Core.Model
         /// </returns>
         public static string ValidateVersion(this IRepository<Registry> repository, int appVersion)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var redirect = string.Empty;
 
             try
             {
-                var registry = repository.GetSingle(r => r.Name.ToLower() == "version");
-
-                var registryVersion = registry.Value.ToType<int>();
+                var registryVersion = BoardContext.Current.Get<IDataCache>().GetOrSet(
+                    Constants.Cache.Version,
+                    () => repository.GetSingle(r => r.Name.ToLower() == "version").Value.ToType<int>());
 
                 if (registryVersion < appVersion)
                 {

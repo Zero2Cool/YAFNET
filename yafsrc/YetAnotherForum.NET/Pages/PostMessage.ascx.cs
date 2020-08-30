@@ -119,7 +119,7 @@ namespace YAF.Pages
         /// <summary>
         ///   Gets TopicID.
         /// </summary>
-        protected int? TopicId => this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAsInt("t");
+        protected int TopicId => this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("t");
 
         #endregion
 
@@ -132,35 +132,12 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void Cancel_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (this.TopicId != null || this.EditMessageId.HasValue)
-            {
-                // reply to existing topic or editing of existing topic
-                BuildLink.Redirect(
-                    ForumPages.Posts,
-                    "t={0}&name={1}",
-                    this.PageContext.PageTopicID,
-                    this.PageContext.PageTopicName);
-            }
-            else
-            {
-                // new topic -- cancel back to forum
-                BuildLink.Redirect(
-                    ForumPages.Topics,
-                    "f={0}&name={1}",
-                    this.PageContext.PageForumID,
-                    this.PageContext.PageForumName);
-            }
-        }
-
-        /// <summary>
-        /// The get poll id.
-        /// </summary>
-        /// <returns>
-        /// Returns the Poll Id
-        /// </returns>
-        protected int? GetPollID()
-        {
-            return this.PollId;
+            // reply to existing topic or editing of existing topic
+            BuildLink.Redirect(
+                ForumPages.Posts,
+                "t={0}&name={1}",
+                this.PageContext.PageTopicID,
+                this.PageContext.PageTopicName);
         }
 
         /// <summary>
@@ -236,7 +213,7 @@ namespace YAF.Pages
             }
 
             if (!this.Get<IPermissions>().Check(this.PageContext.BoardSettings.AllowCreateTopicsSameName)
-                && this.GetRepository<Topic>().CheckForDuplicateTopic(this.TopicSubjectTextBox.Text.Trim()) && this.TopicId == null
+                && this.GetRepository<Topic>().CheckForDuplicateTopic(this.TopicSubjectTextBox.Text.Trim())
                 && !this.EditMessageId.HasValue)
             {
                 this.PageContext.AddLoadMessage(this.GetText("SUBJECT_DUPLICATE"), MessageTypes.warning);
@@ -244,7 +221,7 @@ namespace YAF.Pages
             }
 
             if ((!this.PageContext.IsGuest || !this.PageContext.BoardSettings.EnableCaptchaForGuests)
-                && (!this.PageContext.BoardSettings.EnableCaptchaForPost || this.PageContext.IsCaptchaExcluded)
+                && (!this.PageContext.BoardSettings.EnableCaptchaForPost || this.PageContext.User.UserFlags.IsCaptchaExcluded)
                 || CaptchaHelper.IsValid(this.tbCaptcha.Text.Trim()))
             {
                 return true;
@@ -368,9 +345,6 @@ namespace YAF.Pages
                 this.PollList.EditMessageId = this.EditMessageId.Value;
             }
 
-            this.PollId = this.topic.PollID;
-            this.PollList.TopicId = this.topic.ID;
-
             this.HandleUploadControls();
 
             if (!this.IsPostBack)
@@ -427,11 +401,11 @@ namespace YAF.Pages
                 {
                     this.PostOptions1.WatchChecked = this.PageContext.PageTopicID > 0
                         ? this.GetRepository<WatchTopic>().Check(this.PageContext.PageUserID, this.PageContext.PageTopicID).HasValue
-                        : this.PageContext.CurrentUser.AutoWatchTopics;
+                        : this.PageContext.User.AutoWatchTopics;
                 }
 
                 if (this.PageContext.IsGuest && this.PageContext.BoardSettings.EnableCaptchaForGuests
-                    || this.PageContext.BoardSettings.EnableCaptchaForPost && !this.PageContext.IsCaptchaExcluded)
+                    || this.PageContext.BoardSettings.EnableCaptchaForPost && !this.PageContext.User.UserFlags.IsCaptchaExcluded)
                 {
                     this.imgCaptcha.ImageUrl = $"{BoardInfo.ForumClientFileRoot}resource.ashx?c=1";
                     this.tr_captcha1.Visible = true;
@@ -447,12 +421,7 @@ namespace YAF.Pages
                 this.PageLinks.AddForum(this.PageContext.PageForumID);
 
                 // check if it's a reply to a topic...
-                if (this.TopicId != null)
-                {
-                    this.InitReplyToTopic();
-
-                    this.PollList.TopicId = this.TopicId.ToType<int>();
-                }
+                this.InitReplyToTopic();
 
                 if (this.editOrQuotedMessage != null)
                 {
@@ -484,8 +453,6 @@ namespace YAF.Pages
                         {
                             this.InitQuotedReply(this.editOrQuotedMessage.Item2);
                         }
-
-                        this.PollList.TopicId = this.TopicId.ToType<int>();
                     }
                     else if (this.EditMessageId.HasValue)
                     {
@@ -496,13 +463,16 @@ namespace YAF.Pages
                 }
 
                 // form user is only for "Guest"
-                this.From.Text = this.Get<IUserDisplayName>().GetName(this.PageContext.PageUserID);
-                if (!this.PageContext.IsGuest)
+                if (this.PageContext.IsGuest)
                 {
+                    this.From.Text = this.PageContext.User.DisplayOrUserName();
                     this.FromRow.Visible = false;
                 }
             }
 
+            // Set Poll
+            this.PollId = this.topic.PollID;
+            this.PollList.TopicId = this.TopicId;
             this.PollList.PollId = this.PollId;
         }
 
@@ -662,7 +632,7 @@ namespace YAF.Pages
                 isSpamApproved = true;
             }
 
-            object replyTo = this.QuotedMessageId ?? -1;
+            var replyTo = this.QuotedMessageId;
 
             // make message flags
             var messageFlags = new MessageFlags
@@ -674,24 +644,16 @@ namespace YAF.Pages
             };
 
             var messageId = this.GetRepository<Message>().SaveNew(
-                this.TopicId.Value,
+                this.TopicId,
                 this.PageContext.PageUserID,
                 this.forumEditor.Text,
                 this.User != null ? null : this.From.Text,
                 this.Get<HttpRequestBase>().GetUserRealIPAddress(),
                 DateTime.UtcNow,
-                replyTo.ToType<int>(),
+                replyTo,
                 messageFlags);
 
             this.UpdateWatchTopic(this.PageContext.PageUserID, this.PageContext.PageTopicID);
-
-            if (!messageFlags.IsApproved)
-            {
-                return messageId;
-            }
-
-            this.Get<IDataCache>().Remove(Constants.Cache.BoardStats);
-            this.Get<IDataCache>().Remove(Constants.Cache.BoardUserStats);
 
             return messageId;
         }
@@ -726,7 +688,7 @@ namespace YAF.Pages
                 // Check content for spam
                 if (
                     this.Get<ISpamCheck>().CheckPostForSpam(
-                        this.PageContext.IsGuest ? this.From.Text : this.PageContext.PageUserName,
+                        this.PageContext.IsGuest ? this.From.Text : this.PageContext.User.DisplayOrUserName(),
                         this.Get<HttpRequestBase>().GetUserRealIPAddress(),
                         BBCodeHelper.StripBBCode(
                             HtmlHelper.StripHtml(HtmlHelper.CleanHtmlString(this.forumEditor.Text)))
@@ -734,43 +696,38 @@ namespace YAF.Pages
                         this.PageContext.IsGuest ? null : this.PageContext.MembershipUser.Email,
                         out var spamResult))
                 {
+                    var description =
+                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.User.DisplayOrUserName())}";
+
                     switch (this.PageContext.BoardSettings.SpamMessageHandling)
                     {
                         case 0:
-                            this.Logger.Log(
+                            this.Logger.SpamMessageDetected(
                                 this.PageContext.PageUserID,
-                                "Spam Message Detected",
-                                $"Spam Check detected possible SPAM posted by User: {(this.PageContext.IsGuest ? this.From.Text : this.PageContext.PageUserName)}",
-                                EventLogTypes.SpamMessageDetected);
+                                description);
                             break;
                         case 1:
                             this.spamApproved = false;
                             isPossibleSpamMessage = true;
-                            this.Logger.Log(
+                            this.Logger.SpamMessageDetected(
                                 this.PageContext.PageUserID,
-                                "Spam Message Detected",
-                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? this.From.Text : this.PageContext.PageUserName)}, it was flagged as unapproved post.",
-                                EventLogTypes.SpamMessageDetected);
+                                $"{description}, it was flagged as unapproved post.");
                             break;
                         case 2:
-                            this.Logger.Log(
+                            this.Logger.SpamMessageDetected(
                                 this.PageContext.PageUserID,
-                                "Spam Message Detected",
-                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? this.From.Text : this.PageContext.PageUserName)}, post was rejected",
-                                EventLogTypes.SpamMessageDetected);
+                                $"{description}, post was rejected");
                             this.PageContext.AddLoadMessage(this.GetText("SPAM_MESSAGE"), MessageTypes.danger);
                             return;
                         case 3:
-                            this.Logger.Log(
+                            this.Logger.SpamMessageDetected(
                                 this.PageContext.PageUserID,
-                                "Spam Message Detected",
-                                $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? this.From.Text : this.PageContext.PageUserName)}, user was deleted and banned",
-                                EventLogTypes.SpamMessageDetected);
+                                $"{description}, user was deleted and banned");
 
                             this.Get<IAspNetUsersHelper>().DeleteAndBanUser(
                                 this.PageContext.PageUserID,
                                 this.PageContext.MembershipUser,
-                                this.PageContext.CurrentUser.IP);
+                                this.PageContext.User.IP);
 
                             return;
                     }
@@ -785,18 +742,11 @@ namespace YAF.Pages
             // update the last post time...
             this.Get<ISession>().LastPost = DateTime.UtcNow.AddSeconds(30);
 
-            int? messageId = null;
+            int? messageId;
 
-            var isApproved = true;
+            bool isApproved;
 
-            if (this.TopicId != null)
-            {
-                // Reply to topic
-                messageId = this.PostReplyHandleReplyToTopic(this.spamApproved);
-
-                isApproved = this.spamApproved;
-            }
-            else if (this.EditMessageId.HasValue)
+            if (this.EditMessageId.HasValue)
             {
                 // Edit existing post
                 var editMessage = this.PostReplyHandleEditPost();
@@ -806,12 +756,19 @@ namespace YAF.Pages
 
                 messageId = editMessage.ID;
             }
+            else
+            {
+                // Reply to topic
+                messageId = this.PostReplyHandleReplyToTopic(this.spamApproved);
+
+                isApproved = this.spamApproved;
+            }
 
             // vzrus^ the poll access controls are enabled and this is a new topic - we add the variables
             var attachPollParameter = string.Empty;
             var returnForum = string.Empty;
 
-            if (this.PageContext.ForumPollAccess && this.PostOptions1.PollOptionVisible && this.TopicId != null)
+            if (this.PageContext.ForumPollAccess && this.PostOptions1.PollOptionVisible)
             {
                 // new topic poll token
                 attachPollParameter = $"&t={this.TopicId}";
@@ -828,19 +785,19 @@ namespace YAF.Pages
                     this.Get<ISendNotification>().ToWatchingUsers(messageId.Value);
                 }
 
-                if (this.EditMessageId == null && !this.PageContext.IsGuest && this.PageContext.CurrentUser.Activity)
+                if (this.EditMessageId == null && !this.PageContext.IsGuest && this.PageContext.User.Activity)
                 {
                     // Handle Mentions
                     BBCodeHelper.FindMentions(this.forumEditor.Text).ForEach(
                         user =>
                             {
-                                var userId = this.Get<IUserDisplayName>().GetId(user).Value;
+                                var userId = this.Get<IUserDisplayName>().FindUserByName(user).ID;
 
                                 if (userId != this.PageContext.PageUserID)
                                 {
                                     this.Get<IActivityStream>().AddMentionToStream(
                                         userId,
-                                        this.TopicId.Value,
+                                        this.TopicId,
                                         messageId.ToType<int>(),
                                         this.PageContext.PageUserID);
                                 }
@@ -850,13 +807,13 @@ namespace YAF.Pages
                     BBCodeHelper.FindUserQuoting(this.forumEditor.Text).ForEach(
                         user =>
                             {
-                                var userId = this.Get<IUserDisplayName>().GetId(user).Value;
+                                var userId = this.Get<IUserDisplayName>().FindUserByName(user).ID;
 
                                 if (userId != this.PageContext.PageUserID)
                                 {
                                     this.Get<IActivityStream>().AddQuotingToStream(
                                         userId,
-                                        this.TopicId.Value,
+                                        this.TopicId,
                                         messageId.ToType<int>(),
                                         this.PageContext.PageUserID);
                                 }
@@ -864,7 +821,7 @@ namespace YAF.Pages
 
                     this.Get<IActivityStream>().AddReplyToStream(
                         Config.IsDotNetNuke ? this.PageContext.PageForumID : this.PageContext.PageUserID,
-                        this.TopicId.Value,
+                        this.TopicId,
                         messageId.ToType<int>(),
                         this.PageContext.PageTopicName,
                         this.forumEditor.Text);
@@ -937,6 +894,8 @@ namespace YAF.Pages
                                                            IsHtml = this.forumEditor.UsesHTML,
                                                            IsBBCode = this.forumEditor.UsesBBCode
                                                        };
+
+            this.PreviewMessagePost.MessageID = 0;
 
             this.PreviewMessagePost.Message = this.forumEditor.Text;
         }
@@ -1123,7 +1082,7 @@ namespace YAF.Pages
 
             // Quote the original message
             this.forumEditor.Text +=
-                $"[quote={this.Get<IUserDisplayName>().GetName(message.UserID.ToType<int>())};{message.ID}]{messageContent}[/quote]\r\n"
+                $"[quote={this.Get<IUserDisplayName>().GetNameById(message.UserID.ToType<int>())};{message.ID}]{messageContent}[/quote]\r\n"
                     .TrimStart();
 
             /*if (this.forumEditor.UsesHTML && message.Flags.IsBBCode)
@@ -1173,7 +1132,7 @@ namespace YAF.Pages
 
             // show the last posts AJAX frame...
             this.LastPosts1.Visible = true;
-            this.LastPosts1.TopicID = this.TopicId.Value.ToType<int>();
+            this.LastPosts1.TopicID = this.TopicId;
         }
 
         /// <summary>
@@ -1212,7 +1171,7 @@ namespace YAF.Pages
         private bool CheckForumModerateStatus(Forum forumInfo, bool isNewTopic)
         {
             // User Moderate override
-            if (this.PageContext.Moderated)
+            if (this.PageContext.User.UserFlags.Moderated)
             {
                 return true;
             }
@@ -1236,7 +1195,7 @@ namespace YAF.Pages
 
             var moderatedPostCount = forumInfo.ModeratedPostCount;
 
-            return !(this.PageContext.CurrentUser.NumPosts >= moderatedPostCount);
+            return !(this.PageContext.User.NumPosts >= moderatedPostCount);
         }
 
         /// <summary>

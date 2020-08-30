@@ -1,8 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" EnableViewState="true" Inherits="YAF.Controls.ProfileTimeline"
     CodeBehind="ProfileTimeline.ascx.cs" %>
 
-<YAF:Pager ID="PagerTop" runat="server" OnPageChange="PagerTop_PageChange" />
-
 <div class="row">
     <div class="col">
         <div class="card mb-3 mt-2" id="activity">
@@ -15,7 +13,18 @@
                                         LocalizedPage="ACCOUNT" />
                     </div>
                     <div class="col-auto">
-                        <div class="btn-group dropleft" role="group" aria-label="Filters">
+                        <div class="btn-toolbar" role="toolbar">
+                            <div class="input-group input-group-sm mr-2" role="group">
+                                <div class="input-group-text">
+                                    <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
+                                </div>
+                                <asp:DropDownList runat="server" ID="PageSize"
+                                                  AutoPostBack="True"
+                                                  OnSelectedIndexChanged="PageSizeSelectedIndexChanged"
+                                                  CssClass="form-select">
+                                </asp:DropDownList>
+                            </div>
+                        <div class="btn-group" role="group" aria-label="Filters">
                             <YAF:ThemeButton runat="server"
                                              CssClass="dropdown-toggle"
                                              DataToggle="dropdown"
@@ -24,7 +33,7 @@
                                              Icon="filter"
                                              TextLocalizedTag="FILTER_DROPDOWN"
                                              TextLocalizedPage="ADMIN_USERS"/>
-                            <div class="dropdown-menu">
+                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left">
                                 <div class="px-3 py-1">
                                     <div class="mb-3">
                                         <div class="form-check form-switch">
@@ -62,6 +71,7 @@
                                 </div>
                             </div>
                         </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -72,13 +82,9 @@
                     <ItemTemplate>
                         <div class="row">
                             <div class="col-auto text-center flex-column d-none d-sm-flex">
-                                <div class="row h-50">
-                                    <div class="col <%# this.GetFirstItemClass(Container.ItemIndex) %>">&nbsp;</div>
-                                    <div class="col">&nbsp;</div>
-                                </div>
                                 <h5 class="m-2">
                                     <asp:Label runat="server" ID="Icon"
-                                               CssClass="fa-stack fa-1x" ></asp:Label>
+                                               CssClass="fa-stack fa-1x pt-3"></asp:Label>
                                 </h5>
                                 <div class="row h-50">
                                     <div class="col <%# this.GetLastItemClass(Container.ItemIndex) %>">&nbsp;</div>
@@ -110,27 +116,13 @@
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
-            <div class="card-footer">
-                <div class="input-group col-md-4">
-                    <div class="input-group-text">
-                        <YAF:LocalizedLabel ID="SinceLabel" runat="server"
-                                            LocalizedTag="ITEMS"/>:
-                    </div>
-                    <asp:DropDownList ID="PageSize" runat="server" 
-                                      AutoPostBack="True"
-                                      OnSelectedIndexChanged="PageSizeSelectedIndexChanged" 
-                                      CssClass="form-select">
-                        <asp:ListItem Text="5" Value="5" Selected="True" />
-                        <asp:ListItem Text="10" Value="10" />
-                        <asp:ListItem Text="20" Value="20" />
-                        <asp:ListItem Text="30" Value="30" />
-                        <asp:ListItem Text="40" Value="40" />
-                        <asp:ListItem Text="50" Value="50" />
-                    </asp:DropDownList>
-                            
-                </div>
-            </div>
         </div>
-        <YAF:Pager ID="PagerBottom" runat="server" LinkedPager="PagerTop" />
+        
+    </div>
+</div>
+<div class="row justify-content-end">
+    <div class="col-auto">
+        <YAF:Pager ID="PagerTop" runat="server"
+                   OnPageChange="PagerTop_PageChange" />
     </div>
 </div>

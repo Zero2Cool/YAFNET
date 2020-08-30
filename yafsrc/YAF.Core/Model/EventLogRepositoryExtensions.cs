@@ -73,7 +73,7 @@ namespace YAF.Core.Model
         /// <returns>
         /// The <see cref="DataTable"/>.
         /// </returns>
-        public static DataTable List(
+        public static DataTable ListAsDataTable(
             this IRepository<EventLog> repository, 
             int userId, 
             int maxRows, 
@@ -85,7 +85,7 @@ namespace YAF.Core.Model
             string eventIDs, 
             int? boardId = null)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             return repository.DbFunction.GetData.eventlog_list(
                 BoardID: boardId ?? repository.BoardID, 

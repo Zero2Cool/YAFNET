@@ -31,14 +31,13 @@ namespace YAF.Controls
 
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
-    using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Types.Interfaces.Events;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -89,6 +88,11 @@ namespace YAF.Controls
                 return;
             }
 
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
             var previousPageSize = this.Get<ISession>().UserActivityPageSize;
 
             if (previousPageSize.HasValue)
@@ -104,20 +108,6 @@ namespace YAF.Controls
             }
 
             this.BindData();
-        }
-
-        /// <summary>
-        /// The get first item class.
-        /// </summary>
-        /// <param name="itemIndex">
-        /// The item index.
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
-        protected string GetFirstItemClass(int itemIndex)
-        {
-            return itemIndex > 0 ? "border-right" : string.Empty;
         }
 
         /// <summary>
@@ -195,7 +185,7 @@ namespace YAF.Controls
                     UserID = activity.Item1.FromUserID.Value,
                     Suspended = user.Suspended,
                     Style = user.UserStyle,
-                    ReplaceName = this.Get<IUserDisplayName>().GetName(user)
+                    ReplaceName = user.DisplayOrUserName()
                 };
 
                 title.Text = this.GetText("ACCOUNT", "GIVEN_THANKS");
@@ -211,7 +201,7 @@ namespace YAF.Controls
             card.CssClass = activity.Item1.Notification ? "card shadow" : "card";
 
             iconLabel.Text = $@"<i class=""fas fa-circle fa-stack-2x {notify}""></i>
-               <i class=""fas fa-{icon} fa-stack-1x fa-inverse""></i>;";
+               <i class=""fas fa-{icon} fa-stack-1x fa-inverse""></i>";
 
             displayDateTime.DateTime = activity.Item1.Created;
 
@@ -234,24 +224,6 @@ namespace YAF.Controls
         protected void PagerTop_PageChange([NotNull] object sender, [NotNull] EventArgs e)
         {
             // rebind
-            this.BindData();
-        }
-
-        /// <summary>
-        /// Mark all Activity as read
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        protected void MarkAll_Click(object sender, EventArgs e)
-        {
-            this.GetRepository<Activity>().MarkAllAsRead(this.PageContext.PageUserID);
-
-            this.Get<IRaiseEvent>().Raise(new UpdateUserEvent(this.PageContext.PageUserID));
-
             this.BindData();
         }
 
@@ -355,17 +327,7 @@ namespace YAF.Controls
 
             this.ActivityStream.DataSource = paged;
 
-            if (paged.Any())
-            {
-                this.PagerTop.Count = stream.Count;
-
-                this.ItemCount = paged.Count;
-            }
-            else
-            {
-                this.PagerTop.Count = 0;
-                this.ItemCount = 0;
-            }
+            this.ItemCount = paged.Any() ? paged.Count : 0;
 
             this.DataBind();
         }

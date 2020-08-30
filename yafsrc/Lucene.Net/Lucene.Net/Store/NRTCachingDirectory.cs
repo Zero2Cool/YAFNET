@@ -1,9 +1,9 @@
+using J2N.Collections.Generic.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using JCG = J2N.Collections.Generic;
 using Console = YAF.Lucene.Net.Util.SystemConsole;
+using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Store
 {
@@ -72,7 +72,7 @@ namespace YAF.Lucene.Net.Store
         private readonly long maxMergeSizeBytes;
         private readonly long maxCachedBytes;
 
-        private static bool VERBOSE = false;
+        private static readonly bool VERBOSE = false;
 
         /// <summary>
         /// We will cache a newly created output if 1) it's a

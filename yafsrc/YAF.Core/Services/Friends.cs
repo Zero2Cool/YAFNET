@@ -217,7 +217,7 @@ namespace YAF.Core.Services
                 return true;
             }
 
-            var userBuddyList = this.GetRepository<Buddy>().ListAllAsDataTable(BoardContext.Current.PageUserID);
+            var userBuddyList = this.Get<IFriends>().ListAllAsDataTable();
 
             if (userBuddyList == null || !userBuddyList.HasRows())
             {
@@ -258,7 +258,7 @@ namespace YAF.Core.Services
 
             this.GetRepository<Buddy>().Remove(BoardContext.Current.PageUserID, toUserId);
 
-            return this.Get<IUserDisplayName>().GetName(toUserId);
+            return this.Get<IUserDisplayName>().GetNameById(toUserId);
         }
 
         #endregion

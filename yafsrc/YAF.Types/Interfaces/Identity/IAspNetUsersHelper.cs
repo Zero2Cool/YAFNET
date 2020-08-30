@@ -32,6 +32,7 @@ namespace YAF.Types.Interfaces.Identity
     using Microsoft.AspNet.Identity;
 
     using YAF.Types.Exceptions;
+    using YAF.Types.Models;
     using YAF.Types.Models.Identity;
 
     /// <summary>
@@ -150,17 +151,6 @@ namespace YAF.Types.Interfaces.Identity
         /// The get membership user by id.
         /// </returns>
         AspNetUsers GetMembershipUserById(int userID);
-
-        /// <summary>
-        /// get the membership user from the providerUserKey
-        /// </summary>
-        /// <param name="providerUserKey">
-        /// The provider user key.
-        /// </param>
-        /// <returns>
-        /// The get membership user by key.
-        /// </returns>
-        AspNetUsers GetMembershipUserByKey(object providerUserKey);
 
         /// <summary>
         /// Method returns MembershipUser
@@ -475,7 +465,7 @@ namespace YAF.Types.Interfaces.Identity
         /// Finds the user.
         /// </summary>
         /// <param name="userName">
-        /// The user Name.
+        ///     The user Name.
         /// </param>
         /// <returns>
         /// The <see cref="AspNetUsers"/>.

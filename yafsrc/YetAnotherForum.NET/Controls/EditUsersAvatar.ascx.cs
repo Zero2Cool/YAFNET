@@ -297,7 +297,7 @@ namespace YAF.Controls
                 this.Logger.Log(
                     exception.Message,
                     EventLogTypes.Error,
-                    this.PageContext.CurrentUser.Name,
+                    this.PageContext.PageUserID,
                     string.Empty,
                     exception);
 
@@ -311,7 +311,9 @@ namespace YAF.Controls
         /// </summary>
         private void BindData()
         {
-            var user = this.GetRepository<User>().GetById(this.currentUserId);
+            var user = this.PageContext.CurrentForumPage.IsAdminPage
+                ? this.GetRepository<User>().GetById(this.currentUserId)
+                : this.PageContext.User;
 
             this.AvatarImg.Visible = true;
             this.Avatar.Text = string.Empty;

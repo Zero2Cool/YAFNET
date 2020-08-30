@@ -21,7 +21,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 namespace YAF.Pages.Admin
 {
     #region Using
@@ -37,13 +36,15 @@ namespace YAF.Pages.Admin
     using YAF.Configuration;
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Utils;
+    using YAF.Utils.Helpers;
+    using YAF.Web.Controls;
     using YAF.Web.Extensions;
 
     #endregion
@@ -131,6 +132,10 @@ namespace YAF.Pages.Admin
                     icon = "user-check";
                     cssClass = "info";
                     break;
+                case EventLogTypes.LoginFailure:
+                    icon = "user-injured";
+                    cssClass = "warning";
+                    break;
                 case EventLogTypes.UserDeleted:
                     icon = "user-alt-slash";
                     cssClass = "danger";
@@ -170,6 +175,33 @@ namespace YAF.Pages.Admin
             }
 
             return $@"<i class=""fas fa-{icon} text-{cssClass}""></i>";
+        }
+
+        /// <summary>
+        /// Renders the UserLink
+        /// </summary>
+        /// <param name="dataRow">The data row.</param>
+        /// <returns></returns>
+        protected string UserLink([NotNull] object dataRow)
+        {
+            // cast object to the DataRowView
+            var row = (DataRowView)dataRow;
+
+
+            if (row["UserID"].IsNullOrEmptyDBField())
+            {
+                return row["Name"].ToString();
+            }
+
+            var userLink = new UserLink
+            {
+                UserID = row["UserID"].ToType<int>(),
+                Suspended = row["Suspended"].ToType<DateTime?>(),
+                Style = row["Style"].ToString(),
+                ReplaceName = row[this.Get<BoardSettings>().EnableDisplayName ? "DisplayName" : "Name"].ToString()
+            };
+
+            return userLink.RenderToString();
         }
 
         /// <summary>
@@ -222,6 +254,11 @@ namespace YAF.Pages.Admin
                 return;
             }
 
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
             var allItem = new ListItem(this.GetText("ALL"), "-1");
 
             allItem.Attributes.Add(
@@ -243,6 +280,7 @@ namespace YAF.Pages.Admin
                                 EventLogTypes.SqlError => "exclamation-triangle",
                                 EventLogTypes.UserSuspended => "user-clock",
                                 EventLogTypes.UserUnsuspended => "user-check",
+                                EventLogTypes.LoginFailure => "user-injured",
                                 EventLogTypes.UserDeleted => "user-alt-slash",
                                 EventLogTypes.IpBanSet => "hand-paper",
                                 EventLogTypes.IpBanLifted => "slash",
@@ -298,8 +336,6 @@ namespace YAF.Pages.Admin
 
             this.Page.Header.Title =
                 $"{this.GetText("ADMIN_ADMIN", "Administration")} - {this.GetText("ADMIN_EVENTLOG", "TITLE")}";
-
-            this.PagerTop.PageSize = 25;
         }
 
         /// <summary>
@@ -324,11 +360,25 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.BindData();
+        }
+
+        /// <summary>
         /// Populates data source and binds data to controls.
         /// </summary>
         private void BindData()
         {
-            var baseSize = this.Get<BoardSettings>().MemberListPageSize;
+            var baseSize = this.PageSize.SelectedValue.ToType<int>();
             var currentPageIndex = this.PagerTop.CurrentPageIndex;
             this.PagerTop.PageSize = baseSize;
 
@@ -341,7 +391,7 @@ namespace YAF.Pages.Admin
             {
                 if (this.Get<BoardSettings>().UseFarsiCalender && ci.IsFarsiCulture())
                 {
-                    var persianDate = new PersianDate(this.SinceDate.Text);
+                    var persianDate = new PersianDate(this.SinceDate.Text.PersianNumberToEnglish());
 
                     sinceDate = PersianDateConverter.ToGregorianDateTime(persianDate);
                 }
@@ -355,7 +405,7 @@ namespace YAF.Pages.Admin
             {
                 if (this.Get<BoardSettings>().UseFarsiCalender && ci.IsFarsiCulture())
                 {
-                    var persianDate = new PersianDate(this.ToDate.Text);
+                    var persianDate = new PersianDate(this.ToDate.Text.PersianNumberToEnglish());
 
                     toDate = PersianDateConverter.ToGregorianDateTime(persianDate);
                 }
@@ -367,7 +417,7 @@ namespace YAF.Pages.Admin
 
             // list event for this board
             var dt = this.GetRepository<Types.Models.EventLog>()
-                               .List(
+                               .ListAsDataTable(
                                    this.PageContext.PageUserID,
                                    this.Get<BoardSettings>().EventLogMaxMessages,
                                    this.Get<BoardSettings>().EventLogMaxDays,

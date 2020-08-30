@@ -1,7 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace YAF.Lucene.Net.Index
@@ -23,8 +23,8 @@ namespace YAF.Lucene.Net.Index
      * limitations under the License.
      */
 
-    using IBits = YAF.Lucene.Net.Util.IBits;
     using BytesRef = YAF.Lucene.Net.Util.BytesRef;
+    using IBits = YAF.Lucene.Net.Util.IBits;
 
     /// <summary>
     /// Exposes <see cref="TermsEnum"/> API, merged from <see cref="TermsEnum"/> API of sub-segments.
@@ -52,12 +52,7 @@ namespace YAF.Lucene.Net.Index
 
         public class TermsEnumIndex
         {
-            public static readonly TermsEnumIndex[] EMPTY_ARRAY =
-#if FEATURE_ARRAYEMPTY
-                Array.Empty<TermsEnumIndex>();
-#else
-                new TermsEnumIndex[0];
-#endif
+            public static readonly TermsEnumIndex[] EMPTY_ARRAY = Arrays.Empty<TermsEnumIndex>();
             internal int SubIndex { get; private set; }
             internal TermsEnum TermsEnum { get; private set; }
 
@@ -112,7 +107,7 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public TermsEnum Reset(TermsEnumIndex[] termsEnumsIndex)
         {
-            Debug.Assert(termsEnumsIndex.Length <= top.Length);
+            if (Debugging.AssertsEnabled) Debugging.Assert(termsEnumsIndex.Length <= top.Length);
             numSubs = 0;
             numTop = 0;
             termComp = null;
@@ -120,7 +115,7 @@ namespace YAF.Lucene.Net.Index
             for (int i = 0; i < termsEnumsIndex.Length; i++)
             {
                 TermsEnumIndex termsEnumIndex = termsEnumsIndex[i];
-                Debug.Assert(termsEnumIndex != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termsEnumIndex != null);
 
                 // init our term comp
                 if (termComp == null)
@@ -218,7 +213,7 @@ namespace YAF.Lucene.Net.Index
                 {
                     top[numTop++] = currentSubs[i];
                     current = currentSubs[i].Current = currentSubs[i].Terms.Term;
-                    Debug.Assert(term.Equals(currentSubs[i].Current));
+                    if (Debugging.AssertsEnabled) Debugging.Assert(term.Equals(currentSubs[i].Current));
                 }
             }
 
@@ -290,7 +285,7 @@ namespace YAF.Lucene.Net.Index
                     if (status == SeekStatus.NOT_FOUND)
                     {
                         currentSubs[i].Current = currentSubs[i].Terms.Term;
-                        Debug.Assert(currentSubs[i].Current != null);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(currentSubs[i].Current != null);
                         queue.Add(currentSubs[i]);
                     }
                     else
@@ -331,7 +326,7 @@ namespace YAF.Lucene.Net.Index
         {
             // extract all subs from the queue that have the same
             // top term
-            Debug.Assert(numTop == 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numTop == 0);
             while (true)
             {
                 top[numTop++] = queue.Pop();
@@ -372,7 +367,7 @@ namespace YAF.Lucene.Net.Index
                 // most impls short-circuit if you SeekCeil to term
                 // they are already on.
                 SeekStatus status = SeekCeil(current);
-                Debug.Assert(status == SeekStatus.FOUND);
+                if (Debugging.AssertsEnabled) Debugging.Assert(status == SeekStatus.FOUND);
                 lastSeekExact = false;
             }
             lastSeek = null;
@@ -489,7 +484,7 @@ namespace YAF.Lucene.Net.Index
                     b = null;
                 }
 
-                Debug.Assert(entry.Index < docsEnum.subDocsEnum.Length, entry.Index + " vs " + docsEnum.subDocsEnum.Length + "; " + subs.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(entry.Index < docsEnum.subDocsEnum.Length, () => entry.Index + " vs " + docsEnum.subDocsEnum.Length + "; " + subs.Length);
                 DocsEnum subDocsEnum = entry.Terms.Docs(b, docsEnum.subDocsEnum[entry.Index], flags);
                 if (subDocsEnum != null)
                 {
@@ -501,7 +496,7 @@ namespace YAF.Lucene.Net.Index
                 else
                 {
                     // should this be an error?
-                    Debug.Assert(false, "One of our subs cannot provide a docsenum");
+                    if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "One of our subs cannot provide a docsenum");
                 }
             }
 
@@ -581,7 +576,7 @@ namespace YAF.Lucene.Net.Index
                     b = null;
                 }
 
-                Debug.Assert(entry.Index < docsAndPositionsEnum.subDocsAndPositionsEnum.Length, entry.Index + " vs " + docsAndPositionsEnum.subDocsAndPositionsEnum.Length + "; " + subs.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(entry.Index < docsAndPositionsEnum.subDocsAndPositionsEnum.Length, () => entry.Index + " vs " + docsAndPositionsEnum.subDocsAndPositionsEnum.Length + "; " + subs.Length);
                 DocsAndPositionsEnum subPostings = entry.Terms.DocsAndPositions(b, docsAndPositionsEnum.subDocsAndPositionsEnum[entry.Index], flags);
 
                 if (subPostings != null)
@@ -624,7 +619,7 @@ namespace YAF.Lucene.Net.Index
             {
                 this.SubSlice = subSlice;
                 this.Index = index;
-                Debug.Assert(subSlice.Length >= 0, "length=" + subSlice.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(subSlice.Length >= 0, () => "length=" + subSlice.Length);
             }
 
             public void Reset(TermsEnum terms, BytesRef term)

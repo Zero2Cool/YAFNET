@@ -31,8 +31,7 @@ namespace YAF.Controls
     using System.Linq;
     using System.Web.UI;
     using System.Web.UI.HtmlControls;
-    using System.Web.UI.WebControls;
-
+    
     using YAF.Core.BaseControls;
     using YAF.Core.Model;
     using YAF.Types;
@@ -40,7 +39,6 @@ namespace YAF.Controls
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
     using YAF.Utils;
-    using YAF.Utils.Helpers;
     using YAF.Web.Controls;
 
     #endregion
@@ -108,23 +106,26 @@ namespace YAF.Controls
             [NotNull] bool isDropDownToggle,
             [NotNull] string iconName)
         {
-            var icon = new Icon { IconName = iconName };
-
-            var link = new HyperLink
+            var link = new ThemeButton
             {
-                Target = "_top",
-                ToolTip = linkText,
-                Text = $"{icon.RenderToString()}{linkText}",
-                CssClass = isActive ? $"{cssClass} active" : cssClass
+                Text = linkText,
+                Icon = iconName,
+                Type = ButtonStyle.None,
+                CssClass = isActive ? $"{cssClass} active" : cssClass,
+                NavigateUrl = linkUrl,
+                DataToggle = isDropDownToggle ? "dropdown" : "tooltip"
             };
 
-            link.Attributes.Add("href", linkUrl);
-
-            link.Attributes.Add("rel", "nofollow");
-
-            link.Attributes.Add("data-toggle", isDropDownToggle ? "dropdown" : "tooltip");
-
-            holder.Controls.Add(link);
+            if (isDropDownToggle)
+            {
+                holder.Controls.Add(link);
+            }
+            else
+            {
+                var listItem = new HtmlGenericControl("li");
+                listItem.Controls.Add(link);
+                holder.Controls.Add(listItem);
+            }
         }
 
         /// <summary>
@@ -132,7 +133,9 @@ namespace YAF.Controls
         /// </summary>
         private void RenderMenuItems()
         {
-            var pagesAccess = this.GetRepository<AdminPageUserAccess>().List(this.PageContext.PageUserID).ToList();
+            var pagesAccess = this.Get<IDataCache>().GetOrSet(
+                string.Format(Constants.Cache.AdminPageAccess, this.PageContext.PageUserID),
+                () => this.GetRepository<AdminPageUserAccess>().List(this.PageContext.PageUserID).ToList());
 
             // Admin Admin
             RenderMenuItem(
@@ -145,7 +148,7 @@ namespace YAF.Controls
                 "tachometer-alt");
 
             // Admin - Settings Menu
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_BoardAnnouncement" || x.PageName == "Admin_Settings" ||
                      x.PageName == "Admin_Forums" || x.PageName == "Admin_ReplaceWords" ||
                      x.PageName == "Admin_BBCodes" || x.PageName == "Admin_Languages"))
@@ -154,7 +157,7 @@ namespace YAF.Controls
             }
 
             // Admin - Spam Protection Menu
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_SpamLog" || x.PageName == "Admin_SpamWords" ||
                      x.PageName == "Admin_BannedEmails" || x.PageName == "Admin_BannedIps" ||
                      x.PageName == "Admin_BannedNames"))
@@ -163,7 +166,7 @@ namespace YAF.Controls
             }
 
             // Admin - Users and Roles Menu
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_ProfileDefinitions" ||
                      x.PageName == "Admin_AccessMasks" ||
                      x.PageName == "Admin_Groups" ||
@@ -177,7 +180,7 @@ namespace YAF.Controls
             }
 
             // Admin - Maintenance Menu
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Prune" ||
                      x.PageName == "Admin_Restore" ||
                      x.PageName == "Admin_TaskManager" ||
@@ -188,14 +191,14 @@ namespace YAF.Controls
             }
 
             // Admin - Database Menu
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_ReIndex" || x.PageName == "Admin_RunSql"))
             {
                 this.RenderAdminDatabase(pagesAccess);
             }
 
             // Admin - Nntp Menu
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_NntpRetrieve" ||
                      x.PageName == "Admin_NntpForums" ||
                      x.PageName == "Admin_NntpServers"))
@@ -204,7 +207,7 @@ namespace YAF.Controls
             }
 
             // Admin - Upgrade Menu
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Version"))
             {
                 this.RenderAdminUpgrade(pagesAccess);
@@ -219,8 +222,12 @@ namespace YAF.Controls
         /// </param>
         private void RenderAdminSettings(IReadOnlyCollection<AdminPageUserAccess> pagesAccess)
         {
+            var listItem = new HtmlGenericControl("li");
+
+            listItem.Attributes.Add("class", "dropdown");
+
             RenderMenuItem(
-                this.MenuHolder,
+                listItem,
                 "dropdown-item dropdown-toggle subdropdown-toggle",
                 this.GetText("ADMINMENU", "SETTINGS"),
                 "#",
@@ -242,12 +249,12 @@ namespace YAF.Controls
             list.Attributes.Add("class", "dropdown-menu dropdown-submenu");
 
             // Admin Board Announcement
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_BoardAnnouncement"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_BoardAnnouncement"),
                     BuildLink.GetLink(ForumPages.Admin_BoardAnnouncement),
                     this.PageContext.ForumPageType == ForumPages.Admin_BoardAnnouncement,
@@ -256,7 +263,7 @@ namespace YAF.Controls
             }
 
             // Admin Settings
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Settings"))
             {
                 RenderMenuItem(
@@ -270,12 +277,12 @@ namespace YAF.Controls
             }
 
             // Admin Forums
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Forums"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_forums"),
                     BuildLink.GetLink(ForumPages.Admin_Forums),
                     this.PageContext.ForumPageType == ForumPages.Admin_Forums ||
@@ -286,12 +293,12 @@ namespace YAF.Controls
             }
 
             // Admin ReplaceWords
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_ReplaceWords"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_replacewords"),
                     BuildLink.GetLink(ForumPages.Admin_ReplaceWords),
                     this.PageContext.ForumPageType == ForumPages.Admin_ReplaceWords,
@@ -300,12 +307,12 @@ namespace YAF.Controls
             }
 
             // Admin BBCodes
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_BBCodes"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_bbcode"),
                     BuildLink.GetLink(ForumPages.Admin_BBCodes),
                     this.PageContext.ForumPageType == ForumPages.Admin_BBCodes ||
@@ -315,12 +322,12 @@ namespace YAF.Controls
             }
 
             // Admin Languages
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Languages"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Languages"),
                     BuildLink.GetLink(ForumPages.Admin_Languages),
                     this.PageContext.ForumPageType == ForumPages.Admin_Languages ||
@@ -329,7 +336,9 @@ namespace YAF.Controls
                     "language");
             }
 
-            this.MenuHolder.Controls.Add(list);
+            listItem.Controls.Add(list);
+
+            this.MenuHolder.Controls.Add(listItem);
         }
 
         /// <summary>
@@ -340,8 +349,12 @@ namespace YAF.Controls
         /// </param>
         private void RenderAdminSpamProtection(IReadOnlyCollection<AdminPageUserAccess> pagesAccess)
         {
+            var listItem = new HtmlGenericControl("li");
+
+            listItem.Attributes.Add("class", "dropdown");
+
             RenderMenuItem(
-                this.MenuHolder,
+                listItem,
                 "dropdown-item dropdown-toggle subdropdown-toggle",
                 this.GetText("ADMINMENU", "Spam_Protection"),
                 "#",
@@ -358,12 +371,12 @@ namespace YAF.Controls
             list.Attributes.Add("class", "dropdown-menu dropdown-submenu");
 
             // Admin SpamLog
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_SpamLog"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_spamlog"),
                     BuildLink.GetLink(ForumPages.Admin_SpamLog),
                     this.PageContext.ForumPageType == ForumPages.Admin_SpamLog,
@@ -372,12 +385,12 @@ namespace YAF.Controls
             }
 
             // Admin SpamWords
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_SpamWords"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_SpamWords"),
                     BuildLink.GetLink(ForumPages.Admin_SpamWords),
                     this.PageContext.ForumPageType == ForumPages.Admin_SpamWords,
@@ -386,12 +399,12 @@ namespace YAF.Controls
             }
 
             // Admin BannedEmails
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_BannedEmails"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_BannedEmail"),
                     BuildLink.GetLink(ForumPages.Admin_BannedEmails),
                     this.PageContext.ForumPageType == ForumPages.Admin_BannedEmails,
@@ -400,12 +413,12 @@ namespace YAF.Controls
             }
 
             // Admin BannedIps
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_BannedIps"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_BannedIp"),
                     BuildLink.GetLink(ForumPages.Admin_BannedIps),
                     this.PageContext.ForumPageType == ForumPages.Admin_BannedIps,
@@ -414,12 +427,12 @@ namespace YAF.Controls
             }
 
             // Admin BannedNames
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_BannedNames"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_BannedName"),
                     BuildLink.GetLink(ForumPages.Admin_BannedNames),
                     this.PageContext.ForumPageType == ForumPages.Admin_BannedNames,
@@ -427,7 +440,9 @@ namespace YAF.Controls
                     "hand-paper");
             }
 
-            this.MenuHolder.Controls.Add(list);
+            listItem.Controls.Add(list);
+
+            this.MenuHolder.Controls.Add(listItem);
         }
 
         /// <summary>
@@ -438,8 +453,12 @@ namespace YAF.Controls
         /// </param>
         private void RenderAdminUsersAndRoles(IReadOnlyCollection<AdminPageUserAccess> pagesAccess)
         {
+            var listItem = new HtmlGenericControl("li");
+
+            listItem.Attributes.Add("class", "dropdown");
+
             RenderMenuItem(
-                this.MenuHolder,
+                listItem,
                 "dropdown-item dropdown-toggle subdropdown-toggle",
                 this.GetText("ADMINMENU", "UsersandRoles"),
                 "#",
@@ -464,12 +483,12 @@ namespace YAF.Controls
             list.Attributes.Add("class", "dropdown-menu dropdown-submenu");
 
             // Admin ProfileDefinitions
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_ProfileDefinitions"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_ProfileDefinitions"),
                     BuildLink.GetLink(ForumPages.Admin_ProfileDefinitions),
                     this.PageContext.ForumPageType == ForumPages.Admin_ProfileDefinitions,
@@ -478,12 +497,12 @@ namespace YAF.Controls
             }
 
             // Admin AccessMasks
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_AccessMasks"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_AccessMasks"),
                     BuildLink.GetLink(ForumPages.Admin_AccessMasks),
                     this.PageContext.ForumPageType == ForumPages.Admin_AccessMasks ||
@@ -493,12 +512,12 @@ namespace YAF.Controls
             }
 
             // Admin Groups
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Groups"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Groups"),
                     BuildLink.GetLink(ForumPages.Admin_Groups),
                     this.PageContext.ForumPageType == ForumPages.Admin_Groups ||
@@ -508,12 +527,12 @@ namespace YAF.Controls
             }
 
             // Admin Users
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Users"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Users"),
                     BuildLink.GetLink(ForumPages.Admin_Users),
                     this.PageContext.ForumPageType == ForumPages.Admin_EditUser ||
@@ -523,12 +542,12 @@ namespace YAF.Controls
             }
 
             // Admin Ranks
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Ranks"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Ranks"),
                     BuildLink.GetLink(ForumPages.Admin_Ranks),
                     this.PageContext.ForumPageType == ForumPages.Admin_Ranks ||
@@ -538,12 +557,12 @@ namespace YAF.Controls
             }
 
             // Admin Medals
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Medals"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Medals"),
                     BuildLink.GetLink(ForumPages.Admin_Medals),
                     this.PageContext.ForumPageType == ForumPages.Admin_Medals ||
@@ -553,12 +572,12 @@ namespace YAF.Controls
             }
 
             // Admin Mail
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Mail"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Mail"),
                     BuildLink.GetLink(ForumPages.Admin_Mail),
                     this.PageContext.ForumPageType == ForumPages.Admin_Mail,
@@ -567,12 +586,12 @@ namespace YAF.Controls
             }
 
             // Admin Digest
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Digest"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Digest"),
                     BuildLink.GetLink(ForumPages.Admin_Digest),
                     this.PageContext.ForumPageType == ForumPages.Admin_Digest,
@@ -580,7 +599,9 @@ namespace YAF.Controls
                     "envelope");
             }
 
-            this.MenuHolder.Controls.Add(list);
+            listItem.Controls.Add(list);
+
+            this.MenuHolder.Controls.Add(listItem);
         }
 
         /// <summary>
@@ -591,8 +612,12 @@ namespace YAF.Controls
         /// </param>
         private void RenderAdminMaintenance(IReadOnlyCollection<AdminPageUserAccess> pagesAccess)
         {
+            var listItem = new HtmlGenericControl("li");
+
+            listItem.Attributes.Add("class", "dropdown");
+
             RenderMenuItem(
-                this.MenuHolder,
+                listItem,
                 "dropdown-item dropdown-toggle subdropdown-toggle",
                 this.GetText("ADMINMENU", "Maintenance"),
                 "#",
@@ -609,12 +634,12 @@ namespace YAF.Controls
             list.Attributes.Add("class", "dropdown-menu dropdown-submenu");
 
             // Admin Prune
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Prune"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Prune"),
                     BuildLink.GetLink(ForumPages.Admin_Prune),
                     this.PageContext.ForumPageType == ForumPages.Admin_Prune,
@@ -623,12 +648,12 @@ namespace YAF.Controls
             }
 
             // Admin Restore
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Restore"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Restore"),
                     BuildLink.GetLink(ForumPages.Admin_Restore),
                     this.PageContext.ForumPageType == ForumPages.Admin_Restore,
@@ -637,12 +662,12 @@ namespace YAF.Controls
             }
 
             // Admin Pm
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Pm"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_Pm"),
                     BuildLink.GetLink(ForumPages.Admin_Pm),
                     this.PageContext.ForumPageType == ForumPages.Admin_Pm,
@@ -651,12 +676,12 @@ namespace YAF.Controls
             }
 
             // Admin TaskManager
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_TaskManager"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_TaskManager"),
                     BuildLink.GetLink(ForumPages.Admin_TaskManager),
                     this.PageContext.ForumPageType == ForumPages.Admin_TaskManager,
@@ -665,12 +690,12 @@ namespace YAF.Controls
             }
 
             // Admin EventLog
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_EventLog"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_EventLog"),
                     BuildLink.GetLink(ForumPages.Admin_EventLog),
                     this.PageContext.ForumPageType == ForumPages.Admin_EventLog,
@@ -679,12 +704,12 @@ namespace YAF.Controls
             }
 
             // Admin RestartApp
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_RestartApp"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_RestartApp"),
                     BuildLink.GetLink(ForumPages.Admin_RestartApp),
                     this.PageContext.ForumPageType == ForumPages.Admin_RestartApp,
@@ -692,7 +717,9 @@ namespace YAF.Controls
                     "sync");
             }
 
-            this.MenuHolder.Controls.Add(list);
+            listItem.Controls.Add(list);
+
+            this.MenuHolder.Controls.Add(listItem);
         }
 
         /// <summary>
@@ -703,8 +730,12 @@ namespace YAF.Controls
         /// </param>
         private void RenderAdminDatabase(IReadOnlyCollection<AdminPageUserAccess> pagesAccess)
         {
+            var listItem = new HtmlGenericControl("li");
+
+            listItem.Attributes.Add("class", "dropdown");
+
             RenderMenuItem(
-                this.MenuHolder,
+                listItem,
                 "dropdown-item dropdown-toggle subdropdown-toggle",
                 this.GetText("ADMINMENU", "Database"),
                 "#",
@@ -718,12 +749,12 @@ namespace YAF.Controls
             list.Attributes.Add("class", "dropdown-menu dropdown-submenu");
 
             // Admin ReIndex
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_ReIndex"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_ReIndex"),
                     BuildLink.GetLink(ForumPages.Admin_ReIndex),
                     this.PageContext.ForumPageType == ForumPages.Admin_ReIndex,
@@ -732,12 +763,12 @@ namespace YAF.Controls
             }
 
             // Admin RunSql
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_RunSql"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_RunSql"),
                     BuildLink.GetLink(ForumPages.Admin_RunSql),
                     this.PageContext.ForumPageType == ForumPages.Admin_RunSql,
@@ -745,7 +776,9 @@ namespace YAF.Controls
                     "database");
             }
 
-            this.MenuHolder.Controls.Add(list);
+            listItem.Controls.Add(list);
+
+            this.MenuHolder.Controls.Add(listItem);
         }
 
         /// <summary>
@@ -756,8 +789,12 @@ namespace YAF.Controls
         /// </param>
         private void RenderAdminNntp(IReadOnlyCollection<AdminPageUserAccess> pagesAccess)
         {
+            var listItem = new HtmlGenericControl("li");
+
+            listItem.Attributes.Add("class", "dropdown");
+
             RenderMenuItem(
-                this.MenuHolder,
+                listItem,
                 "dropdown-item dropdown-toggle subdropdown-toggle",
                 this.GetText("ADMINMENU", "NNTP"),
                 "#",
@@ -772,12 +809,12 @@ namespace YAF.Controls
             list.Attributes.Add("class", "dropdown-menu dropdown-submenu");
 
             // Admin NntpServers
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_NntpServers"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_NntpServers"),
                     BuildLink.GetLink(ForumPages.Admin_NntpServers),
                     this.PageContext.ForumPageType == ForumPages.Admin_NntpServers,
@@ -786,12 +823,12 @@ namespace YAF.Controls
             }
 
             // Admin NntpForums
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_NntpForums"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_NntpForums"),
                     BuildLink.GetLink(ForumPages.Admin_NntpForums),
                     this.PageContext.ForumPageType == ForumPages.Admin_NntpForums,
@@ -800,12 +837,12 @@ namespace YAF.Controls
             }
 
             // Admin NntpRetrieve
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_NntpRetrieve"))
             {
                 RenderMenuItem(
                     list,
-                    "dropdown-item dropdown",
+                    "dropdown-item",
                     this.GetText("ADMINMENU", "admin_NntpRetrieve"),
                     BuildLink.GetLink(ForumPages.Admin_NntpRetrieve),
                     this.PageContext.ForumPageType == ForumPages.Admin_NntpRetrieve,
@@ -813,7 +850,9 @@ namespace YAF.Controls
                     "newspaper");
             }
 
-            this.MenuHolder.Controls.Add(list);
+            listItem.Controls.Add(list);
+
+            this.MenuHolder.Controls.Add(listItem);
         }
 
         /// <summary>
@@ -822,10 +861,14 @@ namespace YAF.Controls
         /// <param name="pagesAccess">
         /// The pages access.
         /// </param>
-        private void RenderAdminUpgrade(IReadOnlyCollection<AdminPageUserAccess> pagesAccess)
+        private void RenderAdminUpgrade(IEnumerable<AdminPageUserAccess> pagesAccess)
         {
+            var listItem = new HtmlGenericControl("li");
+
+            listItem.Attributes.Add("class", "dropdown");
+
             RenderMenuItem(
-                this.MenuHolder,
+                listItem,
                 "dropdown-item dropdown-toggle subdropdown-toggle",
                 this.GetText("ADMINMENU", "Upgrade"),
                 "#",
@@ -838,7 +881,7 @@ namespace YAF.Controls
             list.Attributes.Add("class", "dropdown-menu dropdown-submenu");
 
             // Admin Version
-            if (this.PageContext.IsHostAdmin || pagesAccess.Any(
+            if (this.PageContext.User.UserFlags.IsHostAdmin || pagesAccess.Any(
                 x => x.PageName == "Admin_Version"))
             {
                 RenderMenuItem(
@@ -852,7 +895,7 @@ namespace YAF.Controls
             }
 
             // Admin Version
-            if (this.PageContext.IsHostAdmin)
+            if (this.PageContext.User.UserFlags.IsHostAdmin)
             {
                 RenderMenuItem(
                     list,
@@ -864,7 +907,9 @@ namespace YAF.Controls
                     "download");
             }
 
-            this.MenuHolder.Controls.Add(list);
+            listItem.Controls.Add(list);
+
+            this.MenuHolder.Controls.Add(listItem);
         }
 
         #endregion

@@ -66,7 +66,7 @@ namespace YAF.Types.Extensions
         /// </param>
         public static void Error(this ILogger logger, [NotNull] string format, [NotNull] params object[] args)
         {
-            logger.Log(string.Format(format, args), EventLogTypes.Error);
+            logger.Log(string.Format(format, args));
         }
 
         /// <summary>
@@ -87,23 +87,6 @@ namespace YAF.Types.Extensions
         public static void Error(this ILogger logger, Exception ex, [NotNull] string format, [NotNull] params object[] args)
         {
             logger.Log(string.Format(format, args), EventLogTypes.Error, exception: ex);
-        }
-
-        /// <summary>
-        /// The fatal.
-        /// </summary>
-        /// <param name="logger">
-        /// The logger.
-        /// </param>
-        /// <param name="format">
-        /// The format.
-        /// </param>
-        /// <param name="args">
-        /// The args.
-        /// </param>
-        public static void Fatal(this ILogger logger, [NotNull] string format, [NotNull] params object[] args)
-        {
-            logger.Log(string.Format(format, args), EventLogTypes.Error);
         }
 
         /// <summary>
@@ -144,13 +127,79 @@ namespace YAF.Types.Extensions
         }
 
         /// <summary>
+        /// Log user deleted.
+        /// </summary>
+        /// <param name="logger">
+        /// The logger.
+        /// </param>
+        /// <param name="userId">
+        /// The user Id.
+        /// </param>
+        /// <param name="description">
+        /// The description.
+        /// </param>
+        public static void UserDeleted(
+            [NotNull] this ILogger logger,
+            [CanBeNull] int? userId,
+            [NotNull] string description)
+        {
+            CodeContracts.VerifyNotNull(logger, "logger");
+
+            logger.Log(description, EventLogTypes.UserDeleted, userId, "User Deleted");
+        }
+
+        /// <summary>
+        /// Log spam message detected.
+        /// </summary>
+        /// <param name="logger">
+        /// The logger.
+        /// </param>
+        /// <param name="userId">
+        /// The user Id.
+        /// </param>
+        /// <param name="description">
+        /// The description.
+        /// </param>
+        public static void SpamMessageDetected(
+            [NotNull] this ILogger logger,
+            [CanBeNull] int? userId,
+            [NotNull] string description)
+        {
+            CodeContracts.VerifyNotNull(logger, "logger");
+
+            logger.Log(description, EventLogTypes.SpamMessageDetected, userId, "Spam Message Detected");
+        }
+
+        /// <summary>
+        /// Log spam bot detected.
+        /// </summary>
+        /// <param name="logger">
+        /// The logger.
+        /// </param>
+        /// <param name="userId">
+        /// The user Id.
+        /// </param>
+        /// <param name="description">
+        /// The description.
+        /// </param>
+        public static void SpamBotDetected(
+            [NotNull] this ILogger logger,
+            [CanBeNull] int? userId,
+            [NotNull] string description)
+        {
+            CodeContracts.VerifyNotNull(logger, "logger");
+
+            logger.Log(description, EventLogTypes.SpamBotDetected, userId, "Bot Detected");
+        }
+
+        /// <summary>
         /// The log.
         /// </summary>
         /// <param name="logger">
         /// The logger.
         /// </param>
-        /// <param name="username">
-        /// The username.
+        /// <param name="userId">
+        /// The user Id.
         /// </param>
         /// <param name="source">
         /// The source.
@@ -163,7 +212,7 @@ namespace YAF.Types.Extensions
         /// </param>
         public static void Log(
             [NotNull] this ILogger logger, 
-            [CanBeNull] string username, 
+            [CanBeNull] int? userId, 
             [CanBeNull] object source, 
             [NotNull] string description, 
             [NotNull] EventLogTypes eventType = EventLogTypes.Error)
@@ -181,7 +230,7 @@ namespace YAF.Types.Extensions
                 sourceDescription = source.ToString();
             }
 
-            logger.Log(description, eventType, username, sourceDescription);
+            logger.Log(description, eventType, userId, sourceDescription);
         }
 
         /// <summary>

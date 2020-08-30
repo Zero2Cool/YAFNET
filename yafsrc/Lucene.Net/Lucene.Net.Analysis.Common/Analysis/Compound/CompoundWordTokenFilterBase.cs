@@ -1,10 +1,10 @@
 ﻿using J2N.Text;
 using YAF.Lucene.Net.Analysis.TokenAttributes;
 using YAF.Lucene.Net.Analysis.Util;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Analysis.Compound
 {
@@ -56,7 +56,7 @@ namespace YAF.Lucene.Net.Analysis.Compound
 
         protected readonly LuceneVersion m_matchVersion;
         protected readonly CharArraySet m_dictionary;
-        protected readonly LinkedList<CompoundToken> m_tokens;
+        protected readonly Queue<CompoundToken> m_tokens;
         protected readonly int m_minWordSize;
         protected readonly int m_minSubwordSize;
         protected readonly int m_maxSubwordSize;
@@ -86,7 +86,7 @@ namespace YAF.Lucene.Net.Analysis.Compound
             posIncAtt = AddAttribute<IPositionIncrementAttribute>();
 
             this.m_matchVersion = matchVersion;
-            this.m_tokens = new LinkedList<CompoundToken>();
+            this.m_tokens = new Queue<CompoundToken>();
             if (minWordSize < 0)
             {
                 throw new ArgumentException("minWordSize cannot be negative");
@@ -110,9 +110,8 @@ namespace YAF.Lucene.Net.Analysis.Compound
         {
             if (m_tokens.Count > 0)
             {
-                Debug.Assert(current != null);
-                CompoundToken token = m_tokens.First.Value;
-                m_tokens.Remove(token);
+                if (Debugging.AssertsEnabled) Debugging.Assert(current != null);
+                CompoundToken token = m_tokens.Dequeue();
                 RestoreState(current); // keep all other attributes untouched
                 m_termAtt.SetEmpty().Append(token.Text);
                 m_offsetAtt.SetOffset(token.StartOffset, token.EndOffset);
@@ -171,16 +170,16 @@ namespace YAF.Lucene.Net.Analysis.Compound
 
             /// <summary>
             /// Construct the compound token based on a slice of the current <see cref="CompoundWordTokenFilterBase.m_termAtt"/>. </summary>
-            public CompoundToken(CompoundWordTokenFilterBase outerInstance, int offset, int length)
+            public CompoundToken(CompoundWordTokenFilterBase compoundWordTokenFilterBase, int offset, int length)
             {
-                this.txt = outerInstance.m_termAtt.Subsequence(offset, length); // LUCENENET: Corrected 2nd Subsequence parameter
+                this.txt = compoundWordTokenFilterBase.m_termAtt.Subsequence(offset, length); // LUCENENET: Corrected 2nd Subsequence parameter
 
                 // offsets of the original word
-                int startOff = outerInstance.m_offsetAtt.StartOffset;
-                int endOff = outerInstance.m_offsetAtt.EndOffset;
+                int startOff = compoundWordTokenFilterBase.m_offsetAtt.StartOffset;
+                int endOff = compoundWordTokenFilterBase.m_offsetAtt.EndOffset;
 
 #pragma warning disable 612, 618
-                if (outerInstance.m_matchVersion.OnOrAfter(LuceneVersion.LUCENE_44) || endOff - startOff != outerInstance.m_termAtt.Length)
+                if (compoundWordTokenFilterBase.m_matchVersion.OnOrAfter(LuceneVersion.LUCENE_44) || endOff - startOff != compoundWordTokenFilterBase.m_termAtt.Length)
 #pragma warning restore 612, 618
                 {
                     // if length by start + end offsets doesn't match the term text then assume

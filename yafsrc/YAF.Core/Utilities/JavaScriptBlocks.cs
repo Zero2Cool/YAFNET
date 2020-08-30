@@ -96,10 +96,9 @@ namespace YAF.Core.Utilities
         public static string MomentLoadJs =>
             $@"function loadTimeAgo() {{
             
-		     moment.locale('{(BoardContext.Current.CultureUser.IsSet()
-                                  ? BoardContext.Current.CultureUser.Substring(0, 2)
+		     moment.locale('{(BoardContext.Current.User.Culture.IsSet()
+                                  ? BoardContext.Current.User.Culture.Substring(0, 2)
                                   : BoardContext.Current.Get<BoardSettings>().Culture.Substring(0, 2))}');
-
              {Config.JQueryAlias}('abbr.timeago').each(function() {{
                   {Config.JQueryAlias}(this).html(function(index, value) {{
                                           return moment(value).fromNow();
@@ -441,13 +440,15 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
             return $@"document.addEventListener('DOMContentLoaded', (event) => {{
                 {Config.JQueryAlias}(function() {{
                 {Config.JQueryAlias}('.dropdown-menu').on('click', function(e) {{
-                    if (e.target.type == 'button')
-                        {Config.JQueryAlias}().dropdown('toggle')
-                    else
-                        e.stopPropagation();
+                    if (e.target.type == 'button') {{
+                           {Config.JQueryAlias}().dropdown('toggle')
+                    }}
+                    else {{ 
+                         e.stopPropagation();
+                    }}
                 }});
                 {Config.JQueryAlias}(window).on('click', function() {{
-                    if (!{Config.JQueryAlias}('.dropdown-menu').is (':hidden')) {{
+                    if (!{Config.JQueryAlias}('.dropdown-menu').is(':hidden')) {{
                         {Config.JQueryAlias}().dropdown('toggle')
                      }}
                  }});
@@ -748,7 +749,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                       var yafCKEditor = {Config.JQueryAlias}(""#{editorId}"").ckeditor({{
                           extraPlugins: ""bbcode,mentions,highlight,bbcodeselector,syntaxhighlight,emoji,wordcount,autolink,albumsbrowser,attachments,quote,codemirror"",
                           removePlugins: 'bidi,dialogadvtab,div,filebrowser,flash,format,forms,horizontalrule,iframe,liststyle,pagebreak,showborders,stylescombo,table,tabletools,templates',
-		                  toolbar: [{toolbar}],
+                          toolbar: [{toolbar}],
 		                  entities_greek: false,
                           entities_latin: false,
                           language: '{editorLanguage}',
@@ -779,6 +780,9 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                   CKEDITOR.on('instanceReady', function (ev) {{
                      ev.editor.document.on('drop', function (event) {{
                        {Config.JQueryAlias}('.EditorDiv').yafFileUpload(""send"", {{files: event.data.$.dataTransfer.files}});
+                     }});
+                     ev.editor.on('paste', function (event) {{
+                       {Config.JQueryAlias}('.EditorDiv').yafFileUpload(""send"", {{files: event.data.dataTransfer._.files}});
                      }});
                   }});";
         }
@@ -1066,6 +1070,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                     }}
                 }}
             }},
+
             width: '100%',
             theme: 'bootstrap4',
             cache: true,
@@ -1308,7 +1313,7 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                         if (form.checkValidity() === false)
                         {{
                             event.preventDefault();
-                                event.stopPropagation();
+                            event.stopPropagation();
                         }}
                         form.classList.add('was-validated');
                     }}, false);
@@ -1489,6 +1494,59 @@ function blurTextBox(txtTitleId, id, isAlbum) {{
                  {Config.JQueryAlias}('#{userClientId}').val(data.text);
                 }});
             }});";
+        }
+
+        /// <summary>
+        /// The Logout Dialog Load JS.
+        /// </summary>
+        /// <param name="title">
+        /// The title.
+        /// </param>
+        /// <param name="text">
+        /// The text.
+        /// </param>
+        /// <param name="yes">
+        /// The yes.
+        /// </param>
+        /// <param name="no">
+        /// The no.
+        /// </param>
+        /// <param name="link">
+        /// The link.
+        /// </param>
+        /// <returns>
+        /// Returns the JS String
+        /// </returns>
+        [NotNull]
+        public static string LogOutJs(
+            [NotNull] string title,
+            [NotNull] string text,
+            [NotNull] string yes,
+            [NotNull] string no,
+            [NotNull] string link)
+        {
+            return $@"function LogOutClick() {{
+                bootbox.confirm({{
+                centerVertical: true,
+                title: '{title}',
+                message: '{text}',
+                buttons: {{
+                    confirm: {{
+                        label: '<i class=""fa fa-check""></i> ' + '{yes}',
+                        className: ""btn-success""
+                    }},
+                    cancel: {{
+                        label: '<i class=""fa fa-times""></i> ' + '{no}',
+                        className: ""btn-danger""
+                    }}
+                }},
+                callback: function (confirmed) {{
+                    if (confirmed) {{
+                        document.location.href = '{link}';
+                    }}
+                }}
+            }}
+        );}}";
         }
     }
 }

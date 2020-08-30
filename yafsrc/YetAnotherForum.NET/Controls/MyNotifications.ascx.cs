@@ -30,6 +30,8 @@ namespace YAF.Controls
     using System.Web.UI.WebControls;
 
     using YAF.Core.BaseControls;
+    using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -87,6 +89,11 @@ namespace YAF.Controls
             {
                 return;
             }
+
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
 
             var previousPageSize = this.Get<ISession>().UserActivityPageSize;
 
@@ -175,7 +182,7 @@ namespace YAF.Controls
                     UserID = activity.Item1.FromUserID.Value,
                     Suspended = activity.Item2.Suspended,
                     Style = activity.Item2.UserStyle,
-                    ReplaceName = this.Get<IUserDisplayName>().GetName(activity.Item2)
+                    ReplaceName = activity.Item2.DisplayOrUserName()
                 };
 
                 icon = "heart";
@@ -192,7 +199,7 @@ namespace YAF.Controls
                     UserID = activity.Item1.FromUserID.Value,
                     Suspended = activity.Item2.Suspended,
                     Style = activity.Item2.UserStyle,
-                    ReplaceName = this.Get<IUserDisplayName>().GetName(activity.Item2)
+                    ReplaceName = activity.Item2.DisplayOrUserName()
                 };
 
                 icon = "at";
@@ -209,7 +216,7 @@ namespace YAF.Controls
                     UserID = activity.Item1.FromUserID.Value,
                     Suspended = activity.Item2.Suspended,
                     Style = activity.Item2.UserStyle,
-                    ReplaceName = this.Get<IUserDisplayName>().GetName(activity.Item2)
+                    ReplaceName = activity.Item2.DisplayOrUserName()
                 };
 
                 icon = "quote-left";

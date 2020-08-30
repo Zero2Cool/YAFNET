@@ -1,4 +1,6 @@
-﻿using YAF.Lucene.Net.Index;
+﻿using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Search;
 using YAF.Lucene.Net.Util;
 using System;
@@ -6,7 +8,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using JCG = J2N.Collections.Generic;
 
@@ -278,7 +279,7 @@ namespace YAF.Lucene.Net.Queries
                         continue;
                     }
                     termsEnum = terms.GetIterator(termsEnum);
-                    Debug.Assert(termsEnum != null);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(termsEnum != null);
 
                     if (termsEnum == TermsEnum.EMPTY)
                     {

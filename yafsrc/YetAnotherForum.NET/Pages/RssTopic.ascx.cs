@@ -493,14 +493,14 @@ namespace YAF.Pages
                             this.Server.HtmlDecode(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("d"))),
                         out toFavDate))
                 {
-                    toFavDate = this.PageContext.CurrentUser.Joined/*
+                    toFavDate = this.PageContext.User.Joined/*
                                 ?? DateTimeHelper.SqlDbMinTime() + TimeSpan.FromDays(2)*/;
                     toFavText = this.GetText("MYTOPICS", "SHOW_ALL");
                 }
             }
             else
             {
-                toFavDate = this.PageContext.CurrentUser.Joined/* ?? DateTimeHelper.SqlDbMinTime() + TimeSpan.FromDays(2)*/;
+                toFavDate = this.PageContext.User.Joined/* ?? DateTimeHelper.SqlDbMinTime() + TimeSpan.FromDays(2)*/;
                 toFavText = this.GetText("MYTOPICS", "SHOW_ALL");
             }
 
@@ -736,7 +736,8 @@ namespace YAF.Pages
                                 ForumPages.Posts,
                                 true,
                                 "t={0}&name={1}",
-                                this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("t"), row["Topic"].ToString()),
+                                this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("t"),
+                                row["Topic"].ToString()),
                             $"urn:{urlAlphaNum}:ft{feedType}:st{(atomFeedByVar ? SyndicationFormats.Atom.ToInt() : SyndicationFormats.Rss.ToInt())}:tid{this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("t")}:lmid{row["LastMessageID"]}:{this.PageContext.PageBoardID}"
                                 .Unidecode(),
                             lastPosted,

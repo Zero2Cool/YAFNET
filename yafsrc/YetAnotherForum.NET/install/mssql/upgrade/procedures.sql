@@ -2154,6 +2154,9 @@ END
       select
         a.*,
         ISNULL(b.[Name],'System') as [Name],
+        ISNULL(b.DisplayName,'System') as DisplayName,
+        ISNULL(b.Suspended,null) as Suspended,
+        ISNULL(b.UserStyle,'') as Style,
         TotalRows = @TotalRows
     from
         [{databaseOwner}].[{objectQualifier}EventLog] a
@@ -2192,6 +2195,9 @@ begin
       select
       a.*,
         ISNULL(b.[Name],'System') as [Name],
+        ISNULL(b.DisplayName,'System') as DisplayName,
+        ISNULL(b.Suspended,null) as Suspended,
+        ISNULL(b.UserStyle,'') as Style,
         TotalRows = @TotalRows
          from
         [{databaseOwner}].[{objectQualifier}EventLog] a
@@ -3649,10 +3655,12 @@ BEGIN
         SELECT
     a.ReplyTo, a.PMessageID, b.UserPMessageID, a.FromUserID, 
     d.[Name] AS FromUser,
+    d.[DisplayName] as FromUserDisplayName,
     d.UserStyle as FromStyle,
     d.Suspended as FromSuspended,
     b.[UserID] AS ToUserId, 
     c.[Name] AS ToUser, 
+    c.[DisplayName] as ToUserDisplayName,
     c.UserStyle as ToStyle,
     c.Suspended as ToSuspended,
     a.Created, a.[Subject],
@@ -5050,47 +5058,6 @@ BEGIN
 END
 GO
 
-create procedure [{databaseOwner}].[{objectQualifier}topic_save](
-    @ForumID	int,
-    @Subject	nvarchar(100),
-    @UserID		int,
-    @Message	ntext,
-    @Description	nvarchar(255)=null,
-    @Status 	nvarchar(255)=null,
-    @Styles 	nvarchar(255)=null,
-    @Priority	smallint,
-    @UserName	nvarchar(255)=null,
-    @IP			varchar(39),
-    @Posted		datetime=null,
-    @BlogPostID	nvarchar(50),
-    @Flags		int,
-    @UTCTIMESTAMP datetime
-) as
-begin
-        declare @TopicID int
-    declare @MessageID int, @OverrideDisplayName BIT, @ReplaceName nvarchar(255)
-
-    if @Posted is null set @Posted = @UTCTIMESTAMP
-        -- this check is for guest user only to not override replace name
-    if (SELECT Name FROM [{databaseOwner}].[{objectQualifier}User] WHERE UserID = @UserID) != @UserName
-    begin
-    SET @OverrideDisplayName = 1
-    end
-    SET @ReplaceName = (CASE WHEN @OverrideDisplayName = 1 THEN @UserName ELSE (SELECT DisplayName FROM [{databaseOwner}].[{objectQualifier}User] WHERE UserID = @UserID) END);
-    -- create the topic
-    insert into [{databaseOwner}].[{objectQualifier}Topic](ForumID,Topic,UserID,Posted,[Views],[Priority],UserName,UserDisplayName,NumPosts, [Description], [Status], [Styles])
-    values(@ForumID,@Subject,@UserID,@Posted,0,@Priority,@UserName,@ReplaceName, 0,@Description, @Status, @Styles)
-
-    -- get its id
-    set @TopicID = SCOPE_IDENTITY()
-
-    -- add message to the topic
-    exec [{databaseOwner}].[{objectQualifier}message_save] @TopicID,@UserID,@Message,@UserName,@IP,@Posted,null,@BlogPostID,null,null,@Flags,@UTCTIMESTAMP,@MessageID output
-
-    select TopicID = @TopicID, MessageID = @MessageID
-end
-GO
-
 CREATE procedure [{databaseOwner}].[{objectQualifier}topic_updatelastpost]
 (@ForumID int=null,@TopicID int=null) as
 begin
@@ -5143,7 +5110,9 @@ BEGIN
 
     SELECT TOP(@DisplayNumber)
         counter.[ID],
-        u.[Name],
+        u.[Name], u.DisplayName,
+        u.Suspended,
+        u.UserStyle,
         counter.[NumOfPosts]
     FROM
         [{databaseOwner}].[{objectQualifier}User] u inner join
@@ -6850,17 +6819,10 @@ begin
     -- return information
     select TOP 1
         a.ProviderUserKey,
-        UserFlags			= a.Flags,
-        UserName			= a.Name,
-        DisplayName			= a.DisplayName,
         Suspended			= a.Suspended,
 		SuspendedReason     = a.SuspendedReason,
-        ThemeFile			= a.ThemeFile,
-        LanguageFile		= a.LanguageFile,
         TimeZoneUser		= a.TimeZone,
-        CultureUser		    = a.Culture,
         IsGuest				= SIGN(a.IsGuest),
-        IsDirty				= SIGN(a.IsDirty),
         ModeratePosts       = (select count(1)
                                 from [{databaseOwner}].[{objectQualifier}Message] a
                                 join [{databaseOwner}].[{objectQualifier}Topic] b ON a.TopicID=b.TopicID
@@ -6877,14 +6839,12 @@ begin
         LastUnreadPm		= CASE WHEN @ShowUnreadPMs > 0 THEN (SELECT TOP 1 Created FROM [{databaseOwner}].[{objectQualifier}PMessage] pm INNER JOIN [{databaseOwner}].[{objectQualifier}UserPMessage] upm ON pm.PMessageID = upm.PMessageID WHERE upm.UserID=@UserID and upm.IsRead=0  and upm.IsDeleted = 0 and upm.IsArchived = 0 ORDER BY pm.Created DESC) ELSE NULL END,
         PendingBuddies      = CASE WHEN @ShowPendingBuddies > 0 THEN (SELECT COUNT(ID) FROM [{databaseOwner}].[{objectQualifier}Buddy] WHERE ToUserID = @UserID AND Approved = 0) ELSE 0 END,
         LastPendingBuddies	= CASE WHEN @ShowPendingBuddies > 0 THEN (SELECT TOP 1 Requested FROM [{databaseOwner}].[{objectQualifier}Buddy] WHERE ToUserID=@UserID and Approved = 0 ORDER BY Requested DESC) ELSE NULL END,
-        UserStyle 		    = CASE WHEN @ShowUserStyle > 0 THEN (select top 1 usr.[UserStyle] from [{databaseOwner}].[{objectQualifier}User] usr  where usr.UserID = @UserID) ELSE '' END,
         NumAlbums  = (SELECT COUNT(1) FROM [{databaseOwner}].[{objectQualifier}UserAlbum] ua
         WHERE ua.UserID = @UserID),
         UsrAlbums  = (CASE WHEN @G_UsrAlbums > @R_UsrAlbums THEN @G_UsrAlbums ELSE @R_UsrAlbums END),
         UserHasBuddies  = SIGN(ISNULL((SELECT TOP 1 1 FROM [{databaseOwner}].[{objectQualifier}Buddy] WHERE [FromUserID] = @UserID OR [ToUserID] = @UserID),0)),
         -- Guest can't vote in polls attached to boards, we need some temporary access check by a criteria
-        BoardVoteAccess	= (CASE WHEN a.Flags & 4 > 0 THEN 0 ELSE 1 END),
-        Reputation         = a.Points
+        BoardVoteAccess	= (CASE WHEN a.Flags & 4 > 0 THEN 0 ELSE 1 END)
         from
            [{databaseOwner}].[{objectQualifier}User] a
         where

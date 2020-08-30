@@ -1,12 +1,12 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Support.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Search
@@ -146,7 +146,7 @@ namespace YAF.Lucene.Net.Search
 
         private class CoreClosedListenerAnonymousInnerClassHelper : SegmentReader.ICoreDisposedListener
         {
-            private FieldCacheImpl outerInstance;
+            private readonly FieldCacheImpl outerInstance;
 
             public CoreClosedListenerAnonymousInnerClassHelper(FieldCacheImpl outerInstance)
             {
@@ -164,7 +164,7 @@ namespace YAF.Lucene.Net.Search
 
         private class ReaderClosedListenerAnonymousInnerClassHelper : IndexReader.IReaderClosedListener
         {
-            private FieldCacheImpl outerInstance;
+            private readonly FieldCacheImpl outerInstance;
 
             public ReaderClosedListenerAnonymousInnerClassHelper(FieldCacheImpl outerInstance)
             {
@@ -173,7 +173,7 @@ namespace YAF.Lucene.Net.Search
 
             public void OnClose(IndexReader owner)
             {
-                Debug.Assert(owner is AtomicReader);
+                if (Debugging.AssertsEnabled) Debugging.Assert(owner is AtomicReader);
                 outerInstance.PurgeByCacheKey(((AtomicReader)owner).CoreCacheKey);
             }
         }
@@ -409,7 +409,7 @@ namespace YAF.Lucene.Net.Search
                     if (setDocsWithField)
                     {
                         int termsDocCount = terms.DocCount;
-                        Debug.Assert(termsDocCount <= maxDoc);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(termsDocCount <= maxDoc);
                         if (termsDocCount == maxDoc)
                         {
                             // Fast case: all docs have this field:
@@ -475,7 +475,7 @@ namespace YAF.Lucene.Net.Search
                 if (numSet >= maxDoc)
                 {
                     // The cardinality of the BitSet is maxDoc if all documents have a value.
-                    Debug.Assert(numSet == maxDoc);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(numSet == maxDoc);
                     bits = new Lucene.Net.Util.Bits.MatchAllBits(maxDoc);
                 }
                 else
@@ -907,7 +907,7 @@ namespace YAF.Lucene.Net.Search
 
             public Int32sFromArray(PackedInt32s.Reader values, int minValue)
             {
-                Debug.Assert(values.BitsPerValue <= 32);
+                if (Debugging.AssertsEnabled) Debugging.Assert(values.BitsPerValue <= 32);
                 this.values = values;
                 this.minValue = minValue;
             }
@@ -1095,7 +1095,7 @@ namespace YAF.Lucene.Net.Search
                 if (terms != null)
                 {
                     int termsDocCount = terms.DocCount;
-                    Debug.Assert(termsDocCount <= maxDoc);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(termsDocCount <= maxDoc);
                     if (termsDocCount == maxDoc)
                     {
                         // Fast case: all docs have this field:
@@ -1137,7 +1137,7 @@ namespace YAF.Lucene.Net.Search
                 if (numSet >= maxDoc)
                 {
                     // The cardinality of the BitSet is maxDoc if all documents have a value.
-                    Debug.Assert(numSet == maxDoc);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(numSet == maxDoc);
                     return new Lucene.Net.Util.Bits.MatchAllBits(maxDoc);
                 }
                 return res;

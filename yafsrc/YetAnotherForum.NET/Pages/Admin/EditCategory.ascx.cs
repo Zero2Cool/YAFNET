@@ -178,9 +178,6 @@ namespace YAF.Pages.Admin
             // save category
             this.GetRepository<Category>().Save(this.CategoryId, this.Name.Text, categoryImage, this.SortOrder.Text.ToType<short>());
 
-            // remove category cache...
-            this.Get<IDataCache>().Remove(Constants.Cache.ForumCategory);
-
             // redirect
             BuildLink.Redirect(ForumPages.Admin_Forums);
         }
@@ -192,8 +189,6 @@ namespace YAF.Pages.Admin
         {
             if (!this.Get<HttpRequestBase>().QueryString.Exists("c"))
             {
-                this.LocalizedLabel2.LocalizedTag = "NEW_CATEGORY";
-
                 this.IconHeader.Text = this.GetText("NEW_CATEGORY");
                     
                 // Currently creating a New Category, and auto fill the Category Sort Order + 1
@@ -225,8 +220,6 @@ namespace YAF.Pages.Admin
             this.SortOrder.Text = category.SortOrder.ToString();
 
             this.IconHeader.Text = $"{this.GetText("ADMIN_EDITCATEGORY", "HEADER")} <strong>{this.Name.Text}</strong>";
-
-            this.Label1.Text = this.Name.Text;
 
             var item = this.CategoryImages.Items.FindByText(category.CategoryImage);
 

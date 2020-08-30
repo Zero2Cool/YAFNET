@@ -299,7 +299,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void UpdateProfileClick([NotNull] object sender, [NotNull] EventArgs e)
         {
-            var userName = this.Get<IUserDisplayName>().GetName(this.User.Item1);
+            var userName = this.User.Item1.DisplayOrUserName();
 
             if (this.HomePage.Text.IsSet())
             {
@@ -401,7 +401,7 @@ namespace YAF.Controls
 
                 if (this.DisplayName.Text.Trim() != this.User.Item1.DisplayName)
                 {
-                    if (this.Get<IUserDisplayName>().GetId(this.DisplayName.Text.Trim()).HasValue)
+                    if (this.Get<IUserDisplayName>().FindUserByName(this.DisplayName.Text.Trim()) != null)
                     {
                         this.PageContext.AddLoadMessage(
                             this.GetText("REGISTER", "ALREADY_REGISTERED_DISPLAYNAME"),
@@ -452,7 +452,7 @@ namespace YAF.Controls
             {
                 this.GetRepository<ProfileCustom>().Delete(x => x.UserID == this.currentUserId);
 
-                this.CustomProfile.Items.Cast<RepeaterItem>().Where(x => x.ItemType == ListItemType.Item).ForEach(
+                this.CustomProfile.Items.Cast<RepeaterItem>().Where(x => x.ItemType == ListItemType.Item || x.ItemType == ListItemType.AlternatingItem).ForEach(
                     item =>
                     {
                         var id = item.FindControlAs<HiddenField>("DefID").Value.ToType<int>();
@@ -703,7 +703,7 @@ namespace YAF.Controls
             {
                 try
                 {
-                    var persianDate = new PersianDate(this.Birthday.Text);
+                    var persianDate = new PersianDate(this.Birthday.Text.PersianNumberToEnglish());
 
                     userBirthdate = PersianDateConverter.ToGregorianDateTime(persianDate);
                 }
@@ -795,14 +795,14 @@ namespace YAF.Controls
 
             if (overrideByPageUserCulture)
             {
-                if (this.PageContext.CurrentUser.LanguageFile.IsSet())
+                if (this.PageContext.User.LanguageFile.IsSet())
                 {
-                    languageFile = this.PageContext.CurrentUser.LanguageFile;
+                    languageFile = this.PageContext.User.LanguageFile;
                 }
 
-                if (this.PageContext.CurrentUser.Culture.IsSet())
+                if (this.PageContext.User.Culture.IsSet())
                 {
-                    culture4Tag = this.PageContext.CurrentUser.Culture;
+                    culture4Tag = this.PageContext.User.Culture;
                 }
             }
             else

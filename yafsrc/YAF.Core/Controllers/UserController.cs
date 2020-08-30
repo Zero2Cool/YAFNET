@@ -28,6 +28,7 @@ namespace YAF.Core.Controllers
     using System.Web.Http;
 
     using YAF.Core.Context;
+    using YAF.Core.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Objects;
 
@@ -64,7 +65,7 @@ namespace YAF.Core.Controllers
                 return this.NotFound();
             }
 
-            var users = this.Get<IUserDisplayName>().Find(searchTopic.SearchTerm);
+            var users = this.Get<IUserDisplayName>().FindUserContainsName(searchTopic.SearchTerm);
 
             if (!users.Any())
             {
@@ -75,7 +76,7 @@ namespace YAF.Core.Controllers
                 .Select(
                     user => new SelectOptions
                     {
-                        text = this.Get<IUserDisplayName>().GetName(user),
+                        text = user.DisplayOrUserName(),
                         id = user.ID.ToString()
                     }).ToList();
 

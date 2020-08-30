@@ -197,11 +197,9 @@ namespace YAF.Core.Helpers
 
                     if (this.Get<BoardSettings>().LogUserDeleted)
                     {
-                        this.Get<ILogger>().Log(
-                            BoardContext.Current.PageUserID,
-                            "UserMembershipHelper.DeleteAllUnapproved",
-                            $"User {user.UserName} was deleted by user id {BoardContext.Current.PageUserID} as unapproved.",
-                            EventLogTypes.UserDeleted);
+                        this.Get<ILogger>().UserDeleted(
+                            BoardContext.Current.User.ID,
+                            $"User {user.UserName} was deleted by user id {BoardContext.Current.PageUserID} as unapproved.");
                     }
                 });
         }
@@ -273,15 +271,10 @@ namespace YAF.Core.Helpers
 
             if (this.Get<BoardSettings>().LogUserDeleted)
             {
-                this.Get<ILogger>().Log(
-                    BoardContext.Current.PageUserID,
-                    "UserMembershipHelper.DeleteUser",
-                    $"User {user.UserName} was deleted by {(isBotAutoDelete ? "the automatic spam check system" : BoardContext.Current.PageUserName)}.",
-                    EventLogTypes.UserDeleted);
+                this.Get<ILogger>().UserDeleted(
+                    BoardContext.Current.User.ID,
+                    $"User {user.UserName} was deleted by {(isBotAutoDelete ? "the automatic spam check system" : BoardContext.Current.User.DisplayOrUserName())}.");
             }
-
-            // clear the cache
-            this.Get<IDataCache>().Clear();
 
             return true;
         }
@@ -308,9 +301,6 @@ namespace YAF.Core.Helpers
                     userIpAddress,
                     $"A spam Bot who was trying to register was banned by IP {userIpAddress}",
                     userID);
-
-                // Clear cache
-                this.Get<IDataCache>().Remove(Constants.Cache.BannedIP);
 
                 if (this.Get<BoardSettings>().LogBannedIP)
                 {
@@ -353,17 +343,10 @@ namespace YAF.Core.Helpers
 
             if (this.Get<BoardSettings>().LogUserDeleted)
             {
-                this.Get<ILogger>().Log(
-                    BoardContext.Current.PageUserID,
-                    "UserMembershipHelper.DeleteUser",
-                    $"User {user.UserName} was deleted by the automatic spam check system.",
-                    EventLogTypes.UserDeleted);
+                this.Get<ILogger>().UserDeleted(
+                    BoardContext.Current.User.ID,
+                    $"User {user.UserName} was deleted by the automatic spam check system.");
             }
-
-            // clear the cache
-            this.Get<IDataCache>().Remove(Constants.Cache.UsersOnlineStatus);
-            this.Get<IDataCache>().Remove(Constants.Cache.BoardUserStats);
-            this.Get<IDataCache>().Remove(Constants.Cache.UsersDisplayNameCollection);
 
             return true;
         }
@@ -421,23 +404,8 @@ namespace YAF.Core.Helpers
             var providerUserKey = this.Get<IAspNetUsersHelper>().GetUserProviderKeyFromUserID(userID);
 
             return providerUserKey != null
-                ? this.Get<IAspNetUsersHelper>().GetMembershipUserByKey(providerUserKey)
+                ? this.Get<IAspNetUsersHelper>().GetUser(providerUserKey)
                 : null;
-        }
-
-        /// <summary>
-        /// get the membership user from the providerUserKey
-        /// </summary>
-        /// <param name="providerUserKey">
-        /// The provider user key.
-        /// </param>
-        /// <returns>
-        /// The get membership user by key.
-        /// </returns>
-        public AspNetUsers GetMembershipUserByKey(object providerUserKey)
-        {
-            // convert to provider type...
-            return this.Get<IAspNetUsersHelper>().GetUser(providerUserKey);
         }
 
         /// <summary>
@@ -640,9 +608,6 @@ namespace YAF.Core.Helpers
             user.LockoutEndDateUtc = null;
 
             this.Get<IAspNetUsersHelper>().Update(user);
-
-            this.Get<IDataCache>().Remove(Constants.Cache.UsersOnlineStatus);
-            this.Get<IDataCache>().Remove(Constants.Cache.BoardUserStats);
 
             this.Get<IRaiseEvent>().Raise(new SuccessfulUserLoginEvent(BoardContext.Current.PageUserID));
         }
@@ -939,16 +904,14 @@ namespace YAF.Core.Helpers
             }
 
             // Display name login
-            var id = this.Get<IUserDisplayName>().GetId(userName);
+            var realUsername = this.GetRepository<User>().GetSingle(u => u.DisplayName == userName);
 
-            if (!id.HasValue)
+            if (realUsername == null)
             {
                 return null;
             }
 
             // get the username associated with this id...
-            var realUsername = this.GetRepository<User>().GetSingle(u => u.DisplayName == id.Value.ToString());
-
             user = this.Get<IAspNetUsersHelper>().GetUserByName(realUsername.Name);
 
             // validate again...

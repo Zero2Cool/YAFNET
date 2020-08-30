@@ -45,6 +45,7 @@ namespace YAF.Install
     using YAF.Core.Membership;
     using YAF.Core.Model;
     using YAF.Core.Services;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -107,7 +108,7 @@ namespace YAF.Install
         /// Gets a value indicating whether is forum installed.
         /// </summary>
         public bool IsForumInstalled =>
-            (this.isForumInstalled ?? (this.isForumInstalled = this.InstallUpgradeService.IsForumInstalled)).Value;
+            (isForumInstalled ?? (this.isForumInstalled = this.InstallUpgradeService.IsForumInstalled)).Value;
 
         /// <summary>
         ///     Gets ServiceLocator.
@@ -691,7 +692,7 @@ namespace YAF.Install
             infoHolder.Visible = true;
 
             detailsLiteral.Text =
-                $"<div class=\"alert alert-{cssClass}\"><span class=\"badge badge-{cssClass}\">{detailsTitle}</span> {info}</div>";
+                $"<div class=\"alert alert-{cssClass}\"><span class=\"badge bg-{cssClass}\">{detailsTitle}</span> {info}</div>";
         }
 
         /// <summary>
@@ -836,19 +837,19 @@ namespace YAF.Install
                 var prefix = Config.CreateDistinctRoles && Config.IsAnyPortal ? "YAF " : string.Empty;
 
                 // add administrators and registered if they don't already exist...
-                if (!AspNetRolesHelper.RoleExists($"{prefix}Administrators"))
+                if (!this.Get<IAspNetRolesHelper>().RoleExists($"{prefix}Administrators"))
                 {
-                    AspNetRolesHelper.CreateRole($"{prefix}Administrators");
+                    this.Get<IAspNetRolesHelper>().CreateRole($"{prefix}Administrators");
                 }
 
-                if (!AspNetRolesHelper.RoleExists($"{prefix}Registered"))
+                if (!this.Get<IAspNetRolesHelper>().RoleExists($"{prefix}Registered"))
                 {
-                    AspNetRolesHelper.CreateRole($"{prefix}Registered");
+                    this.Get<IAspNetRolesHelper>().CreateRole($"{prefix}Registered");
                 }
 
-                if (!AspNetRolesHelper.IsUserInRole(user, $"{prefix}Administrators"))
+                if (!this.Get<IAspNetRolesHelper>().IsUserInRole(user, $"{prefix}Administrators"))
                 {
-                    AspNetRolesHelper.AddUserToRole(user, $"{prefix}Administrators");
+                    this.Get<IAspNetRolesHelper>().AddUserToRole(user, $"{prefix}Administrators");
                 }
 
                 // logout administrator...
@@ -961,6 +962,12 @@ namespace YAF.Install
                 {
                     // fake the board settings
                     BoardContext.Current.BoardSettings = new BoardSettings();
+                }
+                else
+                {
+                    this.txtEnteredPassword.Attributes.Add(
+                        "onkeydown",
+                        JavaScriptBlocks.ClickOnEnterJs("InstallWizard_StepNavigationTemplateContainerID_StepNextButton"));
                 }
 
                 this.TimeZones.DataSource = StaticDataHelper.TimeZones();

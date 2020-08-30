@@ -1,8 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" EnableViewState="true" Inherits="YAF.Controls.MyNotifications"
     CodeBehind="MyNotifications.ascx.cs" %>
 
-<YAF:Pager ID="PagerTop" runat="server" OnPageChange="PagerTop_PageChange" />
-
 <div class="row">
     <div class="col">
         <div class="card mb-3 mt-2" id="activity">
@@ -14,7 +12,18 @@
                                         LocalizedTag="YOUR_NOTIFIY" />
                     </div>
                     <div class="col-auto">
-                        <div class="btn-group dropleft" role="group" aria-label="Filters">
+                        <div class="btn-toolbar" role="toolbar">
+                            <div class="input-group input-group-sm mr-2" role="group">
+                                <div class="input-group-text">
+                                    <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
+                                </div>
+                                <asp:DropDownList runat="server" ID="PageSize"
+                                                  AutoPostBack="True"
+                                                  OnSelectedIndexChanged="PageSizeSelectedIndexChanged"
+                                                  CssClass="form-select">
+                                </asp:DropDownList>
+                            </div>
+                        <div class="btn-group" role="group" aria-label="Filters">
                             <YAF:ThemeButton runat="server"
                                              CssClass="dropdown-toggle"
                                              DataToggle="dropdown"
@@ -24,7 +33,7 @@
                                              TextLocalizedTag="FILTER_DROPDOWN"
                                              TextLocalizedPage="ADMIN_USERS">
                             </YAF:ThemeButton>
-                            <div class="dropdown-menu">
+                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left">
                                 <div class="px-3 py-1">
                                     <div class="mb-3">
                                         <div class="form-check form-switch">
@@ -61,6 +70,7 @@
                                 </div>
                             </div>
                         </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -106,30 +116,11 @@
                 </YAF:Alert>
             </asp:Panel>
             <div class="card-footer">
-                <div class="row justify-content-between">
-                    <div class="col-md-3">
-                        <div class="input-group mb-1">
-                            <div class="input-group-text">
-                                <YAF:LocalizedLabel ID="SinceLabel" runat="server"
-                                                    LocalizedTag="ITEMS"/>:
-                            </div>
-                            <asp:DropDownList ID="PageSize" runat="server" 
-                                              AutoPostBack="True"
-                                              OnSelectedIndexChanged="PageSizeSelectedIndexChanged" 
-                                              CssClass="form-select">
-                                <asp:ListItem Text="5" Value="5" />
-                                <asp:ListItem Text="10" Value="10" Selected="True" />
-                                <asp:ListItem Text="20" Value="20" />
-                                <asp:ListItem Text="30" Value="30" />
-                                <asp:ListItem Text="40" Value="40" />
-                                <asp:ListItem Text="50" Value="50" />
-                            </asp:DropDownList>
-                            
-                        </div>
-                    </div>
-                    <div class="col-md-3">
+                <div class="row justify-content-end align-items-center">
+                    <div class="col-auto">
                         <div class="btn-group" role="group" aria-label="Tools">
-                            <YAF:ThemeButton runat="server" OnClick="MarkAll_Click" ID="MarkAll"
+                            <YAF:ThemeButton runat="server" ID="MarkAll"
+                                             OnClick="MarkAll_Click"
                                              TextLocalizedTag="MARK_ALL_ASREAD" TextLocalizedPage="DEFAULT"
                                              Type="Secondary"
                                              Size="Small"
@@ -141,6 +132,12 @@
                 
             </div>
         </div>
-        <YAF:Pager ID="PagerBottom" runat="server" LinkedPager="PagerTop" />
+        
+    </div>
+</div>
+<div class="row justify-content-end">
+    <div class="col-auto">
+        <YAF:Pager ID="PagerTop" runat="server"
+                   OnPageChange="PagerTop_PageChange" />
     </div>
 </div>

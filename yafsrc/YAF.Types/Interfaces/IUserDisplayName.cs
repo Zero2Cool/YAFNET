@@ -41,29 +41,7 @@ namespace YAF.Types.Interfaces
         /// <returns>
         /// The <see cref="string"/>.
         /// </returns>
-        string GetName(int userId);
-
-        /// <summary>
-        /// The Gets Name from user.
-        /// </summary>
-        /// <param name="user">
-        /// The user.
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
-        string GetName(User user);
-
-        /// <summary>
-        /// Get the UserID from the user name.
-        /// </summary>
-        /// <param name="name">
-        /// The name.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int?"/>.
-        /// </returns>
-        int? GetId(string name);
+        string GetNameById(int userId);
 
         /// <summary>
         /// Find user
@@ -73,19 +51,18 @@ namespace YAF.Types.Interfaces
         /// Returns the Found User
         /// </returns>
         [NotNull]
-        IList<User> Find(string contains);
+        IList<User> FindUserContainsName(string contains);
 
         /// <summary>
-        /// Clears a user value (if there is one) for <paramref name="userId"/> from the cache
+        /// Find User By (Display) Name
         /// </summary>
-        /// <param name="userId">
-        /// The user Id.
+        /// <param name="name">
+        /// The name.
         /// </param>
-        void Clear(int userId);
-
-        /// <summary>
-        /// Clears the display name cache (if there is one)
-        /// </summary>
-        void Clear();
+        /// <returns>
+        /// The <see cref="User"/>.
+        /// </returns>
+        [NotNull]
+        User FindUserByName([NotNull] string name);
     }
 }

@@ -26,9 +26,11 @@ namespace YAF.Pages
     #region Using
 
     using System;
+    using System.Data;
 
     using YAF.Controls;
     using YAF.Core.BasePages;
+    using YAF.Core.Extensions;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -89,9 +91,7 @@ namespace YAF.Pages
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser),
-                BuildLink.GetLink(ForumPages.MyAccount));
+            this.PageLinks.AddLink(this.PageContext.User.DisplayOrUserName(), BuildLink.GetLink(ForumPages.MyAccount));
             this.PageLinks.AddLink(this.GetText("BUDDYLIST_TT"), string.Empty);
         }
 
@@ -100,9 +100,11 @@ namespace YAF.Pages
         /// </summary>
         private void BindData()
         {
-            this.InitializeBuddyList(this.BuddyList1, 2);
-            this.InitializeBuddyList(this.PendingBuddyList, 3);
-            this.InitializeBuddyList(this.BuddyRequested, 4);
+            var buddyListDataTable = this.Get<IFriends>().GetForUser(this.PageContext.PageUserID);
+
+            this.InitializeBuddyList(this.BuddyList1, 2, buddyListDataTable);
+            this.InitializeBuddyList(this.PendingBuddyList, 3, buddyListDataTable);
+            this.InitializeBuddyList(this.BuddyRequested, 4, buddyListDataTable);
         }
 
         /// <summary>
@@ -114,8 +116,12 @@ namespace YAF.Pages
         /// <param name="mode">
         /// The mode of this BuddyList.
         /// </param>
-        private void InitializeBuddyList([NotNull] BuddyList customBuddyList, int mode)
+        /// <param name="buddyListDataTable">
+        /// The buddy List Data Table.
+        /// </param>
+        private void InitializeBuddyList([NotNull] BuddyList customBuddyList, int mode, DataTable buddyListDataTable)
         {
+            customBuddyList.FriendsTable = buddyListDataTable;
             customBuddyList.CurrentUserID = this.PageContext.PageUserID;
             customBuddyList.Mode = mode;
             customBuddyList.Container = this;

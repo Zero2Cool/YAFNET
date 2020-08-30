@@ -69,15 +69,6 @@ namespace YAF.Pages
         protected global::YAF.Web.Controls.LocalizedLabel LocalizedLabel3;
 
         /// <summary>
-        /// InboxTabUpdatePanel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel InboxTabUpdatePanel;
-
-        /// <summary>
         /// InboxPMList control.
         /// </summary>
         /// <remarks>
@@ -87,13 +78,13 @@ namespace YAF.Pages
         protected global::YAF.Controls.PMList InboxPMList;
 
         /// <summary>
-        /// UpdatePanel1 control.
+        /// InfoInbox control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel UpdatePanel1;
+        protected global::System.Web.UI.WebControls.Label InfoInbox;
 
         /// <summary>
         /// OutboxPMList control.
@@ -105,13 +96,13 @@ namespace YAF.Pages
         protected global::YAF.Controls.PMList OutboxPMList;
 
         /// <summary>
-        /// ArchiveTabUpdatePanel control.
+        /// InfoOutbox control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel ArchiveTabUpdatePanel;
+        protected global::System.Web.UI.WebControls.Label InfoOutbox;
 
         /// <summary>
         /// ArchivePMList control.
@@ -121,6 +112,15 @@ namespace YAF.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::YAF.Controls.PMList ArchivePMList;
+
+        /// <summary>
+        /// InfoArchive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label InfoArchive;
 
         /// <summary>
         /// hidLastTab control.

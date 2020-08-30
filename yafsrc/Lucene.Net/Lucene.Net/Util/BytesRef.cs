@@ -1,7 +1,8 @@
 using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using WritableArrayAttribute = YAF.Lucene.Net.Support.WritableArrayAttribute;
@@ -47,12 +48,7 @@ namespace YAF.Lucene.Net.Util
     {
         /// <summary>
         /// An empty byte array for convenience </summary>
-        public static readonly byte[] EMPTY_BYTES =
-#if FEATURE_ARRAYEMPTY
-            Array.Empty<byte>();
-#else
-            new byte[0];
-#endif
+        public static readonly byte[] EMPTY_BYTES = Arrays.Empty<byte>();
 
         /// <summary>
         /// The contents of the BytesRef. Should never be <c>null</c>.
@@ -92,7 +88,7 @@ namespace YAF.Lucene.Net.Util
             this.bytes = bytes;
             this.Offset = offset;
             this.Length = length;
-            Debug.Assert(IsValid());
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsValid());
         }
 
         /// <summary>
@@ -144,7 +140,7 @@ namespace YAF.Lucene.Net.Util
         /// unpaired surrogates or invalid UTF16 code units. </param>
         public void CopyChars(ICharSequence text)
         {
-            Debug.Assert(Offset == 0); // TODO broken if offset != 0
+            if (Debugging.AssertsEnabled) Debugging.Assert(Offset == 0); // TODO broken if offset != 0
             UnicodeUtil.UTF16toUTF8(text, 0, text.Length, this);
         }
 
@@ -155,7 +151,7 @@ namespace YAF.Lucene.Net.Util
         /// unpaired surrogates or invalid UTF16 code units. </param>
         public void CopyChars(string text)
         {
-            Debug.Assert(Offset == 0); // TODO broken if offset != 0
+            if (Debugging.AssertsEnabled) Debugging.Assert(Offset == 0); // TODO broken if offset != 0
             UnicodeUtil.UTF16toUTF8(text, 0, text.Length, this);
         }
 
@@ -168,7 +164,7 @@ namespace YAF.Lucene.Net.Util
         /// <param name="other"> Another <see cref="BytesRef"/>, should not be <c>null</c>. </param>
         public bool BytesEquals(BytesRef other)
         {
-            Debug.Assert(other != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(other != null);
             if (Length == other.Length)
             {
                 var otherUpto = other.Offset;
@@ -302,7 +298,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public void Grow(int newLength)
         {
-            Debug.Assert(Offset == 0); // NOTE: senseless if offset != 0
+            if (Debugging.AssertsEnabled) Debugging.Assert(Offset == 0); // NOTE: senseless if offset != 0
             bytes = ArrayUtil.Grow(bytes, newLength);
         }
 
@@ -311,7 +307,7 @@ namespace YAF.Lucene.Net.Util
         public int CompareTo(object other) // LUCENENET specific: Implemented IComparable for FieldComparer
         {
             BytesRef br = other as BytesRef;
-            Debug.Assert(br != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(br != null);
             return utf8SortedAsUnicodeSortOrder.Compare(this, br);
         }
 

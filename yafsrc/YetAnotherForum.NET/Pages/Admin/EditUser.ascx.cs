@@ -31,7 +31,6 @@ namespace YAF.Pages.Admin
 
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
-    using YAF.Core.Helpers;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -95,7 +94,7 @@ namespace YAF.Pages.Admin
             }
 
             // do admin permission check...
-            if (!this.PageContext.IsHostAdmin && user.UserFlags.IsHostAdmin)
+            if (!this.PageContext.User.UserFlags.IsHostAdmin && user.UserFlags.IsHostAdmin)
             {
                 // user is not host admin and is attempted to edit host admin account...
                 BuildLink.AccessDenied();
@@ -106,11 +105,11 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            var userName = this.HtmlEncode(this.Get<IUserDisplayName>().GetName(user));
+            var userName = this.HtmlEncode(user.DisplayOrUserName());
 
             var header = string.Format(this.GetText("ADMIN_EDITUSER", "TITLE"), userName);
 
-            this.Header.Text = this.IconHeader.Text = header;
+            this.IconHeader.Text = header;
 
             // current page label (no link)
             this.PageLinks.AddLink(
@@ -126,7 +125,7 @@ namespace YAF.Pages.Admin
             // update if the user is not Guest
             if (!this.IsGuestUser)
             {
-                AspNetRolesHelper.UpdateForumUser(aspNetUser, this.PageContext.PageBoardID);
+                this.Get<IAspNetRolesHelper>().UpdateForumUser(aspNetUser, this.PageContext.PageBoardID);
             }
 
             this.EditUserTabs.DataBind();

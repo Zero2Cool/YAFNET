@@ -1,7 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -43,21 +43,13 @@ namespace YAF.Lucene.Net.Util.Automaton
     /// </summary>
     public class State : IComparable<State>, IEquatable<State> // LUCENENET specific: Implemented IEquatable, since this class is used in hashtables
     {
-        // LUCENENET specific - optimized empty array creation
-        private static readonly Transition[] EMPTY_TRANSITIONS =
-#if FEATURE_ARRAYEMPTY
-            Array.Empty<Transition>();
-#else
-            new Transition[0];
-#endif
-
         internal bool accept;
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public Transition[] TransitionsArray => transitionsArray;
 
         // LUCENENET NOTE: Setter removed because it is apparently not in use outside of this class
-        private Transition[] transitionsArray = EMPTY_TRANSITIONS;
+        private Transition[] transitionsArray = Arrays.Empty<Transition>();
 
         internal int numTransitions = 0;// LUCENENET NOTE: Made internal because we already have a public property for access
 
@@ -80,7 +72,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// </summary>
         internal void ResetTransitions()
         {
-            transitionsArray = EMPTY_TRANSITIONS;
+            transitionsArray = Arrays.Empty<Transition>();
             numTransitions = 0;
         }
 
@@ -107,7 +99,8 @@ namespace YAF.Lucene.Net.Util.Automaton
             {
                 private readonly TransitionsEnumerable outerInstance;
                 private Transition current;
-                private int i, upTo;
+                private int i;
+                private readonly int upTo;
 
                 public TransitionsEnumerator(TransitionsEnumerable outerInstance)
                 {
@@ -191,7 +184,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// <seealso cref="Step(int, ICollection{State})"/>
         public virtual State Step(int c)
         {
-            Debug.Assert(c >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(c >= 0);
             for (int i = 0; i < numTransitions; i++)
             {
                 Transition t = transitionsArray[i];
@@ -362,7 +355,8 @@ namespace YAF.Lucene.Net.Util.Automaton
             return s.id - id;
         }
 
-        // LUCENENET specific - implemented IEquatable and changed to a struct.
+        #region Equality
+        // LUCENENET specific - implemented IEquatable.
         public bool Equals(State other)
         {
             if (other == null)
@@ -374,5 +368,47 @@ namespace YAF.Lucene.Net.Util.Automaton
         {
             return id;
         }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || obj is State other && Equals(other);
+        }
+
+        public static bool operator ==(State left, State right)
+        {
+            if (left is null)
+            {
+                return right is null;
+            }
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(State left, State right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(State left, State right)
+        {
+            return left is null ? !(right is null) : left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(State left, State right)
+        {
+            return left is null || left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(State left, State right)
+        {
+            return !(left is null) && left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(State left, State right)
+        {
+            return left is null ? right is null : left.CompareTo(right) >= 0;
+        }
+
+        #endregion
     }
 }

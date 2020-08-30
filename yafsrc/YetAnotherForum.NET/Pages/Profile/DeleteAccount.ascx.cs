@@ -37,6 +37,7 @@ namespace YAF.Pages.Profile
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.EventProxies;
+    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Events;
     using YAF.Types.Interfaces.Identity;
@@ -67,9 +68,7 @@ namespace YAF.Pages.Profile
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser),
-                BuildLink.GetLink(ForumPages.MyAccount));
+            this.PageLinks.AddLink(this.PageContext.User.DisplayOrUserName(), BuildLink.GetLink(ForumPages.MyAccount));
 
             this.PageLinks.AddLink(
                 string.Format(this.GetText("DELETE_ACCOUNT", "TITLE"), this.Get<BoardSettings>().Name),
@@ -83,7 +82,7 @@ namespace YAF.Pages.Profile
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (Config.IsDotNetNuke || this.PageContext.IsAdmin || this.PageContext.IsHostAdmin)
+            if (Config.IsDotNetNuke || this.PageContext.User.UserFlags.IsHostAdmin)
             {
                 BuildLink.AccessDenied();
             }
@@ -145,7 +144,7 @@ namespace YAF.Pages.Profile
                             this.Get<ILogger>().Log(
                                 this.PageContext.PageUserID,
                                 this,
-                                $"User {this.Get<IUserDisplayName>().GetName(user)} Suspended his own account until: {suspend} (UTC)",
+                                $"User {user.DisplayOrUserName()} Suspended his own account until: {suspend} (UTC)",
                                 EventLogTypes.UserSuspended);
 
                             this.Get<IRaiseEvent>().Raise(new UpdateUserEvent(this.PageContext.PageUserID));
@@ -171,11 +170,9 @@ namespace YAF.Pages.Profile
                         messageIds.ForEach(
                             x => this.GetRepository<Message>().Delete(x, true, string.Empty, 1, true, false));
 
-                        this.Get<ILogger>().Log(
+                        this.Get<ILogger>().UserDeleted(
                             this.PageContext.PageUserID,
-                            this,
-                            $"User {this.PageContext.PageUserName} Deleted his own account",
-                            EventLogTypes.UserDeleted);
+                            $"User {this.PageContext.User.DisplayOrUserName()} Deleted his own account");
                     }
 
                     break;

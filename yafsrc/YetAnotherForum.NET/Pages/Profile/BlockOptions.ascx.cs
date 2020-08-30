@@ -32,6 +32,7 @@ namespace YAF.Pages.Profile
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
+    using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -87,9 +88,7 @@ namespace YAF.Pages.Profile
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser),
-                BuildLink.GetLink(ForumPages.MyAccount));
+            this.PageLinks.AddLink(this.PageContext.User.DisplayOrUserName(), BuildLink.GetLink(ForumPages.MyAccount));
             this.PageLinks.AddLink(this.GetText("BLOCK_OPTIONS", "TITLE"), string.Empty);
         }
 
@@ -145,9 +144,9 @@ namespace YAF.Pages.Profile
         /// </summary>
         private void BindData()
         {
-            this.BlockPMs.Checked = this.PageContext.CurrentUser.Block.BlockPMs;
-            this.BlockFriendRequests.Checked = this.PageContext.CurrentUser.Block.BlockFriendRequests;
-            this.BlockEmails.Checked = this.PageContext.CurrentUser.Block.BlockEmails;
+            this.BlockPMs.Checked = this.PageContext.User.Block.BlockPMs;
+            this.BlockFriendRequests.Checked = this.PageContext.User.Block.BlockFriendRequests;
+            this.BlockEmails.Checked = this.PageContext.User.Block.BlockEmails;
 
             var ignoreUsers = this.GetRepository<IgnoreUser>().IgnoredUsers(this.PageContext.PageUserID);
 

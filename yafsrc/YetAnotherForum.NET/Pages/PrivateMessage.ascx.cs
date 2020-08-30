@@ -33,6 +33,7 @@ namespace YAF.Pages
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
+    using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -69,22 +70,12 @@ namespace YAF.Pages
         /// <summary>
         ///   Gets or sets a value indicating whether IsArchived.
         /// </summary>
-        protected bool IsArchived
-        {
-            get => this.ViewState["IsArchived"] != null && (bool)this.ViewState["IsArchived"];
-
-            set => this.ViewState["IsArchived"] = value;
-        }
+        protected bool IsArchived { get; set; }
 
         /// <summary>
         ///   Gets or sets a value indicating whether IsOutbox.
         /// </summary>
-        protected bool IsOutbox
-        {
-            get => this.ViewState["IsOutbox"] != null && (bool)this.ViewState["IsOutbox"];
-
-            set => this.ViewState["IsOutbox"] = value;
-        }
+        protected bool IsOutbox { get; set; }
 
         #endregion
 
@@ -153,9 +144,7 @@ namespace YAF.Pages
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.Get<IUserDisplayName>().GetName(this.PageContext.CurrentUser),
-                BuildLink.GetLink(ForumPages.MyAccount));
+            this.PageLinks.AddLink(this.PageContext.User.DisplayOrUserName(), BuildLink.GetLink(ForumPages.MyAccount));
         }
 
         /// <summary>

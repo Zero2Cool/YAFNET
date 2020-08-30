@@ -32,7 +32,6 @@ namespace YAF.Pages.Account
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
-    using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
@@ -188,12 +187,12 @@ namespace YAF.Pages.Account
             else
             {
                 // setup initial roles (if any) for this user
-                AspNetRolesHelper.SetupUserRoles(this.PageContext.PageBoardID, user);
+                this.Get<IAspNetRolesHelper>().SetupUserRoles(this.PageContext.PageBoardID, user);
 
                 var displayName = this.DisplayName.Text;
 
                 // create the user in the YAF DB as well as sync roles...
-                var userID = AspNetRolesHelper.CreateForumUser(user, displayName, this.PageContext.PageBoardID);
+                var userID = this.Get<IAspNetRolesHelper>().CreateForumUser(user, displayName, this.PageContext.PageBoardID);
 
                 if (userID == null)
                 {
@@ -380,7 +379,7 @@ namespace YAF.Pages.Account
                     return false;
                 }
 
-                if (this.Get<IUserDisplayName>().GetId(displayName.Trim()).HasValue)
+                if (this.Get<IUserDisplayName>().FindUserByName(displayName.Trim()) != null)
                 {
                     this.PageContext.AddLoadMessage(
                         this.GetText("ALREADY_REGISTERED_DISPLAYNAME"),
@@ -420,9 +419,6 @@ namespace YAF.Pages.Account
                             userIpAddress,
                             $"A spam Bot who was trying to register was banned by IP {userIpAddress}",
                             this.PageContext.PageUserID);
-
-                        // Clear cache
-                        this.Get<IDataCache>().Remove(Constants.Cache.BannedIP);
 
                         if (this.PageContext.Get<BoardSettings>().LogBannedIP)
                         {

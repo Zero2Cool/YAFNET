@@ -1,8 +1,9 @@
+using J2N.Numerics;
 using J2N.Runtime.CompilerServices;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -60,30 +61,30 @@ namespace YAF.Lucene.Net.Util
         {
         }
 
-        public const int NUM_BYTES_BOOLEAN = 1;
-        public const int NUM_BYTES_BYTE = 1;
-        public const int NUM_BYTES_CHAR = 2;
+        public const int NUM_BYTES_BOOLEAN = sizeof(bool); //1;
+        public const int NUM_BYTES_BYTE = sizeof(byte); //1;
+        public const int NUM_BYTES_CHAR = sizeof(char); //2;
 
         /// <summary>
         /// NOTE: This was NUM_BYTES_SHORT in Lucene
         /// </summary>
-        public const int NUM_BYTES_INT16 = 2;
+        public const int NUM_BYTES_INT16 = sizeof(short); //2;
 
         /// <summary>
         /// NOTE: This was NUM_BYTES_INT in Lucene
         /// </summary>
-        public const int NUM_BYTES_INT32 = 4;
+        public const int NUM_BYTES_INT32 = sizeof(int); //4;
 
         /// <summary>
         /// NOTE: This was NUM_BYTES_FLOAT in Lucene
         /// </summary>
-        public const int NUM_BYTES_SINGLE = 4;
+        public const int NUM_BYTES_SINGLE = sizeof(float); //4;
 
         /// <summary>
         /// NOTE: This was NUM_BYTES_LONG in Lucene
         /// </summary>
-        public const int NUM_BYTES_INT64 = 8;
-        public const int NUM_BYTES_DOUBLE = 8;
+        public const int NUM_BYTES_INT64 = sizeof(long); //8;
+        public const int NUM_BYTES_DOUBLE = sizeof(double); //8;
 
         /// <summary>
         /// Number of bytes this .NET runtime uses to represent an object reference.
@@ -109,7 +110,8 @@ namespace YAF.Lucene.Net.Util
         /// <summary>
         /// Sizes of primitive classes.
         /// </summary>
-        private static readonly IDictionary<Type, int> primitiveSizes = new JCG.Dictionary<Type, int>(IdentityEqualityComparer<Type>.Default) // LUCENENET: Avoid static constructors (see https://github.com/apache/lucenenet/pull/224#issuecomment-469284006)
+        // LUCENENET specific - Identity comparer is not necessary here because Type is already representing an identity
+        private static readonly IDictionary<Type, int> primitiveSizes = new Dictionary<Type, int>(/*IdentityEqualityComparer<Type>.Default*/) // LUCENENET: Avoid static constructors (see https://github.com/apache/lucenenet/pull/224#issuecomment-469284006)
         {
             [typeof(bool)] = NUM_BYTES_BOOLEAN,
             [typeof(sbyte)] = NUM_BYTES_BYTE,
@@ -505,7 +507,7 @@ namespace YAF.Lucene.Net.Util
                 seen.Add(ob);
 
                 Type obClazz = ob.GetType();
-
+                // LUCENENET specific - .NET cannot return a null type for an object, so no need to assert it
                 if (obClazz.Equals(typeof(string)))
                 {
                     // LUCENENET specific - we can get a closer estimate of a string
@@ -634,7 +636,7 @@ namespace YAF.Lucene.Net.Util
             Type type = f.FieldType;
             int fsize = 0;
             
-            if (!typeof(IntPtr).Equals(type) && !typeof(UIntPtr).Equals(type))
+            if (!(typeof(IntPtr) == type) && !(typeof(UIntPtr) == type))
                 fsize = type.IsPrimitive ? primitiveSizes[type] : NUM_BYTES_OBJECT_REF;
 
             // LUCENENET NOTE: I dont think this will ever not be null
@@ -777,8 +779,11 @@ namespace YAF.Lucene.Net.Util
             {
                 initialCapacity = Math.Max(MIN_CAPACITY, initialCapacity);
 
-                Debug.Assert(initialCapacity > 0, "Initial capacity must be between (0, " + int.MaxValue + "].");
-                Debug.Assert(loadFactor > 0 && loadFactor < 1, "Load factor must be between (0, 1).");
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(initialCapacity > 0, () => "Initial capacity must be between (0, " + int.MaxValue + "].");
+                    Debugging.Assert(loadFactor > 0 && loadFactor < 1, "Load factor must be between (0, 1).");
+                }
                 this.LoadFactor = loadFactor;
                 AllocateBuffers(RoundCapacity(initialCapacity));
             }
@@ -788,7 +793,7 @@ namespace YAF.Lucene.Net.Util
             /// </summary>
             public bool Add(KType e)
             {
-                Debug.Assert(e != null, "Null keys not allowed.");
+                if (Debugging.AssertsEnabled) Debugging.Assert(e != null, "Null keys not allowed.");
 
                 if (Assigned >= resizeThreshold)
                 {
@@ -842,11 +847,15 @@ namespace YAF.Lucene.Net.Util
             private static int Rehash(object o)
             {
                 int k = RuntimeHelpers.GetHashCode(o);
-                k ^= (int)((uint)k >> 16);
-                k *= unchecked((int)0x85ebca6b);
-                k ^= (int)((uint)k >> 13);
-                k *= unchecked((int)0xc2b2ae35);
-                k ^= (int)((uint)k >> 16);
+                unchecked
+                {
+                    k ^= k.TripleShift(16);
+                    k *= (int)0x85ebca6b;
+                    k ^= k.TripleShift(13);
+                    k *= (int)0xc2b2ae35;
+                    k ^= k.TripleShift(16);
+                }
+
                 return k;
             }
 
@@ -858,7 +867,7 @@ namespace YAF.Lucene.Net.Util
             {
                 object[] oldKeys = this.keys;
 
-                Debug.Assert(Assigned >= resizeThreshold);
+                if (Debugging.AssertsEnabled) Debugging.Assert(Assigned >= resizeThreshold);
                 AllocateBuffers(NextCapacity(keys.Length));
 
                 /*
@@ -897,8 +906,11 @@ namespace YAF.Lucene.Net.Util
             /// </summary>
             private int NextCapacity(int current) // LUCENENET NOTE: made private, since protected is not valid in a sealed class
             {
-                Debug.Assert(current > 0 && ((current & (current - 1)) == 0), "Capacity must be a power of two.");
-                Debug.Assert((current << 1) > 0, "Maximum capacity exceeded (" + ((int)((uint)0x80000000 >> 1)) + ").");
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(current > 0 && ((current & (current - 1)) == 0), "Capacity must be a power of two.");
+                    Debugging.Assert((current << 1) > 0, () => "Maximum capacity exceeded (" + ((int)((uint)0x80000000 >> 1)) + ").");
+                }
 
                 if (current < MIN_CAPACITY / 2)
                 {

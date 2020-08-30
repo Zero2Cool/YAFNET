@@ -138,11 +138,11 @@ namespace YAF.Pages.Admin
                 }
 
                 // Create groups required for the new board
-                AspNetRolesHelper.CreateRole("Administrators");
-                AspNetRolesHelper.CreateRole("Registered");
+                this.Get<IAspNetRolesHelper>().CreateRole("Administrators");
+                this.Get<IAspNetRolesHelper>().CreateRole("Registered");
 
                 // Add new admin users to group
-                AspNetRolesHelper.AddUserToRole(user, "Administrators");
+                this.Get<IAspNetRolesHelper>().AddUserToRole(user, "Administrators");
 
                 // Create Board
                 newBoardId = this.DbCreateBoard(
@@ -354,7 +354,7 @@ namespace YAF.Pages.Admin
                     newAdmin.UserName,
                     newAdmin.Email,
                     newAdmin.Id,
-                    this.PageContext().IsHostAdmin,
+                    this.PageContext().User.UserFlags.IsHostAdmin,
                     Config.CreateDistinctRoles && Config.IsAnyPortal ? "YAF " : string.Empty);
 
             var loadWrapper = new Action<string, Action<Stream>>(
