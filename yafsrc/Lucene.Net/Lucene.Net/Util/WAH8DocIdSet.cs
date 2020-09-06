@@ -1,7 +1,8 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace YAF.Lucene.Net.Util
@@ -86,10 +87,10 @@ namespace YAF.Lucene.Net.Util
         /// <summary>
         /// Default index interval. </summary>
         public const int DEFAULT_INDEX_INTERVAL = 24;
-
+        
         private static readonly MonotonicAppendingInt64Buffer SINGLE_ZERO_BUFFER = LoadSingleZeroBuffer();
-        private static WAH8DocIdSet EMPTY = new WAH8DocIdSet(new byte[0], 0, 1, SINGLE_ZERO_BUFFER, SINGLE_ZERO_BUFFER);
-
+        // LUCENENET specific - optimized empty array creation
+        private static readonly WAH8DocIdSet EMPTY = new WAH8DocIdSet(Arrays.Empty<byte>(), 0, 1, SINGLE_ZERO_BUFFER, SINGLE_ZERO_BUFFER);
         private static MonotonicAppendingInt64Buffer LoadSingleZeroBuffer() // LUCENENET: Avoid static constructors (see https://github.com/apache/lucenenet/pull/224#issuecomment-469284006)
         {
             var buffer = new MonotonicAppendingInt64Buffer(1, 64, PackedInt32s.COMPACT);
@@ -116,7 +117,7 @@ namespace YAF.Lucene.Net.Util
             switch (docIdSets.Count)
             {
                 case 0:
-                    throw new System.ArgumentException("There must be at least one set to intersect");
+                    throw new ArgumentException("There must be at least one set to intersect");
                 case 1:
                     return docIdSets.First();
             }
@@ -153,7 +154,7 @@ namespace YAF.Lucene.Net.Util
                         wordNum = iterators[i].wordNum;
                         goto mainContinue;
                     }
-                    Debug.Assert(iterators[i].wordNum == wordNum);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(iterators[i].wordNum == wordNum);
                     word &= iterators[i].word;
                     if (word == 0)
                     {
@@ -163,7 +164,7 @@ namespace YAF.Lucene.Net.Util
                     }
                 }
                 // Found a common word
-                Debug.Assert(word != 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(word != 0);
                 builder.AddWord(wordNum, word);
                 ++wordNum;
             mainContinue:;
@@ -249,7 +250,7 @@ namespace YAF.Lucene.Net.Util
 
         internal static int WordNum(int docID)
         {
-            Debug.Assert(docID >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(docID >= 0);
             return (int)((uint)docID >> 3);
         }
 
@@ -290,7 +291,7 @@ namespace YAF.Lucene.Net.Util
             {
                 if (indexInterval < MIN_INDEX_INTERVAL)
                 {
-                    throw new System.ArgumentException("indexInterval must be >= " + MIN_INDEX_INTERVAL);
+                    throw new ArgumentException("indexInterval must be >= " + MIN_INDEX_INTERVAL);
                 }
                 this.indexInterval = indexInterval;
                 return this;
@@ -299,8 +300,11 @@ namespace YAF.Lucene.Net.Util
             internal virtual void WriteHeader(bool reverse, int cleanLength, int dirtyLength)
             {
                 int cleanLengthMinus2 = cleanLength - 2;
-                Debug.Assert(cleanLengthMinus2 >= 0);
-                Debug.Assert(dirtyLength >= 0);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(cleanLengthMinus2 >= 0);
+                    Debugging.Assert(dirtyLength >= 0);
+                }
                 int token = ((cleanLengthMinus2 & 0x03) << 4) | (dirtyLength & 0x07);
                 if (reverse)
                 {
@@ -325,24 +329,24 @@ namespace YAF.Lucene.Net.Util
                 }
             }
 
-            private bool SequenceIsConsistent()
+            private bool SequenceIsConsistent() // Called only from assert
             {
                 for (int i = 1; i < dirtyWords.Length; ++i)
                 {
-                    Debug.Assert(dirtyWords.Bytes[i - 1] != 0 || dirtyWords.Bytes[i] != 0);
-                    Debug.Assert((byte)dirtyWords.Bytes[i - 1] != 0xFF || (byte)dirtyWords.Bytes[i] != 0xFF);
+                    Debugging.Assert(dirtyWords.Bytes[i - 1] != 0 || dirtyWords.Bytes[i] != 0);
+                    Debugging.Assert((byte)dirtyWords.Bytes[i - 1] != 0xFF || (byte)dirtyWords.Bytes[i] != 0xFF);
                 }
                 return true;
             }
 
             internal virtual void WriteSequence()
             {
-                Debug.Assert(SequenceIsConsistent());
+                if (Debugging.AssertsEnabled) Debugging.Assert(SequenceIsConsistent());
                 try
                 {
                     WriteHeader(reverse, clean, dirtyWords.Length);
                 }
-                catch (System.IO.IOException cannotHappen)
+                catch (IOException cannotHappen)
                 {
                     throw new InvalidOperationException(cannotHappen.ToString(), cannotHappen); // LUCENENET NOTE: This was AssertionError in Lucene
                 }
@@ -353,8 +357,11 @@ namespace YAF.Lucene.Net.Util
 
             internal virtual void AddWord(int wordNum, byte word)
             {
-                Debug.Assert(wordNum > lastWordNum);
-                Debug.Assert(word != 0);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(wordNum > lastWordNum);
+                    Debugging.Assert(word != 0);
+                }
 
                 if (!reverse)
                 {
@@ -396,7 +403,7 @@ namespace YAF.Lucene.Net.Util
                 }
                 else
                 {
-                    Debug.Assert(lastWordNum >= 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(lastWordNum >= 0);
                     switch (wordNum - lastWordNum)
                     {
                         case 1:
@@ -446,7 +453,7 @@ namespace YAF.Lucene.Net.Util
             {
                 if (cardinality == 0)
                 {
-                    Debug.Assert(lastWordNum == -1);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(lastWordNum == -1);
                     return EMPTY;
                 }
                 WriteSequence();
@@ -469,15 +476,18 @@ namespace YAF.Lucene.Net.Util
                     positions.Add(0L);
                     wordNums.Add(0L);
                     Iterator it = new Iterator(data, cardinality, int.MaxValue, SINGLE_ZERO_BUFFER, SINGLE_ZERO_BUFFER);
-                    Debug.Assert(it.@in.Position == 0);
-                    Debug.Assert(it.wordNum == -1);
+                    if (Debugging.AssertsEnabled)
+                    {
+                        Debugging.Assert(it.@in.Position == 0);
+                        Debugging.Assert(it.wordNum == -1);
+                    }
                     for (int i = 1; i < valueCount; ++i)
                     {
                         // skip indexInterval sequences
                         for (int j = 0; j < indexInterval; ++j)
                         {
                             bool readSequence = it.ReadSequence();
-                            Debug.Assert(readSequence);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(readSequence);
                             it.SkipDirtyBytes();
                         }
                         int position = it.@in.Position;
@@ -518,7 +528,7 @@ namespace YAF.Lucene.Net.Util
             {
                 if (docID <= lastDocID)
                 {
-                    throw new System.ArgumentException("Doc ids must be added in-order, got " + docID + " which is <= lastDocID=" + lastDocID);
+                    throw new ArgumentException("Doc ids must be added in-order, got " + docID + " which is <= lastDocID=" + lastDocID);
                 }
                 int wordNum = WordNum(docID);
                 if (this.wordNum == -1)
@@ -584,13 +594,7 @@ namespace YAF.Lucene.Net.Util
             this.wordNums = wordNums;
         }
 
-        public override bool IsCacheable
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsCacheable => true;
 
         public override DocIdSetIterator GetIterator()
         {
@@ -626,7 +630,7 @@ namespace YAF.Lucene.Net.Util
         {
             /* Using the index can be costly for close targets. */
 
-            internal static int IndexThreshold(int cardinality, int indexInterval)
+            internal static int IndexThreshold(/*int cardinality, */int indexInterval) // LUCENENET specific - removed unused parameter
             {
                 // Short sequences encode for 3 words (2 clean words and 1 dirty byte),
                 // don't advance if we are going to read less than 3 x indexInterval
@@ -662,7 +666,7 @@ namespace YAF.Lucene.Net.Util
                 bitList = 0;
                 sequenceNum = -1;
                 docID = -1;
-                indexThreshold = IndexThreshold(cardinality, indexInterval);
+                indexThreshold = IndexThreshold(/*cardinality,*/ indexInterval); // LUCENENET specific - removed unused parameter
             }
 
             internal virtual bool ReadSequence()
@@ -683,15 +687,18 @@ namespace YAF.Lucene.Net.Util
                     allOnesLength = ReadCleanLength(@in, token);
                 }
                 dirtyLength = ReadDirtyLength(@in, token);
-                Debug.Assert(@in.Length - @in.Position >= dirtyLength, @in.Position + " " + @in.Length + " " + dirtyLength);
+                if (Debugging.AssertsEnabled) Debugging.Assert(@in.Length - @in.Position >= dirtyLength, () => @in.Position + " " + @in.Length + " " + dirtyLength);
                 ++sequenceNum;
                 return true;
             }
 
             internal virtual void SkipDirtyBytes(int count)
             {
-                Debug.Assert(count >= 0);
-                Debug.Assert(count <= allOnesLength + dirtyLength);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(count >= 0);
+                    Debugging.Assert(count <= allOnesLength + dirtyLength);
+                }
                 wordNum += count;
                 if (count <= allOnesLength)
                 {
@@ -737,7 +744,7 @@ namespace YAF.Lucene.Net.Util
                         word = @in.ReadByte();
                         ++wordNum;
                         --dirtyLength;
-                        Debug.Assert(word != 0); // never more than one consecutive 0
+                        if (Debugging.AssertsEnabled) Debugging.Assert(word != 0); // never more than one consecutive 0
                         return;
                     }
                 }
@@ -752,8 +759,11 @@ namespace YAF.Lucene.Net.Util
                 // advance forward and double the window at each step
                 int indexSize = (int)wordNums.Count;
                 int lo = sequenceNum / indexInterval, hi = lo + 1;
-                Debug.Assert(sequenceNum == -1 || wordNums.Get(lo) <= wordNum);
-                Debug.Assert(lo + 1 == wordNums.Count || wordNums.Get(lo + 1) > wordNum);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(sequenceNum == -1 || wordNums.Get(lo) <= wordNum);
+                    Debugging.Assert(lo + 1 == wordNums.Count || wordNums.Get(lo + 1) > wordNum);
+                }
                 while (true)
                 {
                     if (hi >= indexSize)
@@ -784,14 +794,17 @@ namespace YAF.Lucene.Net.Util
                         hi = mid - 1;
                     }
                 }
-                Debug.Assert(wordNums.Get(hi) <= targetWordNum);
-                Debug.Assert(hi + 1 == wordNums.Count || wordNums.Get(hi + 1) > targetWordNum);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(wordNums.Get(hi) <= targetWordNum);
+                    Debugging.Assert(hi + 1 == wordNums.Count || wordNums.Get(hi + 1) > targetWordNum);
+                }
                 return hi;
             }
 
             internal virtual void AdvanceWord(int targetWordNum)
             {
-                Debug.Assert(targetWordNum > wordNum);
+                if (Debugging.AssertsEnabled) Debugging.Assert(targetWordNum > wordNum);
                 int delta = targetWordNum - wordNum;
                 if (delta <= allOnesLength + dirtyLength + 1)
                 {
@@ -800,7 +813,7 @@ namespace YAF.Lucene.Net.Util
                 else
                 {
                     SkipDirtyBytes();
-                    Debug.Assert(dirtyLength == 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(dirtyLength == 0);
                     if (delta > indexThreshold)
                     {
                         // use the index
@@ -836,10 +849,7 @@ namespace YAF.Lucene.Net.Util
                 NextWord();
             }
 
-            public override int DocID
-            {
-                get { return docID; }
-            }
+            public override int DocID => docID;
 
             public override int NextDoc()
             {
@@ -855,7 +865,7 @@ namespace YAF.Lucene.Net.Util
                     return docID = NO_MORE_DOCS;
                 }
                 bitList = BitUtil.BitList(word);
-                Debug.Assert(bitList != 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(bitList != 0);
                 docID = (wordNum << 3) | ((bitList & 0x0F) - 1);
                 bitList = (int)((uint)bitList >> 4);
                 return docID;
@@ -863,7 +873,7 @@ namespace YAF.Lucene.Net.Util
 
             public override int Advance(int target)
             {
-                Debug.Assert(target > docID);
+                if (Debugging.AssertsEnabled) Debugging.Assert(target > docID);
                 int targetWordNum = WordNum(target);
                 if (targetWordNum > this.wordNum)
                 {

@@ -2,6 +2,7 @@
 using YAF.Lucene.Net.Analysis.TokenAttributes;
 using YAF.Lucene.Net.Analysis.Util;
 using YAF.Lucene.Net.Util;
+using System;
 
 namespace YAF.Lucene.Net.Analysis.NGram
 {
@@ -88,11 +89,11 @@ namespace YAF.Lucene.Net.Analysis.NGram
                 CharacterUtils.GetInstance(version) : CharacterUtils.GetJava4Instance(version);
             if (minGram < 1)
             {
-                throw new System.ArgumentException("minGram must be greater than zero");
+                throw new ArgumentException("minGram must be greater than zero");
             }
             if (minGram > maxGram)
             {
-                throw new System.ArgumentException("minGram must not be greater than maxGram");
+                throw new ArgumentException("minGram must not be greater than maxGram");
             }
             this.minGram = minGram;
             this.maxGram = maxGram;
@@ -105,8 +106,8 @@ namespace YAF.Lucene.Net.Analysis.NGram
             }
             else
             {
-                posIncAtt = new PositionIncrementAttributeAnonymousInnerClassHelper(this);
-                posLenAtt = new PositionLengthAttributeAnonymousInnerClassHelper(this);
+                posIncAtt = new PositionIncrementAttributeAnonymousInnerClassHelper();
+                posLenAtt = new PositionLengthAttributeAnonymousInnerClassHelper();
             }
             termAtt = AddAttribute<ICharTermAttribute>();
             offsetAtt = AddAttribute<IOffsetAttribute>();
@@ -114,43 +115,19 @@ namespace YAF.Lucene.Net.Analysis.NGram
 
         private class PositionIncrementAttributeAnonymousInnerClassHelper : PositionIncrementAttribute
         {
-            private readonly NGramTokenFilter outerInstance;
-
-            public PositionIncrementAttributeAnonymousInnerClassHelper(NGramTokenFilter outerInstance)
-            {
-                this.outerInstance = outerInstance;
-            }
-
             public override int PositionIncrement
             {
-                set
-                {
-                }
-                get
-                {
-                    return 0;
-                }
+                get => 0;
+                set { }
             }
         }
 
         private class PositionLengthAttributeAnonymousInnerClassHelper : PositionLengthAttribute
         {
-            private readonly NGramTokenFilter outerInstance;
-
-            public PositionLengthAttributeAnonymousInnerClassHelper(NGramTokenFilter outerInstance)
-            {
-                this.outerInstance = outerInstance;
-            }
-
             public override int PositionLength
             {
-                set
-                {
-                }
-                get
-                {
-                    return 0;
-                }
+                get => 0;
+                set { }
             }
         }
 
@@ -181,7 +158,7 @@ namespace YAF.Lucene.Net.Analysis.NGram
                     {
                         curTermBuffer = (char[])termAtt.Buffer.Clone();
                         curTermLength = termAtt.Length;
-                        curCodePointCount = charUtils.CodePointCount(termAtt.ToString());
+                        curCodePointCount = charUtils.CodePointCount(termAtt);
                         curGramSize = minGram;
                         curPos = 0;
                         curPosInc = posIncAtt.PositionIncrement;

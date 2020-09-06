@@ -31,14 +31,13 @@ namespace YAF.Web.Controls
     using System.Web.UI;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.Context;
     using YAF.Core.Extensions;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
 
     #endregion
@@ -62,6 +61,7 @@ namespace YAF.Web.Controls
         /// <summary>
         ///   Sets the DataRow.
         /// </summary>
+        [Obsolete("Use CurrentMessage instead!")]    
         public DataRow DataRow
         {
             set => this.CurrentMessage = value != null ? new Message(value) : null;
@@ -97,7 +97,7 @@ namespace YAF.Web.Controls
         /// <summary>
         ///   Gets Message Id.
         /// </summary>
-        public int? MessageId => this.CurrentMessage.ID == 0 ? null : this.CurrentMessage.ID.ToType<int?>();
+        public override int? MessageID => this.CurrentMessage.ID;
 
         /// <summary>
         ///   Gets or sets a value indicating whether Show the Edit Message if needed.
@@ -166,35 +166,12 @@ namespace YAF.Web.Controls
         {
             CodeContracts.VerifyNotNull(this.MessageFlags, "MessageFlags");
 
-            this.MessageID = this.CurrentMessage.ID;
-
             if (!this.MessageFlags.IsDeleted)
             {
                 // populate DisplayUserID
-                if (!UserMembershipHelper.IsGuestUser(this.CurrentMessage.UserID))
+                if (!this.Get<IAspNetUsersHelper>().IsGuestUser(this.CurrentMessage.UserID))
                 {
                     this.DisplayUserID = this.CurrentMessage.UserID;
-                }
-
-                if (this.ShowAttachments)
-                {
-                    if (this.CurrentMessage.HasAttachments ?? false)
-                    {
-                        // add attached files control...
-                        var attached = new MessageAttached { MessageID = this.CurrentMessage.ID };
-
-                        if (this.CurrentMessage.UserID > 0
-                            && BoardContext.Current.Get<BoardSettings>().EnableDisplayName)
-                        {
-                            attached.UserName = UserMembershipHelper.GetDisplayNameFromID(this.CurrentMessage.UserID);
-                        }
-                        else
-                        {
-                            attached.UserName = this.CurrentMessage.UserName;
-                        }
-
-                        this.Controls.Add(attached);
-                    }
                 }
             }
 
@@ -240,6 +217,7 @@ namespace YAF.Web.Controls
                 }
 
                 var formattedMessage = this.Get<IFormatMessage>().Format(
+                    this.CurrentMessage.ID,
                     this.HighlightMessage(this.Message, true),
                     this.MessageFlags,
                     false,
@@ -250,13 +228,13 @@ namespace YAF.Web.Controls
                     formattedMessage,
                     this.MessageFlags,
                     this.DisplayUserID,
-                    this.MessageId);
+                    this.MessageID);
 
                 // Render Edit Message
                 if (this.ShowEditMessage
                     && this.Edited > this.CurrentMessage.Posted.AddSeconds(this.Get<BoardSettings>().EditTimeOut))
                 {
-                    this.RenderEditedMessage(writer, this.Edited, this.CurrentMessage.EditReason, this.MessageId);
+                    this.RenderEditedMessage(writer, this.Edited, this.CurrentMessage.EditReason, this.MessageID);
                 }
 
                 // Render Go to Answer Message
@@ -268,6 +246,7 @@ namespace YAF.Web.Controls
             else
             {
                 var formattedMessage = this.Get<IFormatMessage>().Format(
+                    this.CurrentMessage.ID,
                     this.HighlightMessage(this.Message, true),
                     this.MessageFlags);
 

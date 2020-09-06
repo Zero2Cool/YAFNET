@@ -1,7 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Codecs.Lucene42
@@ -93,7 +93,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene42
                 long count = 0;
                 foreach (long? nv in values)
                 {
-                    Debug.Assert(nv != null);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(nv != null);
                     long v = nv.Value;
 
                     if (gcd != 1)
@@ -127,7 +127,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene42
 
                     ++count;
                 }
-                Debug.Assert(count == maxDoc);
+                if (Debugging.AssertsEnabled) Debugging.Assert(count == maxDoc);
             }
 
             if (uniqueValues != null)
@@ -146,7 +146,8 @@ namespace YAF.Lucene.Net.Codecs.Lucene42
                 else
                 {
                     meta.WriteByte((byte)TABLE_COMPRESSED); // table-compressed
-                    var decode = uniqueValues.ToArray();
+                    var decode = new long[uniqueValues.Count];
+                    uniqueValues.CopyTo(decode);
                     var encode = new Dictionary<long, int>();
                     data.WriteVInt32(decode.Length);
                     for (int i = 0; i < decode.Length; i++)

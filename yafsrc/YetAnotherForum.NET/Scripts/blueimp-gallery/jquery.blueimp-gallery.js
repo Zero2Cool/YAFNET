@@ -31,8 +31,8 @@
       (widget.length && widget) || $(Gallery.prototype.options.container);
     var callbacks = {
       onopen: function () {
-            container.data("gallery", this).trigger("open");
             $("#blueimp-gallery").removeClass("d-none");
+            container.data("gallery", this).trigger("open");
       },
       onopened: function () {
         container.trigger("opened");
@@ -47,11 +47,12 @@
         container.trigger("slidecomplete", arguments);
       },
       onclose: function () {
+          $("#blueimp-gallery").addClass("d-none");
           container.trigger("close");
+          document.body.style.overflow = null;
       },
       onclosed: function () {
           container.trigger("closed").removeData("gallery");
-          $("#blueimp-gallery").addClass("d-none");
       }
     };
     var options = $.extend(

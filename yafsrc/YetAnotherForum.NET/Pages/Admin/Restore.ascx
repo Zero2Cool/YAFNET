@@ -8,39 +8,44 @@
 
 <div class="row">
     <div class="col-xl-12">
-        <h1>
-            <YAF:HelpLabel ID="LocalizedLabel1" runat="server" 
-                                LocalizedTag="TITLE" 
-                                LocalizedPage="ADMIN_RESTORE" />
-        </h1>
-    </div>
-</div>
-<div class="row">
-    <div class="col-xl-12">
-        <YAF:Pager ID="PagerTop" runat="server" OnPageChange="PagerTop_PageChange" />
         <div class="card mb-3">
             <div class="card-header">
-                <YAF:IconHeader runat="server"
-                                IconName="trash-restore"
-                                LocalizedPage="ADMIN_RESTORE"></YAF:IconHeader>
-                <div class="float-right">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-auto">
+                        <YAF:IconHeader runat="server"
+                                        IconName="trash-restore"
+                                        LocalizedPage="ADMIN_RESTORE"></YAF:IconHeader>
+                    </div>
+                <div class="col-auto">
+                    <div class="btn-toolbar" role="toolbar">
+                        <div class="input-group input-group-sm mr-2" role="group">
+                        <div class="input-group-text">
+                            <YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" LocalizedTag="SHOW" />:
+                        </div>
+                        <asp:DropDownList runat="server" ID="PageSize"
+                                          AutoPostBack="True"
+                                          OnSelectedIndexChanged="PageSizeSelectedIndexChanged"
+                                          CssClass="form-select">
+                        </asp:DropDownList>
+                    </div>
                     <YAF:ThemeButton runat="server"
                                      CssClass="dropdown-toggle"
                                      DataToggle="dropdown"
+                                     Size="Small"
                                      Type="Secondary"
                                      Icon="filter"
                                      TextLocalizedTag="FILTER_DROPDOWN"
                                      TextLocalizedPage="ADMIN_USERS"></YAF:ThemeButton>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left">
                         <div class="px-3 py-1">
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <YAF:HelpLabel ID="HelpLabel2" runat="server"
                                                AssociatedControlID="SearchInput"
                                                LocalizedTag="FILTER" LocalizedPage="ADMIN_RESTORE" />
                                 <asp:TextBox runat="server" ID="Filter"
                                              CssClass="form-control"></asp:TextBox>
                             </div>
-                            <div class="form-group">
+                            <div class="mb-3">
                                 <YAF:ThemeButton runat="server" 
                                                  Icon="sync-alt"
                                                  Type="Primary"
@@ -51,7 +56,9 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
+                    </div>
             </div>
                 <asp:Repeater runat="server" ID="DeletedTopics" OnItemCommand="List_ItemCommand">
                     <HeaderTemplate>
@@ -68,7 +75,7 @@
                                                      Type="Link"
                                                      Icon="external-link-alt"
                                                      Visible='<%# this.Eval("Item2.NumPosts").ToType<int>() > 0 %>'
-                                                     NavigateUrl='<%# BuildLink.GetLink(ForumPages.Posts, "t={0}", this.Eval("Item2.ID")) %>'>
+                                                     NavigateUrl='<%# BuildLink.GetLink(ForumPages.Posts, "t={0}&name={1}", this.Eval("Item2.ID"), this.Eval("Item2.TopicName")) %>'>
                                 </YAF:ThemeButton>
                                 </h5>
                                 <small><%# "{0} {1}".Fmt(this.Eval("Item2.NumPosts"), this.GetText("POSTS")) %></small>
@@ -110,13 +117,13 @@
                         <div class="card-footer text-center">
                             <YAF:ThemeButton runat="server" 
                                              CommandName="delete_all" 
+                                             CssClass="mr-2"
                                              ID="Linkbutton4" 
                                              Type="Danger"
                                              Icon="dumpster" 
                                              TextLocalizedTag="DELETE_ALL"
                                              TextLocalizedPage="ADMIN_EVENTLOG">
                             </YAF:ThemeButton>
-                            &nbsp;
                             <YAF:ThemeButton runat="server" 
                                              CommandName="delete_zero" 
                                              ID="ThemeButton2" 
@@ -130,18 +137,39 @@
                     </FooterTemplate>
                 </asp:Repeater>
             </div>
-            <YAF:Pager ID="PagerBottom" runat="server" LinkedPager="PagerTop" />
+           
         </div>
+</div>
+<div class="row justify-content-end">
+<div class="col-auto">
+    <YAF:Pager ID="PagerTop" runat="server" 
+               OnPageChange="PagerTop_PageChange" />
+</div>
 </div>
 <div class="row">
     <div class="col-xl-12">
-        <YAF:Pager ID="PagerMessages" runat="server" OnPageChange="PagerTop_PageChange" />
         <div class="card mb-3">
             <div class="card-header">
-                <YAF:IconHeader runat="server"
-                                IconName="trash-restore"
-                                LocalizedTag="TITLE_MESSAGE" 
-                                LocalizedPage="ADMIN_RESTORE"></YAF:IconHeader>
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-auto">
+                        <YAF:IconHeader runat="server"
+                                        IconName="trash-restore"
+                                        LocalizedTag="TITLE_MESSAGE" 
+                                        LocalizedPage="ADMIN_RESTORE"></YAF:IconHeader>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group input-group-sm mr-2" role="group">
+                            <div class="input-group-text">
+                                <YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" LocalizedTag="SHOW" />:
+                            </div>
+                            <asp:DropDownList runat="server" ID="PageSizeMessages"
+                                              AutoPostBack="True"
+                                              OnSelectedIndexChanged="PageSizeSelectedIndexChanged"
+                                              CssClass="form-select">
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+                </div>
             </div>
                 <asp:Repeater runat="server" ID="DeletedMessages" OnItemCommand="Messages_ItemCommand">
                     <HeaderTemplate>
@@ -158,7 +186,7 @@
                                                      Type="Link"
                                                      Icon="external-link-alt"
                                                      Visible='<%# this.Eval("Item2.NumPosts").ToType<int>() > 0 %>'
-                                                     NavigateUrl='<%# BuildLink.GetLink(ForumPages.Posts, "m={0}#post{0}", this.Eval("Item3.ID")) %>'>
+                                                     NavigateUrl='<%# BuildLink.GetLink(ForumPages.Posts, "m={0}&name={1}#post{0}", this.Eval("Item3.ID"), this.Eval("Item2.TopicName")) %>'>
                                 </YAF:ThemeButton>
                                 </h5>
                             </div>
@@ -210,6 +238,11 @@
                     </FooterTemplate>
                 </asp:Repeater>
             </div>
-            <YAF:Pager ID="PagerMessagesBottom" runat="server" LinkedPager="PagerMessages" />
-        </div>
+    </div>
+</div>
+<div class="row justify-content-end">
+    <div class="col-auto">
+        <YAF:Pager ID="PagerMessages" runat="server" 
+                   OnPageChange="PagerTop_PageChange" />
+    </div>
 </div>

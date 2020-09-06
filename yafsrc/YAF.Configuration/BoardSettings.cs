@@ -25,10 +25,10 @@ namespace YAF.Configuration
 {
     using System;
     using System.Globalization;
-    using System.Web.Security;
 
     using YAF.Configuration.Pattern;
     using YAF.Types.Constants;
+    using YAF.Types.Extensions;
 
     /// <summary>
     /// The YAF board settings.
@@ -46,9 +46,6 @@ namespace YAF.Configuration
 
             // set the board dictionary as the override...
             this.Registry.OverrideDictionary = this.RegistryBoard;
-
-            this.membershipAppName = Membership.ApplicationName;
-            this.rolesAppName = Roles.ApplicationName;
         }
 
         /// <summary>
@@ -81,17 +78,20 @@ namespace YAF.Configuration
             set => this.RegistryBoard.SetValue("ReportedSpammers", value);
         }
 
-        // Provider Settings
+        /// <summary>
+        /// The application id.
+        /// </summary>
+        public Guid ApplicationId => this.RegistryBoard.GetValue("ApplicationId", string.Empty).ToType<Guid>();
 
         /// <summary>
-        /// Gets MembershipAppName.
+        /// Gets or sets the min required password length.
         /// </summary>
-        public string MembershipAppName => this.membershipAppName;
+        public int MinRequiredPasswordLength
+        {
+            get => this.RegistryBoard.GetValue("MinRequiredPasswordLength", 6);
 
-        /// <summary>
-        /// Gets RolesAppName.
-        /// </summary>
-        public string RolesAppName => this.rolesAppName;
+            set => this.RegistryBoard.SetValue("MinRequiredPasswordLength", value);
+        }
 
         /// <summary>
         /// Gets Name.
@@ -115,16 +115,6 @@ namespace YAF.Configuration
             get => this.Registry.GetValue("EnableDisplayName", false);
 
             set => this.Registry.SetValue("EnableDisplayName", value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to enable topic description.
-        /// </summary>
-        public bool EnableTopicDescription
-        {
-            get => this.Registry.GetValue("EnableTopicDescription", true);
-
-            set => this.Registry.SetValue("EnableTopicDescription", value);
         }
 
         /// <summary>
@@ -299,16 +289,6 @@ namespace YAF.Configuration
             get => this.Registry.GetValue("LogViewStateError", false);
 
             set => this.Registry.SetValue("LogViewStateError", value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether FileExtensionAreAllowed.
-        /// </summary>
-        public bool FileExtensionAreAllowed
-        {
-            get => this.RegistryBoard.GetValue("FileExtensionAreAllowed", true);
-
-            set => this.RegistryBoard.SetValue("FileExtensionAreAllowed", value);
         }
 
         /// <summary>
@@ -585,26 +565,6 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets Member ListPageSize.
-        /// </summary>
-        public int MemberListPageSize
-        {
-            get => this.Registry.GetValue("MemberListPageSize", 20);
-
-            set => this.Registry.SetValue("MemberListPageSize", value);
-        }
-
-        /// <summary>
-        /// Gets or sets MyTopics List PageSize.
-        /// </summary>
-        public int MyTopicsListPageSize
-        {
-            get => this.Registry.GetValue("MyTopicsListPageSize", 20);
-
-            set => this.Registry.SetValue("MyTopicsListPageSize", value);
-        }
-
-        /// <summary>
         /// Gets or sets PostLatestFeedAccess.
         /// </summary>
         public int PostLatestFeedAccess
@@ -725,16 +685,6 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets MaxWordLength. Used in topic names etc. to avoid layout distortions.
-        /// </summary>
-        public int MaxWordLength
-        {
-            get => this.Registry.GetValue("MaxWordLength", 40);
-
-            set => this.Registry.SetValue("MaxWordLength", value);
-        }
-
-        /// <summary>
         /// Gets or sets MaxFileSize.
         /// </summary>
         public int MaxFileSize
@@ -765,16 +715,6 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets PostsPerPage.
-        /// </summary>
-        public int PostsPerPage
-        {
-            get => this.Registry.GetValue("PostsPerPage", 20);
-
-            set => this.Registry.SetValue("PostsPerPage", value);
-        }
-
-        /// <summary>
         /// Gets or sets the amount of Sub Forums In Forums List.
         /// </summary>
         public int SubForumsInForumList
@@ -785,13 +725,13 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets TopicsPerPage.
+        /// Gets or sets PostsPerPage.
         /// </summary>
-        public int TopicsPerPage
+        public int PostsPerPage
         {
-            get => this.Registry.GetValue("TopicsPerPage", 15);
+            get => this.Registry.GetValue("PostsPerPage", 20);
 
-            set => this.Registry.SetValue("TopicsPerPage", value);
+            set => this.Registry.SetValue("PostsPerPage", value);
         }
 
         /// <summary>
@@ -812,16 +752,6 @@ namespace YAF.Configuration
             get => this.Registry.GetValue("AllowedPollChoiceNumber", 10);
 
             set => this.Registry.SetValue("AllowedPollChoiceNumber", value);
-        }
-
-        /// <summary>
-        /// Gets or sets AllowedPollNumber.
-        /// </summary>
-        public int AllowedPollNumber
-        {
-            get => this.Registry.GetValue("AllowedPollNumber", 3);
-
-            set => this.Registry.SetValue("AllowedPollNumber", value);
         }
 
         /// <summary>
@@ -952,16 +882,6 @@ namespace YAF.Configuration
             get => this.Registry.GetValue("SearchPermissions", (int)ViewPermissions.Everyone);
 
             set => this.Registry.SetValue("SearchPermissions", value);
-        }
-
-        /// <summary>
-        /// Gets or sets BoardPollID.
-        /// </summary>
-        public int BoardPollID
-        {
-            get => this.RegistryBoard.GetValue("BoardPollID", 0);
-
-            set => this.RegistryBoard.SetValue("BoardPollID", value);
         }
 
         /// <summary>
@@ -1202,16 +1122,6 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether EmailVerification.
-        /// </summary>
-        public bool EmailVerification
-        {
-            get => this.Registry.GetValue("EmailVerification", false);
-
-            set => this.Registry.SetValue("EmailVerification", value);
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [allow notification all posts all topics].
         /// </summary>
         public bool AllowNotificationAllPostsAllTopics
@@ -1436,16 +1346,6 @@ namespace YAF.Configuration
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether AllowGuestsViewPollOptions.
-        /// </summary>
-        public bool AllowGuestsViewPollOptions
-        {
-            get => this.Registry.GetValue("AllowGuestsViewPollOptions", true);
-
-            set => this.Registry.SetValue("AllowGuestsViewPollOptions", value);
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether AllowUsersImagedPoll.
         /// </summary>
         public bool AllowUsersImagedPoll
@@ -1666,16 +1566,6 @@ namespace YAF.Configuration
             get => this.Registry.GetValue("ShowGroupsProfile", false);
 
             set => this.Registry.SetValue("ShowGroupsProfile", value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether PollVoteTiedToIP.
-        /// </summary>
-        public bool PollVoteTiedToIP
-        {
-            get => this.Registry.GetValue("PollVoteTiedToIP", true);
-
-            set => this.Registry.SetValue("PollVoteTiedToIP", value);
         }
 
         /// <summary>
@@ -2439,6 +2329,16 @@ namespace YAF.Configuration
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether two column board layout.
+        /// </summary>
+        public bool TwoColumnBoardLayout
+        {
+            get => this.RegistryBoard.GetValue("TwoColumnBoardLayout", false);
+
+            set => this.RegistryBoard.SetValue("TwoColumnBoardLayout", value);
+        }
+
+        /// <summary>
         /// Gets or sets the board announcement.
         /// </summary>
         public string BoardAnnouncement
@@ -2492,15 +2392,5 @@ namespace YAF.Configuration
         ///  Gets or sets the legacy board settings.
         /// </summary>
         protected virtual LegacyBoardSettings LegacySettings { get; set; }
-
-        /// <summary>
-        ///  Gets or sets the membership app name.
-        /// </summary>
-        protected virtual string membershipAppName { get; set; }
-
-        /// <summary>
-        ///  Gets or sets the roles app name.
-        /// </summary>
-        protected virtual string rolesAppName { get; set; }
     }
 }

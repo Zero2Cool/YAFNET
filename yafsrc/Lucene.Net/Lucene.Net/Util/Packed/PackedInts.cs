@@ -1,8 +1,10 @@
 using J2N.Numerics;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 
 namespace YAF.Lucene.Net.Util.Packed
 {
@@ -78,11 +80,11 @@ namespace YAF.Lucene.Net.Util.Packed
         {
             if (version < VERSION_START)
             {
-                throw new System.ArgumentException("Version is too old, should be at least " + VERSION_START + " (got " + version + ")");
+                throw new ArgumentException("Version is too old, should be at least " + VERSION_START + " (got " + version + ")");
             }
             else if (version > VERSION_CURRENT)
             {
-                throw new System.ArgumentException("Version is too new, should be at most " + VERSION_CURRENT + " (got " + version + ")");
+                throw new ArgumentException("Version is too new, should be at most " + VERSION_CURRENT + " (got " + version + ")");
             }
         }
 
@@ -140,8 +142,8 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public override float OverheadPerValue(int bitsPerValue)
             {
+                if (Debugging.AssertsEnabled) Debugging.Assert(IsSupported(bitsPerValue));
                 int valuesPerBlock = 64 / bitsPerValue;
-
                 int overhead = 64 % bitsPerValue;
                 return (float)overhead / valuesPerBlock;
             }
@@ -170,10 +172,7 @@ namespace YAF.Lucene.Net.Util.Packed
 
             private static readonly Format[] values = new Format[] { PACKED, PACKED_SINGLE_BLOCK };
 
-            public static IEnumerable<Format> Values
-            {
-                get { return values; }
-            }
+            public static IEnumerable<Format> Values => values;
 
             /// <summary>
             /// Get a format according to its ID.
@@ -192,18 +191,13 @@ namespace YAF.Lucene.Net.Util.Packed
 
             internal Format(int id)
             {
-                this.id = id;
+                this.Id = id;
             }
-
-            private int id; // LUCENENET specific - made private, since it is already exposed through public property
 
             /// <summary>
             /// Returns the ID of the format.
             /// </summary>
-            public int Id
-            {
-                get { return id; }
-            }
+            public int Id { get; private set; }
 
             /// <summary>
             /// Computes how many <see cref="byte"/> blocks are needed to store <paramref name="valueCount"/>
@@ -211,6 +205,7 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual long ByteCount(int packedIntsVersion, int valueCount, int bitsPerValue)
             {
+                if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue >= 0 && bitsPerValue <= 64, () => bitsPerValue.ToString(CultureInfo.InvariantCulture));
                 // assume long-aligned
                 return 8L * Int64Count(packedIntsVersion, valueCount, bitsPerValue);
             }
@@ -223,16 +218,13 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual int Int64Count(int packedIntsVersion, int valueCount, int bitsPerValue)
             {
+                if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue >= 0 && bitsPerValue <= 64, () => bitsPerValue.ToString(CultureInfo.InvariantCulture));
                 long byteCount = ByteCount(packedIntsVersion, valueCount, bitsPerValue);
-
+                if (Debugging.AssertsEnabled) Debugging.Assert(byteCount < 8L * int.MaxValue);
                 if ((byteCount % 8) == 0)
-                {
                     return (int)(byteCount / 8);
-                }
                 else
-                {
                     return (int)(byteCount / 8 + 1);
-                }
             }
 
             /// <summary>
@@ -249,7 +241,7 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual float OverheadPerValue(int bitsPerValue)
             {
-                Debug.Assert(IsSupported(bitsPerValue));
+                if (Debugging.AssertsEnabled) Debugging.Assert(IsSupported(bitsPerValue));
                 return 0f;
             }
 
@@ -258,7 +250,7 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual float OverheadRatio(int bitsPerValue)
             {
-                Debug.Assert(IsSupported(bitsPerValue));
+                if (Debugging.AssertsEnabled) Debugging.Assert(IsSupported(bitsPerValue));
                 return OverheadPerValue(bitsPerValue) / bitsPerValue;
             }
         }
@@ -539,9 +531,12 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual int Get(int index, long[] arr, int off, int len)
             {
-                Debug.Assert(len > 0, "len must be > 0 (got " + len + ")");
-                Debug.Assert(index >= 0 && index < Count);
-                Debug.Assert(off + len <= arr.Length);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(len > 0, () => "len must be > 0 (got " + len + ")");
+                    Debugging.Assert(index >= 0 && index < Count);
+                    Debugging.Assert(off + len <= arr.Length);
+                }
 
                 int gets = Math.Min(Count - index, len);
                 for (int i = index, o = off, end = index + gets; i < end; ++i, ++o)
@@ -580,7 +575,7 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual object GetArray()
             {
-                Debug.Assert(!HasArray);
+                if (Debugging.AssertsEnabled) Debugging.Assert(!HasArray);
                 return null;
             }
 
@@ -589,10 +584,7 @@ namespace YAF.Lucene.Net.Util.Packed
             /// native .NET array.
             /// </summary>
             /// <seealso cref="GetArray"/>
-            public virtual bool HasArray
-            {
-                get { return false; }
-            }
+            public virtual bool HasArray => false;
         }
 
         /// <summary>
@@ -643,7 +635,7 @@ namespace YAF.Lucene.Net.Util.Packed
             public virtual long Next()
             {
                 Int64sRef nextValues = Next(1);
-                Debug.Assert(nextValues.Length > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(nextValues.Length > 0);
                 long result = nextValues.Int64s[nextValues.Offset];
                 ++nextValues.Offset;
                 --nextValues.Length;
@@ -652,18 +644,9 @@ namespace YAF.Lucene.Net.Util.Packed
 
             public abstract Int64sRef Next(int count);
 
-            public virtual int BitsPerValue
-            {
-                get
-                {
-                    return m_bitsPerValue;
-                }
-            }
+            public virtual int BitsPerValue => m_bitsPerValue;
 
-            public virtual int Count
-            {
-                get { return m_valueCount; }
-            }
+            public virtual int Count => m_valueCount;
 
             public abstract int Ord { get; }
         }
@@ -689,10 +672,13 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual int Set(int index, long[] arr, int off, int len)
             {
-                Debug.Assert(len > 0, "len must be > 0 (got " + len + ")");
-                Debug.Assert(index >= 0 && index < Count);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(len > 0, () => "len must be > 0 (got " + len + ")");
+                    Debugging.Assert(index >= 0 && index < Count);
+                }
                 len = Math.Min(len, Count - index);
-                Debug.Assert(off + len <= arr.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(off + len <= arr.Length);
 
                 for (int i = index, o = off, end = index + len; i < end; ++i, ++o)
                 {
@@ -707,8 +693,11 @@ namespace YAF.Lucene.Net.Util.Packed
             /// </summary>
             public virtual void Fill(int fromIndex, int toIndex, long val)
             {
-                Debug.Assert(val <= MaxValue(BitsPerValue));
-                Debug.Assert(fromIndex <= toIndex);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(val <= MaxValue(BitsPerValue));
+                    Debugging.Assert(fromIndex <= toIndex);
+                }
                 for (int i = fromIndex; i < toIndex; ++i)
                 {
                     Set(i, val);
@@ -741,13 +730,7 @@ namespace YAF.Lucene.Net.Util.Packed
 
             /// <summary>
             /// The underlying format. </summary>
-            internal virtual Format Format
-            {
-                get
-                {
-                    return Format.PACKED;
-                }
-            }
+            internal virtual Format Format => Format.PACKED;
         }
 
         /// <summary>
@@ -763,24 +746,15 @@ namespace YAF.Lucene.Net.Util.Packed
             protected ReaderImpl(int valueCount, int bitsPerValue)
             {
                 this.m_bitsPerValue = bitsPerValue;
-                Debug.Assert(bitsPerValue > 0 && bitsPerValue <= 64, "bitsPerValue=" + bitsPerValue);
+                if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue > 0 && bitsPerValue <= 64, () => "bitsPerValue=" + bitsPerValue);
                 this.m_valueCount = valueCount;
             }
 
             public override abstract long Get(int index);
 
-            public override sealed int BitsPerValue
-            {
-                get
-                {
-                    return m_bitsPerValue;
-                }
-            }
+            public override sealed int BitsPerValue => m_bitsPerValue;
 
-            public override sealed int Count
-            {
-                get { return m_valueCount; }
-            }
+            public override sealed int Count => m_valueCount;
         }
 
         public abstract class MutableImpl : Mutable
@@ -791,22 +765,13 @@ namespace YAF.Lucene.Net.Util.Packed
             protected MutableImpl(int valueCount, int bitsPerValue)
             {
                 this.m_valueCount = valueCount;
-                Debug.Assert(bitsPerValue > 0 && bitsPerValue <= 64, "bitsPerValue=" + bitsPerValue);
+                if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue > 0 && bitsPerValue <= 64, () => "bitsPerValue=" + bitsPerValue);
                 this.m_bitsPerValue = bitsPerValue;
             }
 
-            public override sealed int BitsPerValue
-            {
-                get
-                {
-                    return m_bitsPerValue;
-                }
-            }
+            public override sealed int BitsPerValue => m_bitsPerValue;
 
-            public override sealed int Count
-            {
-                get { return m_valueCount; }
-            }
+            public override sealed int Count => m_valueCount;
         }
 
         /// <summary>
@@ -829,25 +794,19 @@ namespace YAF.Lucene.Net.Util.Packed
 
             public override int Get(int index, long[] arr, int off, int len)
             {
-                Debug.Assert(len > 0, "len must be > 0 (got " + len + ")");
-                Debug.Assert(index >= 0 && index < valueCount);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(len > 0, () => "len must be > 0 (got " + len + ")");
+                    Debugging.Assert(index >= 0 && index < valueCount);
+                }
                 len = Math.Min(len, valueCount - index);
                 Arrays.Fill(arr, off, off + len, 0);
                 return len;
             }
 
-            public override int BitsPerValue
-            {
-                get
-                {
-                    return 0;
-                }
-            }
+            public override int BitsPerValue => 0;
 
-            public override int Count
-            {
-                get { return valueCount; }
-            }
+            public override int Count => valueCount;
 
             public override long RamBytesUsed()
             {
@@ -868,8 +827,11 @@ namespace YAF.Lucene.Net.Util.Packed
 
             protected Writer(DataOutput @out, int valueCount, int bitsPerValue)
             {
-                Debug.Assert(bitsPerValue <= 64);
-                Debug.Assert(valueCount >= 0 || valueCount == -1);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(bitsPerValue <= 64);
+                    Debugging.Assert(valueCount >= 0 || valueCount == -1);
+                }
                 this.m_out = @out;
                 this.m_valueCount = valueCount;
                 this.m_bitsPerValue = bitsPerValue;
@@ -877,7 +839,7 @@ namespace YAF.Lucene.Net.Util.Packed
 
             internal virtual void WriteHeader()
             {
-                Debug.Assert(m_valueCount != -1);
+                if (Debugging.AssertsEnabled) Debugging.Assert(m_valueCount != -1);
                 CodecUtil.WriteHeader(m_out, CODEC_NAME, VERSION_CURRENT);
                 m_out.WriteVInt32(m_bitsPerValue);
                 m_out.WriteVInt32(m_valueCount);
@@ -894,10 +856,7 @@ namespace YAF.Lucene.Net.Util.Packed
 
             /// <summary>
             /// The number of bits per value. </summary>
-            public int BitsPerValue
-            {
-                get { return m_bitsPerValue; }
-            }
+            public int BitsPerValue => m_bitsPerValue;
 
             /// <summary>
             /// Perform end-of-stream operations. </summary>
@@ -950,7 +909,7 @@ namespace YAF.Lucene.Net.Util.Packed
         /// <param name="valueCount">   How many values the stream holds. </param>
         /// <param name="bitsPerValue"> The number of bits per value. </param>
         /// <returns>             A <see cref="Reader"/>. </returns>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error. </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error. </exception>
         /// <seealso cref="PackedInt32s.GetWriterNoHeader(DataOutput, Format, int, int, int)"/>
         public static Reader GetReaderNoHeader(DataInput @in, Format format, int version, int valueCount, int bitsPerValue)
         {
@@ -974,7 +933,7 @@ namespace YAF.Lucene.Net.Util.Packed
                         return new Direct32(version, @in, valueCount);
 
                     case 64:
-                        return new Direct64(version, @in, valueCount);
+                        return new Direct64(/*version,*/ @in, valueCount); // LUCENENET specific - removed unused parameter
 
                     case 24:
                         if (valueCount <= Packed8ThreeBlocks.MAX_SIZE)
@@ -1008,7 +967,7 @@ namespace YAF.Lucene.Net.Util.Packed
         /// <param name="in">           The stream to read data from, positioned at the beginning of the packed values. </param>
         /// <param name="header">       Metadata result from <see cref="ReadHeader(DataInput)"/>. </param>
         /// <returns>             A <see cref="Reader"/>. </returns>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error. </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error. </exception>
         /// <seealso cref="ReadHeader(DataInput)"/>
         public static Reader GetReaderNoHeader(DataInput @in, Header header)
         {
@@ -1022,12 +981,12 @@ namespace YAF.Lucene.Net.Util.Packed
         /// </summary>
         /// <param name="in">           The stream to read data from. </param>
         /// <returns>             A <see cref="Reader"/>. </returns>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error </exception>
         public static Reader GetReader(DataInput @in)
         {
             int version = CodecUtil.CheckHeader(@in, CODEC_NAME, VERSION_START, VERSION_CURRENT);
             int bitsPerValue = @in.ReadVInt32();
-            Debug.Assert(bitsPerValue > 0 && bitsPerValue <= 64, "bitsPerValue=" + bitsPerValue);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue > 0 && bitsPerValue <= 64, () => "bitsPerValue=" + bitsPerValue);
             int valueCount = @in.ReadVInt32();
             Format format = Format.ById(@in.ReadVInt32());
 
@@ -1064,12 +1023,12 @@ namespace YAF.Lucene.Net.Util.Packed
         /// <param name="in"> Positioned at the beginning of a stored packed int structure. </param>
         /// <param name="mem"> How much memory the iterator is allowed to use to read-ahead (likely to speed up iteration). </param>
         /// <returns> An iterator to access the values. </returns>
-        /// <exception cref="System.IO.IOException"> If the structure could not be retrieved. </exception>
+        /// <exception cref="IOException"> If the structure could not be retrieved. </exception>
         public static IReaderIterator GetReaderIterator(DataInput @in, int mem)
         {
             int version = CodecUtil.CheckHeader(@in, CODEC_NAME, VERSION_START, VERSION_CURRENT);
             int bitsPerValue = @in.ReadVInt32();
-            Debug.Assert(bitsPerValue > 0 && bitsPerValue <= 64, "bitsPerValue=" + bitsPerValue);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue > 0 && bitsPerValue <= 64, () => "bitsPerValue=" + bitsPerValue);
             int valueCount = @in.ReadVInt32();
             Format format = Format.ById(@in.ReadVInt32());
             return GetReaderIteratorNoHeader(@in, format, version, valueCount, bitsPerValue, mem);
@@ -1105,7 +1064,7 @@ namespace YAF.Lucene.Net.Util.Packed
                 long byteCount = format.ByteCount(version, valueCount, bitsPerValue);
                 if (byteCount != format.ByteCount(VERSION_CURRENT, valueCount, bitsPerValue))
                 {
-                    Debug.Assert(version == VERSION_START);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(version == VERSION_START);
                     long endPointer = @in.GetFilePointer() + byteCount;
                     // Some consumers of direct readers assume that reading the last value
                     // will make the underlying IndexInput go to the end of the packed
@@ -1127,9 +1086,9 @@ namespace YAF.Lucene.Net.Util.Packed
 
         private class DirectPackedReaderAnonymousInnerClassHelper : DirectPackedReader
         {
-            private IndexInput @in;
-            private int valueCount;
-            private long endPointer;
+            private readonly IndexInput @in;
+            private readonly int valueCount;
+            private readonly long endPointer;
 
             public DirectPackedReaderAnonymousInnerClassHelper(int bitsPerValue, int valueCount, IndexInput @in, long endPointer)
                 : base(bitsPerValue, valueCount, @in)
@@ -1148,7 +1107,7 @@ namespace YAF.Lucene.Net.Util.Packed
                     {
                         @in.Seek(endPointer);
                     }
-                    catch (System.IO.IOException e)
+                    catch (IOException e)
                     {
                         throw new InvalidOperationException("failed", e);
                     }
@@ -1168,7 +1127,7 @@ namespace YAF.Lucene.Net.Util.Packed
         /// <param name="in">           The stream to read data from, positioned at the beginning of the packed values. </param>
         /// <param name="header">       Metadata result from <see cref="ReadHeader(DataInput)"/>. </param>
         /// <returns>             A <see cref="Reader"/>. </returns>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error. </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error. </exception>
         /// <seealso cref="ReadHeader(DataInput)"/>
         public static Reader GetDirectReaderNoHeader(IndexInput @in, Header header)
         {
@@ -1187,12 +1146,12 @@ namespace YAF.Lucene.Net.Util.Packed
         /// </summary>
         /// <param name="in">           The stream to read data from. </param>
         /// <returns> A direct <see cref="Reader"/>. </returns>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error. </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error. </exception>
         public static Reader GetDirectReader(IndexInput @in)
         {
             int version = CodecUtil.CheckHeader(@in, CODEC_NAME, VERSION_START, VERSION_CURRENT);
             int bitsPerValue = @in.ReadVInt32();
-            Debug.Assert(bitsPerValue > 0 && bitsPerValue <= 64, "bitsPerValue=" + bitsPerValue);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue > 0 && bitsPerValue <= 64, () => "bitsPerValue=" + bitsPerValue);
             int valueCount = @in.ReadVInt32();
             Format format = Format.ById(@in.ReadVInt32());
             return GetDirectReaderNoHeader(@in, format, version, valueCount, bitsPerValue);
@@ -1231,7 +1190,7 @@ namespace YAF.Lucene.Net.Util.Packed
         /// </summary>
         public static Mutable GetMutable(int valueCount, int bitsPerValue, PackedInt32s.Format format)
         {
-            Debug.Assert(valueCount >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(valueCount >= 0);
 
             if (format == PackedInt32s.Format.PACKED_SINGLE_BLOCK)
             {
@@ -1355,10 +1314,10 @@ namespace YAF.Lucene.Net.Util.Packed
         /// <param name="bitsPerValue"> The number of bits per value. </param>
         /// <param name="acceptableOverheadRatio"> An acceptable overhead ratio per value. </param>
         /// <returns>             A <see cref="Writer"/>. </returns>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error. </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error. </exception>
         public static Writer GetWriter(DataOutput @out, int valueCount, int bitsPerValue, float acceptableOverheadRatio)
         {
-            Debug.Assert(valueCount >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(valueCount >= 0);
 
             FormatAndBits formatAndBits = FastestFormatAndBits(valueCount, bitsPerValue, acceptableOverheadRatio);
             Writer writer = GetWriterNoHeader(@out, formatAndBits.Format, valueCount, formatAndBits.BitsPerValue, DEFAULT_BUFFER_SIZE);
@@ -1378,7 +1337,7 @@ namespace YAF.Lucene.Net.Util.Packed
         {
             if (maxValue < 0)
             {
-                throw new System.ArgumentException("maxValue must be non-negative (got: " + maxValue + ")");
+                throw new ArgumentException("maxValue must be non-negative (got: " + maxValue + ")");
             }
             return Math.Max(1, 64 - maxValue.LeadingZeroCount());
         }
@@ -1403,8 +1362,11 @@ namespace YAF.Lucene.Net.Util.Packed
         /// </summary>
         public static void Copy(Reader src, int srcPos, Mutable dest, int destPos, int len, int mem)
         {
-            Debug.Assert(srcPos + len <= src.Count);
-            Debug.Assert(destPos + len <= dest.Count);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(srcPos + len <= src.Count);
+                Debugging.Assert(destPos + len <= dest.Count);
+            }
             int capacity = (int)((uint)mem >> 3);
             if (capacity == 0)
             {
@@ -1425,17 +1387,17 @@ namespace YAF.Lucene.Net.Util.Packed
         /// Same as <see cref="Copy(Reader, int, Mutable, int, int, int)"/> but using a pre-allocated buffer. </summary>
         internal static void Copy(Reader src, int srcPos, Mutable dest, int destPos, int len, long[] buf)
         {
-            Debug.Assert(buf.Length > 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(buf.Length > 0);
             int remaining = 0;
             while (len > 0)
             {
                 int read = src.Get(srcPos, buf, remaining, Math.Min(len, buf.Length - remaining));
-                Debug.Assert(read > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(read > 0);
                 srcPos += read;
                 len -= read;
                 remaining += read;
                 int written = dest.Set(destPos, buf, 0, remaining);
-                Debug.Assert(written > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(written > 0);
                 destPos += written;
                 if (written < remaining)
                 {
@@ -1459,14 +1421,14 @@ namespace YAF.Lucene.Net.Util.Packed
         /// or <see cref="GetDirectReaderNoHeader(IndexInput, Header)"/>. </summary>
         /// <param name="in"> The stream to read data. </param>
         /// <returns>   Packed integer metadata. </returns>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error. </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error. </exception>
         /// <seealso cref="GetReaderNoHeader(DataInput, Header)"/>
         /// <seealso cref="GetDirectReaderNoHeader(IndexInput, Header)"/>
         public static Header ReadHeader(DataInput @in)
         {
             int version = CodecUtil.CheckHeader(@in, CODEC_NAME, VERSION_START, VERSION_CURRENT);
             int bitsPerValue = @in.ReadVInt32();
-            Debug.Assert(bitsPerValue > 0 && bitsPerValue <= 64, "bitsPerValue=" + bitsPerValue);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue > 0 && bitsPerValue <= 64, () => "bitsPerValue=" + bitsPerValue);
             int valueCount = @in.ReadVInt32();
             Format format = Format.ById(@in.ReadVInt32());
             return new Header(format, valueCount, bitsPerValue, version);
@@ -1498,11 +1460,11 @@ namespace YAF.Lucene.Net.Util.Packed
         {
             if (blockSize < minBlockSize || blockSize > maxBlockSize)
             {
-                throw new System.ArgumentException("blockSize must be >= " + minBlockSize + " and <= " + maxBlockSize + ", got " + blockSize);
+                throw new ArgumentException("blockSize must be >= " + minBlockSize + " and <= " + maxBlockSize + ", got " + blockSize);
             }
             if ((blockSize & (blockSize - 1)) != 0)
             {
-                throw new System.ArgumentException("blockSize must be a power of two, got " + blockSize);
+                throw new ArgumentException("blockSize must be a power of two, got " + blockSize);
             }
             return blockSize.TrailingZeroCount();
         }
@@ -1516,7 +1478,7 @@ namespace YAF.Lucene.Net.Util.Packed
             int numBlocks = (int)(size / blockSize) + (size % blockSize == 0 ? 0 : 1);
             if ((long)numBlocks * blockSize < size)
             {
-                throw new System.ArgumentException("size is too large for this block size");
+                throw new ArgumentException("size is too large for this block size");
             }
             return numBlocks;
         }

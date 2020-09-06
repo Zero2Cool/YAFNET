@@ -1,8 +1,8 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using JCG = J2N.Collections.Generic;
 using ArrayUtil = YAF.Lucene.Net.Util.ArrayUtil;
@@ -129,14 +129,18 @@ namespace YAF.Lucene.Net.Codecs.Compressing
         private DocData AddDocData(int numVectorFields)
         {
             FieldData last = null;
-            //for (IEnumerator<DocData> it = PendingDocs.Reverse(); it.MoveNext();)
-            foreach (DocData doc in pendingDocs.Reverse())
+            // LUCENENET specific - quicker just to use the linked list properties
+            // to walk backward, since we are only looking for the last element with
+            // fields.
+            var doc = pendingDocs.Last;
+            while (doc != null)
             {
-                if (!(doc.fields.Count == 0))
+                if (!(doc.Value.fields.Count == 0))
                 {
-                    last = doc.fields.Last.Value;
+                    last = doc.Value.fields.Last.Value;
                     break;
                 }
+                doc = doc.Previous;
             }
             DocData newDoc;
             if (last == null)
@@ -241,7 +245,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
         /// Sole constructor. </summary>
         public CompressingTermVectorsWriter(Directory directory, SegmentInfo si, string segmentSuffix, IOContext context, string formatName, CompressionMode compressionMode, int chunkSize)
         {
-            Debug.Assert(directory != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(directory != null);
             this.directory = directory;
             this.segment = si.Name;
             this.segmentSuffix = segmentSuffix;
@@ -265,8 +269,11 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 string codecNameDat = formatName + CODEC_SFX_DAT;
                 CodecUtil.WriteHeader(indexStream, codecNameIdx, VERSION_CURRENT);
                 CodecUtil.WriteHeader(vectorsStream, codecNameDat, VERSION_CURRENT);
-                Debug.Assert(CodecUtil.HeaderLength(codecNameDat) == vectorsStream.GetFilePointer());
-                Debug.Assert(CodecUtil.HeaderLength(codecNameIdx) == indexStream.GetFilePointer());
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(CodecUtil.HeaderLength(codecNameDat) == vectorsStream.GetFilePointer());
+                    Debugging.Assert(CodecUtil.HeaderLength(codecNameIdx) == indexStream.GetFilePointer());
+                }
 
                 indexWriter = new CompressingStoredFieldsIndexWriter(indexStream);
                 indexStream = null;
@@ -347,7 +354,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
 
         public override void StartTerm(BytesRef term, int freq)
         {
-            Debug.Assert(freq >= 1);
+            if (Debugging.AssertsEnabled) Debugging.Assert(freq >= 1);
             int prefix = StringHelper.BytesDifference(lastTerm, term);
             curField.AddTerm(freq, prefix, term.Length - prefix);
             termSuffixes.WriteBytes(term.Bytes, term.Offset + prefix, term.Length - prefix);
@@ -363,7 +370,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
 
         public override void AddPosition(int position, int startOffset, int endOffset, BytesRef payload)
         {
-            Debug.Assert(curField.flags != 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(curField.flags != 0);
             curField.AddPosition(position, startOffset, endOffset - startOffset, payload == null ? 0 : payload.Length);
             if (curField.hasPayloads && payload != null)
             {
@@ -380,7 +387,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
         private void Flush()
         {
             int chunkDocs = pendingDocs.Count;
-            Debug.Assert(chunkDocs > 0, chunkDocs.ToString());
+            if (Debugging.AssertsEnabled) Debugging.Assert(chunkDocs > 0, chunkDocs.ToString);
 
             // write the index file
             indexWriter.WriteIndex(chunkDocs, vectorsStream.GetFilePointer());
@@ -460,7 +467,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
             }
 
             int numDistinctFields = fieldNums.Count;
-            Debug.Assert(numDistinctFields > 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numDistinctFields > 0);
             int bitsRequired = PackedInt32s.BitsRequired(fieldNums.Max);
             int token = (Math.Min(numDistinctFields - 1, 0x07) << 5) | bitsRequired;
             vectorsStream.WriteByte((byte)(sbyte)token);
@@ -492,7 +499,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 foreach (FieldData fd in dd.fields)
                 {
                     int fieldNumIndex = Array.BinarySearch(fieldNums, fd.fieldNum);
-                    Debug.Assert(fieldNumIndex >= 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(fieldNumIndex >= 0);
                     writer.Add(fieldNumIndex);
                 }
             }
@@ -512,7 +519,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 foreach (FieldData fd in dd.fields)
                 {
                     int fieldNumOff = Array.BinarySearch(fieldNums, fd.fieldNum);
-                    Debug.Assert(fieldNumOff >= 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(fieldNumOff >= 0);
                     if (fieldFlags[fieldNumOff] == -1)
                     {
                         fieldFlags[fieldNumOff] = fd.flags;
@@ -534,10 +541,10 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 PackedInt32s.Writer writer = PackedInt32s.GetWriterNoHeader(vectorsStream, PackedInt32s.Format.PACKED, fieldFlags.Length, FLAGS_BITS, 1);
                 foreach (int flags in fieldFlags)
                 {
-                    Debug.Assert(flags >= 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(flags >= 0);
                     writer.Add(flags);
                 }
-                Debug.Assert(writer.Ord == fieldFlags.Length - 1);
+                if (Debugging.AssertsEnabled) Debugging.Assert(writer.Ord == fieldFlags.Length - 1);
                 writer.Finish();
             }
             else
@@ -552,7 +559,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                         writer.Add(fd.flags);
                     }
                 }
-                Debug.Assert(writer.Ord == totalFields - 1);
+                if (Debugging.AssertsEnabled) Debugging.Assert(writer.Ord == totalFields - 1);
                 writer.Finish();
             }
         }
@@ -577,7 +584,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                     writer.Add(fd.numTerms);
                 }
             }
-            Debug.Assert(writer.Ord == totalFields - 1);
+            if (Debugging.AssertsEnabled) Debugging.Assert(writer.Ord == totalFields - 1);
             writer.Finish();
         }
 
@@ -645,7 +652,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                                 previousPosition = position;
                             }
                         }
-                        Debug.Assert(pos == fd.totalPositions);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(pos == fd.totalPositions);
                     }
                 }
             }
@@ -681,7 +688,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                                 ++pos;
                             }
                         }
-                        Debug.Assert(pos == fd.totalPositions);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(pos == fd.totalPositions);
                     }
                 }
             }
@@ -749,7 +756,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                                 writer.Add(lengthsBuf[fd.offStart + pos++] - fd.prefixLengths[i] - fd.suffixLengths[i]);
                             }
                         }
-                        Debug.Assert(pos == fd.totalPositions);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(pos == fd.totalPositions);
                     }
                 }
             }
@@ -789,18 +796,15 @@ namespace YAF.Lucene.Net.Codecs.Compressing
             CodecUtil.WriteFooter(vectorsStream);
         }
 
-        public override IComparer<BytesRef> Comparer
-        {
-            get
-            {
-                return BytesRef.UTF8SortedAsUnicodeComparer;
-            }
-        }
+        public override IComparer<BytesRef> Comparer => BytesRef.UTF8SortedAsUnicodeComparer;
 
         public override void AddProx(int numProx, DataInput positions, DataInput offsets)
         {
-            Debug.Assert((curField.hasPositions) == (positions != null));
-            Debug.Assert((curField.hasOffsets) == (offsets != null));
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert((curField.hasPositions) == (positions != null));
+                Debugging.Assert((curField.hasOffsets) == (offsets != null));
+            }
 
             if (curField.hasPositions)
             {
@@ -922,7 +926,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                         {
                             int docBase = vectorsStream.ReadVInt32();
                             int chunkDocs = vectorsStream.ReadVInt32();
-                            Debug.Assert(docBase + chunkDocs <= matchingSegmentReader.MaxDoc);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(docBase + chunkDocs <= matchingSegmentReader.MaxDoc);
                             if (docBase + chunkDocs < matchingSegmentReader.MaxDoc && NextDeletedDoc(docBase, liveDocs, docBase + chunkDocs) == docBase + chunkDocs)
                             {
                                 long chunkEnd = index.GetStartPointer(docBase + chunkDocs);

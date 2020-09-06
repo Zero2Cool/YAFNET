@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -47,15 +47,9 @@ namespace YAF.Lucene.Net.Search
             this.docsEnum = td;
         }
 
-        public override int DocID
-        {
-            get { return docsEnum.DocID; }
-        }
+        public override int DocID => docsEnum.DocID;
 
-        public override int Freq
-        {
-            get { return docsEnum.Freq; }
-        }
+        public override int Freq => docsEnum.Freq;
 
         /// <summary>
         /// Advances to the next document matching the query.
@@ -68,7 +62,7 @@ namespace YAF.Lucene.Net.Search
 
         public override float GetScore()
         {
-            Debug.Assert(DocID != NO_MORE_DOCS);
+            if (Debugging.AssertsEnabled) Debugging.Assert(DocID != NO_MORE_DOCS);
             return docScorer.Score(docsEnum.DocID, docsEnum.Freq);
         }
 

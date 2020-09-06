@@ -26,6 +26,7 @@ namespace YAF.Controls
     #region Using
 
     using System;
+    using System.Web;
 
     using YAF.Core.BaseControls;
     using YAF.Core.Model;
@@ -33,8 +34,8 @@ namespace YAF.Controls
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils.Helpers;
-
+    using YAF.Utils;
+    
     #endregion
 
     /// <summary>
@@ -47,7 +48,7 @@ namespace YAF.Controls
         /// <summary>
         ///   Gets user ID of edited user.
         /// </summary>
-        protected int CurrentUserID => this.PageContext.QueryIDs["u"].ToType<int>();
+        protected int CurrentUserID => Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
 
         #endregion
 
@@ -64,13 +65,6 @@ namespace YAF.Controls
         /// </param>
         protected void AddPoints_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.Page.Validate(); 
-            
-            if (!this.Page.IsValid)
-            {
-                return;
-            }
-
             this.GetRepository<User>().AddPoints(this.CurrentUserID, null, this.txtAddPoints.Text.ToType<int>());
 
             this.BindData();
@@ -87,8 +81,6 @@ namespace YAF.Controls
         /// </param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.PageContext.QueryIDs = new QueryStringIDHelper("u", true);
-
             if (this.IsPostBack)
             {
                 return;
@@ -108,13 +100,6 @@ namespace YAF.Controls
         /// </param>
         protected void RemovePoints_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.Page.Validate();
-
-            if (!this.Page.IsValid)
-            {
-                return;
-            }
-
             this.GetRepository<User>().RemovePoints(this.CurrentUserID, null, this.txtRemovePoints.Text.ToType<int>());
             this.BindData();
         }
@@ -130,13 +115,6 @@ namespace YAF.Controls
         /// </param>
         protected void SetUserPoints_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.Page.Validate();
-
-            if (!this.Page.IsValid)
-            {
-                return;
-            }
-
             this.GetRepository<User>().SetPoints(this.CurrentUserID, this.txtUserPoints.Text.ToType<int>());
 
             this.BindData();

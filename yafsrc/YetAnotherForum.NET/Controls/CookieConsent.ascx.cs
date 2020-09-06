@@ -51,7 +51,7 @@ namespace YAF.Controls
         {
             this.Label1.Param0 = this.Get<BoardSettings>().Name;
 
-            this.MoreDetails.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.Cookies);
+            this.MoreDetails.NavigateUrl = BuildLink.GetLink(ForumPages.Cookies);
         }
 
         /// <summary>
@@ -67,6 +67,10 @@ namespace YAF.Controls
         {
             this.PageContext.Get<HttpResponseBase>().SetCookie(
                 new HttpCookie("YAF-AcceptCookies", "true") { Expires = DateTime.UtcNow.AddYears(1) });
+
+            this.Response.Redirect(this.Request.RawUrl);
+
+            this.DataBind();
         }
     }
 }

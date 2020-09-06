@@ -1,4 +1,5 @@
 using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -77,9 +78,12 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 CodecUtil.WriteHeader(tvd, Lucene40TermVectorsReader.CODEC_NAME_DOCS, Lucene40TermVectorsReader.VERSION_CURRENT);
                 tvf = directory.CreateOutput(IndexFileNames.SegmentFileName(segment, "", Lucene40TermVectorsReader.VECTORS_FIELDS_EXTENSION), context);
                 CodecUtil.WriteHeader(tvf, Lucene40TermVectorsReader.CODEC_NAME_FIELDS, Lucene40TermVectorsReader.VERSION_CURRENT);
-                Debug.Assert(Lucene40TermVectorsReader.HEADER_LENGTH_INDEX == tvx.GetFilePointer());
-                Debug.Assert(Lucene40TermVectorsReader.HEADER_LENGTH_DOCS == tvd.GetFilePointer());
-                Debug.Assert(Lucene40TermVectorsReader.HEADER_LENGTH_FIELDS == tvf.GetFilePointer());
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(Lucene40TermVectorsReader.HEADER_LENGTH_INDEX == tvx.GetFilePointer());
+                    Debugging.Assert(Lucene40TermVectorsReader.HEADER_LENGTH_DOCS == tvd.GetFilePointer());
+                    Debugging.Assert(Lucene40TermVectorsReader.HEADER_LENGTH_FIELDS == tvf.GetFilePointer());
+                }
                 success = true;
             }
             finally
@@ -109,7 +113,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
 
         public override void StartField(FieldInfo info, int numTerms, bool positions, bool offsets, bool payloads)
         {
-            Debug.Assert(lastFieldName == null || info.Name.CompareToOrdinal(lastFieldName) > 0, "fieldName=" + info.Name + " lastFieldName=" + lastFieldName);
+            if (Debugging.AssertsEnabled) Debugging.Assert(lastFieldName == null || info.Name.CompareToOrdinal(lastFieldName) > 0, () => "fieldName=" + info.Name + " lastFieldName=" + lastFieldName);
             lastFieldName = info.Name;
             this.positions = positions;
             this.offsets = offsets;
@@ -138,7 +142,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         [MethodImpl(MethodImplOptions.NoInlining)]
         public override void FinishDocument()
         {
-            Debug.Assert(fieldCount == numVectorFields);
+            if (Debugging.AssertsEnabled) Debugging.Assert(fieldCount == numVectorFields);
             for (int i = 1; i < fieldCount; i++)
             {
                 tvd.WriteVInt64(fps[i] - fps[i - 1]);
@@ -267,8 +271,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
             if (bufferedIndex > 0)
             {
                 // dump buffer
-                Debug.Assert(positions && (offsets || payloads));
-                Debug.Assert(bufferedIndex == bufferedFreq);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(positions && (offsets || payloads));
+                    Debugging.Assert(bufferedIndex == bufferedFreq);
+                }
                 if (payloads)
                 {
                     tvf.WriteBytes(payloadData.Bytes, payloadData.Offset, payloadData.Length);
@@ -307,7 +314,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                     {
                         // we overflowed the payload buffer, just throw UOE
                         // having > System.Int32.MaxValue bytes of payload for a single term in a single doc is nuts.
-                        throw new System.NotSupportedException("A term cannot have more than System.Int32.MaxValue bytes of payload data in a single document");
+                        throw new NotSupportedException("A term cannot have more than System.Int32.MaxValue bytes of payload data in a single document");
                     }
                     payloadData.Append(payload);
                 }
@@ -356,8 +363,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
             }
             tvd.CopyBytes(reader.TvdStream, tvdPosition - tvdStart);
             tvf.CopyBytes(reader.TvfStream, tvfPosition - tvfStart);
-            Debug.Assert(tvd.GetFilePointer() == tvdPosition);
-            Debug.Assert(tvf.GetFilePointer() == tvfPosition);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(tvd.GetFilePointer() == tvdPosition);
+                Debugging.Assert(tvf.GetFilePointer() == tvfPosition);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -520,12 +530,6 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
             }
         }
 
-        public override IComparer<BytesRef> Comparer
-        {
-            get
-            {
-                return BytesRef.UTF8SortedAsUnicodeComparer;
-            }
-        }
+        public override IComparer<BytesRef> Comparer => BytesRef.UTF8SortedAsUnicodeComparer;
     }
 }

@@ -1,4 +1,5 @@
-﻿using YAF.Lucene.Net.Support.Threading;
+﻿using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Support.Threading;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
@@ -160,10 +161,7 @@ namespace YAF.Lucene.Net.Index
         /// }
         /// </code>
         /// </summary>
-        protected bool Verbose
-        {
-            get { return _writer != null && _writer.infoStream.IsEnabled(COMPONENT_NAME); }
-        }
+        protected bool Verbose => _writer != null && _writer.infoStream.IsEnabled(COMPONENT_NAME);
 
         /// <summary>
         /// Outputs the given message - this method assumes <see cref="Verbose"/> was
@@ -490,10 +488,6 @@ namespace YAF.Lucene.Net.Index
             /// Record the currently running merge. </summary>
             public virtual MergePolicy.OneMerge RunningMerge
             {
-                set
-                {
-                    Interlocked.Exchange(ref _runningMerge, value);
-                }
                 get
                 {
                     using (_lock.Read())
@@ -501,6 +495,7 @@ namespace YAF.Lucene.Net.Index
                         return _runningMerge;
                     }
                 }
+                set => Interlocked.Exchange(ref _runningMerge, value);
             }
 
             /// <summary>

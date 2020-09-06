@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 
 namespace YAF.Lucene.Net.Index
 {
@@ -39,18 +39,12 @@ namespace YAF.Lucene.Net.Index
         public SingletonSortedSetDocValues(SortedDocValues @in)
         {
             this.@in = @in;
-            Debug.Assert(NO_MORE_ORDS == -1); // this allows our nextOrd() to work for missing values without a check
+            if (Debugging.AssertsEnabled) Debugging.Assert(NO_MORE_ORDS == -1); // this allows our nextOrd() to work for missing values without a check
         }
 
         /// <summary>
         /// Return the wrapped <see cref="Index.SortedDocValues"/> </summary>
-        public SortedDocValues SortedDocValues
-        {
-            get
-            {
-                return @in;
-            }
-        }
+        public SortedDocValues SortedDocValues => @in;
 
         public override long NextOrd()
         {
@@ -77,13 +71,7 @@ namespace YAF.Lucene.Net.Index
             @in.LookupOrd((int)ord, result);
         }
 
-        public override long ValueCount
-        {
-            get
-            {
-                return @in.ValueCount;
-            }
-        }
+        public override long ValueCount => @in.ValueCount;
 
         public override long LookupTerm(BytesRef key)
         {

@@ -1,5 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -43,8 +43,11 @@ namespace YAF.Lucene.Net.Search
         public ReqOptSumScorer(Scorer reqScorer, Scorer optScorer)
             : base(reqScorer.m_weight)
         {
-            Debug.Assert(reqScorer != null);
-            Debug.Assert(optScorer != null);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(reqScorer != null);
+                Debugging.Assert(optScorer != null);
+            }
             this.reqScorer = reqScorer;
             this.optScorer = optScorer;
         }
@@ -59,10 +62,7 @@ namespace YAF.Lucene.Net.Search
             return reqScorer.Advance(target);
         }
 
-        public override int DocID
-        {
-            get { return reqScorer.DocID; }
-        }
+        public override int DocID => reqScorer.DocID;
 
         /// <summary>
         /// Returns the score of the current document matching the query.

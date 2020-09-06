@@ -32,11 +32,8 @@ namespace YAF.Modules
     using System.Web.UI;
 
     using YAF.Configuration;
-    using YAF.Core;
-    using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Attributes;
-    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -67,9 +64,9 @@ namespace YAF.Modules
         /// <summary>
         /// Registers the jQuery script library.
         /// </summary>
-        private static void RegisterJQuery()
+        private void RegisterJQuery()
         {
-            if (BoardContext.Current.PageElements.PageElementExists("jquery"))
+            if (this.PageContext.PageElements.PageElementExists("jquery"))
             {
                 return;
             }
@@ -94,39 +91,10 @@ namespace YAF.Modules
 
             if (registerJQuery)
             {
-                string jqueryUrl;
-
-                // Check if override file is set ?
-                if (Config.JQueryOverrideFile.IsSet())
-                {
-                    jqueryUrl = !Config.JQueryOverrideFile.StartsWith("http")
-                                && !Config.JQueryOverrideFile.StartsWith("//")
-                                    ? BoardInfo.GetURLToScripts(Config.JQueryOverrideFile)
-                                    : Config.JQueryOverrideFile;
-                }
-                else
-                {
-                    jqueryUrl = BoardInfo.GetURLToScripts($"jquery-{Config.JQueryVersion}.min.js");
-                }
-
-                // load jQuery
-                // element.Controls.Add(ControlHelper.MakeJsIncludeControl(jqueryUrl));
-                ScriptManager.ScriptResourceMapping.AddDefinition(
-                    "jquery",
-                    new ScriptResourceDefinition
-                        {
-                            Path = jqueryUrl,
-                            DebugPath = BoardInfo.GetURLToScripts($"jquery-{Config.JQueryVersion}.js"),
-                            CdnPath = $"//ajax.aspnetcdn.com/ajax/jQuery/jquery-{Config.JQueryVersion}.min.js",
-                            CdnDebugPath = $"//ajax.aspnetcdn.com/ajax/jQuery/jquery-{Config.JQueryVersion}.js",
-                            CdnSupportsSecureConnection = BoardContext.Current.Get<HttpRequestBase>().IsSecureConnection,
-                            LoadSuccessExpression = "window.jQuery"
-                        });
-
-                BoardContext.Current.PageElements.AddScriptReference("jquery");
+                this.PageContext.PageElements.AddScriptReference("jquery");
             }
 
-            BoardContext.Current.PageElements.AddPageElement("jquery");
+            this.PageContext.PageElements.AddPageElement("jquery");
         }
         
         /// <summary>
@@ -147,7 +115,7 @@ namespace YAF.Modules
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void CurrentForumPagePreRender([NotNull] object sender, [NotNull] EventArgs e)
         {
-            RegisterJQuery();
+            this.RegisterJQuery();
 
             if (this.PageContext.Vars.ContainsKey("yafForumExtensions"))
             {
@@ -156,20 +124,23 @@ namespace YAF.Modules
 
             var version = this.Get<BoardSettings>().CdvVersion;
 
+            var forumJsName = Config.IsDotNetNuke ? "ForumExtensionsDnn" : "ForumExtensions";
+            var adminForumJsName = Config.IsDotNetNuke ? "ForumAdminExtensionsDnn" : "ForumAdminExtensions";
+
             ScriptManager.ScriptResourceMapping.AddDefinition(
                 "yafForumAdminExtensions",
                 new ScriptResourceDefinition
                     {
-                        Path = BoardInfo.GetURLToScripts($"jquery.ForumAdminExtensions.min.js?v={version}"),
-                        DebugPath = BoardInfo.GetURLToScripts($"jquery.ForumAdminExtensions.js?v={version}")
+                        Path = BoardInfo.GetURLToScripts($"jquery.{adminForumJsName}.min.js?v={version}"),
+                        DebugPath = BoardInfo.GetURLToScripts($"jquery.{adminForumJsName}.js?v={version}")
                 });
 
             ScriptManager.ScriptResourceMapping.AddDefinition(
                 "yafForumExtensions",
                 new ScriptResourceDefinition
                     {
-                        Path = BoardInfo.GetURLToScripts($"jquery.ForumExtensions.min.js?v={version}"),
-                        DebugPath = BoardInfo.GetURLToScripts($"jquery.ForumExtensions.js?v={version}")
+                        Path = BoardInfo.GetURLToScripts($"jquery.{forumJsName}.min.js?v={version}"),
+                        DebugPath = BoardInfo.GetURLToScripts($"jquery.{forumJsName}.js?v={version}")
                 });
 
             ScriptManager.ScriptResourceMapping.AddDefinition(
@@ -180,7 +151,7 @@ namespace YAF.Modules
                         DebugPath = BoardInfo.GetURLToScripts("jquery.fileupload.comb.js")
                     });
 
-            BoardContext.Current.PageElements.AddScriptReference(
+            this.PageContext.PageElements.AddScriptReference(
                 this.PageContext.CurrentForumPage.IsAdminPage ? "yafForumAdminExtensions" : "yafForumExtensions");
 
             this.PageContext.Vars["yafForumExtensions"] = true;
@@ -194,7 +165,7 @@ namespace YAF.Modules
         /// </param>
         private void RegisterCssFiles(int version)
         {
-            var element = BoardContext.Current.CurrentForumPage.TopPageControl;
+            var element = this.PageContext.CurrentForumPage.TopPageControl;
 
             element.Controls.Add(
                 ControlHelper.MakeCssIncludeControl(

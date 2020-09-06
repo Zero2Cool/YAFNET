@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace YAF.Lucene.Net.Search
 {
     /*
@@ -60,7 +63,7 @@ namespace YAF.Lucene.Net.Search
         /// <param name="context"> The readers context to create the <see cref="Explanation"/> for. </param>
         /// <param name="doc"> The document's id relative to the given context's reader </param>
         /// <returns> An <see cref="Explanation"/> for the score </returns>
-        /// <exception cref="System.IO.IOException"> if an <see cref="System.IO.IOException"/> occurs </exception>
+        /// <exception cref="IOException"> if an <see cref="IOException"/> occurs </exception>
         public abstract Explanation Explain(AtomicReaderContext context, int doc);
 
         /// <summary>
@@ -95,7 +98,7 @@ namespace YAF.Lucene.Net.Search
         ///          but possibly filtering other documents)
         /// </param>
         /// <returns> A <see cref="Scorer"/> which scores documents in/out-of order. </returns>
-        /// <exception cref="System.IO.IOException"> if there is a low-level I/O error </exception>
+        /// <exception cref="IOException"> if there is a low-level I/O error </exception>
         public abstract Scorer GetScorer(AtomicReaderContext context, IBits acceptDocs);
 
         /// <summary>
@@ -123,7 +126,7 @@ namespace YAF.Lucene.Net.Search
         /// </param>
         /// <returns> A <see cref="BulkScorer"/> which scores documents and
         /// passes them to a collector. </returns>
-        /// <exception cref="System.IO.IOException"> if there is a low-level I/O error </exception>
+        /// <exception cref="IOException"> if there is a low-level I/O error </exception>
         public virtual BulkScorer GetBulkScorer(AtomicReaderContext context, bool scoreDocsInOrder, IBits acceptDocs)
         {
             Scorer scorer = GetScorer(context, acceptDocs);
@@ -146,11 +149,7 @@ namespace YAF.Lucene.Net.Search
 
             public DefaultBulkScorer(Scorer scorer)
             {
-                if (scorer == null)
-                {
-                    throw new System.NullReferenceException();
-                }
-                this.scorer = scorer;
+                this.scorer = scorer ?? throw new NullReferenceException();
             }
 
             public override bool Score(ICollector collector, int max)
@@ -209,9 +208,6 @@ namespace YAF.Lucene.Net.Search
         /// <b>NOTE:</b> the default implementation returns <c>false</c>, i.e.
         /// the <see cref="Scorer"/> scores documents in-order.
         /// </summary>
-        public virtual bool ScoresDocsOutOfOrder
-        {
-            get { return false; }
-        }
+        public virtual bool ScoresDocsOutOfOrder => false;
     }
 }

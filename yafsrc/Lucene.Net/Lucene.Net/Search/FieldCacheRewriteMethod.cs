@@ -1,5 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -21,8 +21,8 @@ namespace YAF.Lucene.Net.Search
      */
 
     using AtomicReaderContext = YAF.Lucene.Net.Index.AtomicReaderContext;
-    using IBits = YAF.Lucene.Net.Util.IBits;
     using BytesRef = YAF.Lucene.Net.Util.BytesRef;
+    using IBits = YAF.Lucene.Net.Util.IBits;
     using IndexReader = YAF.Lucene.Net.Index.IndexReader;
     using Int64BitSet = YAF.Lucene.Net.Util.Int64BitSet;
     using SortedDocValues = YAF.Lucene.Net.Index.SortedDocValues;
@@ -87,13 +87,7 @@ namespace YAF.Lucene.Net.Search
 
             /// <summary>
             /// Returns the field name for this query </summary>
-            public string Field
-            {
-                get
-                {
-                    return m_query.Field;
-                }
-            }
+            public string Field => m_query.Field;
 
             /// <summary>
             /// Returns a DocIdSet with documents that should be permitted in search
@@ -106,7 +100,7 @@ namespace YAF.Lucene.Net.Search
                 Int64BitSet termSet = new Int64BitSet(fcsi.ValueCount);
                 TermsEnum termsEnum = m_query.GetTermsEnum(new TermsAnonymousInnerClassHelper(this, fcsi));
 
-                Debug.Assert(termsEnum != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termsEnum != null);
                 if (termsEnum.Next() != null)
                 {
                     // fill into a bitset
@@ -139,67 +133,28 @@ namespace YAF.Lucene.Net.Search
                     this.fcsi = fcsi;
                 }
 
-                public override IComparer<BytesRef> Comparer
-                {
-                    get
-                    {
-                        return BytesRef.UTF8SortedAsUnicodeComparer;
-                    }
-                }
+                public override IComparer<BytesRef> Comparer => BytesRef.UTF8SortedAsUnicodeComparer;
 
                 public override TermsEnum GetIterator(TermsEnum reuse)
                 {
                     return fcsi.GetTermsEnum();
                 }
 
-                public override long SumTotalTermFreq
-                {
-                    get
-                    {
-                        return -1;
-                    }
-                }
+                public override long SumTotalTermFreq => -1;
 
-                public override long SumDocFreq
-                {
-                    get
-                    {
-                        return -1;
-                    }
-                }
+                public override long SumDocFreq => -1;
 
-                public override int DocCount
-                {
-                    get
-                    {
-                        return -1;
-                    }
-                }
+                public override int DocCount => -1;
 
-                public override long Count
-                {
-                    get { return -1; }
-                }
+                public override long Count => -1;
 
-                public override bool HasFreqs
-                {
-                    get { return false; }
-                }
+                public override bool HasFreqs => false;
 
-                public override bool HasOffsets
-                {
-                    get { return false; }
-                }
+                public override bool HasOffsets => false;
 
-                public override bool HasPositions
-                {
-                    get { return false; }
-                }
+                public override bool HasPositions => false;
 
-                public override bool HasPayloads
-                {
-                    get { return false; }
-                }
+                public override bool HasPayloads => false;
             }
 
             private class FieldCacheDocIdSetAnonymousInnerClassHelper : FieldCacheDocIdSet

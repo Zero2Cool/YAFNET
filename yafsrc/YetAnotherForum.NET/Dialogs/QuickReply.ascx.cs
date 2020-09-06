@@ -31,20 +31,18 @@ namespace YAF.Dialogs
     using System.Web;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.BaseControls;
     using YAF.Core.BaseModules;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -103,7 +101,7 @@ namespace YAF.Dialogs
                                               ? this.GetRepository<WatchTopic>().Check(
                                                   this.PageContext.PageUserID,
                                                   this.PageContext.PageTopicID).HasValue
-                                              : new CombinedUserDataHelper(this.PageContext.PageUserID).AutoWatchTopics;
+                                              : this.PageContext.User.AutoWatchTopics;
             }
 
             this.QuickReplyLine.Controls.Add(this.quickReplyEditor);
@@ -120,7 +118,7 @@ namespace YAF.Dialogs
             {
                 if (this.quickReplyEditor.Text.Length <= 0)
                 {
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("QuickReplyDialog"));
 
@@ -133,7 +131,7 @@ namespace YAF.Dialogs
                 if (this.Get<BoardSettings>().MaxPostSize > 0
                     && this.quickReplyEditor.Text.Length >= this.Get<BoardSettings>().MaxPostSize)
                 {
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("QuickReplyDialog"));
 
@@ -144,7 +142,7 @@ namespace YAF.Dialogs
 
                 if (this.EnableCaptcha() && !CaptchaHelper.IsValid(this.tbCaptcha.Text.Trim()))
                 {
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("QuickReplyDialog"));
 
@@ -156,17 +154,17 @@ namespace YAF.Dialogs
                 if (!(this.PageContext.IsAdmin || this.PageContext.ForumModeratorAccess)
                     && this.Get<BoardSettings>().PostFloodDelay > 0)
                 {
-                    if (BoardContext.Current.Get<ISession>().LastPost
+                    if (this.PageContext.Get<ISession>().LastPost
                         > DateTime.UtcNow.AddSeconds(-this.Get<BoardSettings>().PostFloodDelay))
                     {
-                        BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                        this.PageContext.PageElements.RegisterJsBlockStartup(
                             "openModalJs",
                             JavaScriptBlocks.OpenModalJs("QuickReplyDialog"));
 
                         this.PageContext.AddLoadMessage(
                             this.GetTextFormatted(
                                 "wait",
-                                (BoardContext.Current.Get<ISession>().LastPost
+                                (this.PageContext.Get<ISession>().LastPost
                                  - DateTime.UtcNow.AddSeconds(-this.Get<BoardSettings>().PostFloodDelay)).Seconds),
                             MessageTypes.warning);
 
@@ -174,10 +172,9 @@ namespace YAF.Dialogs
                     }
                 }
 
-                BoardContext.Current.Get<ISession>().LastPost = DateTime.UtcNow;
+                this.PageContext.Get<ISession>().LastPost = DateTime.UtcNow;
 
                 // post message...
-                object replyTo = -1;
                 var message = this.quickReplyEditor.Text;
                 long topicId = this.PageContext.PageTopicID;
 
@@ -206,38 +203,36 @@ namespace YAF.Dialogs
                 {
                     // Check content for spam
                     if (this.Get<ISpamCheck>().CheckPostForSpam(
-                        this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName,
-                        BoardContext.Current.Get<HttpRequestBase>().GetUserRealIPAddress(),
+                        this.PageContext.IsGuest ? "Guest" : this.PageContext.User.DisplayOrUserName(),
+                        this.PageContext.Get<HttpRequestBase>().GetUserRealIPAddress(),
                         this.quickReplyEditor.Text,
-                        this.PageContext.IsGuest ? null : this.PageContext.User.Email,
+                        this.PageContext.IsGuest ? null : this.PageContext.MembershipUser.Email,
                         out var spamResult))
                     {
+                        var description =
+                            $@"Spam Check detected possible SPAM ({spamResult}) 
+                               posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.User.DisplayOrUserName())}";
+
                         switch (this.Get<BoardSettings>().SpamMessageHandling)
                         {
                             case 0:
-                                this.Logger.Log(
+                                this.Logger.SpamMessageDetected(
                                     this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}",
-                                    EventLogTypes.SpamMessageDetected);
+                                    description);
                                 break;
                             case 1:
                                 spamApproved = false;
                                 isPossibleSpamMessage = true;
-                                this.Logger.Log(
+                                this.Logger.SpamMessageDetected(
                                     this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}, it was flagged as unapproved post",
-                                    EventLogTypes.SpamMessageDetected);
+                                    $"{description}, it was flagged as unapproved post");
                                 break;
                             case 2:
-                                this.Logger.Log(
+                                this.Logger.SpamMessageDetected(
                                     this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}, post was rejected",
-                                    EventLogTypes.SpamMessageDetected);
+                                    $"{description}, post was rejected");
 
-                                BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                                this.PageContext.PageElements.RegisterJsBlockStartup(
                                     "openModalJs",
                                     JavaScriptBlocks.OpenModalJs("QuickReplyDialog"));
 
@@ -245,88 +240,22 @@ namespace YAF.Dialogs
 
                                 return;
                             case 3:
-                                this.Logger.Log(
+                                this.Logger.SpamMessageDetected(
                                     this.PageContext.PageUserID,
-                                    "Spam Message Detected",
-                                    $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}, user was deleted and bannded",
-                                    EventLogTypes.SpamMessageDetected);
+                                    $"{description}, user was deleted and bannded");
 
-                                var userIp = new CombinedUserDataHelper(
-                                    this.PageContext.CurrentUserData.Membership,
-                                    this.PageContext.PageUserID).LastIP;
-
-                                UserMembershipHelper.DeleteAndBanUser(
+                                this.Get<IAspNetUsersHelper>().DeleteAndBanUser(
                                     this.PageContext.PageUserID,
-                                    this.PageContext.CurrentUserData.Membership,
-                                    userIp);
+                                    this.PageContext.MembershipUser,
+                                    this.PageContext.User.IP);
 
                                 return;
                         }
                     }
 
-                    // Check posts for urls if the user has only x posts
-                    if (BoardContext.Current.CurrentUserData.NumPosts
-                        <= BoardContext.Current.Get<BoardSettings>().IgnoreSpamWordCheckPostCount
-                        && !this.PageContext.IsAdmin && !this.PageContext.ForumModeratorAccess)
+                    if (this.Get<ISpamCheck>().ContainsSpamUrls(this.quickReplyEditor.Text))
                     {
-                        var urlCount = UrlHelper.CountUrls(this.quickReplyEditor.Text);
-
-                        if (urlCount > this.PageContext.BoardSettings.AllowedNumberOfUrls)
-                        {
-                            spamResult =
-                                $"The user posted {urlCount} urls but allowed only {this.PageContext.BoardSettings.AllowedNumberOfUrls}";
-
-                            switch (this.Get<BoardSettings>().SpamMessageHandling)
-                            {
-                                case 0:
-                                    this.Logger.Log(
-                                        this.PageContext.PageUserID,
-                                        "Spam Message Detected",
-                                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}",
-                                        EventLogTypes.SpamMessageDetected);
-                                    break;
-                                case 1:
-                                    spamApproved = false;
-                                    isPossibleSpamMessage = true;
-                                    this.Logger.Log(
-                                        this.PageContext.PageUserID,
-                                        "Spam Message Detected",
-                                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}, it was flagged as unapproved post",
-                                        EventLogTypes.SpamMessageDetected);
-                                    break;
-                                case 2:
-                                    this.Logger.Log(
-                                        this.PageContext.PageUserID,
-                                        "Spam Message Detected",
-                                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}, post was rejected",
-                                        EventLogTypes.SpamMessageDetected);
-
-                                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
-                                        "openModalJs",
-                                        JavaScriptBlocks.OpenModalJs("QuickReplyDialog"));
-
-                                    this.PageContext.AddLoadMessage(this.GetText("SPAM_MESSAGE"), MessageTypes.danger);
-
-                                    return;
-                                case 3:
-                                    this.Logger.Log(
-                                        this.PageContext.PageUserID,
-                                        "Spam Message Detected",
-                                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(this.PageContext.IsGuest ? "Guest" : this.PageContext.PageUserName)}, user was deleted and bannded",
-                                        EventLogTypes.SpamMessageDetected);
-
-                                    var userIp = new CombinedUserDataHelper(
-                                        this.PageContext.CurrentUserData.Membership,
-                                        this.PageContext.PageUserID).LastIP;
-
-                                    UserMembershipHelper.DeleteAndBanUser(
-                                        this.PageContext.PageUserID,
-                                        this.PageContext.CurrentUserData.Membership,
-                                        userIp);
-
-                                    return;
-                            }
-                        }
+                        return;
                     }
 
                     if (!this.PageContext.IsGuest)
@@ -362,11 +291,11 @@ namespace YAF.Dialogs
                     null,
                     this.Get<HttpRequestBase>().GetUserRealIPAddress(),
                     DateTime.UtcNow, 
-                    replyTo.ToType<int>(),
+                    null,
                     messageFlags);
 
                 // Check to see if the user has enabled "auto watch topic" option in his/her profile.
-                if (this.PageContext.CurrentUserData.AutoWatchTopics)
+                if (this.PageContext.User.AutoWatchTopics)
                 {
                     var watchTopicId = this.GetRepository<WatchTopic>().Check(
                         this.PageContext.PageUserID,
@@ -384,7 +313,7 @@ namespace YAF.Dialogs
                     // send new post notification to users watching this topic/forum
                     this.Get<ISendNotification>().ToWatchingUsers(messageId.ToType<int>());
 
-                    if (!this.PageContext.IsGuest && this.PageContext.CurrentUserData.Activity)
+                    if (!this.PageContext.IsGuest && this.PageContext.User.Activity)
                     {
                         this.Get<IActivityStream>().AddReplyToStream(
                             this.PageContext.PageForumID,
@@ -395,7 +324,11 @@ namespace YAF.Dialogs
                     }
 
                     // redirect to newly posted message
-                    BuildLink.Redirect(ForumPages.Posts, "m={0}&#post{0}", messageId);
+                    BuildLink.Redirect(
+                        ForumPages.Posts,
+                        "m={0}&name={1}&#post{0}",
+                        messageId,
+                        this.PageContext.PageTopicName);
                 }
                 else
                 {
@@ -408,16 +341,9 @@ namespace YAF.Dialogs
                             isPossibleSpamMessage);
                     }
 
-                    var url = BuildLink.GetLink(ForumPages.topics, "f={0}", this.PageContext.PageForumID);
+                    var url = BuildLink.GetForumLink(this.PageContext.PageForumID, this.PageContext.PageForumName);
 
-                    if (Config.IsRainbow)
-                    {
-                        BuildLink.Redirect(ForumPages.Info, "i=1");
-                    }
-                    else
-                    {
-                        BuildLink.Redirect(ForumPages.Info, "i=1&url={0}", this.Server.UrlEncode(url));
-                    }
+                    BuildLink.Redirect(ForumPages.Info, "i=1&url={0}", this.Server.UrlEncode(url));
                 }
             }
             catch (Exception exception)
@@ -462,7 +388,7 @@ namespace YAF.Dialogs
         private bool CheckForumModerateStatus(Forum forumInfo)
         {
             // User Moderate override
-            if (this.PageContext.Moderated)
+            if (this.PageContext.User.UserFlags.Moderated)
             {
                 return true;
             }
@@ -486,7 +412,7 @@ namespace YAF.Dialogs
 
             var moderatedPostCount = forumInfo.ModeratedPostCount.Value;
 
-            return !(this.PageContext.CurrentUserData.NumPosts >= moderatedPostCount);
+            return !(this.PageContext.User.NumPosts >= moderatedPostCount);
         }
 
         /// <summary>
@@ -500,7 +426,7 @@ namespace YAF.Dialogs
                 return true;
             }
 
-            return this.PageContext.BoardSettings.EnableCaptchaForPost && !this.PageContext.IsCaptchaExcluded;
+            return this.PageContext.BoardSettings.EnableCaptchaForPost && !this.PageContext.User.UserFlags.IsCaptchaExcluded;
         }
 
         #endregion

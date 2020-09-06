@@ -1,6 +1,7 @@
 ﻿using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Util.Mutable;
 using System;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Queries.Function.DocValues
 {
@@ -77,9 +78,9 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
             return Int64Val(doc) != 0;
         }
 
-        public override string StrVal(int doc) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+        public override string StrVal(int doc)
         {
-            return Convert.ToString(Int64Val(doc));
+            return Int64Val(doc).ToString(CultureInfo.InvariantCulture);
         }
 
         public override object ObjectVal(int doc)
@@ -95,9 +96,9 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
         /// <summary>
         /// NOTE: This was externalToLong() in Lucene
         /// </summary>
-        protected virtual long ExternalToInt64(string extVal) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+        protected virtual long ExternalToInt64(string extVal)
         {
-            return Convert.ToInt64(extVal);
+            return Convert.ToInt64(extVal, CultureInfo.InvariantCulture);
         }
 
         public override ValueSourceScorer GetRangeScorer(IndexReader reader, string lowerVal, string upperVal, bool includeLower, bool includeUpper)
@@ -135,63 +136,22 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
             long ll = lower;
             long uu = upper;
 
-            return new ValueSourceScorerAnonymousInnerClassHelper(this, reader, this, ll, uu);
-        }
-
-        private class ValueSourceScorerAnonymousInnerClassHelper : ValueSourceScorer
-        {
-            private readonly Int64DocValues outerInstance;
-
-            private readonly long ll;
-            private readonly long uu;
-
-            public ValueSourceScorerAnonymousInnerClassHelper(Int64DocValues outerInstance, IndexReader reader, Int64DocValues @this, long ll, long uu)
-                : base(reader, @this)
+            return new ValueSourceScorer.AnonymousValueSourceScorer(reader, this, matchesValue: (doc) =>
             {
-                this.outerInstance = outerInstance;
-                this.ll = ll;
-                this.uu = uu;
-            }
-
-            public override bool MatchesValue(int doc)
-            {
-                long val = outerInstance.Int64Val(doc);
+                long val = Int64Val(doc);
                 // only check for deleted if it's the default value
                 // if (val==0 && reader.isDeleted(doc)) return false;
                 return val >= ll && val <= uu;
-            }
+            });
         }
 
         public override ValueFiller GetValueFiller()
         {
-            return new ValueFillerAnonymousInnerClassHelper(this);
-        }
-
-        private class ValueFillerAnonymousInnerClassHelper : ValueFiller
-        {
-            private readonly Int64DocValues outerInstance;
-
-            public ValueFillerAnonymousInnerClassHelper(Int64DocValues outerInstance)
+            return new ValueFiller.AnonymousValueFiller<MutableValueInt64>(new MutableValueInt64(), fillValue: (doc, mutableValue) =>
             {
-                this.outerInstance = outerInstance;
-                mval = new MutableValueInt64();
-            }
-
-            private readonly MutableValueInt64 mval;
-
-            public override MutableValue Value
-            {
-                get
-                {
-                    return mval;
-                }
-            }
-
-            public override void FillValue(int doc)
-            {
-                mval.Value = outerInstance.Int64Val(doc);
-                mval.Exists = outerInstance.Exists(doc);
-            }
+                mutableValue.Value = Int64Val(doc);
+                mutableValue.Exists = Exists(doc);
+            });
         }
     }
 }

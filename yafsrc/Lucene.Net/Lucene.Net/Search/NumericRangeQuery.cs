@@ -1,7 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Documents;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
@@ -171,7 +171,7 @@ namespace YAF.Lucene.Net.Search
         {
             if (precisionStep < 1)
             {
-                throw new System.ArgumentException("precisionStep must be >=1");
+                throw new ArgumentException("precisionStep must be >=1");
             }
             this.precisionStep = precisionStep;
             this.dataType = dataType;
@@ -195,47 +195,23 @@ namespace YAF.Lucene.Net.Search
 
         /// <summary>
         /// Returns <c>true</c> if the lower endpoint is inclusive </summary>
-        public bool IncludesMin
-        {
-            get { return minInclusive; }
-        }
+        public bool IncludesMin => minInclusive;
 
         /// <summary>
         /// Returns <c>true</c> if the upper endpoint is inclusive </summary>
-        public bool IncludesMax
-        {
-            get { return maxInclusive; }
-        }
+        public bool IncludesMax => maxInclusive;
 
         /// <summary>
         /// Returns the lower value of this range query </summary>
-        public T? Min
-        {
-            get
-            {
-                return min;
-            }
-        }
+        public T? Min => min;
 
         /// <summary>
         /// Returns the upper value of this range query </summary>
-        public T? Max
-        {
-            get
-            {
-                return max;
-            }
-        }
+        public T? Max => max;
 
         /// <summary>
         /// Returns the precision step. </summary>
-        public int PrecisionStep
-        {
-            get
-            {
-                return precisionStep;
-            }
-        }
+        public int PrecisionStep => precisionStep;
 
         public override string ToString(string field)
         {
@@ -324,7 +300,7 @@ namespace YAF.Lucene.Net.Search
 
             internal BytesRef currentLowerBound, currentUpperBound;
 
-            internal readonly LinkedList<BytesRef> rangeBounds = new LinkedList<BytesRef>();
+            internal readonly Queue<BytesRef> rangeBounds = new Queue<BytesRef>();
             internal readonly IComparer<BytesRef> termComp;
 
             internal NumericRangeTermsEnum(NumericRangeQuery<T> outerInstance, TermsEnum tenum)
@@ -344,7 +320,7 @@ namespace YAF.Lucene.Net.Search
                             }
                             else
                             {
-                                Debug.Assert(this.outerInstance.dataType == NumericType.DOUBLE);
+                                if (Debugging.AssertsEnabled) Debugging.Assert(this.outerInstance.dataType == NumericType.DOUBLE);
                                 minBound = (this.outerInstance.min == null) ? INT64_NEGATIVE_INFINITY : NumericUtils.DoubleToSortableInt64(Convert.ToDouble(this.outerInstance.min.Value, CultureInfo.InvariantCulture));
                             }
                             if (!this.outerInstance.minInclusive && this.outerInstance.min != null)
@@ -364,7 +340,7 @@ namespace YAF.Lucene.Net.Search
                             }
                             else
                             {
-                                Debug.Assert(this.outerInstance.dataType == NumericType.DOUBLE);
+                                if (Debugging.AssertsEnabled) Debugging.Assert(this.outerInstance.dataType == NumericType.DOUBLE);
                                 maxBound = (this.outerInstance.max == null) ? INT64_POSITIVE_INFINITY : NumericUtils.DoubleToSortableInt64(Convert.ToDouble(this.outerInstance.max, CultureInfo.InvariantCulture));
                             }
                             if (!this.outerInstance.maxInclusive && this.outerInstance.max != null)
@@ -391,7 +367,7 @@ namespace YAF.Lucene.Net.Search
                             }
                             else
                             {
-                                Debug.Assert(this.outerInstance.dataType == NumericType.SINGLE);
+                                if (Debugging.AssertsEnabled) Debugging.Assert(this.outerInstance.dataType == NumericType.SINGLE);
                                 minBound = (this.outerInstance.min == null) ? INT32_NEGATIVE_INFINITY : NumericUtils.SingleToSortableInt32(Convert.ToSingle(this.outerInstance.min, CultureInfo.InvariantCulture));
                             }
                             if (!this.outerInstance.minInclusive && this.outerInstance.min != null)
@@ -411,7 +387,7 @@ namespace YAF.Lucene.Net.Search
                             }
                             else
                             {
-                                Debug.Assert(this.outerInstance.dataType == NumericType.SINGLE);
+                                if (Debugging.AssertsEnabled) Debugging.Assert(this.outerInstance.dataType == NumericType.SINGLE);
                                 maxBound = (this.outerInstance.max == null) ? INT32_POSITIVE_INFINITY : NumericUtils.SingleToSortableInt32(Convert.ToSingle(this.outerInstance.max, CultureInfo.InvariantCulture));
                             }
                             if (!this.outerInstance.maxInclusive && this.outerInstance.max != null)
@@ -429,7 +405,7 @@ namespace YAF.Lucene.Net.Search
 
                     default:
                         // should never happen
-                        throw new System.ArgumentException("Invalid NumericType");
+                        throw new ArgumentException("Invalid NumericType");
                 }
 
                 termComp = Comparer;
@@ -446,8 +422,8 @@ namespace YAF.Lucene.Net.Search
 
                 public override sealed void AddRange(BytesRef minPrefixCoded, BytesRef maxPrefixCoded)
                 {
-                    outerInstance.rangeBounds.AddLast(minPrefixCoded);
-                    outerInstance.rangeBounds.AddLast(maxPrefixCoded);
+                    outerInstance.rangeBounds.Enqueue(minPrefixCoded);
+                    outerInstance.rangeBounds.Enqueue(maxPrefixCoded);
                 }
             }
 
@@ -462,21 +438,19 @@ namespace YAF.Lucene.Net.Search
 
                 public override sealed void AddRange(BytesRef minPrefixCoded, BytesRef maxPrefixCoded)
                 {
-                    outerInstance.rangeBounds.AddLast(minPrefixCoded);
-                    outerInstance.rangeBounds.AddLast(maxPrefixCoded);
+                    outerInstance.rangeBounds.Enqueue(minPrefixCoded);
+                    outerInstance.rangeBounds.Enqueue(maxPrefixCoded);
                 }
             }
 
             private void NextRange()
             {
-                Debug.Assert(rangeBounds.Count % 2 == 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(rangeBounds.Count % 2 == 0);
 
-                currentLowerBound = rangeBounds.First.Value;
-                rangeBounds.Remove(currentLowerBound);
-                Debug.Assert(currentUpperBound == null || termComp.Compare(currentUpperBound, currentLowerBound) <= 0, "The current upper bound must be <= the new lower bound");
+                currentLowerBound = rangeBounds.Dequeue();
+                if (Debugging.AssertsEnabled) Debugging.Assert(currentUpperBound == null || termComp.Compare(currentUpperBound, currentLowerBound) <= 0, "The current upper bound must be <= the new lower bound");
 
-                currentUpperBound = rangeBounds.First.Value;
-                rangeBounds.Remove(currentUpperBound);
+                currentUpperBound = rangeBounds.Dequeue();
             }
 
             protected override sealed BytesRef NextSeekTerm(BytesRef term)
@@ -495,7 +469,7 @@ namespace YAF.Lucene.Net.Search
                 }
 
                 // no more sub-range enums available
-                Debug.Assert(rangeBounds.Count == 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(rangeBounds.Count == 0);
                 currentLowerBound = currentUpperBound = null;
                 return null;
             }
@@ -509,7 +483,7 @@ namespace YAF.Lucene.Net.Search
                         return AcceptStatus.END;
                     }
                     // peek next sub-range, only seek if the current term is smaller than next lower bound
-                    if (termComp.Compare(term, rangeBounds.First.Value) < 0)
+                    if (termComp.Compare(term, rangeBounds.Peek()) < 0)
                     {
                         return AcceptStatus.NO_AND_SEEK;
                     }

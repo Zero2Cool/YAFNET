@@ -30,13 +30,13 @@ namespace YAF.Pages
     using System.Web;
 
     using YAF.Configuration;
-    using YAF.Core;
+    
     using YAF.Core.BasePages;
-    using YAF.Core.UsersRoles;
+    using YAF.Core.Extensions;
     using YAF.Types;
-    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Web.Extensions;
 
@@ -59,6 +59,12 @@ namespace YAF.Pages
 
         #endregion
 
+        /// <summary>
+        ///   Gets user ID of edited user.
+        /// </summary>
+        protected int CurrentUserID =>
+            Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
+
         #region Methods
 
         /// <summary>
@@ -78,10 +84,7 @@ namespace YAF.Pages
                 BuildLink.AccessDenied();
             }
 
-            var userId =
-                Security.StringToLongOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
-
-            var user = UserMembershipHelper.GetMembershipUserById(userId);
+            var user = this.GetRepository<User>().GetById(this.CurrentUserID);
 
             if (user == null)
             {
@@ -94,19 +97,13 @@ namespace YAF.Pages
                 BuildLink.AccessDenied();
             }
 
-            var displayName = UserMembershipHelper.GetDisplayNameFromID(userId);
-
             this.PageLinks.Clear();
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.Get<BoardSettings>().EnableDisplayName
-                    ? displayName
-                    : UserMembershipHelper.GetUserNameFromID(userId),
-                BuildLink.GetLink(ForumPages.Profile, "u={0}", userId));
+            this.PageLinks.AddUser(this.CurrentUserID, user.DisplayOrUserName());
             this.PageLinks.AddLink(this.GetText("ALBUMS"), string.Empty);
 
             // Initialize the Album List control.
-            this.AlbumList1.UserID = userId.ToType<int>();
+            this.AlbumList1.User = user;
         }
 
         /// <summary>
@@ -114,7 +111,6 @@ namespace YAF.Pages
         /// </summary>
         protected override void CreatePageLinks()
         {
-            // 
         }
 
         #endregion

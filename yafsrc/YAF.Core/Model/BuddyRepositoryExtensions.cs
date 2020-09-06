@@ -25,12 +25,13 @@ namespace YAF.Core.Model
 {
     using System;
     using System.Data;
-
+    
     using ServiceStack.OrmLite;
 
     using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Extensions.Data;
+    using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
 
@@ -137,108 +138,30 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// Denies a buddy request.
+        /// Denies a friend request.
         /// </summary>
         /// <param name="repository">
         /// The repository.
         /// </param>
-        /// <param name="fromUserID">
-        /// The from user id.
+        /// <param name="fromUserId">
+        /// The from User Id.
         /// </param>
-        /// <param name="toUserID">
-        /// The to user id.
+        /// <param name="toUserId">
+        /// The to User Id.
         /// </param>
-        /// <param name="useDisplayName">
-        /// Display name of the use.
-        /// </param>
-        /// <returns>
-        /// the name of the second user.
-        /// </returns>
         [NotNull]
-        public static string DenyRequest(
+        public static void DenyRequest(
             this IRepository<Buddy> repository,
-            [NotNull] int fromUserID,
-            [NotNull] int toUserID,
-            [NotNull] bool useDisplayName)
+            [NotNull] int fromUserId,
+            [NotNull] int toUserId)
         {
             IDbDataParameter parameterOutput = null;
 
-            repository.SqlList(
-                "buddy_denyrequest",
-                cmd =>
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        cmd.AddParam("FromUserID", fromUserID);
-                        cmd.AddParam("ToUserID", toUserID);
-                        cmd.AddParam("UseDisplayName", useDisplayName);
-
-                        parameterOutput = cmd.AddParam("paramOutput", direction: ParameterDirection.Output);
-                    });
-
-            return parameterOutput.Value.ToString();
+            repository.Delete(b => b.FromUserID == fromUserId && b.ToUserID == toUserId);
         }
 
         /// <summary>
         /// Removes the "ToUserID" from "FromUserID"'s buddy list.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="fromUserID">
-        /// The from user id.
-        /// </param>
-        /// <param name="toUserID">
-        /// The to user id.
-        /// </param>
-        /// <param name="useDisplayName">
-        /// Display name of the use.
-        /// </param>
-        /// <returns>
-        /// The name of the second user.
-        /// </returns>
-        [NotNull]
-        public static string Remove(
-            this IRepository<Buddy> repository,
-            [NotNull] int fromUserID,
-            [NotNull] int toUserID,
-            [NotNull] bool useDisplayName)
-        {
-            IDbDataParameter parameterOutput = null;
-
-            repository.SqlList(
-                "buddy_remove",
-                cmd =>
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        cmd.AddParam("FromUserID", fromUserID);
-                        cmd.AddParam("ToUserID", toUserID);
-                        cmd.AddParam("UseDisplayName", useDisplayName);
-
-                        parameterOutput = cmd.AddParam("paramOutput", direction: ParameterDirection.Output);
-                    });
-
-            return parameterOutput.Value.ToString();
-        }
-
-        /// <summary>
-        /// Gets all the buddies of a certain user.
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        /// <param name="fromUserID">From user identifier.</param>
-        /// <returns>
-        /// The <see cref="DataTable" /> containing the buddy list.
-        /// </returns>
-        public static DataTable List(this IRepository<Buddy> repository, int fromUserID)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.DbFunction.GetData.buddy_list(FromUserID: fromUserID);
-        }
-
-        /// <summary>
-        /// The check is friend.
         /// </summary>
         /// <param name="repository">
         /// The repository.
@@ -249,16 +172,30 @@ namespace YAF.Core.Model
         /// <param name="toUserId">
         /// The to user id.
         /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool CheckIsFriend(this IRepository<Buddy> repository, int fromUserId, int toUserId)
+        [NotNull]
+        public static void Remove(
+            this IRepository<Buddy> repository,
+            [NotNull] int fromUserId,
+            [NotNull] int toUserId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            repository.Delete(x => x.FromUserID == fromUserId && x.ToUserID == toUserId);
+            
+            repository.FireDeleted();
+        }
 
-            var buddy = repository.GetSingle(b => b.Approved && b.FromUserID == fromUserId && b.ToUserID == toUserId);
+        /// <summary>
+        /// Gets all the buddies of a certain user.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        /// <param name="fromUserID">From user identifier.</param>
+        /// <returns>
+        /// The <see cref="DataTable" /> containing the buddy list.
+        /// </returns>
+        public static DataTable ListAllAsDataTable(this IRepository<Buddy> repository, int fromUserID)
+        {
+            CodeContracts.VerifyNotNull(repository);
 
-            return buddy != null;
+            return repository.DbFunction.GetData.buddy_list(FromUserID: fromUserID);
         }
 
         #endregion

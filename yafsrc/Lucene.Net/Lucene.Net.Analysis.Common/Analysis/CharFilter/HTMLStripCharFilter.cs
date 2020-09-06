@@ -1,5 +1,6 @@
 ﻿using J2N;
 using YAF.Lucene.Net.Analysis.Util;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
@@ -30907,10 +30908,9 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
             base.Dispose(disposing);
         }
 
-        internal static int InitialBufferSize
-        {  // Package private, for testing purposes
-            get { return ZZ_BUFFERSIZE; }
-        }
+        internal static int InitialBufferSize =>
+            // Package private, for testing purposes
+            ZZ_BUFFERSIZE;
 
         private class TextSegment : OpenStringBuilder
         {
@@ -30953,17 +30953,14 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
             /// </summary>
             internal int NextChar()
             {
-                Debug.Assert(!IsRead, "Attempting to read past the end of a segment.");
+                if (Debugging.AssertsEnabled) Debugging.Assert(!IsRead, "Attempting to read past the end of a segment.");
                 return m_buf[pos++];
             }
 
             /// <summary>
             /// Returns true when all characters in the text segment have been read
             /// </summary>
-            internal bool IsRead
-            {
-                get { return pos >= m_len; }
-            }
+            internal bool IsRead => pos >= m_len;
         }
 
         /// <summary>
@@ -31086,10 +31083,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
         /// <summary>
         /// Returns the current lexical state.
         /// </summary>
-        private int YyState
-        {
-            get { return zzLexicalState; }
-        }
+        private int YyState => zzLexicalState;
 
         /// <summary>
         /// Enters a new lexical state
@@ -31125,10 +31119,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
         /// <summary>
         /// Returns the length of the matched text region.
         /// </summary>
-        private int YyLength
-        {
-            get { return zzMarkedPos - zzStartRead; }
-        }
+        private int YyLength => zzMarkedPos - zzStartRead;
 
         /// <summary>
         /// Reports an error that occured while scanning.
@@ -31387,7 +31378,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                                 }
                                 catch (Exception /*e*/)
                                 {
-                                    Debug.Assert(false, "Exception parsing code point '" + decimalCharRef + "'");
+                                    if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing code point '" + decimalCharRef + "'");
                                 }
                                 if (codePoint <= 0x10FFFF)
                                 {
@@ -31647,7 +31638,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                                 }
                                 catch (Exception /*e*/)
                                 {
-                                    Debug.Assert(false, "Exception parsing hex code point '" + hexCharRef + "'");
+                                    if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing hex code point '" + hexCharRef + "'");
                                 }
                                 if (codePoint <= 0x10FFFF)
                                 {
@@ -31910,7 +31901,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                             }
                             catch (Exception /*e*/)
                             { // should never happen
-                                Debug.Assert(false, "Exception parsing high surrogate '"
+                                if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing high surrogate '"
                                             + surrogatePair.Substring(2, 6 - 2) + "'");
                             }
                             try
@@ -31919,7 +31910,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                             }
                             catch (Exception /*e*/)
                             { // should never happen
-                                Debug.Assert(false, "Exception parsing low surrogate '" + surrogatePair.Substring(10, 14 - 10) + "'");
+                                if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing low surrogate '" + surrogatePair.Substring(10, 14 - 10) + "'");
                             }
                             // add (previously matched input length) + (this match length) - (substitution length)
                             cumulativeDiff += inputSegment.Length + YyLength - 2;
@@ -31941,7 +31932,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                             }
                             catch (Exception /*e*/)
                             { // should never happen
-                                Debug.Assert(false, "Exception parsing high surrogate '"
+                                if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing high surrogate '"
                                             + surrogatePair.Substring(2, 6 - 2) + "'");
                             }
                             try
@@ -31950,7 +31941,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                             }
                             catch (Exception /*e*/)
                             { // should never happen
-                                Debug.Assert(false, "Exception parsing low surrogate '"
+                                if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing low surrogate '"
                                             + surrogatePair.Substring(9, 14 - 9) + "'");
                             }
                             if (char.IsLowSurrogate(lowSurrogate))
@@ -31982,7 +31973,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                             }
                             catch (Exception /*e*/)
                             { // should never happen
-                                Debug.Assert(false, "Exception parsing high surrogate '"
+                                if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing high surrogate '"
                                             + surrogatePair.Substring(1, 6 - 1) + "'");
                             }
                             if (char.IsHighSurrogate(highSurrogate))
@@ -31995,7 +31986,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                                 }
                                 catch (Exception /*e*/)
                                 { // should never happen
-                                    Debug.Assert(false, "Exception parsing low surrogate '"
+                                    if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing low surrogate '"
                                                 + surrogatePair.Substring(10, 14 - 10) + "'");
                                 }
                                 // add (previously matched input length) + (this match length) - (substitution length)
@@ -32022,7 +32013,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                             }
                             catch (Exception /*e*/)
                             { // should never happen
-                                Debug.Assert(false, "Exception parsing high surrogate '"
+                                if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing high surrogate '"
                                             + surrogatePair.Substring(1, 6 - 1) + "'");
                             }
                             if (char.IsHighSurrogate(highSurrogate))
@@ -32034,7 +32025,7 @@ namespace YAF.Lucene.Net.Analysis.CharFilters
                                 }
                                 catch (Exception /*e*/)
                                 { // should never happen
-                                    Debug.Assert(false, "Exception parsing low surrogate '"
+                                    if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "Exception parsing low surrogate '"
                                                 + surrogatePair.Substring(9, 14 - 9) + "'");
                                 }
                                 if (char.IsLowSurrogate(lowSurrogate))

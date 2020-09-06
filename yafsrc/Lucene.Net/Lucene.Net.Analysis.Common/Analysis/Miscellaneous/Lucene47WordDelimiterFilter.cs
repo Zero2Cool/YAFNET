@@ -57,12 +57,12 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
         private readonly WordDelimiterIterator iterator;
 
         // used for concatenating runs of similar typed subwords (word,number)
-        private WordDelimiterConcatenation concat;
+        private readonly WordDelimiterConcatenation concat;
         // number of subwords last output by concat.
         private int lastConcatCount = 0;
 
         // used for catenate all
-        private WordDelimiterConcatenation concatAll;
+        private readonly WordDelimiterConcatenation concatAll;
 
         // used for accumulating position increment gaps
         private int accumPosInc = 0;
@@ -254,7 +254,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
         /// <para/>
         /// If you override this method, always call <c>base.Reset()</c>, otherwise
         /// some internal state will not be correctly reset (e.g., <see cref="Tokenizer"/> will
-        /// throw <see cref="System.InvalidOperationException"/> on further usage).
+        /// throw <see cref="InvalidOperationException"/> on further usage).
         /// </summary>
         /// <remarks>
         /// <b>NOTE:</b>
@@ -522,13 +522,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
             /// Determines if the concatenation is empty
             /// </summary>
             /// <returns> <c>true</c> if the concatenation is empty, <c>false</c> otherwise </returns>
-            internal bool IsEmpty
-            {
-                get
-                {
-                    return buffer.Length == 0;
-                }
-            }
+            internal bool IsEmpty => buffer.Length == 0;
 
             /// <summary>
             /// Clears the concatenation and resets its state

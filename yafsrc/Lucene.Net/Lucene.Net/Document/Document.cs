@@ -1,4 +1,5 @@
 using YAF.Lucene.Net.Index;
+using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections;
@@ -216,15 +217,9 @@ namespace YAF.Lucene.Net.Documents
         /// <see cref="IndexReader.Document(int)"/>.
         /// </para>
         /// </summary>
-        public IList<IIndexableField> Fields
-        {
-            get
-            {
-                return fields;
-            }
-        }
+        public IList<IIndexableField> Fields => fields;
 
-        private static readonly string[] NO_STRINGS = new string[0];
+        private static readonly string[] NO_STRINGS = Arrays.Empty<string>();
 
         /// <summary>
         /// Returns an array of values of the field specified as the method parameter.

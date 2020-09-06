@@ -1,11 +1,12 @@
 using J2N;
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Search
@@ -32,13 +33,13 @@ namespace YAF.Lucene.Net.Search
     using Automaton = YAF.Lucene.Net.Util.Automaton.Automaton;
     using BasicAutomata = YAF.Lucene.Net.Util.Automaton.BasicAutomata;
     using BasicOperations = YAF.Lucene.Net.Util.Automaton.BasicOperations;
-    using IBits = YAF.Lucene.Net.Util.IBits;
     using ByteRunAutomaton = YAF.Lucene.Net.Util.Automaton.ByteRunAutomaton;
     using BytesRef = YAF.Lucene.Net.Util.BytesRef;
     using CompiledAutomaton = YAF.Lucene.Net.Util.Automaton.CompiledAutomaton;
     using DocsAndPositionsEnum = YAF.Lucene.Net.Index.DocsAndPositionsEnum;
     using DocsEnum = YAF.Lucene.Net.Index.DocsEnum;
     using FilteredTermsEnum = YAF.Lucene.Net.Index.FilteredTermsEnum;
+    using IBits = YAF.Lucene.Net.Util.IBits;
     using LevenshteinAutomata = YAF.Lucene.Net.Util.Automaton.LevenshteinAutomata;
     using Term = YAF.Lucene.Net.Index.Term;
     using Terms = YAF.Lucene.Net.Index.Terms;
@@ -107,7 +108,7 @@ namespace YAF.Lucene.Net.Search
         ///        representing edit distance. Passing a fraction is deprecated. </param>
         /// <param name="prefixLength"> Length of required common prefix. Default value is 0. </param>
         /// <param name="transpositions"> Transpositions </param>
-        /// <exception cref="System.IO.IOException"> if there is a low-level IO error </exception>
+        /// <exception cref="IOException"> if there is a low-level IO error </exception>
         public FuzzyTermsEnum(Terms terms, AttributeSource atts, Term term, float minSimilarity, int prefixLength, bool transpositions)
         {
             InitializeInstanceFields();
@@ -155,7 +156,7 @@ namespace YAF.Lucene.Net.Search
             }
             if (transpositions && m_maxEdits > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE)
             {
-                throw new System.NotSupportedException("with transpositions enabled, distances > " + LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE + " are not supported ");
+                throw new NotSupportedException("with transpositions enabled, distances > " + LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE + " are not supported ");
             }
             this.transpositions = transpositions;
             this.m_scaleFactor = 1.0f / (1.0f - this.m_minSimilarity);
@@ -250,8 +251,8 @@ namespace YAF.Lucene.Net.Search
             // assert newEnum != null;
             if (newEnum == null)
             {
-                Debug.Assert(maxEdits > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE);
-                throw new System.ArgumentException("maxEdits cannot be > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE");
+                if (Debugging.AssertsEnabled) Debugging.Assert(maxEdits > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE);
+                throw new ArgumentException("maxEdits cannot be > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE");
             }
             SetEnum(newEnum);
         }
@@ -297,15 +298,9 @@ namespace YAF.Lucene.Net.Search
         }
 
         // proxy all other enum calls to the actual enum
-        public override int DocFreq
-        {
-            get { return actualEnum.DocFreq; }
-        }
+        public override int DocFreq => actualEnum.DocFreq;
 
-        public override long TotalTermFreq
-        {
-            get { return actualEnum.TotalTermFreq; }
-        }
+        public override long TotalTermFreq => actualEnum.TotalTermFreq;
 
         public override DocsEnum Docs(IBits liveDocs, DocsEnum reuse, DocsFlags flags)
         {
@@ -468,10 +463,7 @@ namespace YAF.Lucene.Net.Search
             // LUCENENET NOTE: Must use JCG.List for Equals and GetHashCode()
             private readonly IList<CompiledAutomaton> automata = new JCG.List<CompiledAutomaton>();
 
-            public IList<CompiledAutomaton> Automata
-            {
-                get { return automata; }
-            }
+            public IList<CompiledAutomaton> Automata => automata;
 
             public override void Clear()
             {

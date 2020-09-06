@@ -1,6 +1,5 @@
 using J2N.Collections;
-using System.Diagnostics;
-using System.Reflection;
+using YAF.Lucene.Net.Diagnostics;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Util.Fst
@@ -39,7 +38,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
         // LUCENENET specific - optimize the Hash methods
         // by only calling StructuralEqualityComparer.GetHashCode() if the value is a reference type
-        private readonly static bool tIsValueType = typeof(T).GetTypeInfo().IsValueType;
+        private readonly static bool tIsValueType = typeof(T).IsValueType;
 
         public NodeHash(FST<T> fst, FST.BytesReader input)
         {
@@ -163,8 +162,7 @@ namespace YAF.Lucene.Net.Util.Fst
                     // freeze & add
                     long node = fst.AddNode(nodeIn);
                     //System.out.println("  now freeze node=" + node);
-                    long hashNode = Hash(node);
-                    Debug.Assert(hashNode == h, "frozenHash=" + hashNode + " vs h=" + h);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(Hash(node) == h, () => "frozenHash=" + Hash(node) + " vs h=" + h);
                     count++;
                     table.Set(pos, node);
                     // Rehash at 2/3 occupancy:

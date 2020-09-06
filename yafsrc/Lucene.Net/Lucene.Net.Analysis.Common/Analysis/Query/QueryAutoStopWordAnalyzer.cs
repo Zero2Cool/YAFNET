@@ -1,16 +1,18 @@
-﻿using YAF.Lucene.Net.Analysis.Core;
+﻿using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Analysis.Core;
 using YAF.Lucene.Net.Analysis.Util;
 using YAF.Lucene.Net.Index;
+using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Analysis.Query
 {
     /*
      * Licensed to the Apache Software Foundation (ASF) under one or more
-namespace YAF.Lucene.Neticense agreements.  See the NOTICE file distributed with
+     * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
      * The ASF licenses this file to You under the Apache License, Version 2.0
      * (the "License"); you may not use this file except in compliance with
@@ -52,7 +54,7 @@ namespace YAF.Lucene.Neticense agreements.  See the NOTICE file distributed with
         /// <param name="matchVersion"> Version to be used in <see cref="StopFilter"/> </param>
         /// <param name="delegate"> <see cref="Analyzer"/> whose <see cref="TokenStream"/> will be filtered </param>
         /// <param name="indexReader"> <see cref="IndexReader"/> to identify the stopwords from </param>
-        /// <exception cref="System.IO.IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
+        /// <exception cref="IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
         public QueryAutoStopWordAnalyzer(LuceneVersion matchVersion, Analyzer @delegate, IndexReader indexReader)
             : this(matchVersion, @delegate, indexReader, defaultMaxDocFreqPercent)
         {
@@ -67,7 +69,7 @@ namespace YAF.Lucene.Neticense agreements.  See the NOTICE file distributed with
         /// <param name="delegate"> <see cref="Analyzer"/> whose <see cref="TokenStream"/> will be filtered </param>
         /// <param name="indexReader"> <see cref="IndexReader"/> to identify the stopwords from </param>
         /// <param name="maxDocFreq"> Document frequency terms should be above in order to be stopwords </param>
-        /// <exception cref="System.IO.IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
+        /// <exception cref="IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
         public QueryAutoStopWordAnalyzer(LuceneVersion matchVersion, Analyzer @delegate, IndexReader indexReader, int maxDocFreq)
             : this(matchVersion, @delegate, indexReader, MultiFields.GetIndexedFields(indexReader), maxDocFreq)
         {
@@ -83,7 +85,7 @@ namespace YAF.Lucene.Neticense agreements.  See the NOTICE file distributed with
         /// <param name="indexReader"> <see cref="IndexReader"/> to identify the stopwords from </param>
         /// <param name="maxPercentDocs"> The maximum percentage (between 0.0 and 1.0) of index documents which
         ///                      contain a term, after which the word is considered to be a stop word </param>
-        /// <exception cref="System.IO.IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
+        /// <exception cref="IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
         public QueryAutoStopWordAnalyzer(LuceneVersion matchVersion, Analyzer @delegate, IndexReader indexReader, float maxPercentDocs)
             : this(matchVersion, @delegate, indexReader, MultiFields.GetIndexedFields(indexReader), maxPercentDocs)
         {
@@ -100,7 +102,7 @@ namespace YAF.Lucene.Neticense agreements.  See the NOTICE file distributed with
         /// <param name="fields"> Selection of fields to calculate stopwords for </param>
         /// <param name="maxPercentDocs"> The maximum percentage (between 0.0 and 1.0) of index documents which
         ///                      contain a term, after which the word is considered to be a stop word </param>
-        /// <exception cref="System.IO.IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
+        /// <exception cref="IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
         public QueryAutoStopWordAnalyzer(LuceneVersion matchVersion, Analyzer @delegate, IndexReader indexReader, ICollection<string> fields, float maxPercentDocs)
             : this(matchVersion, @delegate, indexReader, fields, (int)(indexReader.NumDocs * maxPercentDocs))
         {
@@ -116,7 +118,7 @@ namespace YAF.Lucene.Neticense agreements.  See the NOTICE file distributed with
         /// <param name="indexReader"> <see cref="IndexReader"/> to identify the stopwords from </param>
         /// <param name="fields"> Selection of fields to calculate stopwords for </param>
         /// <param name="maxDocFreq"> Document frequency terms should be above in order to be stopwords </param>
-        /// <exception cref="System.IO.IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
+        /// <exception cref="IOException"> Can be thrown while reading from the <see cref="IndexReader"/> </exception>
         public QueryAutoStopWordAnalyzer(LuceneVersion matchVersion, Analyzer @delegate, IndexReader indexReader, ICollection<string> fields, int maxDocFreq)
             : base(@delegate.Strategy)
         {
@@ -169,7 +171,7 @@ namespace YAF.Lucene.Neticense agreements.  See the NOTICE file distributed with
         public string[] GetStopWords(string fieldName)
         {            
             var stopWords = stopWordsPerField[fieldName];
-            return stopWords != null ? stopWords.ToArray() : new string[0];
+            return stopWords != null ? stopWords.ToArray() : Arrays.Empty<string>();
         }
 
         /// <summary>

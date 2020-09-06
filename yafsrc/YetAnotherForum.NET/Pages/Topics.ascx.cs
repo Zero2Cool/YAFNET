@@ -142,6 +142,8 @@ namespace YAF.Pages
                     iconLegend.ToJsString(),
                     "topic-icon-legend-popvover"));
 
+            this.PageContext.PageElements.RegisterJsBlock("dropDownToggleJs", JavaScriptBlocks.DropDownToggleJs());
+
             base.OnPreRender(e);
         }
 
@@ -207,26 +209,27 @@ namespace YAF.Pages
 
             if (this.ForumSearchHolder.Visible)
             {
-                this.forumSearch.Attributes["onkeydown"] =
-                    $"if(event.which || event.keyCode){{if ((event.which == 13) || (event.keyCode == 13)) {{document.getElementById('{this.forumSearchOK.ClientID}').click();return false;}}}} else {{return true}}; ";
+                this.forumSearch.Attributes.Add(
+                    "onkeydown",
+                    JavaScriptBlocks.ClickOnEnterJs(this.forumSearchOK.ClientID));
             }
 
             if (!this.IsPostBack)
             {
                 this.ShowList.DataSource = StaticDataHelper.TopicTimes();
-                this.ShowList.DataTextField = "TopicText";
-                this.ShowList.DataValueField = "TopicValue";
+                this.ShowList.DataTextField = "Name";
+                this.ShowList.DataValueField = "Value";
                 this.showTopicListSelected = this.Get<ISession>().ShowList == -1
                                                   ? this.Get<BoardSettings>().ShowTopicsDefault
                                                   : this.Get<ISession>().ShowList;
 
                 this.moderate1.NavigateUrl =
                     this.moderate2.NavigateUrl =
-                    BuildLink.GetLinkNotEscaped(ForumPages.Moderating, "f={0}", this.PageContext.PageForumID);
+                    BuildLink.GetLink(ForumPages.Moderate_Forums, "f={0}", this.PageContext.PageForumID);
 
                 this.NewTopic1.NavigateUrl =
                     this.NewTopic2.NavigateUrl =
-                    BuildLink.GetLinkNotEscaped(ForumPages.PostTopic, "f={0}", this.PageContext.PageForumID);
+                    BuildLink.GetLink(ForumPages.PostTopic, "f={0}", this.PageContext.PageForumID);
 
                 this.HandleWatchForum();
             }
@@ -287,13 +290,10 @@ namespace YAF.Pages
         /// </summary>
         protected override void CreatePageLinks()
         {
-            // PageLinks.Clear();
             if (this.PageContext.Settings.LockedForum == 0)
             {
                 this.PageLinks.AddRoot();
-                this.PageLinks.AddLink(
-                    this.PageContext.PageCategoryName,
-                    BuildLink.GetLink(ForumPages.forum, "c={0}", this.PageContext.PageCategoryID));
+                this.PageLinks.AddCategory(this.PageContext.PageCategoryName, this.PageContext.PageCategoryID);
             }
 
             this.PageLinks.AddForum(this.PageContext.PageForumID, true);
@@ -353,35 +353,45 @@ namespace YAF.Pages
         }
 
         /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.BindData();
+        }
+
+        /// <summary>
         /// The bind data.
         /// </summary>
         private void BindData()
         {
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
             var ds = this.Get<DataBroker>().BoardLayout(
                 this.PageContext.PageBoardID,
                 this.PageContext.PageUserID,
                 this.PageContext.PageCategoryID,
                 this.PageContext.PageForumID);
+
             if (ds.Tables["Forum"].HasRows())
             {
                 this.ForumList.DataSource = ds.Tables["Forum"].Rows;
                 this.SubForums.Visible = true;
             }
 
-            this.Pager.PageSize = this.Get<BoardSettings>().TopicsPerPage;
+            var baseSize = this.PageSize.SelectedValue.ToType<int>();
 
-            // when userId is null it returns the count of all deleted messages
-            /*int? userId = null;
+            this.Pager.PageSize = baseSize;
 
-            // get the userID to use for the deleted posts count...
-            if (!this.Get<BoardSettings>().ShowDeletedMessagesToAll)
-            {
-                // only show deleted messages that belong to this user if they are not admin/mod
-                if (!this.PageContext.IsAdmin && !this.PageContext.ForumModeratorAccess)
-                {
-                    userId = this.PageContext.PageUserID;
-                }
-            }*/
             int? userId = this.PageContext.PageUserID;
 
             var dt = this.GetRepository<Topic>().AnnouncementsAsDataTable(
@@ -398,8 +408,6 @@ namespace YAF.Pages
             {
                 dt = this.StyleTransformDataTable(dt);
             }
-
-            var baseSize = this.Get<BoardSettings>().TopicsPerPage;
 
             this.Announcements.DataSource = dt;
 
@@ -419,6 +427,7 @@ namespace YAF.Pages
                     this.Get<BoardSettings>().UseStyledNicks,
                     true,
                     this.Get<BoardSettings>().UseReadTrackingByDatabase);
+
                 if (topicList != null)
                 {
                     topicList = this.StyleTransformDataTable(topicList);

@@ -1,6 +1,8 @@
 ﻿using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Search;
 using YAF.Lucene.Net.Util;
+using System;
+using System.IO;
 using System.Text;
 
 namespace YAF.Lucene.Net.Queries
@@ -51,11 +53,11 @@ namespace YAF.Lucene.Net.Queries
         /// <summary>
         /// The filter chain
         /// </summary>
-        private Filter[] chain = null;
+        private readonly Filter[] chain = null;
 
-        private int[] logicArray;
+        private readonly int[] logicArray;
 
-        private int logic = -1;
+        private readonly int logic = -1;
 
         /// <summary>
         /// Ctor.
@@ -176,7 +178,7 @@ namespace YAF.Lucene.Net.Queries
         {
             if (logic.Length != chain.Length)
             {
-                throw new System.ArgumentException("Invalid number of elements in logic array");
+                throw new ArgumentException("Invalid number of elements in logic array");
             }
 
             FixedBitSet result = InitialResult(context, logic[0], index);
@@ -201,7 +203,7 @@ namespace YAF.Lucene.Net.Queries
             return sb.ToString();
         }
 
-        /// <exception cref="System.IO.IOException"/>
+        /// <exception cref="IOException"/>
         private void DoChain(FixedBitSet result, int logic, DocIdSet dis)
         {
             if (dis is FixedBitSet)

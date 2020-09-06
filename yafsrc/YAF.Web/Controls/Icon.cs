@@ -99,7 +99,7 @@ namespace YAF.Web.Controls
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl(HtmlTextWriter writer)
+        public override void RenderControl([NotNull] HtmlTextWriter writer)
         {
             if (!this.Visible)
             {
@@ -183,7 +183,7 @@ namespace YAF.Web.Controls
 
             writer.WriteEndTag(HtmlTextWriterTag.I.ToString());
 
-            writer.Write(@"<i class=""fa fa-circle fa-badge-bg fa-inverse fa-outline-inverse""></i>");
+            writer.Write(@"<i class=""fa fa-circle fa-badge-bg fa-inverse text-light""></i>");
             writer.WriteBeginTag(HtmlTextWriterTag.I.ToString());
 
             writer.WriteAttribute(

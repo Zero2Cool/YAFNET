@@ -1,32 +1,33 @@
-﻿using J2N.Text;
+﻿using J2N.Collections.Generic.Extensions;
+using J2N.Text;
 using YAF.Lucene.Net.Analysis.Util;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace YAF.Lucene.Net.Analysis.Pt
 {
     /*
-	 * Licensed to the Apache Software Foundation (ASF) under one or more
-	 * contributor license agreements.  See the NOTICE file distributed with
-	 * this work for additional information regarding copyright ownership.
-	 * The ASF licenses this file to You under the Apache License, Version 2.0
-	 * (the "License"); you may not use this file except in compliance with
-	 * the License.  You may obtain a copy of the License at
-	 *
-	 *     http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 */
+     * Licensed to the Apache Software Foundation (ASF) under one or more
+     * contributor license agreements.  See the NOTICE file distributed with
+     * this work for additional information regarding copyright ownership.
+     * The ASF licenses this file to You under the Apache License, Version 2.0
+     * (the "License"); you may not use this file except in compliance with
+     * the License.  You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
 
     /// <summary>
     /// Base class for stemmers that use a set of RSLP-like stemming steps.
@@ -304,7 +305,7 @@ namespace YAF.Lucene.Net.Analysis.Pt
             {
                 throw new Exception("Illegal Step header specified at line " /*+ r.LineNumber*/); // TODO Line number
             }
-            //Debug.Assert(headerPattern.GetGroupNumbers().Length == 4);
+            //if (Debugging.AssertsEnabled) Debugging.Assert(headerPattern.GetGroupNumbers().Length == 4); // Not possible to read the number of groups that matched in .NET
             string name = matcher.Groups[1].Value;
             int min = int.Parse(matcher.Groups[2].Value, CultureInfo.InvariantCulture);
             int type = int.Parse(matcher.Groups[3].Value, CultureInfo.InvariantCulture);

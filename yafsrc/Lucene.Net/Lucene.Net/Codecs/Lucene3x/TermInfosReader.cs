@@ -1,4 +1,5 @@
 using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
@@ -64,7 +65,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             public TermInfoAndOrd(TermInfo ti, long termOrd)
                 : base(ti)
             {
-                Debug.Assert(termOrd >= 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termOrd >= 0);
                 this.termOrd = termOrd;
             }
         }
@@ -111,7 +112,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
             if (indexDivisor < 1 && indexDivisor != -1)
             {
-                throw new System.ArgumentException("indexDivisor must be -1 (don't load terms index) or greater than 0: got " + indexDivisor);
+                throw new ArgumentException("indexDivisor must be -1 (don't load terms index) or greater than 0: got " + indexDivisor);
             }
 
             try
@@ -164,21 +165,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             }
         }
 
-        public int SkipInterval
-        {
-            get
-            {
-                return origEnum.skipInterval;
-            }
-        }
+        public int SkipInterval => origEnum.skipInterval;
 
-        public int MaxSkipLevels
-        {
-            get
-            {
-                return origEnum.maxSkipLevels;
-            }
-        }
+        public int MaxSkipLevels => origEnum.maxSkipLevels;
 
         public void Dispose()
         {
@@ -190,19 +179,16 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
         /// <para/>
         /// NOTE: This was size() in Lucene.
         /// </summary>
-        internal long Count
-        {
-            get { return size; }
-        }
+        internal long Count => size;
 
         private ThreadResources GetThreadResources()
         {
-            ThreadResources resources = threadResources.Get();
+            ThreadResources resources = threadResources.Value;
             if (resources == null)
             {
                 resources = new ThreadResources();
                 resources.termEnum = Terms();
-                threadResources.Set(resources);
+                threadResources.Value = resources;
             }
             return resources;
         }
@@ -305,10 +291,10 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                                     termsCache.Put(new CloneableTerm(DeepCopyOf(term)), new TermInfoAndOrd(ti, enumerator.position));
                                 }
                             }
-                            else
+                            else if (Debugging.AssertsEnabled)
                             {
-                                Debug.Assert(SameTermInfo(ti, tiOrd, enumerator));
-                                Debug.Assert(enumerator.position == tiOrd.termOrd);
+                                Debugging.Assert(SameTermInfo(ti, tiOrd, enumerator));
+                                Debugging.Assert((int)enumerator.position == tiOrd.termOrd);
                             }
                         }
                     }
@@ -347,10 +333,10 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                         termsCache.Put(new CloneableTerm(DeepCopyOf(term)), new TermInfoAndOrd(ti_, enumerator.position));
                     }
                 }
-                else
+                else if (Debugging.AssertsEnabled)
                 {
-                    Debug.Assert(SameTermInfo(ti_, tiOrd, enumerator));
-                    Debug.Assert(enumerator.position == tiOrd.termOrd);
+                    Debugging.Assert(SameTermInfo(ti_, tiOrd, enumerator));
+                    Debugging.Assert(enumerator.position == tiOrd.termOrd);
                 }
             }
             else

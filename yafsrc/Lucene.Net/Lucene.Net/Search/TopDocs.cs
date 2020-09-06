@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -50,14 +50,8 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public virtual float MaxScore
         {
-            get
-            {
-                return maxScore;
-            }
-            set
-            {
-                this.maxScore = value;
-            }
+            get => maxScore;
+            set => this.maxScore = value;
         }
 
         /// <summary>
@@ -113,7 +107,7 @@ namespace YAF.Lucene.Net.Search
             // Returns true if first is < second
             protected internal override bool LessThan(ShardRef first, ShardRef second)
             {
-                Debug.Assert(first != second);
+                if (Debugging.AssertsEnabled) Debugging.Assert(first != second);
                 float firstScore = shardHits[first.ShardIndex][first.HitIndex].Score;
                 float secondScore = shardHits[second.ShardIndex][second.HitIndex].Score;
 
@@ -140,7 +134,7 @@ namespace YAF.Lucene.Net.Search
                     {
                         // Tie break in same shard: resolve however the
                         // shard had resolved it:
-                        Debug.Assert(first.HitIndex != second.HitIndex);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(first.HitIndex != second.HitIndex);
                         return first.HitIndex < second.HitIndex;
                     }
                 }
@@ -172,12 +166,12 @@ namespace YAF.Lucene.Net.Search
                             ScoreDoc sd = shard[hitIDX];
                             if (!(sd is FieldDoc))
                             {
-                                throw new System.ArgumentException("shard " + shardIDX + " was not sorted by the provided Sort (expected FieldDoc but got ScoreDoc)");
+                                throw new ArgumentException("shard " + shardIDX + " was not sorted by the provided Sort (expected FieldDoc but got ScoreDoc)");
                             }
                             FieldDoc fd = (FieldDoc)sd;
                             if (fd.Fields == null)
                             {
-                                throw new System.ArgumentException("shard " + shardIDX + " did not set sort field values (FieldDoc.fields is null); you must pass fillFields=true to IndexSearcher.search on each shard");
+                                throw new ArgumentException("shard " + shardIDX + " did not set sort field values (FieldDoc.fields is null); you must pass fillFields=true to IndexSearcher.search on each shard");
                             }
                         }
                     }
@@ -197,7 +191,7 @@ namespace YAF.Lucene.Net.Search
             // Returns true if first is < second
             protected internal override bool LessThan(ShardRef first, ShardRef second)
             {
-                Debug.Assert(first != second);
+                if (Debugging.AssertsEnabled) Debugging.Assert(first != second);
                 FieldDoc firstFD = (FieldDoc)shardHits[first.ShardIndex][first.HitIndex];
                 FieldDoc secondFD = (FieldDoc)shardHits[second.ShardIndex][second.HitIndex];
                 //System.out.println("  lessThan:\n     first=" + first + " doc=" + firstFD.doc + " score=" + firstFD.score + "\n    second=" + second + " doc=" + secondFD.doc + " score=" + secondFD.score);
@@ -232,7 +226,7 @@ namespace YAF.Lucene.Net.Search
                     // Tie break in same shard: resolve however the
                     // shard had resolved it:
                     //System.out.println("    return tb " + (first.hitIndex < second.hitIndex));
-                    Debug.Assert(first.HitIndex != second.HitIndex);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(first.HitIndex != second.HitIndex);
                     return first.HitIndex < second.HitIndex;
                 }
             }
@@ -301,7 +295,7 @@ namespace YAF.Lucene.Net.Search
             ScoreDoc[] hits;
             if (availHitCount <= start)
             {
-                hits = new ScoreDoc[0];
+                hits = Arrays.Empty<ScoreDoc>();
             }
             else
             {
@@ -311,7 +305,7 @@ namespace YAF.Lucene.Net.Search
                 int hitUpto = 0;
                 while (hitUpto < numIterOnHits)
                 {
-                    Debug.Assert(queue.Count > 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(queue.Count > 0);
                     ShardRef @ref = queue.Pop();
                     ScoreDoc hit = shardHits[@ref.ShardIndex].ScoreDocs[@ref.HitIndex++];
                     hit.ShardIndex = @ref.ShardIndex;

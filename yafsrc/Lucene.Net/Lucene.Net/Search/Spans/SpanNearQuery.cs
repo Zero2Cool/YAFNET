@@ -1,6 +1,6 @@
+using J2N.Collections.Generic.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using JCG = J2N.Collections.Generic;
 
@@ -73,7 +73,7 @@ namespace YAF.Lucene.Net.Search.Spans
                 }
                 else if (clause.Field != null && !clause.Field.Equals(m_field, StringComparison.Ordinal))
                 {
-                    throw new System.ArgumentException("Clauses must have same field.");
+                    throw new ArgumentException("Clauses must have same field.");
                 }
                 this.m_clauses.Add(clause);
             }

@@ -53,6 +53,90 @@ namespace YAF.Core.Model
         #region Public Methods and Operators
 
         /// <summary>
+        /// Checks if the User has replied to the specific topic.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="topicId">
+        /// The topic Id.
+        /// </param>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <returns>
+        /// Returns if true or not
+        /// </returns>
+        public static bool RepliedTopic(
+            this IRepository<Message> repository,
+            [NotNull] int topicId,
+            [NotNull] int userId)
+        {
+            return repository.Count(m => m.TopicID == topicId && m.UserID == userId) > 0;
+        }
+
+        /// <summary>
+        /// The get message.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="messageId">
+        /// The message id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Tuple"/>.
+        /// </returns>
+        public static Tuple<Topic, Message, User, Forum> GetMessage(
+            this IRepository<Message> repository,
+            [NotNull] int messageId)
+        {
+            CodeContracts.VerifyNotNull(repository);
+
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Topic>();
+
+            expression.Join<Message>((t, m) => m.TopicID == t.ID)
+                .Join<Message, User>((m, u) => u.ID == m.UserID)
+                .Join<Forum>((t, f) => f.ID == t.ForumID)
+                .Where<Message>(m => m.ID == messageId);
+
+            return repository.DbAccess.Execute(
+                db => db.Connection.SelectMulti<Topic, Message, User, Forum>(expression)).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the message with access.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="messageId">
+        /// The message id.
+        /// </param>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Tuple"/>.
+        /// </returns>
+        public static Tuple<Topic, Message, User, Forum> GetMessageWithAccess(
+            this IRepository<Message> repository,
+            [NotNull] int messageId,
+            [NotNull] int userId)
+        {
+            CodeContracts.VerifyNotNull(repository);
+
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Topic>();
+
+            expression.Join<Message>((t, m) => m.TopicID == t.ID).Join<Message, User>((m, u) => u.ID == m.UserID)
+                .Join<Forum>((t, f) => f.ID == t.ForumID).LeftJoin<ActiveAccess>((t, x) => x.ForumID == t.ForumID)
+                .Where<Message, ActiveAccess>((m, x) => m.ID == messageId && x.UserID == userId && x.ReadAccess);
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<Topic, Message, User, Forum>(expression))
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Get Deleted Topics
         /// </summary>
         /// <param name="repository">
@@ -68,50 +152,15 @@ namespace YAF.Core.Model
             this IRepository<Message> repository,
             [NotNull] int boardId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var expression = OrmLiteConfig.DialectProvider.SqlExpression<Forum>();
 
             expression.Join<Forum, Category>((forum, category) => category.ID == forum.CategoryID)
                 .Join<Topic>((f, t) => t.ForumID == f.ID).Join<Topic, Message>((t, m) => m.TopicID == t.ID)
-                .Where<Message, Category>((m, category) => category.BoardID == boardId && m.IsDeleted == true).Select();
+                .Where<Message, Category>((m, category) => category.BoardID == boardId && m.IsDeleted == true);
 
             return repository.DbAccess.Execute(db => db.Connection.SelectMulti<Forum, Topic, Message>(expression));
-        }
-
-        /// <summary>
-        /// Gets all the post by a user.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="boardId">
-        /// The board Id.
-        /// </param>
-        /// <param name="userID">
-        /// The user id.
-        /// </param>
-        /// <param name="pageUserID">
-        /// The page user id.
-        /// </param>
-        /// <param name="topCount">
-        /// Top count to return. Null is all.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable AllUserAsDataTable(
-            this IRepository<Message> repository,
-            [NotNull] object boardId,
-            [NotNull] object userID,
-            [NotNull] object pageUserID,
-            [NotNull] object topCount)
-        {
-            return repository.DbFunction.GetData.post_alluser(
-                BoardID: boardId,
-                UserID: userID,
-                PageUserID: pageUserID,
-                topCount: topCount);
         }
 
         /// <summary>
@@ -223,6 +272,30 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
+        /// The last posts.
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="topicId">
+        /// The topic id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IEnumerable"/>.
+        /// </returns>
+        public static List<Tuple<Message, User>> LastPosts(
+            this IRepository<Message> repository,
+            [NotNull] int topicId)
+        {
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Message>();
+
+            expression.Join<Message, User>((m, u) => m.UserID == u.ID)
+                .Where<Message>(m => m.TopicID == topicId && (m.Flags & 24) == 16).OrderByDescending(m => m.Posted).Take(10);
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<Message, User>(expression));
+        }
+
+        /// <summary>
         /// Gets all the post by a user.
         /// </summary>
         /// <param name="repository">
@@ -237,6 +310,50 @@ namespace YAF.Core.Model
         public static IOrderedEnumerable<Message> GetAllUserMessages(this IRepository<Message> repository, int userId)
         {
             return repository.Get(m => m.UserID == userId).OrderByDescending(m => m.Posted);
+        }
+
+        /// <summary>
+        /// Gets all the post by a user. (With Read Access of current Page User)
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <param name="boardId">
+        /// The board Id.
+        /// </param>
+        /// <param name="userId">
+        /// The user Id.
+        /// </param>
+        /// <param name="pageUserId">
+        /// The page User Id.
+        /// </param>
+        /// <param name="count">
+        /// The count.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Tuple<Message, Topic, User>> GetAllUserMessagesWithAccess(
+            this IRepository<Message> repository,
+            [NotNull] int boardId,
+            [NotNull] int userId,
+            [NotNull] int pageUserId,
+            [NotNull] int count)
+        {
+            CodeContracts.VerifyNotNull(repository);
+
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Message>();
+
+            expression.Join<User>((a, b) => b.ID == a.UserID).Join<Topic>((a, c) => c.ID == a.TopicID)
+                .Join<Topic, Forum>((c, d) => d.ID == c.ForumID).Join<Forum, Category>((d, e) => e.ID == d.CategoryID)
+                .Join<Category, ActiveAccess>((d, x) => x.ForumID == d.ID)
+                .Where<Topic, Message, ActiveAccess, Category>(
+                    (topic, message, x, e) => message.UserID == userId && x.UserID == pageUserId && x.ReadAccess &&
+                                              e.BoardID == boardId && topic.IsDeleted == false &&
+                                              message.IsDeleted == false)
+                .OrderByDescending<Message>(x => x.Posted).Take(count);
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<Message, Topic, User>(expression));
         }
 
         /// <summary>
@@ -255,45 +372,19 @@ namespace YAF.Core.Model
             this IRepository<Message> repository,
             [NotNull]int forumId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
-            return repository.DbFunction
-                .GetAsDataTable(cdb => cdb.message_list_search(ForumID: forumId))
-                .SelectTypedList(t => new SearchMessage(t));
-        }
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Forum>();
 
-        /// <summary>
-        /// Gets the Typed Message List
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="messageId">
-        /// The message Id.
-        /// </param>
-        /// <returns>
-        /// Returns the TypedMessage List
-        /// </returns>
-        [NotNull]
-        public static IEnumerable<TypedMessageList> MessageList(this IRepository<Message> repository, int messageId)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            expression.Join<Topic>((forum, topic) => topic.ForumID == forum.ID)
+                .Join<Topic, Message>((topic, message) => message.TopicID == topic.ID)
+                .Join<Message, User>((message, user) => user.ID == message.UserID).Where<Forum, Topic, Message>(
+                    (forum, topic, message) => forum.ID == forumId && topic.IsDeleted == false &&
+                                               message.IsDeleted == false && message.IsApproved == true &&
+                                               topic.TopicMovedID == null).OrderByDescending<Message>(x => x.Posted);
 
-            return repository.DbFunction.GetAsDataTable(cdb => cdb.message_list(MessageID: messageId))
-                .SelectTypedList(t => new TypedMessageList(t));
-        }
-
-        /// <summary>
-        /// A list of messages.
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        /// <param name="messageId">The message identifier.</param>
-        /// <returns>Returns Typed Message List</returns>
-        public static IList<Message> ListTyped(this IRepository<Message> repository, int messageId)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.SqlList("message_list", new { MessageID = messageId });
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<Forum, Topic, Message, User>(expression))
+                .ConvertAll(x => new SearchMessage(x));
         }
 
         /// <summary>
@@ -303,9 +394,11 @@ namespace YAF.Core.Model
         /// <param name="messageId">The message identifier.</param>
         public static void ApproveMessage(this IRepository<Message> repository, int messageId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             repository.DbFunction.Query.message_approve(MessageID: messageId);
+
+            repository.FireUpdated(messageId);
         }
 
         /// <summary>
@@ -316,34 +409,9 @@ namespace YAF.Core.Model
         /// <param name="flags">The flags.</param>
         public static void UpdateFlags(this IRepository<Message> repository, int messageId, int flags)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             repository.UpdateOnly(() => new Message { Flags = flags }, u => u.ID == messageId);
-        }
-
-        /// <summary>
-        /// The simple list as data table.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="startId">
-        /// The start id.
-        /// </param>
-        /// <param name="limit">
-        /// The limit.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable SimpleListAsDataTable(
-            this IRepository<Message> repository,
-            [CanBeNull] int startId = 0,
-            [CanBeNull] int limit = 500)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.DbFunction.GetData.message_simplelist(StartID: startId, Limit: limit);
         }
 
         /// <summary>
@@ -376,6 +444,8 @@ namespace YAF.Core.Model
             bool deleteLinked)
         {
             repository.Delete(messageID, isModeratorChanged, deleteReason, isDeleteAction, deleteLinked, false);
+
+            repository.FireDeleted(messageID);
         }
 
         /// <summary>
@@ -468,26 +538,14 @@ namespace YAF.Core.Model
         /// The <see cref="DataTable"/>.
         /// </returns>
         [NotNull]
-        public static DataTable RepliesListAsDataTable(this IRepository<Message> repository, [NotNull] int messageId)
+        public static List<Tuple<Message, User>> Replies(this IRepository<Message> repository, [NotNull] int messageId)
         {
-            return repository.DbFunction.GetData.message_reply_list(MessageID: messageId);
-        }
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Message>();
 
-        /// <summary>
-        /// The message_list.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="messageId">
-        /// The message id.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable ListAsDataTable(this IRepository<Message> repository, [NotNull] int messageId)
-        {
-            return repository.DbFunction.GetData.message_list(MessageID: messageId);
+            expression.Join<User>((message, user) => user.ID == message.UserID).Where<Message>(
+                    m => m.IsApproved.Value && m.ReplyTo == messageId);
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<Message, User>(expression));
         }
 
         /// <summary>
@@ -555,46 +613,6 @@ namespace YAF.Core.Model
         }
 
         /// <summary>
-        /// Here we get reporters list for a reported message
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="messageId">
-        /// The message Id.
-        /// </param>
-        /// <returns>
-        /// Returns reporters DataTable for a reported message.
-        /// </returns>
-        public static DataTable ListReportersAsDataTable(this IRepository<Message> repository, int messageId)
-        {
-            return repository.ListReportersAsDataTable(messageId, 0);
-        }
-
-        /// <summary>
-        /// List the reporters as data table.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="messageId">
-        /// The message id.
-        /// </param>
-        /// <param name="userId">
-        /// The user id.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable ListReportersAsDataTable(
-            this IRepository<Message> repository,
-            int messageId,
-            [NotNull] int userId)
-        {
-            return repository.DbFunction.GetData.message_listreporters(MessageID: messageId, UserID: userId);
-        }
-
-        /// <summary>
         /// Save reported message back to the database.
         /// </summary>
         /// <param name="repository">
@@ -625,20 +643,6 @@ namespace YAF.Core.Model
                 ReportedDate: reportedDateTime,
                 ReportText: reportText,
                 UTCTIMESTAMP: DateTime.UtcNow);
-        }
-
-        /// <summary>
-        /// Copy current Message text over reported Message text.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="messageId">
-        /// The message Id.
-        /// </param>
-        public static void ReportCopyOver(this IRepository<Message> repository, [NotNull] int messageId)
-        {
-            repository.DbFunction.Scalar.message_reportcopyover(MessageID: messageId);
         }
 
         /// <summary>
@@ -702,7 +706,7 @@ namespace YAF.Core.Model
         /// <returns>
         /// Returns the Message ID
         /// </returns>
-        public static long SaveNew(
+        public static int SaveNew(
             this IRepository<Message> repository,
             [NotNull] long topicId,
             [NotNull] int userId,
@@ -710,7 +714,7 @@ namespace YAF.Core.Model
             [NotNull] string guestUserName,
             [NotNull] string ipAddress,
             [NotNull] DateTime posted,
-            [NotNull] int replyTo,
+            [CanBeNull] int? replyTo,
             [NotNull] MessageFlags flags)
         {
             IDbDataParameter parameterMessage = null;
@@ -735,18 +739,18 @@ namespace YAF.Core.Model
                         parameterMessage = cmd.AddParam("MessageID", direction: ParameterDirection.Output);
                     });
 
-            var messageId = parameterMessage.Value.ToType<long>();
+            var messageId = parameterMessage.Value.ToType<int>();
 
             // Add to search index
             var newMessage = new SearchMessage
                                     {
-                                        MessageId = messageId.ToType<int>(),
+                                        MessageId = messageId,
                                         Message = message,
                                         Flags = flags.BitValue,
                                         Posted = posted.ToString(CultureInfo.InvariantCulture),
-                                        UserName = BoardContext.Current.User.UserName,
-                                        UserDisplayName = BoardContext.Current.CurrentUserData.DisplayName,
-                                        UserStyle = BoardContext.Current.UserStyle,
+                                        UserName = BoardContext.Current.MembershipUser.UserName,
+                                        UserDisplayName = BoardContext.Current.User.DisplayName,
+                                        UserStyle = BoardContext.Current.User.UserStyle,
                                         UserId = BoardContext.Current.PageUserID,
                                         TopicId = BoardContext.Current.PageTopicID,
                                         Topic = BoardContext.Current.PageTopicName,
@@ -758,30 +762,9 @@ namespace YAF.Core.Model
 
             BoardContext.Current.Get<ISearch>().AddSearchIndexItem(newMessage);
 
-            return messageId;
-        }
+            repository.FireNew(messageId);
 
-        /// <summary>
-        /// Returns message data based on user access rights
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="messageId">
-        /// The message Id.
-        /// </param>
-        /// <param name="pageUserId">
-        /// The page User Id.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        public static DataTable SecAsDataTable(
-            this IRepository<Message> repository,
-            int messageId,
-            [NotNull] int pageUserId)
-        {
-            return repository.DbFunction.GetData.message_secdata(PageUserID: pageUserId, MessageID: messageId);
+            return messageId;
         }
 
         /// <summary>
@@ -796,9 +779,18 @@ namespace YAF.Core.Model
         /// <returns>
         /// The <see cref="DataTable"/>.
         /// </returns>
-        public static DataTable UnapprovedAsDataTable(this IRepository<Message> repository, [NotNull] int forumId)
+        public static List<Tuple<Topic, Message, User>> Unapproved(this IRepository<Message> repository, [NotNull] int forumId)
         {
-            return repository.DbFunction.GetData.message_unapproved(ForumID: forumId);
+            CodeContracts.VerifyNotNull(repository);
+
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Topic>();
+
+            expression.Join<Message>((topic, message) => message.TopicID == topic.ID)
+                .Join<Message, User>((message, user) => message.UserID == user.ID).Where<Topic, Message>(
+                    (topic, message) => topic.ForumID == forumId && message.IsApproved == false &&
+                                        topic.IsDeleted == false && message.IsDeleted == false);
+
+            return repository.DbAccess.Execute(db => db.Connection.SelectMulti<Topic, Message, User>(expression));
         }
 
         /// <summary>
@@ -828,9 +820,6 @@ namespace YAF.Core.Model
         /// <param name="subject">
         /// The subject.
         /// </param>
-        /// <param name="flags">
-        /// The flags.
-        /// </param>
         /// <param name="reasonOfEdit">
         /// The reason of edit.
         /// </param>
@@ -849,17 +838,16 @@ namespace YAF.Core.Model
         public static void Update(
             this IRepository<Message> repository,
             [NotNull] int messageId,
-            [NotNull] int priority,
+            [CanBeNull] int? priority,
             [NotNull] string message,
-            [NotNull] string description,
+            [CanBeNull] string description,
             [CanBeNull] string status,
             [CanBeNull] string styles,
-            [NotNull] string subject,
-            [NotNull] int flags,
+            [CanBeNull] string subject,
             [NotNull] string reasonOfEdit,
             [NotNull] bool isModeratorChanged,
             [NotNull] bool? overrideApproval,
-            [NotNull] TypedMessageList originalMessage,
+            [NotNull] Tuple<Topic, Message, User, Forum> originalMessage,
             [NotNull] int editedBy)
         {
             repository.DbFunction.Scalar.message_update(
@@ -870,12 +858,12 @@ namespace YAF.Core.Model
                 Status: status,
                 Styles: styles,
                 Subject: subject,
-                Flags: flags,
+                Flags: originalMessage.Item1.Flags,
                 Reason: reasonOfEdit,
                 EditedBy: editedBy,
                 IsModeratorChanged: isModeratorChanged,
                 OverrideApproval: overrideApproval,
-                OriginalMessage: originalMessage.Message,
+                OriginalMessage: originalMessage.Item2.MessageText,
                 CurrentUtcTimestamp: DateTime.UtcNow);
 
             // Update Search index Item
@@ -883,16 +871,16 @@ namespace YAF.Core.Model
                                     {
                                         MessageId = messageId,
                                         Message = message,
-                                        Flags = flags,
-                                        Posted = originalMessage.Posted.ToString(CultureInfo.InvariantCulture),
-                                        UserName = originalMessage.UserName,
-                                        UserDisplayName = originalMessage.UserDisplayName,
-                                        UserStyle = originalMessage.UserStyle,
-                                        UserId = originalMessage.UserID,
-                                        TopicId = originalMessage.TopicID,
-                                        Topic = originalMessage.Topic,
-                                        ForumId = originalMessage.ForumID,
-                                        ForumName = originalMessage.ForumName,
+                                        Flags = originalMessage.Item1.Flags,
+                                        Posted = originalMessage.Item1.Posted.ToString(CultureInfo.InvariantCulture),
+                                        UserName = originalMessage.Item4.Name,
+                                        UserDisplayName = originalMessage.Item3.DisplayName,
+                                        UserStyle = originalMessage.Item3.UserStyle,
+                                        UserId = originalMessage.Item4.ID,
+                                        TopicId = originalMessage.Item2.ID,
+                                        Topic = originalMessage.Item1.TopicName,
+                                        ForumId = originalMessage.Item3.ID,
+                                        ForumName = originalMessage.Item3.Name,
                                         Description = description
                                     };
 
@@ -990,7 +978,7 @@ namespace YAF.Core.Model
                 BoardContext.Current.Get<ISearch>().DeleteSearchIndexRecordByMessageId(messageID);
 
                 BoardContext.Current.Get<ILogger>().Log(
-                    BoardContext.Current.PageUserName,
+                    BoardContext.Current.PageUserID,
                     "YAF",
                     BoardContext.Current.Get<ILocalization>().GetTextFormatted("DELETED_MESSAGE", messageID),
                     EventLogTypes.Information);

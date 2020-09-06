@@ -29,18 +29,19 @@ namespace YAF.Controls
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Web;
     using System.Web.UI.WebControls;
 
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Events;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -57,7 +58,8 @@ namespace YAF.Controls
         /// <summary>
         ///   Gets user ID of edited user.
         /// </summary>
-        protected int CurrentUserID => this.PageContext.QueryIDs["u"].ToType<int>();
+        protected int CurrentUserID =>
+            Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
 
         #endregion
 
@@ -103,8 +105,6 @@ namespace YAF.Controls
         /// </param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.PageContext.QueryIDs = new QueryStringIDHelper("u", true);
-
             // this needs to be done just once, not during post-backs
             if (this.IsPostBack)
             {
@@ -132,8 +132,7 @@ namespace YAF.Controls
             var removedRoles = new List<string>();
 
             // get user's name
-            var userName = UserMembershipHelper.GetUserNameFromID(this.CurrentUserID);
-            var user = UserMembershipHelper.GetUser(userName);
+            var user = this.Get<IAspNetUsersHelper>().GetMembershipUserById(this.CurrentUserID);
             
             // go through all roles displayed on page
             for (var i = 0; i < this.UserGroups.Items.Count; i++)
@@ -158,21 +157,21 @@ namespace YAF.Controls
                 this.GetRepository<ActiveAccess>().DeleteAll();
 
                 // update roles if this user isn't the guest
-                if (UserMembershipHelper.IsGuestUser(this.CurrentUserID))
+                if (this.Get<IAspNetUsersHelper>().IsGuestUser(this.CurrentUserID))
                 {
                     continue;
                 }
 
                 // add/remove user from roles in membership provider
-                if (isChecked && !RoleMembershipHelper.IsUserInRole(userName, roleName))
+                if (isChecked && !this.Get<IAspNetRolesHelper>().IsUserInRole(user, roleName))
                 {
-                    RoleMembershipHelper.AddUserToRole(userName, roleName);
+                    this.Get<IAspNetRolesHelper>().AddUserToRole(user, roleName);
 
                     addedRoles.Add(roleName);
                 }
-                else if (!isChecked && RoleMembershipHelper.IsUserInRole(userName, roleName))
+                else if (!isChecked && this.Get<IAspNetRolesHelper>().IsUserInRole(user, roleName))
                 {
-                    RoleMembershipHelper.RemoveUserFromRole(userName, roleName);
+                    this.Get<IAspNetRolesHelper>().RemoveUserFromRole(user.Id, roleName);
 
                     removedRoles.Add(roleName);
                 }
@@ -194,9 +193,6 @@ namespace YAF.Controls
                     this.Get<ISendNotification>().SendRoleUnAssignmentNotification(user, removedRoles);
                 }
             }
-
-            // update forum moderators cache just in case something was changed...
-            this.Get<IDataCache>().Remove(Constants.Cache.ForumModerators);
 
             // clear the cache for this user...
             this.Get<IRaiseEvent>().Raise(new UpdateUserEvent(this.CurrentUserID));

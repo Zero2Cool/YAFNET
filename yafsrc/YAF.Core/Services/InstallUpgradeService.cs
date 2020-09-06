@@ -25,9 +25,9 @@
 namespace YAF.Core.Services
 {
     using System;
-    using System.Data;
     using System.IO;
     using System.Linq;
+    using System.Threading;
     using System.Web;
 
     using ServiceStack.OrmLite;
@@ -37,13 +37,16 @@ namespace YAF.Core.Services
     using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Services.Import;
+    using YAF.Core.Tasks;
     using YAF.Types;
+    using YAF.Types.Constants;
     using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Interfaces.Events;
     using YAF.Types.Models;
+    using YAF.Types.Models.Identity;
     using YAF.Utils;
 
     /// <summary>
@@ -56,7 +59,7 @@ namespace YAF.Core.Services
         /// <summary>
         ///     The BBCode extensions import xml file.
         /// </summary>
-        private const string BbcodeImport = "bbCodeExtensions.xml";
+        private const string BbcodeImport = "BBCodeExtensions.xml";
 
         /// <summary>
         ///     The Spam Words list import xml file.
@@ -68,15 +71,21 @@ namespace YAF.Core.Services
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InstallUpgradeService" /> class.
+        /// Initializes a new instance of the <see cref="InstallUpgradeService"/> class.
         /// </summary>
-        /// <param name="serviceLocator">The service locator.</param>
-        /// <param name="raiseEvent">The raise Event.</param>
-        /// <param name="dbAccess">The database access.</param>
-        public InstallUpgradeService(IServiceLocator serviceLocator, IRaiseEvent raiseEvent, IDbAccess dbAccess)
+        /// <param name="serviceLocator">
+        /// The service locator.
+        /// </param>
+        /// <param name="raiseEvent">
+        /// The raise Event.
+        /// </param>
+        /// <param name="access">
+        /// The access.
+        /// </param>
+        public InstallUpgradeService(IServiceLocator serviceLocator, IRaiseEvent raiseEvent, IDbAccess access)
         {
             this.RaiseEvent = raiseEvent;
-            this.DbAccess = dbAccess;
+            this.DbAccess = access;
             this.ServiceLocator = serviceLocator;
         }
 
@@ -99,9 +108,8 @@ namespace YAF.Core.Services
                 catch
                 {
                     // failure... no boards.
+                    return false;
                 }
-
-                return false;
             }
         }
 
@@ -130,6 +138,9 @@ namespace YAF.Core.Services
         /// <summary>
         /// Initializes the forum.
         /// </summary>
+        /// <param name="applicationId">
+        /// The application Id.
+        /// </param>
         /// <param name="forumName">
         /// The forum name.
         /// </param>
@@ -158,6 +169,7 @@ namespace YAF.Core.Services
         /// The admin provider user key.
         /// </param>
         public void InitializeForum(
+            Guid applicationId,
             string forumName,
             string timeZone,
             string culture,
@@ -171,8 +183,8 @@ namespace YAF.Core.Services
             var cult = StaticDataHelper.Cultures();
             var langFile = "english.xml";
 
-            cult.Rows.Cast<DataRow>().Where(dataRow => dataRow["CultureTag"].ToString() == culture)
-                .ForEach(dataRow => langFile = (string)dataRow["CultureFile"]);
+            cult.Where(dataRow => dataRow.CultureTag == culture)
+                .ForEach(dataRow => langFile = dataRow.CultureFile);
 
             this.GetRepository<Board>().SystemInitialize(
                 forumName,
@@ -188,6 +200,7 @@ namespace YAF.Core.Services
                 adminProviderUserKey,
                 Config.CreateDistinctRoles && Config.IsAnyPortal ? "YAF " : string.Empty);
 
+            this.GetRepository<Registry>().Save("applicationid", applicationId.ToString());
             this.GetRepository<Registry>().Save("version", BoardInfo.AppVersion.ToString());
             this.GetRepository<Registry>().Save("versionname", BoardInfo.AppVersionName);
 
@@ -224,15 +237,13 @@ namespace YAF.Core.Services
             // try
             this.FixAccess(false);
 
-            var isAzureEngine = this.Get<IDbFunction>().GetSQLEngine().Equals("Azure");
-
             if (!isForumInstalled)
             {
-                this.ExecuteInstallScripts(isAzureEngine);
+                this.ExecuteInstallScripts();
             }
             else
             {
-                this.ExecuteUpgradeScripts(isAzureEngine);
+                this.ExecuteUpgradeScripts();
             }
 
             this.FixAccess(true);
@@ -245,15 +256,28 @@ namespace YAF.Core.Services
             // Handle Tables
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Tag>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<TopicTag>());
+            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<ProfileDefinition>());
+            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<ProfileCustom>());
 
             // Ederon : 9/7/2007
             // re-sync all boards - necessary for proper last post bubbling
             this.GetRepository<Board>().ReSync();
 
-            this.RaiseEvent.RaiseIssolated(new AfterUpgradeDatabaseEvent(prevVersion, BoardInfo.AppVersion), null);
-
             if (isForumInstalled)
             {
+                if (prevVersion < 80)
+                {
+                    // Upgrade to ASPNET Identity
+                    this.DbAccess.Information.IdentityUpgradeScripts.ForEach(script => this.ExecuteScript(script, true));
+                    
+                    this.Get<ITaskModuleManager>().StartTask(MigrateAttachmentsTask.TaskName, () => new MigrateAttachmentsTask());
+
+                    while (this.Get<ITaskModuleManager>().IsTaskRunning(MigrateAttachmentsTask.TaskName))
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
+
                 if (prevVersion < 30 || upgradeExtensions)
                 {
                     this.ImportStatics();
@@ -278,6 +302,8 @@ namespace YAF.Core.Services
                 }
 
                 this.GetRepository<Registry>().Save("cdvversion", this.Get<BoardSettings>().CdvVersion++);
+
+                this.Get<IDataCache>().Remove(Constants.Cache.Version);
             }
 
             if (this.IsForumInstalled)
@@ -304,18 +330,14 @@ namespace YAF.Core.Services
         /// <summary>
         /// Executes the install scripts.
         /// </summary>
-        /// <param name="isAzureEngine">if set to <c>true</c> [is azure engine].</param>
-        private void ExecuteInstallScripts(bool isAzureEngine)
+        private void ExecuteInstallScripts()
         {
             // Install Membership Scripts
-            if (isAzureEngine)
-            {
-                this.DbAccess.Information.AzureScripts.ForEach(script => this.ExecuteScript(script, true));
-            }
-            else
-            {
-                this.DbAccess.Information.YAFProviderInstallScripts.ForEach(script => this.ExecuteScript(script, true));
-            }
+            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<AspNetUsers>());
+            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<AspNetRoles>());
+            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<AspNetUserClaims>());
+            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<AspNetUserLogins>());
+            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<AspNetUserRoles>());
 
             //////
 
@@ -326,15 +348,8 @@ namespace YAF.Core.Services
         /// <summary>
         /// Executes the upgrade scripts.
         /// </summary>
-        /// <param name="isAzureEngine">if set to <c>true</c> [is azure engine].</param>
-        private void ExecuteUpgradeScripts(bool isAzureEngine)
+        private void ExecuteUpgradeScripts()
         {
-            // upgrade Membership Scripts
-            if (!isAzureEngine)
-            {
-                this.DbAccess.Information.YAFProviderUpgradeScripts.ForEach(script => this.ExecuteScript(script, true));
-            }
-
             this.DbAccess.Information.UpgradeScripts.ForEach(script => this.ExecuteScript(script, true));
         }
 
@@ -347,7 +362,6 @@ namespace YAF.Core.Services
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Board>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Rank>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<User>());
-            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<PollGroupCluster>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Category>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Forum>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Topic>());
@@ -369,7 +383,6 @@ namespace YAF.Core.Services
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Poll>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Choice>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<PollVote>());
-            this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<PollVoteRefuse>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<AccessMask>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<ForumAccess>());
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<Mail>());
@@ -428,7 +441,7 @@ namespace YAF.Core.Services
                 throw new IOException($"Failed to read {fileName}", x);
             }
 
-            this.Get<IDbFunction>().SystemInitializeExecutescripts(script, scriptFile, useTransactions);
+            this.Get<IDbFunction>().SystemInitializeExecuteScripts(script, scriptFile, useTransactions);
         }
 
         /// <summary>
@@ -437,7 +450,7 @@ namespace YAF.Core.Services
         /// <param name="grantAccess">if set to <c>true</c> [grant access].</param>
         private void FixAccess(bool grantAccess)
         {
-            this.Get<IDbFunction>().SystemInitializeFixaccess(grantAccess);
+            this.Get<IDbFunction>().SystemInitializeFixAccess(grantAccess);
         }
 
         /// <summary>
@@ -463,19 +476,20 @@ namespace YAF.Core.Services
                         }
                     });
 
-            var boards = this.GetRepository<Board>().ListTyped();
+            // get all boards...
+            var boardIds = this.GetRepository<Board>().GetAll().Select(x => x.ID);
 
             // Upgrade all Boards
-            boards.ForEach(
-                board =>
+            boardIds.ForEach(
+                boardId =>
                     {
-                        this.Get<IRaiseEvent>().Raise(new ImportStaticDataEvent(board.ID));
+                        this.Get<IRaiseEvent>().Raise(new ImportStaticDataEvent(boardId));
 
                         // load default bbcode if available...
-                        loadWrapper(BbcodeImport, s => DataImport.BBCodeExtensionImport(board.ID, s));
+                        loadWrapper(BbcodeImport, s => DataImport.BBCodeExtensionImport(boardId, s));
 
                         // load default spam word if available...
-                        loadWrapper(SpamWordsImport, s => DataImport.SpamWordsImport(board.ID, s));
+                        loadWrapper(SpamWordsImport, s => DataImport.SpamWordsImport(boardId, s));
                     });
         }
 

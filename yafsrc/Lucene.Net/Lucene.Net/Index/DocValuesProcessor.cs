@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Documents;
 using YAF.Lucene.Net.Documents.Extensions;
 using System;
@@ -75,13 +76,13 @@ namespace YAF.Lucene.Net.Index
                 {
                     if (field.NumericType != NumericFieldType.INT64)
                     {
-                        throw new System.ArgumentException("illegal type " + field.NumericType + ": DocValues types must be " + NumericFieldType.INT64);
+                        throw new ArgumentException("illegal type " + field.NumericType + ": DocValues types must be " + NumericFieldType.INT64);
                     }
                     AddNumericField(fieldInfo, docID, field.GetInt64ValueOrDefault());
                 }
                 else
                 {
-                    Debug.Assert(false, "unrecognized DocValues.Type: " + dvType);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(false, () => "unrecognized DocValues.Type: " + dvType);
                 }
             }
         }
@@ -134,7 +135,7 @@ namespace YAF.Lucene.Net.Index
             }
             else if (!(writer is BinaryDocValuesWriter))
             {
-                throw new System.ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to binary");
+                throw new ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to binary");
             }
             else
             {
@@ -155,7 +156,7 @@ namespace YAF.Lucene.Net.Index
             }
             else if (!(writer is SortedDocValuesWriter))
             {
-                throw new System.ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to sorted");
+                throw new ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to sorted");
             }
             else
             {
@@ -176,7 +177,7 @@ namespace YAF.Lucene.Net.Index
             }
             else if (!(writer is SortedSetDocValuesWriter))
             {
-                throw new System.ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to sorted");
+                throw new ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to sorted");
             }
             else
             {
@@ -197,7 +198,7 @@ namespace YAF.Lucene.Net.Index
             }
             else if (!(writer is NumericDocValuesWriter))
             {
-                throw new System.ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to numeric");
+                throw new ArgumentException("Incompatible DocValues type: field \"" + fieldInfo.Name + "\" changed from " + GetTypeDesc(writer) + " to numeric");
             }
             else
             {
@@ -218,7 +219,7 @@ namespace YAF.Lucene.Net.Index
             }
             else
             {
-                Debug.Assert(obj is SortedDocValuesWriter);
+                if (Debugging.AssertsEnabled) Debugging.Assert(obj is SortedDocValuesWriter);
                 return "sorted";
             }
         }

@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -84,10 +84,7 @@ namespace YAF.Lucene.Net.Util
         /// NOTE: This was size() in Lucene.
         /// </summary>
         /// <returns> The current size of this <see cref="BytesRefArray"/> </returns>
-        public int Length
-        {
-            get { return lastElement; }
-        }
+        public int Length => lastElement;
 
         /// <summary>
         /// Returns the <i>n'th</i> element of this <see cref="BytesRefArray"/> </summary>
@@ -100,13 +97,13 @@ namespace YAF.Lucene.Net.Util
             {
                 int offset = offsets[index];
                 int length = index == lastElement - 1 ? currentOffset - offset : offsets[index + 1] - offset;
-                Debug.Assert(spare.Offset == 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(spare.Offset == 0);
                 spare.Grow(length);
                 spare.Length = length;
                 pool.ReadBytes(offset, spare.Bytes, spare.Offset, spare.Length);
                 return spare;
             }
-            throw new System.IndexOutOfRangeException("index " + index + " must be less than the size: " + lastElement);
+            throw new IndexOutOfRangeException("index " + index + " must be less than the size: " + lastElement);
         }
 
         private int[] Sort(IComparer<BytesRef> comp)
@@ -227,13 +224,7 @@ namespace YAF.Lucene.Net.Util
                 return null;
             }
 
-            public virtual IComparer<BytesRef> Comparer
-            {
-                get
-                {
-                    return comp;
-                }
-            }
+            public virtual IComparer<BytesRef> Comparer => comp;
         }
     }
 }

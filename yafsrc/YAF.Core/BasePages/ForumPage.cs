@@ -27,15 +27,11 @@ namespace YAF.Core.BasePages
 
     using System;
     using System.Collections;
-    using System.Web.Security;
     using System.Web.UI;
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
     using YAF.Core.Context;
-#if DEBUG
-    using YAF.Core.Data.Profiling;
-#endif
     using YAF.Core.Extensions;
     using YAF.Core.Handlers;
     using YAF.Types;
@@ -44,6 +40,7 @@ namespace YAF.Core.BasePages
     using YAF.Types.EventProxies;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Events;
+    using YAF.Types.Models.Identity;
     using YAF.Utils;
     using YAF.Utils.Helpers;
     using YAF.Utils.Helpers.StringUtils;
@@ -153,7 +150,12 @@ namespace YAF.Core.BasePages
         /// <summary>
         ///   Gets ForumURL.
         /// </summary>
-        public string ForumURL => BuildLink.GetLink(ForumPages.forum, true);
+        public string ForumURL => BuildLink.GetLink(ForumPages.Board, true);
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is account page.
+        /// </summary>
+        public virtual bool IsAccountPage { get; protected set; }
 
         /// <summary>
         ///   Gets or sets a value indicating whether Is Admin Page.
@@ -185,11 +187,6 @@ namespace YAF.Core.BasePages
         /// </summary>
         [Inject]
         public ILogger Logger { get; set; }
-
-        /// <summary>
-        ///   Gets or sets the Notification.
-        /// </summary>
-        public Control Notification { get; set; }
 
         /// <summary>
         ///   Gets cache associated with this page.
@@ -262,7 +259,7 @@ namespace YAF.Core.BasePages
         /// <summary>
         ///   Gets the current user.
         /// </summary>
-        public MembershipUser User => this.PageContext.User;
+        public AspNetUsers User => this.PageContext.MembershipUser;
 
         /// <summary>
         ///   Sets a value indicating whether  Set to <see langword = "true" /> if this is the start page. Should only be set by the page that initialized the database.
@@ -390,10 +387,6 @@ namespace YAF.Core.BasePages
             {
                 return;
             }
-
-#if DEBUG
-			QueryCounter.Reset();
-#endif
 
             // set the current translation page...
             this.Get<LocalizationProvider>().TranslationPage = this._transPage;

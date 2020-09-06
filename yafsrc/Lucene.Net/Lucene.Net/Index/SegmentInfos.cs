@@ -1,13 +1,12 @@
+using J2N;
 using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Support.IO;
 using System;
 using System.Collections;
-using J2N;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -273,7 +272,7 @@ namespace YAF.Lucene.Net.Index
             }
             else
             {
-                throw new System.ArgumentException("fileName \"" + fileName + "\" is not a segments file");
+                throw new ArgumentException("fileName \"" + fileName + "\" is not a segments file");
             }
         }
 
@@ -544,7 +543,7 @@ namespace YAF.Lucene.Net.Index
                         segnOutput.WriteInt64(e.Key);
                         segnOutput.WriteStringSet(e.Value);
                     }
-                    Debug.Assert(si.Dir == directory);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(si.Dir == directory);
 
                     // If this segment is pre-4.x, perform a one-time
                     // "ugprade" to write the .si file for it:
@@ -711,7 +710,7 @@ namespace YAF.Lucene.Net.Index
             sis.segments = new List<SegmentCommitInfo>(Count);
             foreach (SegmentCommitInfo info in segments)
             {
-                Debug.Assert(info.Info.Codec != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(info.Info.Codec != null);
                 // dont directly access segments, use add method!!!
                 sis.Add((SegmentCommitInfo)(info.Clone()));
             }
@@ -720,10 +719,7 @@ namespace YAF.Lucene.Net.Index
         }
 
         // LUCENENET specific property for accessing segments private field
-        public IList<SegmentCommitInfo> Segments
-        {
-            get { return segments; }
-        }
+        public IList<SegmentCommitInfo> Segments => segments;
 
 
         /// <summary>
@@ -733,23 +729,11 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// Returns current generation. </summary>
-        public long Generation
-        {
-            get
-            {
-                return generation;
-            }
-        }
+        public long Generation => generation;
 
         /// <summary>
         /// Returns last succesfully read or written generation. </summary>
-        public long LastGeneration
-        {
-            get
-            {
-                return lastGeneration;
-            }
-        }
+        public long LastGeneration => lastGeneration;
 
         /// <summary>
         /// If non-null, information about retries when loading
@@ -757,18 +741,13 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public static TextWriter InfoStream 
         {
-            set
-            {
+            set =>
                 // LUCENENET specific - use a SafeTextWriterWrapper to ensure that if the TextWriter
                 // is disposed by the caller (using block) we don't get any exceptions if we keep using it.
                 infoStream = value == null
                     ? null
                     : (value is SafeTextWriterWrapper ? value : new SafeTextWriterWrapper(value));
-            }
-            get
-            {
-                return infoStream;
-            }
+            get => infoStream;
         }
 
         /// <summary>
@@ -790,14 +769,8 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public static int DefaultGenLookaheadCount // LUCENENET specific: corrected spelling issue with the getter
         {
-            get
-            {
-                return defaultGenLookaheadCount;
-            }
-            set
-            {
-                defaultGenLookaheadCount = value;
-            }
+            get => defaultGenLookaheadCount;
+            set => defaultGenLookaheadCount = value;
         }
 
         /// <summary>
@@ -1180,7 +1153,7 @@ namespace YAF.Lucene.Net.Index
             for (int i = 0; i < size; i++)
             {
                 var info = Info(i);
-                Debug.Assert(info.Info.Dir == dir);
+                if (Debugging.AssertsEnabled) Debugging.Assert(info.Info.Dir == dir);
                 if (info.Info.Dir == dir)
                 {
                     files.UnionWith(info.GetFiles());
@@ -1308,10 +1281,7 @@ namespace YAF.Lucene.Net.Index
         /// <seealso cref="IndexWriter.Commit()"/>
         public IDictionary<string, string> UserData
         {
-            get
-            {
-                return userData;
-            }
+            get => userData;
             internal set
             {
                 if (value == null)
@@ -1342,7 +1312,15 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public int TotalDocCount
         {
-            get { return segments.Sum(info => info.Info.DocCount); }
+            get
+            {
+                int count = 0;
+                foreach (SegmentCommitInfo info in this)
+                {
+                    count += info.Info.DocCount;
+                }
+                return count;
+            }
         }
 
         /// <summary>
@@ -1363,7 +1341,7 @@ namespace YAF.Lucene.Net.Index
             int newSegIdx = 0;
             for (int segIdx = 0, cnt = segments.Count; segIdx < cnt; segIdx++)
             {
-                Debug.Assert(segIdx >= newSegIdx);
+                if (Debugging.AssertsEnabled) Debugging.Assert(segIdx >= newSegIdx);
                 SegmentCommitInfo info = segments[segIdx];
                 if (mergedAway.Contains(info))
                 {
@@ -1400,7 +1378,7 @@ namespace YAF.Lucene.Net.Index
             var list = new List<SegmentCommitInfo>(Count);
             foreach (var info in segments)
             {
-                Debug.Assert(info.Info.Codec != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(info.Info.Codec != null);
                 list.Add((SegmentCommitInfo)(info.Clone()));
             }
             return list;
@@ -1437,10 +1415,7 @@ namespace YAF.Lucene.Net.Index
         /// <para/>
         /// NOTE: This was size() in Lucene.
         /// </summary>
-        public int Count
-        {
-            get { return segments.Count; }
-        }
+        public int Count => segments.Count;
 
         /// <summary>
         /// Appends the provided <see cref="SegmentCommitInfo"/>. </summary>

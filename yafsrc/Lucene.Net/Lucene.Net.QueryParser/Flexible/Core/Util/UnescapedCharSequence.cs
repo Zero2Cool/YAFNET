@@ -26,9 +26,9 @@ namespace YAF.Lucene.Net.QueryParsers.Flexible.Core.Util
     /// </summary>
     public sealed class UnescapedCharSequence : ICharSequence
     {
-        private char[] chars;
+        private readonly char[] chars;
 
-        private bool[] wasEscaped;
+        private readonly bool[] wasEscaped;
 
         /// <summary>
         /// Create a escaped <see cref="ICharSequence"/>
@@ -110,10 +110,7 @@ namespace YAF.Lucene.Net.QueryParsers.Flexible.Core.Util
 
         public int Length => this.chars.Length;
 
-        public char this[int index]
-        {
-            get => this.chars[index];
-        }
+        public char this[int index] => this.chars[index];
 
         public ICharSequence Subsequence(int startIndex, int length)
         {

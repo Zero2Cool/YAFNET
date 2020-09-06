@@ -132,6 +132,15 @@ namespace YAF.Pages
         protected global::YAF.Web.Controls.ThemeButton Clear;
 
         /// <summary>
+        /// MultiReceiverAlert control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::YAF.Web.Controls.Alert MultiReceiverAlert;
+
+        /// <summary>
         /// MultiReceiverInfo control.
         /// </summary>
         /// <remarks>

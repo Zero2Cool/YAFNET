@@ -1,10 +1,10 @@
-﻿using YAF.Lucene.Net.Analysis.Util;
+﻿using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Analysis.Util;
 using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 
 namespace YAF.Lucene.Net.Analysis.Synonym
@@ -37,8 +37,8 @@ namespace YAF.Lucene.Net.Analysis.Synonym
         /// @lucene.internal </summary>
         public CharArrayMap<SlowSynonymMap> Submap // recursive: Map<String, SynonymMap>
         {
-            get { return submap; }
-            set { submap = value; }
+            get => submap;
+            set => submap = value;
         }
         private CharArrayMap<SlowSynonymMap> submap;
 
@@ -48,8 +48,8 @@ namespace YAF.Lucene.Net.Analysis.Synonym
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public Token[] Synonyms
         {
-            get { return synonyms; }
-            set { synonyms = value; }
+            get => synonyms;
+            set => synonyms = value;
         }
         private Token[] synonyms;
         internal int flags;
@@ -69,21 +69,9 @@ namespace YAF.Lucene.Net.Analysis.Synonym
             }
         }
 
-        public virtual bool IncludeOrig
-        {
-            get
-            {
-                return (flags & INCLUDE_ORIG) != 0;
-            }
-        }
+        public virtual bool IncludeOrig => (flags & INCLUDE_ORIG) != 0;
 
-        public virtual bool IgnoreCase
-        {
-            get
-            {
-                return (flags & IGNORE_CASE) != 0;
-            }
-        }
+        public virtual bool IgnoreCase => (flags & IGNORE_CASE) != 0;
 
         /// <param name="singleMatch">  <see cref="IList{String}"/>, the sequence of strings to match </param>
         /// <param name="replacement">  <see cref="IList{Token}"/> the list of tokens to use on a match </param>
@@ -114,7 +102,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
 
             if (currMap.synonyms != null && !mergeExisting)
             {
-                throw new System.ArgumentException("SynonymFilter: there is already a mapping for " + singleMatch);
+                throw new ArgumentException("SynonymFilter: there is already a mapping for " + singleMatch);
             }
             IList<Token> superset = currMap.synonyms == null ? replacement : MergeTokens(currMap.synonyms, replacement);
             currMap.synonyms = superset.ToArray();

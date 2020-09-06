@@ -47,7 +47,7 @@ namespace YAF.Lucene.Net.Util
         /// <returns>A new <see cref="ResourceManager"/> instance.</returns>
         public virtual ResourceManager Create(Type resourceSource)
         {
-            return new ResourceManager(GetResourceName(resourceSource), resourceSource.GetTypeInfo().Assembly);
+            return new ResourceManager(GetResourceName(resourceSource), resourceSource.Assembly);
         }
 
         /// <summary>
@@ -83,9 +83,6 @@ namespace YAF.Lucene.Net.Util
         /// <summary>
         /// The suffix to append to the resource key class name to locate the embedded resource.
         /// </summary>
-        protected virtual string ResourceSuffix
-        {
-            get { return "Bundle"; }
-        }
+        protected virtual string ResourceSuffix => "Bundle";
     }
 }

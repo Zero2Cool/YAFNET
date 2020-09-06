@@ -41,10 +41,7 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
             this.m_field = field;
         }
 
-        public virtual string Name
-        {
-            get { return "norm"; }
-        }
+        public virtual string Name => "norm";
 
         public override string GetDescription()
         {
@@ -62,7 +59,7 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
             TFIDFSimilarity similarity = IDFValueSource.AsTFIDF(searcher.Similarity, m_field);
             if (similarity == null)
             {
-                throw new System.NotSupportedException("requires a TFIDFSimilarity (such as DefaultSimilarity)");
+                throw new NotSupportedException("requires a TFIDFSimilarity (such as DefaultSimilarity)");
             }
 
             NumericDocValues norms = readerContext.AtomicReader.GetNormValues(m_field);

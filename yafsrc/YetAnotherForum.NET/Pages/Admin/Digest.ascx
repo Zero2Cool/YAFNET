@@ -4,11 +4,6 @@
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
     <div class="row">
-    <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" LocalizedTag="TITLE" LocalizedPage="ADMIN_DIGEST" /></h1>
-    </div>
-    </div>
-    <div class="row">
         <div class="col-xl-12">
             <div class="card mb-3">
                 <div class="card-header">
@@ -17,21 +12,21 @@
                                     LocalizedPage="ADMIN_DIGEST"></YAF:IconHeader>
                 </div>
                 <div class="card-body">
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
+                    <div class="row">
+                        <div class="mb-3 col-md-4">
                             <YAF:HelpLabel ID="LocalizedLabel4" runat="server" 
                                            AssociatedControlID="DigestEnabled"
                                            LocalizedTag="DIGEST_ENABLED"
                                            LocalizedPage="ADMIN_DIGEST" />
                             <asp:Label ID="DigestEnabled" runat="server"
-                                       CssClass="badge badge-secondary"></asp:Label>
+                                       CssClass="badge bg-secondary"></asp:Label>
                         </div>
-                        <div class="form-group col-md-4">
+                        <div class="mb-3 col-md-4">
                             <YAF:HelpLabel ID="LocalizedLabel5" runat="server" 
                                            AssociatedControlID="LastDigestSendLabel"
                                            LocalizedTag="DIGEST_LAST" LocalizedPage="ADMIN_DIGEST" />
                             <asp:Label ID="LastDigestSendLabel" runat="server" 
-                                       CssClass="badge badge-secondary"></asp:Label>
+                                       CssClass="badge bg-secondary"></asp:Label>
                         </div>
                     </div>
                 </div>
@@ -73,7 +68,7 @@
                                     LocalizedPage="ADMIN_DIGEST"></YAF:IconHeader>
                 </div>
                 <div class="card-body">
-                    <div class="form-group">
+                    <div class="mb-3">
                         <YAF:HelpLabel ID="LocalizedLabel7" runat="server" 
                                        AssociatedControlID="TextSendEmail"
                                        LocalizedTag="DIGEST_EMAIL" LocalizedPage="ADMIN_DIGEST" />

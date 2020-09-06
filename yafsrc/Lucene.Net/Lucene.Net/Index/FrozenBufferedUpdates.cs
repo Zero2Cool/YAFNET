@@ -1,8 +1,8 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace YAF.Lucene.Net.Index
 {
@@ -67,8 +67,9 @@ namespace YAF.Lucene.Net.Index
         public FrozenBufferedUpdates(BufferedUpdates deletes, bool isSegmentPrivate)
         {
             this.isSegmentPrivate = isSegmentPrivate;
-            Debug.Assert(!isSegmentPrivate || deletes.terms.Count == 0, "segment private package should only have del queries");
-            Term[] termsArray = deletes.terms.Keys.ToArray(/*new Term[deletes.Terms.Count]*/);
+            if (Debugging.AssertsEnabled) Debugging.Assert(!isSegmentPrivate || deletes.terms.Count == 0, "segment private package should only have del queries");
+            Term[] termsArray = deletes.terms.Keys.ToArray(/*new Term[deletes.terms.Count]*/);
+
             termCount = termsArray.Length;
             ArrayUtil.TimSort(termsArray);
             PrefixCodedTerms.Builder builder = new PrefixCodedTerms.Builder();
@@ -139,12 +140,12 @@ namespace YAF.Lucene.Net.Index
         {
             set
             {
-                Debug.Assert(this.gen == -1);
+                if (Debugging.AssertsEnabled) Debugging.Assert(this.gen == -1);
                 this.gen = value;
             }
             get
             {
-                Debug.Assert(gen != -1);
+                if (Debugging.AssertsEnabled) Debugging.Assert(gen != -1);
                 return gen;
             }
         }
@@ -224,18 +225,9 @@ namespace YAF.Lucene.Net.Index
                     return false;
                 }
 
-                public virtual QueryAndLimit Current
-                {
-                    get
-                    {
-                        return current;
-                    }
-                }
+                public virtual QueryAndLimit Current => current;
 
-                object System.Collections.IEnumerator.Current
-                {
-                    get { return Current; }
-                }
+                object System.Collections.IEnumerator.Current => Current;
 
                 public virtual void Reset()
                 {

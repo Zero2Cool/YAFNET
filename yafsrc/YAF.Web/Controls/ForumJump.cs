@@ -40,7 +40,7 @@ namespace YAF.Web.Controls
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Utils;
-
+    
     #endregion
 
     /// <summary>
@@ -76,12 +76,12 @@ namespace YAF.Web.Controls
         /// </returns>
         public virtual bool LoadPostData([NotNull] string postDataKey, [NotNull] NameValueCollection postCollection)
         {
-            if (!int.TryParse(postCollection[postDataKey], out var forumId) || forumId == this.ForumId)
+            if (!int.TryParse(postCollection[postDataKey], out var forumID) || forumID == this.ForumId)
             {
                 return false;
             }
 
-            this.ForumId = forumId;
+            this.ForumId = forumID;
             return true;
         }
 
@@ -92,18 +92,29 @@ namespace YAF.Web.Controls
         {
             if (this.ForumId == 0)
             {
-                BuildLink.Redirect(ForumPages.forum);
+                BuildLink.Redirect(ForumPages.Board);
                 return;
             }
+
+            var forumJump = this.Get<IDataCache>().GetOrSet(
+                string.Format(
+                    Constants.Cache.ForumJump,
+                    this.PageContext.MembershipUser != null ? this.PageContext.PageUserID.ToString() : "Guest"),
+                () => this.GetRepository<Types.Models.Forum>().ListAllSortedAsDataTable(
+                    this.PageContext.PageBoardID,
+                    this.PageContext.PageUserID),
+                TimeSpan.FromMinutes(5));
+
+            var name = forumJump.Rows.Cast<DataRow>().First(r => r.Field<int>("ForumID") == this.ForumId)["Title"];
 
             if (this.ForumId < 0)
             {
                 // categories are negative
-                BuildLink.Redirect(ForumPages.forum, "c={0}", -this.ForumId);
+                BuildLink.Redirect(ForumPages.Board, "c={0}&name={1}", -this.ForumId, name);
                 return;
             }
 
-            BuildLink.Redirect(ForumPages.topics, "f={0}", this.ForumId);
+            BuildLink.Redirect(ForumPages.Topics, "f={0}&name={1}", this.ForumId, name);
         }
 
         #endregion
@@ -129,7 +140,7 @@ namespace YAF.Web.Controls
             var forumJump = this.Get<IDataCache>().GetOrSet(
                 string.Format(
                     Constants.Cache.ForumJump,
-                    this.PageContext.User != null ? this.PageContext.PageUserID.ToString() : "Guest"),
+                    this.PageContext.MembershipUser != null ? this.PageContext.PageUserID.ToString() : "Guest"),
                 () => this.GetRepository<Types.Models.Forum>().ListAllSortedAsDataTable(
                     this.PageContext.PageBoardID,
                     this.PageContext.PageUserID),
@@ -152,14 +163,23 @@ namespace YAF.Web.Controls
                     {
                         var title = this.HtmlEncode(row["Title"]);
 
-                        writer.WriteLine(
-                            @"<option {2}value=""{0}"" data-content=""{3}"">&nbsp;&nbsp;{1}</option>",
-                            row["ForumID"],
-                            title,
-                            row["ForumID"].ToString() == forumId.ToString()
-                                ? @"selected=""selected"" "
-                                : string.Empty,
-                            $"<span class='select2-image-select-icon'><i class='fas fa-{row["Icon"]} fa-fw text-secondary'></i>&nbsp;{title}</span>");
+                        if (row["Icon"].ToString() == "folder")
+                        {
+                            writer.WriteLine(
+                                @"<optgroup label=""{0}"">",
+                                title);
+                        }
+                        else
+                        {
+                            writer.WriteLine(
+                                @"<option {2}value=""{0}"" data-content=""{3}"">&nbsp;&nbsp;{1}</option>",
+                                row["ForumID"],
+                                title,
+                                row["ForumID"].ToString() == forumId.ToString()
+                                    ? @"selected=""selected"" "
+                                    : string.Empty,
+                                $"<span class='select2-image-select-icon'><i class='fas fa-{row["Icon"]} fa-fw text-secondary'></i>&nbsp;{title}</span>");
+                        }
                     });
 
             writer.WriteLine("</select>");

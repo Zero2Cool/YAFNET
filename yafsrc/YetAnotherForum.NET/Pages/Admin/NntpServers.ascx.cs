@@ -30,17 +30,13 @@ namespace YAF.Pages.Admin
     using System.Linq;
     using System.Web.UI.WebControls;
 
-    using YAF.Core;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Utilities;
     using YAF.Types;
-    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -61,21 +57,9 @@ namespace YAF.Pages.Admin
         {
             this.EditDialog.BindData(null);
 
-            BoardContext.Current.PageElements.RegisterJsBlockStartup(
+            this.PageContext.PageElements.RegisterJsBlockStartup(
                 "openModalJs",
                 JavaScriptBlocks.OpenModalJs("NntpServerEditDialog"));
-        }
-
-        /// <summary>
-        /// The on init.
-        /// </summary>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        protected override void OnInit([NotNull] EventArgs e)
-        {
-            this.InitializeComponent();
-            base.OnInit(e);
         }
 
         /// <summary>
@@ -99,7 +83,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot()
-                .AddLink(this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin))
+                .AddAdminIndex()
                 .AddLink(this.GetText("ADMIN_NNTPSERVERS", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -107,36 +91,18 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
-        /// The bind data.
-        /// </summary>
-        private void BindData()
-        {
-            this.RankList.DataSource = this.GetRepository<NntpServer>().GetByBoardId();
-            this.DataBind();
-        }
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        ///   the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.RankList.ItemCommand += this.RankListItemCommand;
-        }
-
-        /// <summary>
         /// Ranks the list item command.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        private void RankListItemCommand([NotNull] object source, [NotNull] RepeaterCommandEventArgs e)
+        protected void RankListItemCommand(object source, RepeaterCommandEventArgs e)
         {
             switch (e.CommandName)
             {
                 case "edit":
                     this.EditDialog.BindData(e.CommandArgument.ToType<int>());
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("NntpServerEditDialog"));
                     break;
@@ -151,6 +117,15 @@ namespace YAF.Pages.Admin
                     this.BindData();
                     break;
             }
+        }
+
+        /// <summary>
+        /// The bind data.
+        /// </summary>
+        private void BindData()
+        {
+            this.RankList.DataSource = this.GetRepository<NntpServer>().GetByBoardId();
+            this.DataBind();
         }
 
         #endregion

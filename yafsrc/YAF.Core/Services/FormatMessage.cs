@@ -32,7 +32,6 @@ namespace YAF.Core.Services
     using System.Web;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Types;
@@ -164,19 +163,22 @@ namespace YAF.Core.Services
 
             if (detectedHtmlTag.IsSet() && detectedHtmlTag != "ALL")
             {
-                return BoardContext.Current.Get<ILocalization>().GetTextFormatted(
+                return this.Get<ILocalization>().GetTextFormatted(
                     "HTMLTAG_WRONG",
                     HttpUtility.HtmlEncode(detectedHtmlTag));
             }
 
             return detectedHtmlTag == "ALL"
-                       ? BoardContext.Current.Get<ILocalization>().GetText("HTMLTAG_FORBIDDEN")
+                       ? this.Get<ILocalization>().GetText("HTMLTAG_FORBIDDEN")
                        : string.Empty;
         }
 
         /// <summary>
         /// The format message.
         /// </summary>
+        /// <param name="messageId">
+        /// The message Id.
+        /// </param>
         /// <param name="message">
         /// The message.
         /// </param>
@@ -193,6 +195,7 @@ namespace YAF.Core.Services
         /// The formatted message.
         /// </returns>
         public string Format(
+            [NotNull] int messageId,
             [NotNull] string message,
             [NotNull] MessageFlags messageFlags,
             bool targetBlankOverride,
@@ -225,6 +228,7 @@ namespace YAF.Core.Services
             {
                 // get rules for YafBBCode
                 this.Get<IBBCode>().CreateBBCodeRules(
+                    messageId,
                     ruleEngine,
                     true,
                     targetBlankOverride,
@@ -269,7 +273,7 @@ namespace YAF.Core.Services
             int charsToFetch)
         {
             message =
-                $@"<table class=""{(altItem ? "content postContainer" : "content postContainer_Alt")}"" width=""100%""><tr><td>{this.Format(message, messageFlags, false)}</td></tr></table>";
+                $@"<table class=""{(altItem ? "content postContainer" : "content postContainer_Alt")}"" width=""100%""><tr><td>{this.Format(0, message, messageFlags, false)}</td></tr></table>";
 
             message = message.Replace("<div class=\"innerquote\">", "<blockquote>").Replace("[quote]", "</blockquote>");
 
@@ -561,17 +565,14 @@ namespace YAF.Core.Services
             CodeContracts.VerifyNotNull(postfix, "postfix");
 
             wordList.Where(w => w.Length > 3).ForEach(
-                word =>
-                    {
-                        MatchAndPerformAction(
-                            $"({word.ToLower().ToRegExString()})",
-                            message,
-                            (inner, index, length) =>
-                                {
-                                    message = message.Insert(index + length, postfix);
-                                    message = message.Insert(index, prefix);
-                                });
-                    });
+                word => MatchAndPerformAction(
+                    $"({word.ToLower().ToRegExString()})",
+                    message,
+                    (inner, index, length) =>
+                        {
+                            message = message.Insert(index + length, postfix);
+                            message = message.Insert(index, prefix);
+                        }));
 
             return message;
         }

@@ -109,11 +109,11 @@ namespace YAF.Core.Nntp
     /// <summary>
     /// The base 64 decode.
     /// </summary>
-    /// <param name="line">
-    /// The line.
+    /// <param name="encodedData">
+    /// The encoded Data.
     /// </param>
-    /// <param name="outputStream">
-    /// The output stream.
+    /// <param name="encoding">
+    /// The encoding.
     /// </param>
     /// <returns>
     /// The base 64 decode.
@@ -128,6 +128,18 @@ namespace YAF.Core.Nntp
       return (encoding ?? Encoding.Unicode).GetString(decodedDataAsBytes);
     }
 
+    /// <summary>
+    /// The base 64 decode.
+    /// </summary>
+    /// <param name="encodedData">
+    /// The encoded data.
+    /// </param>
+    /// <param name="output">
+    /// The output.
+    /// </param>
+    /// <returns>
+    /// The <see cref="int"/>.
+    /// </returns>
     public static int Base64Decode([NotNull] string encodedData, Stream output)
     {
         CodeContracts.VerifyNotNull(encodedData, "encodedData");
@@ -164,7 +176,7 @@ namespace YAF.Core.Nntp
           m = m.NextMatch();
         }
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         // format problem...
       }
@@ -243,9 +255,10 @@ namespace YAF.Core.Nntp
       }
       catch (Exception ex)
       {
-          BoardContext.Current.Get<ILogger>()
-                    .Log(BoardContext.Current.PageUserID, "NntpUtil",
-                        $"Unhandled NNTP DateTime nntpDateTime '{nntpDateTime}': {ex}");
+          BoardContext.Current.Get<ILogger>().Log(
+              BoardContext.Current.PageUserID,
+              "NntpUtil",
+              $"Unhandled NNTP DateTime nntpDateTime '{nntpDateTime}': {ex}");
       }
 
       tzi = 0;
@@ -341,14 +354,14 @@ namespace YAF.Core.Nntp
                   QuotedPrintableDecode(line, ms);
                   break;
                 case "BASE64":
-                  if (line != null && line != string.Empty)
+                  if (line != string.Empty)
                   {
                     Base64Decode(line, ms);
                   }
 
                   break;
                 case "UU":
-                  if (line != null && line != string.Empty)
+                  if (line != string.Empty)
                   {
                     UUDecode(line, ms);
                   }
@@ -378,7 +391,6 @@ namespace YAF.Core.Nntp
           break;
         default:
           ms = new MemoryStream();
-          bytes = null;
           while ((line = sr.ReadLine()) != null && line != seperator && line != $"{seperator}--")
           {
             if (line != string.Empty)
@@ -389,14 +401,14 @@ namespace YAF.Core.Nntp
                   QuotedPrintableDecode(line, ms);
                   break;
                 case "BASE64":
-                  if (line != null && line != string.Empty)
+                  if (line != string.Empty)
                   {
                     Base64Decode(line, ms);
                   }
 
                   break;
                 case "UU":
-                  if (line != null && line != string.Empty)
+                  if (line != string.Empty)
                   {
                     UUDecode(line, ms);
                   }

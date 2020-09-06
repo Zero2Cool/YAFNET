@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 namespace YAF.Lucene.Net.Index
@@ -171,7 +171,7 @@ namespace YAF.Lucene.Net.Index
         public static DirectoryReader OpenIfChanged(DirectoryReader oldReader)
         {
             DirectoryReader newReader = oldReader.DoOpenIfChanged();
-            Debug.Assert(newReader != oldReader);
+            if (Debugging.AssertsEnabled) Debugging.Assert(newReader != oldReader);
             return newReader;
         }
 
@@ -184,7 +184,7 @@ namespace YAF.Lucene.Net.Index
         public static DirectoryReader OpenIfChanged(DirectoryReader oldReader, IndexCommit commit)
         {
             DirectoryReader newReader = oldReader.DoOpenIfChanged(commit);
-            Debug.Assert(newReader != oldReader);
+            if (Debugging.AssertsEnabled) Debugging.Assert(newReader != oldReader);
             return newReader;
         }
 
@@ -229,7 +229,7 @@ namespace YAF.Lucene.Net.Index
         /// <para><b>NOTE</b>: Once the writer is disposed, any
         /// outstanding readers may continue to be used.  However,
         /// if you attempt to reopen any of those readers, you'll
-        /// hit an <see cref="System.ObjectDisposedException"/>.</para>
+        /// hit an <see cref="ObjectDisposedException"/>.</para>
         /// 
         /// @lucene.experimental
         /// </summary>
@@ -251,7 +251,7 @@ namespace YAF.Lucene.Net.Index
         public static DirectoryReader OpenIfChanged(DirectoryReader oldReader, IndexWriter writer, bool applyAllDeletes)
         {
             DirectoryReader newReader = oldReader.DoOpenIfChanged(writer, applyAllDeletes);
-            Debug.Assert(newReader != oldReader);
+            if (Debugging.AssertsEnabled) Debugging.Assert(newReader != oldReader);
             return newReader;
         }
 
@@ -314,7 +314,7 @@ namespace YAF.Lucene.Net.Index
                     //}
                     // LUCENENET specific - since NoSuchDirectoryException subclasses FileNotFoundException
                     // in Lucene, we need to catch it here to be on the safe side.
-                    catch (System.IO.DirectoryNotFoundException)
+                    catch (DirectoryNotFoundException)
                     {
                         // LUCENE-948: on NFS (and maybe others), if
                         // you have writers switching back and forth
@@ -405,16 +405,11 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// Returns the directory this index resides in. </summary>
-        public Directory Directory
-        {
-            get
-            {
-                // Don't ensureOpen here -- in certain cases, when a
-                // cloned/reopened reader needs to commit, it may call
-                // this method on the closed original reader
-                return m_directory;
-            }
-        }
+        public Directory Directory =>
+            // Don't ensureOpen here -- in certain cases, when a
+            // cloned/reopened reader needs to commit, it may call
+            // this method on the closed original reader
+            m_directory;
 
         /// <summary>
         /// Implement this method to support <see cref="OpenIfChanged(DirectoryReader)"/>.

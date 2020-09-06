@@ -29,12 +29,8 @@ namespace YAF.Lucene.Net.Util
     /// <para/>
     /// @lucene.internal
     /// </summary>
-    public sealed class CollectionUtil
+    public static class CollectionUtil // LUCENENET specific - made static
     {
-        private CollectionUtil() // no instance
-        {
-        }
-
         private sealed class ListIntroSorter<T> : IntroSorter
         {
             internal T pivot;
@@ -47,7 +43,7 @@ namespace YAF.Lucene.Net.Util
                 // LUCENENET NOTE: All ILists in .NET are random access (only IEnumerable is forward-only)
                 //if (!(list is RandomAccess))
                 //{
-                //  throw new System.ArgumentException("CollectionUtil can only sort random access lists in-place.");
+                //  throw new ArgumentException("CollectionUtil can only sort random access lists in-place.");
                 //}
                 
                 this.list = list;
@@ -56,7 +52,7 @@ namespace YAF.Lucene.Net.Util
 
             protected override void SetPivot(int i)
             {
-                pivot = (i < list.Count) ? list[i] : default(T);
+                pivot = (i < list.Count) ? list[i] : default;
             }
 
             protected override void Swap(int i, int j)
@@ -87,7 +83,7 @@ namespace YAF.Lucene.Net.Util
                 // LUCENENET NOTE: All ILists in .NET are random access (only IEnumerable is forward-only)
                 //if (!(list is RandomAccess))
                 //{
-                //  throw new System.ArgumentException("CollectionUtil can only sort random access lists in-place.");
+                //  throw new ArgumentException("CollectionUtil can only sort random access lists in-place.");
                 //}
                 this.list = list;
                 this.comp = comp;

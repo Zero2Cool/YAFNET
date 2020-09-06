@@ -6,6 +6,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
+    using ServiceStack.Extensions;
+
     public class JsCallExpression : JsExpression
     {
         public JsToken Callee { get; }
@@ -18,7 +20,7 @@ namespace ServiceStack.Script
         }
 
         private string nameString;
-        public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.Name : null);
+        public string Name => nameString ??= Callee is JsIdentifier identifier ? identifier.Name : null;
 
         public static object InvokeDelegate(Delegate fn, object target, bool isMemberExpr, List<object> fnArgValues)
         {
@@ -91,7 +93,7 @@ namespace ServiceStack.Script
 #if DEBUG            
             catch (Exception e)
             {
-                var ex = e.GetInnerMostException().UnwrapIfSingleException().GetInnerMostException();
+                var ex = e.GetBaseException().InnerException.UnwrapIfSingleException().InnerException;
                 Logging.LogManager.GetLogger(typeof(JsCallExpression)).Error(ex.Message + "\n" + ex.StackTrace, ex);
                 throw;
             }
@@ -255,7 +257,7 @@ namespace ServiceStack.Script
                     return Callee.Evaluate(scope);
             }
             else
-                return scope.GetValue(name);
+                return scope.GetArgument(name);
 
             return null;
         }

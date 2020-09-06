@@ -88,12 +88,15 @@ namespace YAF.Controls
 
             if (this.DataRow["LastPosted"] != DBNull.Value)
             {
+                this.topicLink.Text = this.Get<IBadWordReplace>()
+                    .Replace(this.HtmlEncode(this.DataRow["LastTopicName"].ToString())).Truncate(50);
+
                 // Last Post Date
                 var lastPostedDateTime = this.DataRow["LastPosted"].ToType<DateTime>();
 
                 // Topic Link
-                this.topicLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
-                    ForumPages.Posts, "t={0}", this.DataRow["LastTopicID"]);
+                this.topicLink.NavigateUrl = BuildLink.GetLink(
+                    ForumPages.Posts, "t={0}&name={1}", this.DataRow["LastTopicID"], this.topicLink.Text);
 
                 this.topicLink.ToolTip = this.GetText("COMMON", "VIEW_TOPIC");
                 this.topicLink.Attributes.Add("data-toggle", "tooltip");
@@ -108,13 +111,12 @@ namespace YAF.Controls
                     this.topicLink.Attributes.Add("style", styles);
                 }
 
-                this.topicLink.Text = this.Get<IBadWordReplace>()
-                    .Replace(this.HtmlEncode(this.DataRow["LastTopicName"].ToString())).Truncate(50);
-
                 // Last Topic User
                 var lastUserLink = new UserLink
-                {
-                    UserID = this.DataRow["LastUserID"].ToType<int>(),
+                { 
+                    Suspended = this.DataRow.Field<DateTime?>("LastUserSuspended"),
+                    UserID = this.DataRow.Field<int>("LastUserID"),
+                    IsGuest = true,
                     Style = this.Get<BoardSettings>().UseStyledNicks
                                                        ? this.Get<IStyleTransform>().DecodeStyleByString(
                                                            this.DataRow["Style"].ToString())
@@ -125,11 +127,17 @@ namespace YAF.Controls
                                                             : "LastUser"].ToString()
                 };
 
-                this.LastTopicImgLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
-                    ForumPages.Posts, "m={0}#post{0}", this.DataRow["LastMessageID"]);
+                this.LastTopicImgLink.NavigateUrl = BuildLink.GetLink(
+                    ForumPages.Posts,
+                    "m={0}&name={1}#post{0}",
+                    this.DataRow["LastMessageID"],
+                    this.topicLink.Text);
 
-                this.ImageLastUnreadMessageLink.NavigateUrl = BuildLink.GetLinkNotEscaped(
-                    ForumPages.Posts, "t={0}&find=unread", this.DataRow["LastTopicID"]);
+                this.ImageLastUnreadMessageLink.NavigateUrl = BuildLink.GetLink(
+                    ForumPages.Posts,
+                    "t={0}&name={1}&find=unread",
+                    this.DataRow["LastTopicID"],
+                    this.topicLink.Text);
 
                 var lastRead =
                     this.Get<IReadTrackCurrentUser>().GetForumTopicRead(
@@ -164,7 +172,7 @@ namespace YAF.Controls
                 if (this.DataRow["LastPosted"].ToType<DateTime>() > lastRead)
                 {
                     this.NewMessage.Visible = true;
-                    this.NewMessage.Text = $" <span class=\"badge badge-success\">{this.GetText("NEW_POSTS")}</span>";
+                    this.NewMessage.Text = $" <span class=\"badge bg-success\">{this.GetText("NEW_POSTS")}</span>";
                 }
                 else
                 {

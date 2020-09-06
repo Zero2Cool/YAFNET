@@ -24,6 +24,7 @@
 namespace YAF.Core.Model
 {
     using YAF.Types;
+    using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
     using YAF.Types.Models;
 
@@ -32,10 +33,12 @@ namespace YAF.Core.Model
     /// </summary>
     public static class RankRepositoryExtensions
     {
-
         /// <summary>
         /// The rank_save.
         /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
         /// <param name="rankID">
         /// The rank id.
         /// </param>
@@ -81,8 +84,9 @@ namespace YAF.Core.Model
         /// <param name="usrAlbumImages">
         /// The UsrAlbumImages defines number of images allowed for an album.
         /// </param>
-        public static void Save(this IRepository<Rank> repository, 
-            [NotNull] object rankID,
+        public static void Save(
+            this IRepository<Rank> repository,
+            [NotNull] int rankID,
             [NotNull] object boardID,
             [NotNull] object name,
             [NotNull] object isStart,
@@ -114,6 +118,9 @@ namespace YAF.Core.Model
                 UsrSigHTMLTags: usrSigHTMLTags,
                 UsrAlbums: usrAlbums,
                 UsrAlbumImages: usrAlbumImages);
+
+            repository.FireUpdated(rankID);
+
         }
     }
 }

@@ -1,7 +1,9 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 
 namespace YAF.Lucene.Net.Codecs
 {
@@ -74,7 +76,7 @@ namespace YAF.Lucene.Net.Codecs
         /// <param name="field"> Field information. </param>
         /// <param name="values"> <see cref="IEnumerable{T}"/> of numeric values (one for each document). <c>null</c> indicates
         ///               a missing value. </param>
-        /// <exception cref="System.IO.IOException"> If an I/O error occurred. </exception>
+        /// <exception cref="IOException"> If an I/O error occurred. </exception>
         public abstract void AddNumericField(FieldInfo field, IEnumerable<long?> values);
 
         /// <summary>
@@ -82,7 +84,7 @@ namespace YAF.Lucene.Net.Codecs
         /// <param name="field"> Field information. </param>
         /// <param name="values"> <see cref="IEnumerable{T}"/> of binary values (one for each document). <c>null</c> indicates
         ///               a missing value. </param>
-        /// <exception cref="System.IO.IOException"> If an I/O error occurred. </exception>
+        /// <exception cref="IOException"> If an I/O error occurred. </exception>
         public abstract void AddBinaryField(FieldInfo field, IEnumerable<BytesRef> values);
 
         /// <summary>
@@ -91,7 +93,7 @@ namespace YAF.Lucene.Net.Codecs
         /// <param name="values"> <see cref="IEnumerable{T}"/> of binary values in sorted order (deduplicated). </param>
         /// <param name="docToOrd"> <see cref="IEnumerable{T}"/> of ordinals (one for each document). <c>-1</c> indicates
         ///                 a missing value. </param>
-        /// <exception cref="System.IO.IOException"> If an I/O error occurred. </exception>
+        /// <exception cref="IOException"> If an I/O error occurred. </exception>
         public abstract void AddSortedField(FieldInfo field, IEnumerable<BytesRef> values, IEnumerable<long?> docToOrd);
 
         /// <summary>
@@ -101,7 +103,7 @@ namespace YAF.Lucene.Net.Codecs
         /// <param name="docToOrdCount"> <see cref="IEnumerable{T}"/> of the number of values for each document. A zero ordinal
         ///                      count indicates a missing value. </param>
         /// <param name="ords"> <see cref="IEnumerable{T}"/> of ordinal occurrences (<paramref name="docToOrdCount"/>*maxDoc total). </param>
-        /// <exception cref="System.IO.IOException"> If an I/O error occurred. </exception>
+        /// <exception cref="IOException"> If an I/O error occurred. </exception>
         public abstract void AddSortedSetField(FieldInfo field, IEnumerable<BytesRef> values, IEnumerable<long?> docToOrdCount, IEnumerable<long?> ords);
 
         /// <summary>
@@ -181,6 +183,8 @@ namespace YAF.Lucene.Net.Codecs
         {
             int readerUpto = -1;
             int docIDUpto = 0;
+            var nextValue = new BytesRef();
+            BytesRef nextPointer; // points to null if missing, or nextValue
             AtomicReader currentReader = null;
             BinaryDocValues currentValues = null;
             IBits currentLiveDocs = null;
@@ -209,19 +213,18 @@ namespace YAF.Lucene.Net.Codecs
 
                 if (currentLiveDocs == null || currentLiveDocs.Get(docIDUpto))
                 {
-                    var nextValue = new BytesRef();
-
                     if (currentDocsWithField.Get(docIDUpto))
                     {
                         currentValues.Get(docIDUpto, nextValue);
+                        nextPointer = nextValue;
                     }
                     else
                     {
-                        nextValue = null;
+                        nextPointer = null;
                     }
 
                     docIDUpto++;
-                    yield return nextValue;
+                    yield return nextPointer;
                     continue;
                 }
 
@@ -281,11 +284,11 @@ namespace YAF.Lucene.Net.Codecs
 
         private IEnumerable<BytesRef> GetMergeSortValuesEnumerable(OrdinalMap map, SortedDocValues[] dvs)
         {
+            var scratch = new BytesRef();
             int currentOrd = 0;
 
             while (currentOrd < map.ValueCount)
             {
-                var scratch = new BytesRef();
                 int segmentNumber = map.GetFirstSegmentNumber(currentOrd);
                 var segmentOrd = (int)map.GetFirstSegmentOrd(currentOrd);
                 dvs[segmentNumber].LookupOrd(segmentOrd, scratch);
@@ -387,13 +390,13 @@ namespace YAF.Lucene.Net.Codecs
 
         private IEnumerable<BytesRef> GetMergeSortedSetValuesEnumerable(OrdinalMap map, SortedSetDocValues[] dvs)
         {
+            var scratch = new BytesRef();
             long currentOrd = 0;
 
             while (currentOrd < map.ValueCount)
             {
                 int segmentNumber = map.GetFirstSegmentNumber(currentOrd);
                 long segmentOrd = map.GetFirstSegmentOrd(currentOrd);
-                var scratch = new BytesRef();
                 dvs[segmentNumber].LookupOrd(segmentOrd, scratch);
                 currentOrd++;
                 yield return scratch;
@@ -483,7 +486,7 @@ namespace YAF.Lucene.Net.Codecs
 
                 if (currentLiveDocs == null || currentLiveDocs.Get(docIDUpto))
                 {
-                    Debug.Assert(docIDUpto < currentReader.MaxDoc);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(docIDUpto < currentReader.MaxDoc);
                     SortedSetDocValues dv = dvs[readerUpto];
                     dv.SetDocument(docIDUpto);
                     ordUpto = ordLength = 0;
@@ -513,7 +516,7 @@ namespace YAF.Lucene.Net.Codecs
             internal BitsFilteredTermsEnum(TermsEnum @in, Int64BitSet liveTerms)
                 : base(@in, false)
             {
-                Debug.Assert(liveTerms != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(liveTerms != null);
                 this.liveTerms = liveTerms;
             }
 

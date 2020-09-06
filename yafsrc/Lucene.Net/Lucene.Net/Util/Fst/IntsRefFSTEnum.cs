@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 
 namespace YAF.Lucene.Net.Util.Fst
 {
@@ -47,10 +47,7 @@ namespace YAF.Lucene.Net.Util.Fst
             current.Offset = 1;
         }
 
-        public Int32sRefFSTEnum.InputOutput<T> Current
-        {
-            get { return result; }
-        }
+        public Int32sRefFSTEnum.InputOutput<T> Current => result;
 
         public Int32sRefFSTEnum.InputOutput<T> Next()
         {
@@ -91,7 +88,7 @@ namespace YAF.Lucene.Net.Util.Fst
             m_targetLength = target.Length;
             if (base.DoSeekExact())
             {
-                Debug.Assert(m_upto == 1 + target.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(m_upto == 1 + target.Length);
                 return SetResult();
             }
             else
@@ -116,16 +113,9 @@ namespace YAF.Lucene.Net.Util.Fst
         }
 
         protected override int CurrentLabel
-        {
-            get
-            {
-                // current.offset fixed at 1
-                return current.Int32s[m_upto];
-            }
-            set
-            {
-                current.Int32s[m_upto] = value;
-            }
+        {   // current.offset fixed at 1
+            get => current.Int32s[m_upto];
+            set => current.Int32s[m_upto] = value;
         }
 
         protected override void Grow()

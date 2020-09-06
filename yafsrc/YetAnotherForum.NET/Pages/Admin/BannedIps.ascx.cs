@@ -36,15 +36,14 @@ namespace YAF.Pages.Admin
     using YAF.Configuration;
     
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Models;
-    using YAF.Utils;
     using YAF.Web.Extensions;
 
     #endregion
@@ -68,6 +67,11 @@ namespace YAF.Pages.Admin
                 return;
             }
 
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
             this.BindData();
         }
 
@@ -77,9 +81,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMIN_BANNEDIP", "TITLE"), string.Empty);
 
@@ -99,14 +101,14 @@ namespace YAF.Pages.Admin
                 case "add":
                     this.EditDialog.BindData(null);
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("EditDialog"));
                     break;
                 case "edit":
                     this.EditDialog.BindData(e.CommandArgument.ToType<int>());
 
-                    BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                    this.PageContext.PageElements.RegisterJsBlockStartup(
                         "openModalJs",
                         JavaScriptBlocks.OpenModalJs("EditDialog"));
                     break;
@@ -149,13 +151,13 @@ namespace YAF.Pages.Admin
 
                         this.BindData();
 
-                        if (BoardContext.Current.Get<BoardSettings>().LogBannedIP)
+                        if (this.PageContext.Get<BoardSettings>().LogBannedIP)
                         {
                             this.Get<ILogger>()
                                 .Log(
                                     this.PageContext.PageUserID,
                                     " YAF.Pages.Admin.bannedip",
-                                    $"IP or mask {ipAddress} was deleted by {(this.Get<BoardSettings>().EnableDisplayName ? this.PageContext.CurrentUserData.DisplayName : this.PageContext.CurrentUserData.UserName)}.",
+                                    $"IP or mask {ipAddress} was deleted by {this.PageContext.User.DisplayOrUserName()}.",
                                     EventLogTypes.IpBanLifted);
                         }
                     }
@@ -186,6 +188,20 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.BindData();
+        }
+
+        /// <summary>
         /// Helper to get mask from ID.
         /// </summary>
         /// <param name="id">The ID.</param>
@@ -202,7 +218,7 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void BindData()
         {
-            this.PagerTop.PageSize = this.Get<BoardSettings>().MemberListPageSize;
+            this.PagerTop.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
             var searchText = this.SearchInput.Text.Trim();
 

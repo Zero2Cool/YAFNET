@@ -1,8 +1,9 @@
 using YAF.Lucene.Net.Codecs;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Util;
 using YAF.Lucene.Net.Util.Packed;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Index
@@ -52,15 +53,15 @@ namespace YAF.Lucene.Net.Index
         {
             if (docID < pending.Count)
             {
-                throw new System.ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" appears more than once in this document (only one value is allowed per field)");
+                throw new ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" appears more than once in this document (only one value is allowed per field)");
             }
             if (value == null)
             {
-                throw new System.ArgumentException("field \"" + fieldInfo.Name + "\": null value not allowed");
+                throw new ArgumentException("field \"" + fieldInfo.Name + "\": null value not allowed");
             }
             if (value.Length > (ByteBlockPool.BYTE_BLOCK_SIZE - 2))
             {
-                throw new System.ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" is too large, must be <= " + (ByteBlockPool.BYTE_BLOCK_SIZE - 2));
+                throw new ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" is too large, must be <= " + (ByteBlockPool.BYTE_BLOCK_SIZE - 2));
             }
 
             // Fill in any holes:
@@ -113,7 +114,7 @@ namespace YAF.Lucene.Net.Index
         {
             int maxDoc = state.SegmentInfo.DocCount;
 
-            Debug.Assert(pending.Count == maxDoc);
+            if (Debugging.AssertsEnabled) Debugging.Assert(pending.Count == maxDoc);
             int valueCount = hash.Count;
 
             int[] sortedValues = hash.Sort(BytesRef.UTF8SortedAsUnicodeComparer);
@@ -136,9 +137,10 @@ namespace YAF.Lucene.Net.Index
 
         private IEnumerable<BytesRef> GetBytesRefEnumberable(int valueCount, int[] sortedValues)
         {
+            var scratch = new BytesRef();
+
             for (int i = 0; i < valueCount; ++i)
             {
-                var scratch = new BytesRef();
                 yield return hash.Get(sortedValues[i], scratch);
             }
         }
@@ -146,6 +148,7 @@ namespace YAF.Lucene.Net.Index
         private IEnumerable<long?> GetOrdsEnumberable(int maxDoc, int[] ordMap)
         {
             AppendingDeltaPackedInt64Buffer.Iterator iter = pending.GetIterator();
+            if (Debugging.AssertsEnabled) Debugging.Assert(pending.Count == maxDoc);
 
             for (int i = 0; i < maxDoc; ++i)
             {

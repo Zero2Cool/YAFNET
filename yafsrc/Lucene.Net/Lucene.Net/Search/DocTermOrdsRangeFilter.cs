@@ -1,5 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Diagnostics;
 using System.Text;
 
 namespace YAF.Lucene.Net.Search
@@ -22,8 +22,8 @@ namespace YAF.Lucene.Net.Search
      */
 
     using AtomicReaderContext = YAF.Lucene.Net.Index.AtomicReaderContext;
-    using IBits = YAF.Lucene.Net.Util.IBits;
     using BytesRef = YAF.Lucene.Net.Util.BytesRef;
+    using IBits = YAF.Lucene.Net.Util.IBits;
     using SortedSetDocValues = YAF.Lucene.Net.Index.SortedSetDocValues;
 
     /// <summary>
@@ -123,7 +123,7 @@ namespace YAF.Lucene.Net.Search
                     return null;
                 }
 
-                Debug.Assert(inclusiveLowerPoint >= 0 && inclusiveUpperPoint >= 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(inclusiveLowerPoint >= 0 && inclusiveUpperPoint >= 0);
 
                 return new FieldCacheDocIdSetAnonymousInnerClassHelper(this, context.AtomicReader.MaxDoc, acceptDocs, docTermOrds, inclusiveLowerPoint, inclusiveUpperPoint);
             }
@@ -215,46 +215,22 @@ namespace YAF.Lucene.Net.Search
 
         /// <summary>
         /// Returns the field name for this filter </summary>
-        public virtual string Field
-        {
-            get
-            {
-                return field;
-            }
-        }
+        public virtual string Field => field;
 
         /// <summary>
         /// Returns <c>true</c> if the lower endpoint is inclusive </summary>
-        public virtual bool IncludesLower
-        {
-            get { return includeLower; }
-        }
+        public virtual bool IncludesLower => includeLower;
 
         /// <summary>
         /// Returns <c>true</c> if the upper endpoint is inclusive </summary>
-        public virtual bool IncludesUpper
-        {
-            get { return includeUpper; }
-        }
+        public virtual bool IncludesUpper => includeUpper;
 
         /// <summary>
         /// Returns the lower value of this range filter </summary>
-        public virtual BytesRef LowerVal
-        {
-            get
-            {
-                return lowerVal;
-            }
-        }
+        public virtual BytesRef LowerVal => lowerVal;
 
         /// <summary>
         /// Returns the upper value of this range filter </summary>
-        public virtual BytesRef UpperVal
-        {
-            get
-            {
-                return upperVal;
-            }
-        }
+        public virtual BytesRef UpperVal => upperVal;
     }
 }

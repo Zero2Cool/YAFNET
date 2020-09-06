@@ -1,14 +1,13 @@
 ﻿using J2N;
-using J2N.Text;
 using J2N.Globalization;
+using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace YAF.Lucene.Net.Analysis.Util
@@ -90,8 +89,8 @@ namespace YAF.Lucene.Net.Analysis.Util
             private TValue value = default(TValue);
             public TValue Value
             {
-                get { return value; }
-                set { this.value = value; }
+                get => value;
+                set => this.value = value;
             }
 
             public MapValue()
@@ -633,7 +632,7 @@ namespace YAF.Lucene.Net.Analysis.Util
 
         private void Rehash()
         {
-            Debug.Assert(keys.Length == values.Length);
+            if (Debugging.AssertsEnabled) Debugging.Assert(keys.Length == values.Length);
             int newSize = 2 * keys.Length;
             char[][] oldkeys = keys;
             MapValue[] oldvalues = values;
@@ -665,7 +664,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 for (int i = 0; i < length;)
                 {
                     var codePointAt = charUtils.CodePointAt(text1, offset + i, limit);
-                    if (Character.ToLower(codePointAt) != charUtils.CodePointAt(text2, i, text2.Length))
+                    if (Character.ToLower(codePointAt, CultureInfo.InvariantCulture) != charUtils.CodePointAt(text2, i, text2.Length)) // LUCENENET specific - need to use invariant culture to match Java
                     {
                         return false;
                     }
@@ -697,7 +696,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 for (int i = 0; i < length;)
                 {
                     int codePointAt = charUtils.CodePointAt(text1, i);
-                    if (Character.ToLower(codePointAt) != charUtils.CodePointAt(text2, i, text2.Length))
+                    if (Character.ToLower(codePointAt, CultureInfo.InvariantCulture) != charUtils.CodePointAt(text2, i, text2.Length)) // LUCENENET specific - need to use invariant culture to match Java
                     {
                         return false;
                     }
@@ -729,7 +728,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 for (int i = 0; i < length;)
                 {
                     int codePointAt = charUtils.CodePointAt(text1, i);
-                    if (Character.ToLower(codePointAt) != charUtils.CodePointAt(text2, i, text2.Length))
+                    if (Character.ToLower(codePointAt, CultureInfo.InvariantCulture) != charUtils.CodePointAt(text2, i, text2.Length)) // LUCENENET specific - need to use invariant culture to match Java
                     {
                         return false;
                     }
@@ -812,7 +811,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 for (int i = offset; i < stop;)
                 {
                     int codePointAt = charUtils.CodePointAt(text, i, stop);
-                    code = code * 31 + Character.ToLower(codePointAt);
+                    code = code * 31 + Character.ToLower(codePointAt, CultureInfo.InvariantCulture); // LUCENENET specific - need to use invariant culture to match Java
                     i += Character.CharCount(codePointAt);
                 }
             }
@@ -840,7 +839,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 for (int i = 0; i < length;)
                 {
                     int codePointAt = charUtils.CodePointAt(text, i);
-                    code = code * 31 + Character.ToLower(codePointAt);
+                    code = code * 31 + Character.ToLower(codePointAt, CultureInfo.InvariantCulture); // LUCENENET specific - need to use invariant culture to match Java
                     i += Character.CharCount(codePointAt);
                 }
             }
@@ -868,7 +867,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 for (int i = 0; i < length;)
                 {
                     int codePointAt = charUtils.CodePointAt(text, i);
-                    code = code * 31 + Character.ToLower(codePointAt);
+                    code = code * 31 + Character.ToLower(codePointAt, CultureInfo.InvariantCulture); // LUCENENET specific - need to use invariant culture to match Java
                     i += Character.CharCount(codePointAt);
                 }
             }
@@ -888,10 +887,7 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// The Lucene version corresponding to the compatibility behavior 
         /// that this instance emulates
         /// </summary>
-        public virtual LuceneVersion MatchVersion
-        {
-            get { return matchVersion; }
-        }
+        public virtual LuceneVersion MatchVersion => matchVersion;
 
         /// <summary>
         /// Adds a placeholder with the given <paramref name="text"/> as the key.
@@ -1040,8 +1036,8 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// <param name="length">The total length of the <paramref name="key"/>.</param>
         public virtual TValue this[char[] key, int offset, int length]
         {
-            get { return Get(key, offset, length); }
-            set { Put(key, value); }
+            get => Get(key, offset, length);
+            set => Put(key, value);
         }
 
         /// <summary>
@@ -1050,8 +1046,8 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// <param name="key">The key of the value to get or set.</param>
         public virtual TValue this[char[] key]
         {
-            get { return Get(key); }
-            set { Put(key, value); }
+            get => Get(key);
+            set => Put(key, value);
         }
 
         /// <summary>
@@ -1060,8 +1056,8 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// <param name="key">The key of the value to get or set.</param>
         public virtual TValue this[ICharSequence key]
         {
-            get { return Get(key); }
-            set { Put(key, value); }
+            get => Get(key);
+            set => Put(key, value);
         }
 
         /// <summary>
@@ -1070,8 +1066,8 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// <param name="key">The key of the value to get or set.</param>
         public virtual TValue this[string key]
         {
-            get { return Get(key); }
-            set { Put(key, value); }
+            get => Get(key);
+            set => Put(key, value);
         }
 
         /// <summary>
@@ -1080,17 +1076,14 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// <param name="key">The key of the value to get or set.</param>
         public virtual TValue this[object key]
         {
-            get { return Get(key); }
-            set { Put(key, value); }
+            get => Get(key);
+            set => Put(key, value);
         }
 
         /// <summary>
         /// Gets a collection containing the keys in the <see cref="CharArrayMap{TValue}"/>.
         /// </summary>
-        public virtual ICollection<string> Keys
-        {
-            get { return KeySet; }
-        }
+        public virtual ICollection<string> Keys => KeySet;
 
 
         private volatile ICollection<TValue> valueSet;
@@ -1130,21 +1123,9 @@ namespace YAF.Lucene.Net.Analysis.Util
                 this.outerInstance = outerInstance;
             }
 
-            public int Count
-            {
-                get
-                {
-                    return outerInstance.Count;
-                }
-            }
+            public int Count => outerInstance.Count;
 
-            public bool IsReadOnly
-            {
-                get
-                {
-                    return outerInstance.IsReadOnly;
-                }
-            }
+            public bool IsReadOnly => outerInstance.IsReadOnly;
 
             public void Add(string item)
             {
@@ -1192,30 +1173,16 @@ namespace YAF.Lucene.Net.Analysis.Util
             /// </summary>
             private class KeyEnumerator : IEnumerator<string>
             {
-                private readonly CharArrayMap<TValue> outerInstance;
                 private readonly EntryIterator entryIterator;
 
                 public KeyEnumerator(CharArrayMap<TValue> outerInstance)
                 {
-                    this.outerInstance = outerInstance;
                     this.entryIterator = new EntryIterator(outerInstance, !outerInstance.IsReadOnly);
                 }
 
-                public string Current
-                {
-                    get
-                    {
-                        return entryIterator.Current.Key;
-                    }
-                }
+                public string Current => entryIterator.Current.Key;
 
-                object IEnumerator.Current
-                {
-                    get
-                    {
-                        return Current;
-                    }
-                }
+                object IEnumerator.Current => Current;
 
                 public void Dispose()
                 {
@@ -1246,21 +1213,9 @@ namespace YAF.Lucene.Net.Analysis.Util
                 this.outerInstance = outerInstance;
             }
 
-            public int Count
-            {
-                get
-                {
-                    return outerInstance.Count;
-                }
-            }
+            public int Count => outerInstance.Count;
 
-            public bool IsReadOnly
-            {
-                get
-                {
-                    return outerInstance.IsReadOnly;
-                }
-            }
+            public bool IsReadOnly => outerInstance.IsReadOnly;
 
             public void Add(TValue item)
             {
@@ -1274,7 +1229,13 @@ namespace YAF.Lucene.Net.Analysis.Util
 
             public bool Contains(TValue item)
             {
-                return outerInstance.values.Select(x => (x != null) ? x.Value : default(TValue)).Contains(item);
+                for (int i = 0; i < outerInstance.values.Length; i++)
+                {
+                    var value = outerInstance.values[i];
+                    if (J2N.Collections.Generic.EqualityComparer<TValue>.Equals(value, item))
+                        return true;
+                }
+                return false;
             }
 
             public void CopyTo(TValue[] array, int arrayIndex)
@@ -1325,30 +1286,16 @@ namespace YAF.Lucene.Net.Analysis.Util
             /// </summary>
             private class ValueEnumerator : IEnumerator<TValue>
             {
-                private readonly CharArrayMap<TValue> outerInstance;
                 private readonly EntryIterator entryIterator;
 
                 public ValueEnumerator(CharArrayMap<TValue> outerInstance)
                 {
-                    this.outerInstance = outerInstance;
                     this.entryIterator = new EntryIterator(outerInstance, !outerInstance.IsReadOnly);
                 }
 
-                public TValue Current
-                {
-                    get
-                    {
-                        return entryIterator.CurrentValue;
-                    }
-                }
+                public TValue Current => entryIterator.CurrentValue;
 
-                object IEnumerator.Current
-                {
-                    get
-                    {
-                        return Current;
-                    }
-                }
+                object IEnumerator.Current => Current;
 
                 public void Dispose()
                 {
@@ -1365,10 +1312,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                     entryIterator.Reset();
                 }
 
-                public bool HasNext
-                {
-                    get { return entryIterator.HasNext; }
-                }
+                public bool HasNext => entryIterator.HasNext;
             }
         }
 
@@ -1414,10 +1358,7 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// <summary>
         /// Gets the number of key/value pairs contained in the <see cref="CharArrayMap{TValue}"/>.
         /// </summary>
-        public virtual int Count
-        {
-            get { return count; }
-        }
+        public virtual int Count => count;
 
         /// <summary>
         /// Returns a string that represents the current object. (Inherited from <see cref="object"/>.)
@@ -1552,10 +1493,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 }
             }
 
-            public virtual bool HasNext
-            {
-                get { return pos < outerInstance.keys.Length; }
-            }
+            public virtual bool HasNext => pos < outerInstance.keys.Length;
 
             /// <summary>
             /// gets the next key... do not modify the returned char[]
@@ -1603,7 +1541,13 @@ namespace YAF.Lucene.Net.Analysis.Util
             // LUCENENET: Next() and Remove() methods eliminated here
 
             #region Added for better .NET support LUCENENET
-            public virtual void Dispose()
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
             {
                 // nothing to do
             }
@@ -1632,10 +1576,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 }
             }
 
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
+            object IEnumerator.Current => Current;
 
             #endregion
         }
@@ -1701,11 +1642,8 @@ namespace YAF.Lucene.Net.Analysis.Util
                 throw new NotSupportedException();
             }
 
-            public int Count
-            {
-                get { return outerInstance.count; }
-            }
-            
+            public int Count => outerInstance.count;
+
             public void Clear()
             {
                 if (!allowModify)
@@ -1735,7 +1673,7 @@ namespace YAF.Lucene.Net.Analysis.Util
                 outerInstance.Add(item);
             }
 
-            public bool IsReadOnly { get { return !allowModify; } }
+            public bool IsReadOnly => !allowModify;
 
             public override string ToString()
             {
@@ -1863,7 +1801,7 @@ namespace YAF.Lucene.Net.Analysis.Util
         /// <returns> an new unmodifiable <see cref="CharArrayMap{TValue}"/>. </returns>
         /// <exception cref="ArgumentException">
         ///           if the given map is <c>null</c>. </exception>
-        public static CharArrayMap<TValue> UnmodifiableMap<TValue>(CharArrayMap<TValue> map)
+        public static CharArrayMap<TValue> UnmodifiableMap<TValue>(CharArrayMap<TValue> map) // LUCENENET TODO: API - Rename AsReadOnly() to match .NET convention
         {
             if (map == null)
             {
@@ -1981,28 +1919,28 @@ namespace YAF.Lucene.Net.Analysis.Util
             }
             public override TValue this[char[] key, int offset, int length]
             {
-                get { return base[key, offset, length]; }
-                set { throw new NotSupportedException(); }
+                get => base[key, offset, length];
+                set => throw new NotSupportedException();
             }
             public override TValue this[char[] key]
             {
-                get { return base[key]; }
-                set { throw new NotSupportedException(); }
+                get => base[key];
+                set => throw new NotSupportedException();
             }
             public override TValue this[ICharSequence key]
             {
-                get { return base[key]; }
-                set { throw new NotSupportedException(); }
+                get => base[key];
+                set => throw new NotSupportedException();
             }
             public override TValue this[string key]
             {
-                get { return base[key]; }
-                set { throw new NotSupportedException(); }
+                get => base[key];
+                set => throw new NotSupportedException();
             }
             public override TValue this[object key]
             {
-                get { return base[key]; }
-                set { throw new NotSupportedException(); }
+                get => base[key];
+                set => throw new NotSupportedException();
             }
 
             [Obsolete("Not applicable in this class.")]

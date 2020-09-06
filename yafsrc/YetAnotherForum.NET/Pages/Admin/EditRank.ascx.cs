@@ -32,6 +32,7 @@ namespace YAF.Pages.Admin
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -68,6 +69,10 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.Save.ClientID));
+
             if (this.IsPostBack)
             {
                 return;
@@ -105,9 +110,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMIN_RANKS", "TITLE"), BuildLink.GetLink(ForumPages.Admin_Ranks));
 
@@ -167,7 +170,7 @@ namespace YAF.Pages.Admin
             var rankID = 0;
             if (this.Get<HttpRequestBase>().QueryString.Exists("r"))
             {
-                rankID = int.Parse(this.Request.QueryString.GetFirstOrDefault("r"));
+                rankID = this.Request.QueryString.GetFirstOrDefaultAs<int>("r");
             }
 
             this.GetRepository<Rank>().Save(
@@ -186,13 +189,6 @@ namespace YAF.Pages.Admin
                 this.UsrSigHTMLTags.Text.Trim(),
                 this.UsrAlbums.Text.Trim().ToType<int>(),
                 this.UsrAlbumImages.Text.Trim().ToType<int>());
-
-            // Clearing cache with old permissions data...
-            this.Get<IDataCache>().RemoveOf<object>(
-                k => k.Key.StartsWith(string.Format(Constants.Cache.ActiveUserLazyData, string.Empty)));
-
-            // Clear Styling Caching
-            this.Get<IDataCache>().Remove(Constants.Cache.GroupRankStyles);
 
             BuildLink.Redirect(ForumPages.Admin_Ranks);
         }

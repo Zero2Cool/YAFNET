@@ -27,16 +27,16 @@ namespace YAF.Core.Handlers
     #region Using
 
     using System;
+    using System.Globalization;
     using System.Web;
     using System.Xml.Serialization;
 
-    using YAF.Core;
     using YAF.Core.Context;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils;
 
@@ -79,29 +79,31 @@ namespace YAF.Core.Handlers
 
             var forumList = this.GetRepository<Forum>().ListAll(
                 BoardContext.Current.BoardSettings.BoardID,
-                UserMembershipHelper.GuestUserId);
+                this.Get<IAspNetUsersHelper>().GuestUserId);
 
             forumList.ForEach(
-                forum =>
+                forum => siteMap.Add(
+                    new UrlLocation
                     {
-                        siteMap.Add(
-                            new UrlLocation
-                                {
-                                    Url = BuildLink.GetLinkNotEscaped(
-                                        ForumPages.topics,
-                                        true,
-                                        "f={0}",
-                                        forum.Item1.ID),
-                                    Priority = 0.8D,
-                                    LastModified = forum.Item1.LastPosted ?? DateTime.UtcNow,
-                                    ChangeFrequency = UrlLocation.ChangeFrequencies.always
-                                });
-                    });
+                        Url = BuildLink.GetTopicLink(forum.Item1.ID, forum.Item1.Name),
+                        Priority = 0.8D,
+                        LastModified =
+                            forum.Item1.LastPosted.HasValue
+                                ? forum.Item1.LastPosted.Value.ToString(
+                                    "yyyy-MM-ddTHH:mm:sszzz",
+                                    CultureInfo.InvariantCulture)
+                                : DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
+                        ChangeFrequency = UrlLocation.ChangeFrequencies.always
+                    }));
 
             context.Response.Clear();
+            
             var xs = new XmlSerializer(typeof(SiteMap));
+            
             context.Response.ContentType = "text/xml";
+            
             xs.Serialize(context.Response.Output, siteMap);
+            
             context.Response.End();
         }
 

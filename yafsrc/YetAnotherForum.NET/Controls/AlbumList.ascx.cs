@@ -32,12 +32,9 @@ namespace YAF.Controls
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.BaseControls;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -58,7 +55,7 @@ namespace YAF.Controls
         /// <summary>
         ///   Gets or sets the User ID.
         /// </summary>
-        public int UserID { get; set; }
+        public User User { get; set; }
 
         #endregion
 
@@ -71,7 +68,7 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void AddAlbum_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            BuildLink.Redirect(ForumPages.EditAlbumImages, "u={0}&a=new", this.UserID);
+            BuildLink.Redirect(ForumPages.EditAlbumImages, "a=new");
         }
 
         /// <summary>
@@ -90,17 +87,17 @@ namespace YAF.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnPreRender([NotNull] EventArgs e)
         {
-            if (this.UserID == this.PageContext.PageUserID)
+            if (this.User.ID == this.PageContext.PageUserID)
             {
                 // Register Js Blocks.
-                BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                this.PageContext.PageElements.RegisterJsBlockStartup(
                     "AlbumEventsJs",
                     JavaScriptBlocks.AlbumEventsJs(
                         this.Get<ILocalization>().GetText("ALBUM_CHANGE_TITLE").ToJsString(),
                         this.Get<ILocalization>().GetText("ALBUM_IMAGE_CHANGE_CAPTION").ToJsString()));
-                BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                this.PageContext.PageElements.RegisterJsBlockStartup(
                     "ChangeAlbumTitleJs", JavaScriptBlocks.ChangeAlbumTitleJs);
-                BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                this.PageContext.PageElements.RegisterJsBlockStartup(
                     "AlbumCallbackSuccessJS", JavaScriptBlocks.AlbumCallbackSuccessJs);
             }
 
@@ -119,17 +116,14 @@ namespace YAF.Controls
                 return;
             }
 
-            this.IconHeader.Param0 = this.HtmlEncode(
-                this.Get<BoardSettings>().EnableDisplayName
-                    ? UserMembershipHelper.GetDisplayNameFromID(this.UserID)
-                    : UserMembershipHelper.GetUserNameFromID(this.UserID));
+            this.Header.Param0 = this.HtmlEncode(this.User.DisplayOrUserName());
 
             this.BindData();
 
             HttpContext.Current.Session["localizationFile"] = this.Get<ILocalization>().LanguageFileName;
 
             // Show Albums Max Info
-            if (this.UserID == this.PageContext.PageUserID)
+            if (this.User.ID == this.PageContext.PageUserID)
             {
                 this.albumsInfo.Text = this.Get<ILocalization>().GetTextFormatted(
                     "ALBUMS_INFO", this.PageContext.NumAlbums, this.PageContext.UsrAlbums);
@@ -173,7 +167,7 @@ namespace YAF.Controls
             this.PagerTop.PageSize = this.Get<BoardSettings>().AlbumsPerPage;
 
             // set the Data table
-            var albumListDT = this.GetRepository<UserAlbum>().ListByUser(this.UserID);
+            var albumListDT = this.GetRepository<UserAlbum>().ListByUser(this.User.ID);
 
             if (albumListDT == null || !albumListDT.Any())
             {

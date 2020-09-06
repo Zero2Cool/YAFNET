@@ -1,23 +1,24 @@
-﻿using System.Globalization;
+﻿using J2N;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Analysis.Miscellaneous
 {
     /*
-	 * Licensed to the Apache Software Foundation (ASF) under one or more
-	 * contributor license agreements.  See the NOTICE file distributed with
-	 * this work for additional information regarding copyright ownership.
-	 * The ASF licenses this file to You under the Apache License, Version 2.0
-	 * (the "License"); you may not use this file except in compliance with
-	 * the License.  You may obtain a copy of the License at
-	 *
-	 *     http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 */
+     * Licensed to the Apache Software Foundation (ASF) under one or more
+     * contributor license agreements.  See the NOTICE file distributed with
+     * this work for additional information regarding copyright ownership.
+     * The ASF licenses this file to You under the Apache License, Version 2.0
+     * (the "License"); you may not use this file except in compliance with
+     * the License.  You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
 
     /// <summary>
     /// A BreakIterator-like API for iterating over subwords in text, according to <see cref="WordDelimiterFilter"/> rules.
@@ -84,17 +85,17 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
             for (int i = 0; i < 256; i++)
             {
                 byte code = 0;
-                if (char.IsLower((char)i))
+                if (Character.IsLower(i))
                 {
-                    code |= (byte)WordDelimiterFilter.LOWER;
+                    code |= WordDelimiterFilter.LOWER;
                 }
-                else if (char.IsUpper((char)i))
+                else if (Character.IsUpper(i))
                 {
-                    code |= (byte)WordDelimiterFilter.UPPER;
+                    code |= WordDelimiterFilter.UPPER;
                 }
-                else if (char.IsDigit((char)i))
+                else if (Character.IsDigit(i))
                 {
-                    code |= (byte)WordDelimiterFilter.DIGIT;
+                    code |= WordDelimiterFilter.DIGIT;
                 }
                 if (code == 0)
                 {
@@ -318,7 +319,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
         /// <returns> Type of the character </returns>
         public static byte GetType(int ch)
         {
-            switch (CharUnicodeInfo.GetUnicodeCategory((char)ch))
+            switch (Character.GetType(ch))
             {
                 case UnicodeCategory.UppercaseLetter:
                     return WordDelimiterFilter.UPPER;

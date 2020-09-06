@@ -1,5 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace YAF.Lucene.Net.Index
@@ -78,40 +78,28 @@ namespace YAF.Lucene.Net.Index
         /// <summary>
         /// How many sub-readers we are merging. </summary>
         /// <see cref="Subs"/>
-        public int NumSubs
-        {
-            get
-            {
-                return numSubs;
-            }
-        }
+        public int NumSubs => numSubs;
 
         /// <summary>
         /// Returns sub-readers we are merging. </summary>
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        public EnumWithSlice[] Subs
-        {
-            get { return subs; }
-        }
+        public EnumWithSlice[] Subs => subs;
 
         public override int Freq
         {
             get
             {
-                Debug.Assert(current != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(current != null);
                 return current.Freq;
             }
         }
 
-        public override int DocID
-        {
-            get { return doc; }
-        }
+        public override int DocID => doc;
 
         public override int Advance(int target)
         {
-            Debug.Assert(target > doc);
+            if (Debugging.AssertsEnabled) Debugging.Assert(target > doc);
             while (true)
             {
                 if (current != null)
@@ -183,15 +171,9 @@ namespace YAF.Lucene.Net.Index
             return current.NextPosition();
         }
 
-        public override int StartOffset
-        {
-            get { return current.StartOffset; }
-        }
+        public override int StartOffset => current.StartOffset;
 
-        public override int EndOffset
-        {
-            get { return current.EndOffset; }
-        }
+        public override int EndOffset => current.EndOffset;
 
         public override BytesRef GetPayload()
         {

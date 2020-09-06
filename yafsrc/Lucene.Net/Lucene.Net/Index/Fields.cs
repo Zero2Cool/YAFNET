@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Support;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -97,6 +98,6 @@ namespace YAF.Lucene.Net.Index
         /// <summary>
         /// Zero-length <see cref="Fields"/> array.
         /// </summary>
-        public static readonly Fields[] EMPTY_ARRAY = new Fields[0];
+        public static readonly Fields[] EMPTY_ARRAY = Arrays.Empty<Fields>();
     }
 }

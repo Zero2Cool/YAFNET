@@ -34,7 +34,6 @@ namespace YAF.Controls
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
-    using YAF.Core.Services;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -144,19 +143,11 @@ namespace YAF.Controls
 
             if (activeHidden > 0 && this.PageContext.IsAdmin)
             {
-                // vzrus: was temporary left as is, only admins can view hidden users online, why not everyone?
-                if (activeHidden > 0 && this.PageContext.IsAdmin)
-                {
-                    sb.AppendFormat(
-                        ", <a href=\"{1}\" title=\"{2}\">{0}</a>",
-                        this.GetTextFormatted("ACTIVE_USERS_HIDDEN", activeHidden),
-                        BuildLink.GetLink(ForumPages.ActiveUsers, "v={0}", 3),
-                        this.GetText("COMMON", "VIEW_FULLINFO"));
-                }
-                else
-                {
-                    sb.Append($", {this.GetTextFormatted("ACTIVE_USERS_HIDDEN", activeHidden)}");
-                }
+                sb.AppendFormat(
+                    ", <a href=\"{1}\" title=\"{2}\">{0}</a>",
+                    this.GetTextFormatted("ACTIVE_USERS_HIDDEN", activeHidden),
+                    BuildLink.GetLink(ForumPages.ActiveUsers, "v={0}", 3),
+                    this.GetText("COMMON", "VIEW_FULLINFO"));
             }
 
             sb.Append($" {this.GetTextFormatted("ACTIVE_USERS_TIME", this.Get<BoardSettings>().ActiveListTime)}");
@@ -178,9 +169,11 @@ namespace YAF.Controls
             // Active users : Call this before forum_stats to clean up active users
             var activeUsers = this.Get<IDataCache>().GetOrSet(
                 Constants.Cache.UsersOnlineStatus,
-                () => this.Get<DataBroker>().GetActiveList(
+                () => this.GetRepository<Active>().ListAsDataTable(
                     false,
-                    this.Get<BoardSettings>().ShowCrawlersInActiveList),
+                    this.Get<BoardSettings>().ShowCrawlersInActiveList,
+                    this.Get<BoardSettings>().ActiveListTime,
+                    this.Get<BoardSettings>().UseStyledNicks),
                 TimeSpan.FromMilliseconds(this.Get<BoardSettings>().OnlineStatusCacheTimeout));
 
             this.ActiveUsers1.ActiveUserTable = activeUsers;
@@ -194,14 +187,16 @@ namespace YAF.Controls
             if (this.Get<BoardSettings>().ShowRecentUsers)
             {
                 var activeUsers30Day = this.Get<IDataCache>().GetOrSet(
-                    Constants.Cache.VisitorsInTheLast30Days,
-                    () => this.Get<DataBroker>().GetRecentUsers(60 * 24 * 30),
-                    TimeSpan.FromMinutes(this.Get<BoardSettings>().ForumStatisticsCacheTimeout));
+                     Constants.Cache.VisitorsInTheLast30Days,
+                     () => this.GetRepository<User>().GetRecentUsersAsDataTable(
+                         60 * 24 * 30,
+                         this.Get<BoardSettings>().UseStyledNicks),
+                     TimeSpan.FromMinutes(this.Get<BoardSettings>().ForumStatisticsCacheTimeout));
 
                 if (activeUsers30Day != null && activeUsers30Day.HasRows())
                 {
                     var activeUsers1Day1 = activeUsers30Day.Select(
-                        $"LastVisit >= #{System.DateTime.UtcNow.AddDays(-1).ToString(CultureInfo.InvariantCulture)}#");
+                        $"LastVisit >= #{DateTime.UtcNow.AddDays(-1).ToString(CultureInfo.InvariantCulture)}#");
 
                     this.RecentUsersCount.Text = this.GetTextFormatted(
                         "RECENT_ONLINE_USERS",
@@ -248,7 +243,7 @@ namespace YAF.Controls
                 this.MostUsersCount.Text = this.GetTextFormatted(
                     "MAX_ONLINE",
                     activeStats["ActiveUsers"],
-                    this.Get<IDateTime>().FormatDateTimeTopic(System.DateTime.UtcNow));
+                    this.Get<IDateTime>().FormatDateTimeTopic(DateTime.UtcNow));
             }
         }
 

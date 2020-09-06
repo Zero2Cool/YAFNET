@@ -1,10 +1,11 @@
 ﻿using J2N;
 using YAF.Lucene.Net.Analysis.TokenAttributes;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Store;
 using YAF.Lucene.Net.Util;
 using YAF.Lucene.Net.Util.Fst;
 using System;
-using System.Diagnostics;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Analysis.Synonym
 {
@@ -175,7 +176,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
 
             public virtual CharsRef PullNext()
             {
-                Debug.Assert(upto < count);
+                if (Debugging.AssertsEnabled) Debugging.Assert(upto < count);
                 lastEndOffset = endOffsets[upto];
                 lastPosLength = posLengths[upto];
                 CharsRef result = outputs[upto++];
@@ -187,21 +188,9 @@ namespace YAF.Lucene.Net.Analysis.Synonym
                 return result;
             }
 
-            public virtual int LastEndOffset
-            {
-                get
-                {
-                    return lastEndOffset;
-                }
-            }
+            public virtual int LastEndOffset => lastEndOffset;
 
-            public virtual int LastPosLength
-            {
-                get
-                {
-                    return lastPosLength;
-                }
-            }
+            public virtual int LastPosLength => lastPosLength;
 
             public virtual void Add(char[] output, int offset, int len, int endOffset, int posLength)
             {
@@ -264,9 +253,10 @@ namespace YAF.Lucene.Net.Analysis.Synonym
 
         /// <param name="input"> input tokenstream </param>
         /// <param name="synonyms"> synonym map </param>
-        /// <param name="ignoreCase"> case-folds input for matching with <see cref="Character.ToLower(int)"/>.
-        ///                   Note, if you set this to true, its your responsibility to lowercase
-        ///                   the input entries when you create the <see cref="SynonymMap"/> </param>
+        /// <param name="ignoreCase"> case-folds input for matching with <see cref="Character.ToLower(int, CultureInfo)"/>
+        ///                   in using <see cref="CultureInfo.InvariantCulture"/>.
+        ///                   Note, if you set this to <c>true</c>, its your responsibility to lowercase
+        ///                   the input entries when you create the <see cref="SynonymMap"/>.</param>
         public SynonymFilter(TokenStream input, SynonymMap synonyms, bool ignoreCase) 
             : base(input)
         {
@@ -281,7 +271,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
             this.fst = synonyms.Fst;
             if (fst == null)
             {
-                throw new System.ArgumentException("fst must be non-null");
+                throw new ArgumentException("fst must be non-null");
             }
             this.fstReader = fst.GetBytesReader();
 
@@ -316,7 +306,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
             nextWrite = RollIncr(nextWrite);
 
             // Buffer head should never catch up to tail:
-            Debug.Assert(nextWrite != nextRead);
+            if (Debugging.AssertsEnabled) Debugging.Assert(nextWrite != nextRead);
         }
 
         /*
@@ -335,7 +325,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
         {
             //System.out.println("\nS: parse");
 
-            Debug.Assert(inputSkipCount == 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(inputSkipCount == 0);
 
             int curNextRead = nextRead;
 
@@ -347,7 +337,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
             BytesRef pendingOutput = fst.Outputs.NoOutput;
             fst.GetFirstArc(scratchArc);
 
-            Debug.Assert(scratchArc.Output == fst.Outputs.NoOutput);
+            if (Debugging.AssertsEnabled) Debugging.Assert(scratchArc.Output == fst.Outputs.NoOutput);
 
             int tokenCount = 0;
 
@@ -374,7 +364,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
                     else
                     {
                         //System.out.println("  input.incrToken");
-                        Debug.Assert(futureInputs[nextWrite].consumed);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(futureInputs[nextWrite].consumed);
                         // Not correct: a syn match whose output is longer
                         // than its input can set future inputs keepOrig
                         // to true:
@@ -423,7 +413,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
                 while (bufUpto < bufferLen)
                 {
                     int codePoint = Character.CodePointAt(buffer, bufUpto, bufferLen);
-                    if (fst.FindTargetArc(ignoreCase ? Character.ToLower(codePoint) : codePoint, scratchArc, scratchArc, fstReader) == null)
+                    if (fst.FindTargetArc(ignoreCase ? Character.ToLower(codePoint, CultureInfo.InvariantCulture) : codePoint, scratchArc, scratchArc, fstReader) == null)
                     {
                         //System.out.println("    stop");
                         goto byTokenBreak;
@@ -490,7 +480,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
             }
             else
             {
-                Debug.Assert(finished);
+                if (Debugging.AssertsEnabled) Debugging.Assert(finished);
             }
 
             //System.out.println("  parse done inputSkipCount=" + inputSkipCount + " nextRead=" + nextRead + " nextWrite=" + nextWrite);
@@ -520,7 +510,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
                         int outputLen = chIDX - lastStart;
                         // Caller is not allowed to have empty string in
                         // the output:
-                        Debug.Assert(outputLen > 0, "output contains empty string: " + scratchChars);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(outputLen > 0, () => "output contains empty string: " + scratchChars);
                         int endOffset;
                         int posLen;
                         if (chIDX == chEnd && lastStart == scratchChars.Offset)
@@ -546,7 +536,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
                         lastStart = 1 + chIDX;
                         //System.out.println("  slot=" + outputUpto + " keepOrig=" + keepOrig);
                         outputUpto = RollIncr(outputUpto);
-                        Debug.Assert(futureOutputs[outputUpto].posIncr == 1, "outputUpto=" + outputUpto + " vs nextWrite=" + nextWrite);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(futureOutputs[outputUpto].posIncr == 1, () => "outputUpto=" + outputUpto + " vs nextWrite=" + nextWrite);
                     }
                 }
             }
@@ -575,13 +565,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
         }
 
         // for testing
-        internal int CaptureCount
-        {
-            get
-            {
-                return captureCount;
-            }
-        }
+        internal int CaptureCount => captureCount;
 
         public override bool IncrementToken()
         {
@@ -618,7 +602,7 @@ namespace YAF.Lucene.Net.Analysis.Synonym
                         {
                             // Pass-through case: return token we just pulled
                             // but didn't capture:
-                            Debug.Assert(inputSkipCount == 1, "inputSkipCount=" + inputSkipCount + " nextRead=" + nextRead);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(inputSkipCount == 1, () => "inputSkipCount=" + inputSkipCount + " nextRead=" + nextRead);
                         }
                         input.Reset();
                         if (outputs.count > 0)

@@ -5,45 +5,40 @@
 
 
 <%@ Import Namespace="YAF.Types.Interfaces" %>
+<%@ Import Namespace="YAF.Types.Extensions" %>
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
-    <div class="row">
-        <div class="col-xl-12">
-            <h1><YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" 
-                                    LocalizedTag="TITLE" 
-                                    LocalizedPage="ADMIN_EDITMEDAL" /></h1>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-xl-12">
+<div class="row">
+    <div class="col-xl-12">
             <div class="card mb-3">
                 <div class="card-header">
                     <YAF:IconHeader runat="server"
-                                    IconName="trophy"
+                                    IconName="medal"
                                     LocalizedPage="ADMIN_EDITMEDAL"></YAF:IconHeader>
                 </div>
                 <div class="card-body">
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
                             <YAF:HelpLabel ID="HelpLabel1" runat="server" 
                                            AssociatedControlID="Name"
                                            LocalizedTag="MEDAL_NAME" LocalizedPage="ADMIN_EDITMEDAL" />
-                            <asp:TextBox ID="Name" runat="server" MaxLength="100" CssClass="form-control"  />
-                            <asp:RequiredFieldValidator runat="server" 
-                                                        ControlToValidate="Name" 
-                                                        Display="Dynamic"
-                                                        ValidationGroup="Medal" 
-                                                        Text="Required"
-                                                        CssClass="form-text text-muted"/>
+                            <asp:TextBox ID="Name" runat="server" 
+                                         MaxLength="100" 
+                                         CssClass="form-control"
+                                         required="required" />
+                            <div class="invalid-feedback">
+                                <YAF:LocalizedLabel runat="server"
+                                                    LocalizedTag="MSG_NAME" />
+                            </div>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="mb-3 col-md-6">
                             <YAF:HelpLabel ID="HelpLabel4" runat="server"
                                            AssociatedControlID="Category"
                                            LocalizedTag="MEDAL_CATEGORY" LocalizedPage="ADMIN_EDITMEDAL" />
                             <asp:TextBox  ID="Category" MaxLength="50" CssClass="form-control"  runat="server" />
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <YAF:HelpLabel ID="HelpLabel2" runat="server" 
                                        AssociatedControlID="Description" 
                                        LocalizedTag="MEDAL_DESC" LocalizedPage="ADMIN_EDITMEDAL" />
@@ -53,124 +48,97 @@
                                      TextMode="MultiLine" 
                                      CssClass="form-control"
                                      Height="100" />
-                        <asp:RequiredFieldValidator runat="server" 
-                                                    ControlToValidate="Description" 
-                                                    Display="Dynamic"
-                                                    ValidationGroup="Medal" 
-                                                    Text="Required"
-                                                    CssClass="form-text text-muted"/>
                     </div>
-                    <div class="form-group">
-                        <YAF:HelpLabel ID="HelpLabel9" runat="server"
-                                       AssociatedControlID="SortOrder"
-                                       LocalizedTag="SORT_ORDER" LocalizedPage="ADMIN_EDITMEDAL" />
-                        <asp:TextBox ID="SortOrder" runat="server" 
-                                     CssClass="form-control" 
-                                     TextMode="Number"
-                                     MaxLength="5"/>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
                             <YAF:HelpLabel ID="HelpLabel3" runat="server"
                                            AssociatedControlID="Message"
                                            LocalizedTag="MEDAL_MESSAGE" LocalizedPage="ADMIN_EDITMEDAL" />
-                            <asp:TextBox  ID="Message" runat="server" MaxLength="100" CssClass="form-control"  />
-                            <asp:RequiredFieldValidator runat="server" ControlToValidate="Message" Display="Dynamic"
-                                                        ValidationGroup="Medal" Text="Required" />
+                            <asp:TextBox  ID="Message" runat="server" 
+                                          MaxLength="100" 
+                                          CssClass="form-control" />
                         </div>
-                        <div class="form-group col-md-4">
+                        <div class="mb-3 col-md-4">
                             <YAF:HelpLabel ID="HelpLabel10" runat="server"
                                            AssociatedControlID="ShowMessage"
                                            LocalizedTag="SHOW_MESSAGE" LocalizedPage="ADMIN_EDITMEDAL" />
              
-                            <div class="custom-control custom-switch">
+                            <div class="form-check form-switch">
                                 <asp:CheckBox ID="ShowMessage" runat="server" Checked="true" Text="&nbsp;" />
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <YAF:HelpLabel ID="HelpLabel5" runat="server"
                                        AssociatedControlID="MedalImage"
                                        LocalizedTag="MEDAL_IMAGE" LocalizedPage="ADMIN_EDITMEDAL" />
-                        <img style="vertical-align: top;" runat="server" id="MedalPreview" alt="Preview" />
-                        <asp:DropDownList CssClass="custom-select" ID="MedalImage" runat="server" alt="Preview" />
+                        <YAF:ImageListBox ID="MedalImage" runat="server" CssClass="select2-image-select" />
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <YAF:HelpLabel ID="HelpLabel6" runat="server"
                                        AssociatedControlID="RibbonImage"
                                        LocalizedTag="RIBBON_IMAGE" LocalizedPage="ADMIN_EDITMEDAL" />
-                        <img style="vertical-align: top;" runat="server" id="RibbonPreview" alt="Preview" />
-                        <asp:DropDownList CssClass="custom-select" ID="RibbonImage" runat="server" />
+                        <YAF:ImageListBox ID="RibbonImage" runat="server" CssClass="select2-image-select" />
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <YAF:HelpLabel ID="HelpLabel7" runat="server"
                                        AssociatedControlID="SmallMedalImage"
                                        LocalizedTag="SMALL_IMAGE" LocalizedPage="ADMIN_EDITMEDAL" />
-                        <img style="vertical-align: top;" runat="server" id="SmallMedalPreview" alt="Preview" />
-                        <asp:DropDownList ID="SmallMedalImage" runat="server" CssClass="custom-select" />
+                        <YAF:ImageListBox ID="SmallMedalImage" runat="server" CssClass="select2-image-select" />
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <YAF:HelpLabel ID="HelpLabel8" runat="server"
                                        AssociatedControlID="SmallRibbonImage"
                                        LocalizedTag="SMALL_RIBBON" LocalizedPage="ADMIN_EDITMEDAL" />
-                        <img style="vertical-align: top;" runat="server" id="SmallRibbonPreview" alt="Preview" />
-                        <asp:DropDownList ID="SmallRibbonImage" runat="server" CssClass="custom-select" />
+                        <YAF:ImageListBox ID="SmallRibbonImage" runat="server" CssClass="select2-image-select" />
                     </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
+                    <div class="row">
+                        <div class="mb-3 col-md-4">
                             <YAF:HelpLabel ID="HelpLabel11" runat="server"
                                            AssociatedControlID="AllowRibbon"
                                            LocalizedTag="ALLOW_RIBBON" LocalizedPage="ADMIN_EDITMEDAL" />
-                            <div class="custom-control custom-switch">
+                            <div class="form-check form-switch">
                                 <asp:CheckBox ID="AllowRibbon" runat="server" 
                                               Checked="true" 
                                               Text="&nbsp;" />
                             </div> 
                         </div>
-                        <div class="form-group col-md-4">
+                        <div class="mb-3 col-md-4">
                             <YAF:HelpLabel ID="HelpLabel12" runat="server"
                                            AssociatedControlID="AllowHiding"
                                            LocalizedTag="ALLOW_HIDING" LocalizedPage="ADMIN_EDITMEDAL" />
-                            <div class="custom-control custom-switch">
+                            <div class="form-check form-switch">
                                 <asp:CheckBox ID="AllowHiding" runat="server"
-                                              AssociatedControlID=""
                                               Checked="true" 
                                               Text="&nbsp;" />
                             </div> 
                         </div>
-                        <div class="form-group col-md-4">
-                            <YAF:HelpLabel ID="HelpLabel13" runat="server"
-                                           AssociatedControlID="AllowReOrdering"
-                                           LocalizedTag="ALLOW_REORDER" LocalizedPage="ADMIN_EDITMEDAL" />
-                            <div class="custom-control custom-switch">
-                                <asp:CheckBox ID="AllowReOrdering" runat="server" 
-                                              Checked="true" 
-                                              Text="&nbsp;" />
-                            </div>
-                        </div>
                     </div>
                 </div>
                 <div class="card-footer text-center">
-				<YAF:ThemeButton ID="Save" runat="server" 
-                                 OnClick="SaveClick" 
-                                 Type="Primary"            
-				                 Icon="save" 
-                                 TextLocalizedTag="SAVE" />&nbsp;
-				<YAF:ThemeButton ID="Cancel" runat="server" 
-                                 OnClick="CancelClick" 
-                                 Type="Secondary"
-				                 Icon="times" 
-                                 TextLocalizedTag="CANCEL" />
+                    <YAF:ThemeButton ID="Save" runat="server" 
+                                     CssClass="mr-2"
+                                     OnClick="SaveClick" 
+                                     CausesValidation="True"
+                                     Type="Primary" 
+                                     Icon="save" 
+                                     TextLocalizedTag="SAVE" />
+                    <YAF:ThemeButton ID="Cancel" runat="server" 
+                                     OnClick="CancelClick" 
+                                     Type="Secondary"
+                                     Icon="times" 
+                                     TextLocalizedTag="CANCEL" />
                 </div>
             </div>
-        </div>
     </div>
-    <div class="row">
+</div>
+<asp:PlaceHolder runat="server" ID="UserAndGroupsHolder">
+<div class="row">
         <div class="col-xl-12">
             <div class="card mb-3">
                 <div class="card-header">
                     <YAF:IconHeader runat="server"
-                                    IconName="trophy"
+                                    IconName="medal"
                                     LocalizedTag="HEADER2" 
                                     LocalizedPage="ADMIN_EDITMEDAL"></YAF:IconHeader>
                 </div>
@@ -193,7 +161,7 @@
                                             LocalizedTag="MESSAGE" 
                                             LocalizedPage="COMMON" />
                     </span>
-                    <%# this.Eval("Message") %>
+                    <%# this.Eval("Item2.Message").ToString().IsSet() ? this.Eval("Item2.Message") :  this.Eval("Item1.Message")%>
                 </p>
                 <small>
                     <div class="btn-group btn-group-sm">
@@ -201,7 +169,7 @@
                                          Type="Info" 
                                          Size="Small"
                                          CommandName="edit" 
-                                         CommandArgument='<%# this.Eval( "GroupID") %>'
+                                         CommandArgument='<%# this.Eval( "Item2.GroupID") %>'
                                          TitleLocalizedTag="EDIT"
                                          Icon="edit"
                                          TextLocalizedTag="EDIT">
@@ -210,7 +178,7 @@
                                          Type="Danger" 
                                          Size="Small"
                                          CommandName="delete" 
-                                         CommandArgument='<%# this.Eval( "GroupID") %>'
+                                         CommandArgument='<%# this.Eval( "Item2.GroupID") %>'
                                          TitleLocalizedTag="REMOVE"
                                          Icon="trash"
                                          TextLocalizedTag="REMOVE"
@@ -223,7 +191,7 @@
                                          Type="None" 
                                          CssClass="dropdown-item"
                                          CommandName="edit" 
-                                         CommandArgument='<%# this.Eval( "GroupID") %>'
+                                         CommandArgument='<%# this.Eval( "Item2.GroupID") %>'
                                          TitleLocalizedTag="EDIT"
                                          Icon="edit"
                                          TextLocalizedTag="EDIT">
@@ -232,7 +200,7 @@
                                          Type="None" 
                                          CssClass="dropdown-item"
                                          CommandName="delete" 
-                                         CommandArgument='<%# this.Eval( "GroupID") %>'
+                                         CommandArgument='<%# this.Eval( "Item2.GroupID") %>'
                                          TitleLocalizedTag="REMOVE"
                                          Icon="trash"
                                          TextLocalizedTag="REMOVE"
@@ -272,7 +240,7 @@
             <div class="card mb-3">
                 <div class="card-header">
                     <YAF:IconHeader runat="server"
-                                    IconName="trophy"
+                                    IconName="medal"
                                     LocalizedTag="HEADER3" 
                                     LocalizedPage="ADMIN_EDITMEDAL"></YAF:IconHeader>
                     </div>
@@ -293,7 +261,7 @@
                                                 LocalizedTag="DATE_AWARDED" 
                                                 LocalizedPage="ADMIN_EDITMEDAL" />:
                         </span>
-                        <%# this.Get<IDateTime>().FormatDateTimeTopic((DateTime)this.Eval("DateAwarded")) %>
+                        <%# this.Get<IDateTime>().FormatDateTimeTopic((DateTime)this.Eval("Item2.DateAwarded")) %>
                     </small>
                 </div>
                 <p class="mb-1">
@@ -302,13 +270,13 @@
                                             LocalizedTag="MESSAGE" 
                                             LocalizedPage="COMMON" />
                     </span>
-                    <%# this.Eval("Message") %>
+                    <%# this.Eval("Item2.Message").ToString().IsSet() ? this.Eval("Item2.Message") :  this.Eval("Item1.Message")%>
                 </p>
                 <small>
                     <div class="btn-group btn-group-sm">
                         <YAF:ThemeButton runat="server" 
                                          CommandName="edit" 
-                                         CommandArgument='<%# this.Eval("UserID") %>' 
+                                         CommandArgument='<%# this.Eval("Item2.UserID") %>' 
                                          TextLocalizedTag="EDIT"
                                          Type="Info" 
                                          Size="Small"
@@ -316,7 +284,7 @@
                         </YAF:ThemeButton>
                         <YAF:ThemeButton runat="server" 
                                          CommandName="remove" 
-                                         CommandArgument='<%# this.Eval("UserID") %>' 
+                                         CommandArgument='<%# this.Eval("Item2.UserID") %>' 
                                          TextLocalizedTag="REMOVE"
                                          Type="Danger" 
                                          Size="Small"
@@ -327,7 +295,7 @@
                     <div class="dropdown-menu context-menu" aria-labelledby="context menu">
                         <YAF:ThemeButton runat="server" 
                                          CommandName="edit" 
-                                         CommandArgument='<%# this.Eval("UserID") %>' 
+                                         CommandArgument='<%# this.Eval("Item2.UserID") %>' 
                                          TextLocalizedTag="EDIT"
                                          Type="None" 
                                          CssClass="dropdown-item"
@@ -335,7 +303,7 @@
                         </YAF:ThemeButton>
                         <YAF:ThemeButton runat="server" 
                                          CommandName="remove" 
-                                         CommandArgument='<%# this.Eval("UserID") %>' 
+                                         CommandArgument='<%# this.Eval("Item2.UserID") %>' 
                                          TextLocalizedTag="REMOVE"
                                          Type="None" 
                                          CssClass="dropdown-item"
@@ -374,3 +342,4 @@
 
 <modal:GroupEdit ID="GroupEditDialog" runat="server" />
 <modal:UserEdit ID="UserEditDialog" runat="server" />
+</asp:PlaceHolder>

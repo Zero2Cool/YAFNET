@@ -1,8 +1,8 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Codecs.Lucene45
@@ -429,7 +429,12 @@ namespace YAF.Lucene.Net.Codecs.Lucene45
 
         private static bool IsSingleValued(IEnumerable<long?> docToOrdCount)
         {
-            return docToOrdCount.All(ordCount => ordCount <= 1);
+            foreach (var ordCount in docToOrdCount)
+            {
+                if (ordCount.GetValueOrDefault() > 1)
+                    return false;
+            }
+            return true;
         }
 
         public override void AddSortedSetField(FieldInfo field, IEnumerable<BytesRef> values, IEnumerable<long?> docToOrdCount, IEnumerable<long?> ords)
@@ -490,13 +495,13 @@ namespace YAF.Lucene.Net.Codecs.Lucene45
                 }
                 else
                 {
-                    Debug.Assert(current == 1);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(current == 1);
                     ordsIter.MoveNext();
                     yield return ordsIter.Current;
                 }
             }
 
-            Debug.Assert(!ordsIter.MoveNext());
+            if (Debugging.AssertsEnabled) Debugging.Assert(!ordsIter.MoveNext());
         }
 
         protected override void Dispose(bool disposing)

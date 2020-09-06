@@ -36,7 +36,6 @@ namespace YAF.Web.Controls
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Utils;
-    using YAF.Utils.Helpers;
     using YAF.Web.EventsArgs;
 
     #endregion
@@ -88,16 +87,6 @@ namespace YAF.Web.Controls
         }
 
         /// <summary>
-        ///   Gets or sets LinkedPager.
-        /// </summary>
-        public string LinkedPager
-        {
-            get => (string)this.ViewState["LinkedPager"];
-
-            set => this.ViewState["LinkedPager"] = value;
-        }
-
-        /// <summary>
         ///   Gets or sets PageSize.
         /// </summary>
         public int PageSize
@@ -111,30 +100,6 @@ namespace YAF.Web.Controls
         ///   Gets or sets a value indicating whether UsePostBack.
         /// </summary>
         public bool UsePostBack { get; set; } = true;
-
-        /// <summary>
-        ///   Gets the Current Linked Pager.
-        /// </summary>
-        [CanBeNull]
-        protected Pager CurrentLinkedPager
-        {
-            get
-            {
-                if (this.LinkedPager == null)
-                {
-                    return null;
-                }
-
-                var linkedPager = this.Parent.FindControlAs<Pager>(this.LinkedPager);
-
-                if (linkedPager == null)
-                {
-                    throw new Exception($"Failed to link pager to '{this.LinkedPager}'.");
-                }
-
-                return linkedPager;
-            }
-        }
 
         #endregion
 
@@ -150,17 +115,14 @@ namespace YAF.Web.Controls
         /// </param>
         public void RaisePostBackEvent([NotNull] string eventArgument)
         {
-            if (this.LinkedPager != null)
+            if (this.PageChange == null)
             {
-                // raise post back event on the linked pager...
-                this.CurrentLinkedPager.RaisePostBackEvent(eventArgument);
+                return;
             }
-            else if (this.PageChange != null)
-            {
-                this.CurrentPageIndex = int.Parse(eventArgument) - 1;
-                this.ignorePageIndex = true;
-                this.PageChange(this, new EventArgs());
-            }
+
+            this.CurrentPageIndex = int.Parse(eventArgument) - 1;
+            this.ignorePageIndex = true;
+            this.PageChange(this, new EventArgs());
         }
 
         #endregion
@@ -168,17 +130,6 @@ namespace YAF.Web.Controls
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Copies the pager settings.
-        /// </summary>
-        /// <param name="toPager">To pager.</param>
-        protected void CopyPagerSettings([NotNull] Pager toPager)
-        {
-            toPager.Count = this.Count;
-            toPager.CurrentPageIndex = this.CurrentPageIndex;
-            toPager.PageSize = this.PageSize;
-        }
 
         /// <summary>
         /// Gets the page URL.
@@ -189,34 +140,34 @@ namespace YAF.Web.Controls
         /// </returns>
         protected string GetPageUrl(int page)
         {
-            var url = string.Empty;
-
-            switch (this.PageContext.ForumPageType)
+            var url = this.PageContext.ForumPageType switch
             {
-                case ForumPages.topics:
-                    url = page > 1
-                              ? BuildLink.GetLinkNotEscaped(
-                                  ForumPages.topics,
-                                  "f={0}&p={1}",
-                                  this.PageContext.PageForumID,
-                                  page)
-                              : BuildLink.GetLinkNotEscaped(
-                                  ForumPages.topics,
-                                  "f={0}",
-                                  this.PageContext.PageForumID);
-
-                    break;
-                case ForumPages.Posts:
-                    url = page > 1
-                              ? BuildLink.GetLinkNotEscaped(
-                                  ForumPages.Posts,
-                                  "t={0}&p={1}",
-                                  this.PageContext.PageTopicID,
-                                  page)
-                              : BuildLink.GetLinkNotEscaped(ForumPages.Posts, "t={0}", this.PageContext.PageTopicID);
-
-                    break;
-            }
+                ForumPages.Topics => page > 1
+                    ? BuildLink.GetLink(
+                        ForumPages.Topics,
+                        "f={0}&p={1}&name={2}",
+                        this.PageContext.PageForumID,
+                        page,
+                        this.PageContext.PageForumName)
+                    : BuildLink.GetLink(
+                        ForumPages.Topics,
+                        "f={0}&name={1}",
+                        this.PageContext.PageForumID,
+                        this.PageContext.PageForumName),
+                ForumPages.Posts => page > 1
+                    ? BuildLink.GetLink(
+                        ForumPages.Posts,
+                        "t={0}&p={1}&name={2}",
+                        this.PageContext.PageTopicID,
+                        page,
+                        this.PageContext.PageTopicName)
+                    : BuildLink.GetLink(
+                        ForumPages.Posts,
+                        "t={0}&name={1}",
+                        this.PageContext.PageTopicID,
+                        this.PageContext.PageTopicName),
+                _ => string.Empty
+            };
 
             return url;
         }
@@ -252,22 +203,16 @@ namespace YAF.Web.Controls
         /// </param>
         protected override void Render([NotNull] HtmlTextWriter output)
         {
-            if (this.LinkedPager != null)
-            {
-                // just copy the linked pager settings but still render in this function...
-                this.CurrentLinkedPager.CopyPagerSettings(this);
-            }
-
             if (this.PageCount() < 2)
             {
                 return;
             }
 
-            output.Write(@"<div class=""btn-toolbar pagination mt-1"" role=""toolbar"">");
+            output.Write(@"<div class=""btn-toolbar pagination"" role=""toolbar"">");
 
             output.WriteLine(
-                @"<div class=""btn-group mt-1"" role=""group"">
-                      <button type=""button"" title=""{0}"" class=""btn btn-secondary dropdown-toggle mb-1"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""false"">
+                @"<div class=""btn-group mr-2 mb-1"" role=""group"">
+                      <button type=""button"" title=""{0}"" class=""btn btn-secondary dropdown-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""false"">
                           <i class=""fas fa-copy""></i>&nbsp;{1:N0} {2}
                       </button>",
                 this.Get<ILocalization>().TransPage.IsSet()
@@ -279,7 +224,7 @@ namespace YAF.Web.Controls
             output.Write(@"<div class=""dropdown-menu"">");
 
             output.Write(@"<div class=""px-3 py-1"">");
-            output.Write(@"<div class=""form-group"">");
+            output.Write(@"<div class=""mb-3"">");
 
             this.gotoPageForm.RenderControl(output);
 
@@ -288,7 +233,7 @@ namespace YAF.Web.Controls
             output.Write("</div>");
             output.Write("</div>");
 
-            output.Write(@"<div class=""btn-group mt-1"" role=""group"">");
+            output.Write(@"<div class=""btn-group mb-1"" role=""group"">");
 
             this.OutputLinks(output, this.UsePostBack);
 
@@ -426,15 +371,7 @@ namespace YAF.Web.Controls
                 this.ignorePageIndex = true;
             }
 
-            if (this.LinkedPager != null)
-            {
-                // raise post back event on the linked pager...
-                this.CurrentLinkedPager.GotoPageClick(sender, e);
-            }
-            else
-            {
-                this.PageChange?.Invoke(this, new EventArgs());
-            }
+            this.PageChange?.Invoke(this, new EventArgs());
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using YAF.Lucene.Net.Util.Mutable;
 using System;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Queries.Function.DocValues
 {
@@ -74,9 +75,9 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
             return (double)SingleVal(doc);
         }
 
-        public override string StrVal(int doc) // LUCENENET TODO: API - Add overload to include CultureInfo ?
+        public override string StrVal(int doc)
         {
-            return Convert.ToString(SingleVal(doc));
+            return SingleVal(doc).ToString("R", CultureInfo.InvariantCulture);
         }
 
         public override object ObjectVal(int doc)
@@ -91,34 +92,11 @@ namespace YAF.Lucene.Net.Queries.Function.DocValues
 
         public override ValueFiller GetValueFiller()
         {
-            return new ValueFillerAnonymousInnerClassHelper(this);
-        }
-
-        private class ValueFillerAnonymousInnerClassHelper : ValueFiller
-        {
-            private readonly SingleDocValues outerInstance;
-
-            public ValueFillerAnonymousInnerClassHelper(SingleDocValues outerInstance)
+            return new ValueFiller.AnonymousValueFiller<MutableValueSingle>(new MutableValueSingle(), fillValue: (doc, mutableValue) =>
             {
-                this.outerInstance = outerInstance;
-                mval = new MutableValueSingle();
-            }
-
-            private readonly MutableValueSingle mval;
-
-            public override MutableValue Value
-            {
-                get
-                {
-                    return mval;
-                }
-            }
-
-            public override void FillValue(int doc)
-            {
-                mval.Value = outerInstance.SingleVal(doc);
-                mval.Exists = outerInstance.Exists(doc);
-            }
+                mutableValue.Value = SingleVal(doc);
+                mutableValue.Exists = Exists(doc);
+            });
         }
     }
 }

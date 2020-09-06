@@ -37,13 +37,15 @@ namespace YAF.Pages.Admin
     using YAF.Configuration;
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Utils;
+    using YAF.Utils.Helpers;
+    using YAF.Web.Controls;
     using YAF.Web.Extensions;
 
     #endregion
@@ -62,8 +64,7 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void DeleteAllClick([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.GetRepository<Types.Models.EventLog>()
-                .DeleteByUser(this.PageContext.PageUserID, this.PageContext.PageBoardID);
+            this.GetRepository<Types.Models.EventLog>().DeleteAll();
 
             // re-bind controls
             this.BindData();
@@ -155,7 +156,10 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            this.PagerTop.PageSize = 25;
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
 
             var ci = this.Get<ILocalization>().Culture;
 
@@ -186,8 +190,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // administration index second
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("ADMIN_SPAMLOG", "TITLE"), string.Empty);
 
@@ -216,11 +219,52 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.BindData();
+        }
+
+        /// <summary>
+        /// Renders the UserLink
+        /// </summary>
+        /// <param name="dataRow">The data row.</param>
+        /// <returns></returns>
+        protected string UserLink([NotNull] object dataRow)
+        {
+            // cast object to the DataRowView
+            var row = (DataRowView)dataRow;
+
+
+            if (row["UserID"].IsNullOrEmptyDBField())
+            {
+                return row["Name"].ToString();
+            }
+
+            var userLink = new UserLink
+            {
+                UserID = row["UserID"].ToType<int>(),
+                Suspended = row["Suspended"].ToType<DateTime?>(),
+                Style = row["Style"].ToString(),
+                ReplaceName = row[this.Get<BoardSettings>().EnableDisplayName ? "DisplayName" : "Name"].ToString()
+            };
+
+            return userLink.RenderToString();
+        }
+
+        /// <summary>
         /// Populates data source and binds data to controls.
         /// </summary>
         private void BindData()
         {
-            var baseSize = this.Get<BoardSettings>().MemberListPageSize;
+            var baseSize = this.PageSize.SelectedValue.ToType<int>();
             var currentPageIndex = this.PagerTop.CurrentPageIndex;
             this.PagerTop.PageSize = baseSize;
 
@@ -233,7 +277,7 @@ namespace YAF.Pages.Admin
             {
                 if (this.Get<BoardSettings>().UseFarsiCalender && ci.IsFarsiCulture())
                 {
-                    var persianDate = new PersianDate(this.SinceDate.Text);
+                    var persianDate = new PersianDate(this.SinceDate.Text.PersianNumberToEnglish());
 
                     sinceDate = PersianDateConverter.ToGregorianDateTime(persianDate);
                 }
@@ -247,7 +291,7 @@ namespace YAF.Pages.Admin
             {
                 if (this.Get<BoardSettings>().UseFarsiCalender && ci.IsFarsiCulture())
                 {
-                    var persianDate = new PersianDate(this.ToDate.Text);
+                    var persianDate = new PersianDate(this.ToDate.Text.PersianNumberToEnglish());
 
                     toDate = PersianDateConverter.ToGregorianDateTime(persianDate);
                 }
@@ -259,7 +303,7 @@ namespace YAF.Pages.Admin
 
             // list event for this board
             var dt = this.GetRepository<Types.Models.EventLog>()
-                               .List(
+                               .ListAsDataTable(
                                    this.PageContext.PageUserID,
                                    this.Get<BoardSettings>().EventLogMaxMessages,
                                    this.Get<BoardSettings>().EventLogMaxDays,

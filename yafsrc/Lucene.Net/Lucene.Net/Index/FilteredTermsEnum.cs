@@ -1,3 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -32,7 +34,7 @@ namespace YAF.Lucene.Net.Index
     /// greater than all that precede it.
     /// <para/><c>Please note:</c> Consumers of this enumeration cannot
     /// call <c>Seek()</c>, it is forward only; it throws
-    /// <see cref="System.NotSupportedException"/> when a seeking method
+    /// <see cref="NotSupportedException"/> when a seeking method
     /// is called.
     /// </summary>
     public abstract class FilteredTermsEnum : TermsEnum
@@ -95,7 +97,7 @@ namespace YAF.Lucene.Net.Index
         /// <param name="startWithSeek"> start with seek </param>
         public FilteredTermsEnum(TermsEnum tenum, bool startWithSeek)
         {
-            Debug.Assert(tenum != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(tenum != null);
             this.tenum = tenum;
             doSeek = startWithSeek;
         }
@@ -142,65 +144,44 @@ namespace YAF.Lucene.Net.Index
         /// Returns the related attributes, the returned <see cref="AttributeSource"/>
         /// is shared with the delegate <see cref="TermsEnum"/>.
         /// </summary>
-        public override AttributeSource Attributes
-        {
-            get { return tenum.Attributes; }
-        }
+        public override AttributeSource Attributes => tenum.Attributes;
 
-        public override BytesRef Term
-        {
-            get { return tenum.Term; }
-        }
+        public override BytesRef Term => tenum.Term;
 
-        public override IComparer<BytesRef> Comparer
-        {
-            get
-            {
-                return tenum.Comparer;
-            }
-        }
+        public override IComparer<BytesRef> Comparer => tenum.Comparer;
 
-        public override int DocFreq
-        {
-            get { return tenum.DocFreq; }
-        }
+        public override int DocFreq => tenum.DocFreq;
 
-        public override long TotalTermFreq
-        {
-            get { return tenum.TotalTermFreq; }
-        }
+        public override long TotalTermFreq => tenum.TotalTermFreq;
 
         /// <summary>
         /// this enum does not support seeking! </summary>
-        /// <exception cref="System.NotSupportedException"> In general, subclasses do not
+        /// <exception cref="NotSupportedException"> In general, subclasses do not
         ///         support seeking. </exception>
         public override bool SeekExact(BytesRef term)
         {
-            throw new System.NotSupportedException(this.GetType().Name + " does not support seeking");
+            throw new NotSupportedException(this.GetType().Name + " does not support seeking");
         }
 
         /// <summary>
         /// this enum does not support seeking! </summary>
-        /// <exception cref="System.NotSupportedException"> In general, subclasses do not
+        /// <exception cref="NotSupportedException"> In general, subclasses do not
         ///         support seeking. </exception>
         public override SeekStatus SeekCeil(BytesRef term)
         {
-            throw new System.NotSupportedException(this.GetType().Name + " does not support seeking");
+            throw new NotSupportedException(this.GetType().Name + " does not support seeking");
         }
 
         /// <summary>
         /// this enum does not support seeking! </summary>
-        /// <exception cref="System.NotSupportedException"> In general, subclasses do not
+        /// <exception cref="NotSupportedException"> In general, subclasses do not
         ///         support seeking. </exception>
         public override void SeekExact(long ord)
         {
-            throw new System.NotSupportedException(this.GetType().Name + " does not support seeking");
+            throw new NotSupportedException(this.GetType().Name + " does not support seeking");
         }
 
-        public override long Ord
-        {
-            get { return tenum.Ord; }
-        }
+        public override long Ord => tenum.Ord;
 
         public override DocsEnum Docs(IBits bits, DocsEnum reuse, DocsFlags flags)
         {
@@ -214,11 +195,11 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// this enum does not support seeking! </summary>
-        /// <exception cref="System.NotSupportedException"> In general, subclasses do not
+        /// <exception cref="NotSupportedException"> In general, subclasses do not
         ///         support seeking. </exception>
         public override void SeekExact(BytesRef term, TermState state)
         {
-            throw new System.NotSupportedException(this.GetType().Name + " does not support seeking");
+            throw new NotSupportedException(this.GetType().Name + " does not support seeking");
         }
 
         /// <summary>
@@ -226,7 +207,7 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public override TermState GetTermState()
         {
-            Debug.Assert(tenum != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(tenum != null);
             return tenum.GetTermState();
         }
 
@@ -243,7 +224,7 @@ namespace YAF.Lucene.Net.Index
                     BytesRef t = NextSeekTerm(actualTerm);
                     //System.out.println("  seek to t=" + (t == null ? "null" : t.utf8ToString()) + " tenum=" + tenum);
                     // Make sure we always seek forward:
-                    Debug.Assert(actualTerm == null || t == null || Comparer.Compare(t, actualTerm) > 0, "curTerm=" + actualTerm + " seekTerm=" + t);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(actualTerm == null || t == null || Comparer.Compare(t, actualTerm) > 0, () => "curTerm=" + actualTerm + " seekTerm=" + t);
                     if (t == null || tenum.SeekCeil(t) == SeekStatus.END)
                     {
                         // no more terms to seek to or enum exhausted

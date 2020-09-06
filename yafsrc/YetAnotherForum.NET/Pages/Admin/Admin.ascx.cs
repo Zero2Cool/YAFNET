@@ -31,26 +31,23 @@ namespace YAF.Pages.Admin
     using System.Data.SqlClient;
     using System.Linq;
     using System.Net.Mail;
-    using System.Web.Security;
     using System.Web.UI.WebControls;
 
     using FarsiLibrary.Utils;
 
-    using YAF.Classes;
     using YAF.Configuration;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Services;
-    using YAF.Core.UsersRoles;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -101,10 +98,10 @@ namespace YAF.Pages.Admin
                         var subject = this.Get<ILocalization>()
                             .GetTextFormatted("VERIFICATION_EMAIL_SUBJECT", this.Get<BoardSettings>().Name);
 
-                        verifyEmail.TemplateParams["{link}"] = BuildLink.GetLinkNotEscaped(
-                            ForumPages.Approve,
+                        verifyEmail.TemplateParams["{link}"] = BuildLink.GetLink(
+                            ForumPages.Account_Approve,
                             true,
-                            "k={0}",
+                            "code={0}",
                             checkMail.Hash);
                         verifyEmail.TemplateParams["{key}"] = checkMail.Hash;
                         verifyEmail.TemplateParams["{forumname}"] = this.Get<BoardSettings>().Name;
@@ -118,9 +115,9 @@ namespace YAF.Pages.Admin
                     }
                     else
                     {
-                        var userFound = this.Get<IUserDisplayName>().Find(commandArgument[1]).FirstOrDefault();
+                        var userFound = this.Get<IUserDisplayName>().FindUserContainsName(commandArgument[1]).FirstOrDefault();
 
-                        var user = this.Get<MembershipProvider>().GetUser(userFound.Name, false);
+                        var user = this.Get<IAspNetUsersHelper>().GetUserByName(userFound.Name);
 
                         this.Get<ISendNotification>().SendVerificationEmail(user, commandArgument[0], userFound.ID);
                     }
@@ -129,7 +126,7 @@ namespace YAF.Pages.Admin
                 case "delete":
                     if (!Config.IsAnyPortal)
                     {
-                        UserMembershipHelper.DeleteUser(e.CommandArgument.ToType<int>());
+                        this.Get<IAspNetUsersHelper>().DeleteUser(e.CommandArgument.ToType<int>());
                     }
 
                     this.GetRepository<User>().Delete(e.CommandArgument.ToType<int>());
@@ -137,7 +134,7 @@ namespace YAF.Pages.Admin
                     this.BindData();
                     break;
                 case "approve":
-                    UserMembershipHelper.ApproveUser(e.CommandArgument.ToType<int>());
+                    this.Get<IAspNetUsersHelper>().ApproveUser(e.CommandArgument.ToType<int>());
                     this.BindData();
                     break;
                 case "deleteall":
@@ -155,7 +152,7 @@ namespace YAF.Pages.Admin
 
                     if (!Config.IsAnyPortal)
                     {
-                        UserMembershipHelper.DeleteAllUnapproved(System.DateTime.UtcNow.AddDays(-daysValueAll.ToType<int>()));
+                        this.Get<IAspNetUsersHelper>().DeleteAllUnapproved(System.DateTime.UtcNow.AddDays(-daysValueAll.ToType<int>()));
                     }
                     else
                     {
@@ -165,7 +162,7 @@ namespace YAF.Pages.Admin
                     this.BindData();
                     break;
                 case "approveall":
-                    UserMembershipHelper.ApproveAll();
+                    this.Get<IAspNetUsersHelper>().ApproveAll();
 
                     // vzrus: Should delete users from send email list
                     this.GetRepository<User>().ApproveAll(this.PageContext.PageBoardID);
@@ -198,7 +195,7 @@ namespace YAF.Pages.Admin
             }
 
             return
-                $"<a target=\"_top\" href=\"{BuildLink.GetLink(ForumPages.topics, "f={0}&name={1}", forumId, forumName)}\">{forumName}</a>";
+                $"<a target=\"_top\" href=\"{BuildLink.GetForumLink(forumId.ToType<int>(), forumName.ToString())}\">{forumName}</a>";
         }
 
         /// <summary>
@@ -213,41 +210,15 @@ namespace YAF.Pages.Admin
         /// <returns>
         /// The format topic link.
         /// </returns>
-        protected string FormatTopicLink([NotNull] object topicId, [NotNull] object topicName)
+        protected string FormatTopicLink([NotNull] object topicId, [NotNull] string topicName)
         {
-            if (topicId.ToString() == string.Empty || topicName.ToString() == string.Empty)
+            if (topicId.ToString() == string.Empty || topicName.IsNotSet())
             {
                 return string.Empty;
             }
 
             return
-                $"<a target=\"_top\" href=\"{BuildLink.GetLink(ForumPages.Posts, "t={0}", topicId)}\">{topicName}</a>";
-        }
-
-        /// <summary>
-        /// Sets the location.
-        /// </summary>
-        /// <param name="userName">Name of the user.</param>
-        /// <returns>Returns the Location</returns>
-        protected string SetLocation([NotNull] string userName)
-        {
-            string location;
-
-            try
-            {
-                location = Utils.UserProfile.GetProfile(userName).Location;
-
-                if (location.IsNotSet())
-                {
-                    location = "-";
-                }
-            }
-            catch (Exception)
-            {
-                location = "-";
-            }
-
-            return this.HtmlEncode(this.Get<IBadWordReplace>().Replace(location));
+                $"<a target=\"_top\" href=\"{BuildLink.GetLink(ForumPages.Posts, "t={0}&name={1}", topicId, topicName)}\">{topicName}</a>";
         }
 
         /// <summary>
@@ -271,7 +242,7 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            this.BoardStatsSelect.Visible = this.PageContext.IsHostAdmin;
+            this.BoardStatsSelect.Visible = this.PageContext.User.UserFlags.IsHostAdmin;
 
             // bind data
             this.BindBoardsList();
@@ -299,17 +270,28 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void ShowUpgradeMessage()
         {
-            var latestInfo = new LatestInformationService().GetLatestVersion();
-
-            if (latestInfo == null || BitConverter.ToInt64(latestInfo, 0) <= BitConverter.ToInt64(BoardInfo.AppVersionCode, 0))
+            try
             {
-                return;
+                var version = this.Get<IDataCache>().GetOrSet(
+                    "LatestVersion",
+                    () => this.Get<ILatestInformation>().GetLatestVersion(),
+                    TimeSpan.FromDays(1));
+
+                if (version.VersionDate <= BoardInfo.AppVersionDate)
+                {
+                    return;
+                }
+
+                // updateLink
+                this.UpdateHightlight.Visible = true;
+                this.UpdateLinkHighlight.NavigateUrl = version.UpgradeUrl;
             }
-
-            // updateLink
-            this.UpdateHightlight.Visible = true;
+            catch (Exception)
+            {
+                this.UpdateHightlight.Visible = false;
+            }
         }
-
+        
         /// <summary>
         /// Binds the active user data.
         /// </summary>
@@ -319,7 +301,7 @@ namespace YAF.Pages.Admin
 
             if (activeUsers.HasRows())
             {
-                BoardContext.Current.PageElements.RegisterJsBlock(
+                this.PageContext.PageElements.RegisterJsBlock(
                     "ActiveUsersTablesorterLoadJs",
                     JavaScriptBlocks.LoadTableSorter("#ActiveUsers", "sortList: [[0,0]]", "#ActiveUsersPager"));
             }
@@ -334,7 +316,7 @@ namespace YAF.Pages.Admin
         private void BindBoardsList()
         {
             // only if user is host admin, otherwise boards' list is hidden
-            if (!this.PageContext.IsHostAdmin)
+            if (!this.PageContext.User.UserFlags.IsHostAdmin)
             {
                 return;
             }
@@ -363,11 +345,11 @@ namespace YAF.Pages.Admin
 
             if (this.UnverifiedUsersHolder.Visible)
             {
-                var unverifiedUsers = this.GetRepository<User>().ListAsDataTable(this.PageContext.PageBoardID, null, false);
+                var unverifiedUsers = this.GetRepository<User>().UnApprovedUsers(this.PageContext.PageBoardID);
 
-                if (unverifiedUsers.HasRows())
+                if (unverifiedUsers.Any())
                 {
-                    BoardContext.Current.PageElements.RegisterJsBlock(
+                    this.PageContext.PageElements.RegisterJsBlock(
                         "UnverifiedUserstablesorterLoadJs",
                         JavaScriptBlocks.LoadTableSorter(
                             "#UnverifiedUsers",
@@ -457,7 +439,7 @@ namespace YAF.Pages.Admin
         private int? GetSelectedBoardId()
         {
             // check dropdown only if user is host admin
-            if (!this.PageContext.IsHostAdmin)
+            if (!this.PageContext.User.UserFlags.IsHostAdmin)
             {
                 return this.PageContext.PageBoardID;
             }

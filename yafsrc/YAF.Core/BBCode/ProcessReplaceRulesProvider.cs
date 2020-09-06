@@ -43,17 +43,17 @@ namespace YAF.Core.BBCode
     #region Constants and Fields
 
     /// <summary>
-    ///   The _inject services.
+    ///   The inject services.
     /// </summary>
     private readonly IInjectServices _injectServices;
 
     /// <summary>
-    /// The _object store.
+    /// The object store.
     /// </summary>
     private readonly IObjectStore _objectStore;
 
     /// <summary>
-    ///   The _unique flags.
+    ///   The unique flags.
     /// </summary>
     private readonly IEnumerable<bool> _uniqueFlags;
 
@@ -65,6 +65,7 @@ namespace YAF.Core.BBCode
     /// Initializes a new instance of the <see cref="ProcessReplaceRulesProvider"/> class.
     /// </summary>
     /// <param name="objectStore">
+    /// The object Store.
     /// </param>
     /// <param name="serviceLocator">
     /// The service locator.
@@ -92,10 +93,8 @@ namespace YAF.Core.BBCode
     #region Properties
 
     /// <summary>
-    ///   The Instance of this provider.
+    ///   Gets the Instance of this provider.
     /// </summary>
-    /// <returns>
-    /// </returns>
     public IProcessReplaceRules Instance
     {
       get

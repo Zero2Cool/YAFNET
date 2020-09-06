@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Index
@@ -72,15 +73,15 @@ namespace YAF.Lucene.Net.Index
         {
             if (docID < addedValues)
             {
-                throw new System.ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" appears more than once in this document (only one value is allowed per field)");
+                throw new ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" appears more than once in this document (only one value is allowed per field)");
             }
             if (value == null)
             {
-                throw new System.ArgumentException("field=\"" + fieldInfo.Name + "\": null value not allowed");
+                throw new ArgumentException("field=\"" + fieldInfo.Name + "\": null value not allowed");
             }
             if (value.Length > MAX_LENGTH)
             {
-                throw new System.ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" is too large, must be <= " + MAX_LENGTH);
+                throw new ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" is too large, must be <= " + MAX_LENGTH);
             }
 
             // Fill in any holes:
@@ -95,7 +96,7 @@ namespace YAF.Lucene.Net.Index
             {
                 bytesOut.WriteBytes(value.Bytes, value.Offset, value.Length);
             }
-            catch (System.IO.IOException ioe)
+            catch (IOException ioe)
             {
                 // Should never happen!
                 throw new Exception(ioe.ToString(), ioe);
@@ -138,7 +139,7 @@ namespace YAF.Lucene.Net.Index
         private IEnumerable<BytesRef> GetBytesIterator(int maxDocParam)
         {
             // Use yield return instead of ucsom IEnumerable
-
+            var value = new BytesRef();
             AppendingDeltaPackedInt64Buffer.Iterator lengthsIterator = lengths.GetIterator();
             int size = (int)lengths.Count;
             DataInput bytesIterator = bytes.GetDataInput();
@@ -151,14 +152,13 @@ namespace YAF.Lucene.Net.Index
                 if (upto < size)
                 {
                     int length = (int)lengthsIterator.Next();
-                    var value = new BytesRef();
                     value.Grow(length);
                     value.Length = length;
                     try
                     {
                         bytesIterator.ReadBytes(value.Bytes, value.Offset, value.Length);
                     }
-                    catch (System.IO.IOException ioe)
+                    catch (IOException ioe)
                     {
                         // Should never happen!
                         throw new Exception(ioe.ToString(), ioe);

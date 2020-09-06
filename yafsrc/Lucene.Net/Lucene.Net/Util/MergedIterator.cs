@@ -1,7 +1,7 @@
 using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -98,21 +98,9 @@ namespace YAF.Lucene.Net.Util
             return true;
         }
 
-        public T Current
-        {
-            get
-            {
-                return current;
-            }
-        }
+        public T Current => current;
 
-        object System.Collections.IEnumerator.Current
-        {
-            get
-            {
-                return Current;
-            }
-        }
+        object System.Collections.IEnumerator.Current => Current;
 
         public void Reset()
         {
@@ -125,7 +113,7 @@ namespace YAF.Lucene.Net.Util
 
         private void PullTop()
         {
-            Debug.Assert(numTop == 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numTop == 0);
             top[numTop++] = queue.Pop();
             if (removeDuplicates)
             {

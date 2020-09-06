@@ -28,21 +28,22 @@ namespace YAF.Controls
 
     using System;
     using System.Data;
-    
+    using System.Web;
+
     using YAF.Configuration;
     using YAF.Core.BaseControls;
     using YAF.Core.BaseModules;
+    using YAF.Core.Extensions;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Events;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils;
-    using YAF.Utils.Helpers;
     using YAF.Web.Controls;
     using YAF.Web.Editors;
 
@@ -75,6 +76,12 @@ namespace YAF.Controls
         /// </summary>
         private SignaturePreview signaturePreview;
 
+        /// <summary>
+        /// Gets the User Data.
+        /// </summary>
+        [NotNull]
+        private User user;
+
         #endregion
 
         #region Properties
@@ -102,15 +109,17 @@ namespace YAF.Controls
             get
             {
                 if (this.PageContext.CurrentForumPage.IsAdminPage && this.PageContext.IsAdmin
-                                                                  && this.PageContext.QueryIDs.ContainsKey("u"))
+                                                                  && this.Get<HttpRequestBase>().QueryString.Exists("u"))
                 {
-                    return this.PageContext.QueryIDs["u"].ToType<int>();
+                    return Security.StringToIntOrRedirect(
+                        this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
                 }
 
                 if (this.InModeratorMode && (this.PageContext.IsAdmin || this.PageContext.IsForumModerator)
-                                         && this.PageContext.QueryIDs.ContainsKey("u"))
+                                         && this.Get<HttpRequestBase>().QueryString.Exists("u"))
                 {
-                    return this.PageContext.QueryIDs["u"].ToType<int>();
+                    return Security.StringToIntOrRedirect(
+                        this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
                 }
 
                 return this.PageContext.PageUserID;
@@ -126,7 +135,11 @@ namespace YAF.Controls
         /// </summary>
         protected void BindData()
         {
-            this.signatureEditor.Text = this.GetRepository<User>().GetSignature(this.CurrentUserID);
+            this.user = this.PageContext.CurrentForumPage.IsAdminPage
+                ? this.GetRepository<User>().GetById(this.CurrentUserID)
+                : this.PageContext.User;
+
+            this.signatureEditor.Text = this.user.Signature;
 
             this.signaturePreview.Signature = this.signatureEditor.Text;
             this.signaturePreview.DisplayUserID = this.CurrentUserID;
@@ -138,8 +151,6 @@ namespace YAF.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit([NotNull] EventArgs e)
         {
-            this.PageContext.QueryIDs = new QueryStringIDHelper("u");
-
             var sigData = this.GetRepository<User>()
                 .SignatureDataAsDataRow(this.CurrentUserID, this.PageContext.PageBoardID);
 
@@ -204,11 +215,15 @@ namespace YAF.Controls
         {
             if (this.InModeratorMode)
             {
-                BuildLink.Redirect(ForumPages.Profile, "u={0}", this.CurrentUserID);
+                BuildLink.Redirect(
+                    ForumPages.UserProfile,
+                    "u={0}&name={1}",
+                    this.CurrentUserID,
+                    this.Get<IUserDisplayName>().GetNameById(this.CurrentUserID));
             }
             else
             {
-                BuildLink.Redirect(ForumPages.Account);
+                BuildLink.Redirect(ForumPages.MyAccount);
             }
         }
 
@@ -244,50 +259,43 @@ namespace YAF.Controls
                 }
             }
 
-            // body = this.Get<IFormatMessage>().RepairHtml(this,body,false);
             if (this.signatureEditor.Text.Length > 0)
             {
                 if (this.signatureEditor.Text.Length <= this.allowedNumberOfCharacters)
                 {
-                    var userData = new CombinedUserDataHelper(this.CurrentUserID);
-
-                    if (userData.NumPosts < this.Get<BoardSettings>().IgnoreSpamWordCheckPostCount)
+                    if (this.user.NumPosts < this.Get<BoardSettings>().IgnoreSpamWordCheckPostCount)
                     {
                         // Check for spam
                         if (this.Get<ISpamWordCheck>().CheckForSpamWord(body, out var result))
                         {
-                            var user = UserMembershipHelper.GetMembershipUserById(this.CurrentUserID);
-                            var userId = this.CurrentUserID;
-
                             // Log and Send Message to Admins
                             if (this.Get<BoardSettings>().BotHandlingOnRegister.Equals(1))
                             {
-                                this.Logger.Log(
-                                    null,
-                                    "Bot Detected",
+                                this.Logger.SpamBotDetected(
+                                    this.user.ID,
                                     $@"Internal Spam Word Check detected a SPAM BOT: (
-                                                      user name : '{user.UserName}', 
+                                                      user name : '{this.user.Name}', 
                                                       user id : '{this.CurrentUserID}') 
-                                                 after the user included a spam word in his/her signature: {result}",
-                                    EventLogTypes.SpamBotDetected);
+                                                 after the user included a spam word in his/her signature: {result}");
                             }
                             else if (this.Get<BoardSettings>().BotHandlingOnRegister.Equals(2))
                             {
-                                this.Logger.Log(
-                                    null,
-                                    "Bot Detected",
+                                this.Logger.SpamBotDetected(
+                                    this.user.ID,
                                     $@"Internal Spam Word Check detected a SPAM BOT: (
-                                                       user name : '{user.UserName}', 
+                                                       user name : '{this.user.Name}', 
                                                        user id : '{this.CurrentUserID}') 
-                                                 after the user included a spam word in his/her signature: {result}, user was deleted and the name, email and IP Address are banned.",
-                                    EventLogTypes.SpamBotDetected);
+                                                 after the user included a spam word in his/her signature: {result}, user was deleted and the name, email and IP Address are banned.");
 
                                 // Kill user
                                 if (!this.PageContext.CurrentForumPage.IsAdminPage)
                                 {
-                                    var userIp = new CombinedUserDataHelper(user, userId).LastIP;
-
-                                    UserMembershipHelper.DeleteAndBanUser(this.CurrentUserID, user, userIp);
+                                    var membershipUser = this.Get<IAspNetUsersHelper>()
+                                        .GetMembershipUserById(this.user.ID);
+                                    this.Get<IAspNetUsersHelper>().DeleteAndBanUser(
+                                        this.CurrentUserID,
+                                        membershipUser,
+                                        this.user.IP);
                                 }
                             }
                         }

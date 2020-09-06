@@ -247,7 +247,7 @@ namespace YAF.Core.Services
         {
             try
             {
-                messageList.ForEach(message => { this.UpdateSearchIndexItemAsync(message).Wait(); });
+                messageList.ForEach(message => this.UpdateSearchIndexItemAsync(message).Wait());
             }
             finally
             {
@@ -548,13 +548,13 @@ namespace YAF.Core.Services
                        {
                            Topic = doc.Get("Topic"),
                            TopicId = doc.Get("TopicId").ToType<int>(),
-                           TopicUrl = BuildLink.GetLink(ForumPages.Posts, "t={0}", doc.Get("TopicId").ToType<int>()),
+                           TopicUrl = BuildLink.GetTopicLink(doc.Get("TopicId").ToType<int>(), doc.Get("Topic")),
                            Posted = doc.Get("Posted"),
                            UserId = doc.Get("UserId").ToType<int>(),
                            UserName = doc.Get("Author"),
                            UserDisplayName = doc.Get("AuthorDisplay"),
                            ForumName = doc.Get("ForumName"),
-                           ForumUrl = BuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
+                           ForumUrl = BuildLink.GetForumLink(doc.Get("ForumId").ToType<int>(), doc.Get("ForumName")),
                            UserStyle = doc.Get("AuthorStyle")
                        };
         }
@@ -672,7 +672,10 @@ namespace YAF.Core.Services
             var flags = doc.Get("Flags").ToType<int>();
             var messageFlags = new MessageFlags(flags);
 
-            var formattedMessage = this.Get<IFormatMessage>().Format(doc.Get("Message"), messageFlags);
+            var formattedMessage = this.Get<IFormatMessage>().Format(
+                doc.Get("MessageId").ToType<int>(),
+                doc.Get("Message"),
+                messageFlags);
 
             formattedMessage = this.Get<IBBCode>().FormatMessageWithCustomBBCode(
                 formattedMessage,
@@ -711,26 +714,33 @@ namespace YAF.Core.Services
             }
 
             return new SearchMessage
-                       {
-                           MessageId = doc.Get("MessageId").ToType<int>(),
-                           Message = message,
-                           Flags = flags,
-                           Posted = doc.Get("Posted"),
-                           UserName = doc.Get("Author"),
-                           UserId = doc.Get("UserId").ToType<int>(),
-                           TopicId = doc.Get("TopicId").ToType<int>(),
-                           Topic = topic.IsSet() ? topic : doc.Get("Topic"),
-                           TopicTags = doc.Get("TopicTags"),
-                           ForumId = doc.Get("ForumId").ToType<int>(),
-                           Description = doc.Get("Description"),
-                           TopicUrl = BuildLink.GetLink(ForumPages.Posts, "t={0}", doc.Get("TopicId").ToType<int>()),
-                           MessageUrl =
-                               BuildLink.GetLink(ForumPages.Posts, "m={0}#post{0}", doc.Get("MessageId").ToType<int>()),
-                           ForumUrl = BuildLink.GetLink(ForumPages.forum, "f={0}", doc.Get("ForumId").ToType<int>()),
-                           UserDisplayName = doc.Get("AuthorDisplay"),
-                           ForumName = doc.Get("ForumName"),
-                           UserStyle = doc.Get("AuthorStyle")
-                       };
+            {
+                MessageId = doc.Get("MessageId").ToType<int>(),
+                Message = message,
+                Flags = flags,
+                Posted = doc.Get("Posted"),
+                UserName = doc.Get("Author"),
+                UserId = doc.Get("UserId").ToType<int>(),
+                TopicId = doc.Get("TopicId").ToType<int>(),
+                Topic = topic.IsSet() ? topic : doc.Get("Topic"),
+                TopicTags = doc.Get("TopicTags"),
+                ForumId = doc.Get("ForumId").ToType<int>(),
+                Description = doc.Get("Description"),
+                TopicUrl =
+                    BuildLink.GetTopicLink(
+                        doc.Get("TopicId").ToType<int>(),
+                        topic.IsSet() ? topic : doc.Get("Topic")),
+                MessageUrl =
+                    BuildLink.GetLink(
+                        ForumPages.Posts,
+                        "m={0}&name={1}#post{0}",
+                        doc.Get("MessageId").ToType<int>(),
+                        topic.IsSet() ? topic : doc.Get("Topic")),
+                ForumUrl = BuildLink.GetForumLink(doc.Get("ForumId").ToType<int>(), doc.Get("ForumName")),
+                UserDisplayName = doc.Get("AuthorDisplay"),
+                ForumName = doc.Get("ForumName"),
+                UserStyle = doc.Get("AuthorStyle")
+            };
         }
 
         /// <summary>
@@ -876,13 +886,10 @@ namespace YAF.Core.Services
                     if (userAccessList.Any())
                     {
                         userAccessList.Where(a => !a.ReadAccess).ForEach(
-                            access =>
-                                {
-                                    fil.Add(
-                                        new FilterClause(
-                                            new TermsFilter(new Term("ForumId", access.ForumID.ToString())),
-                                            Occur.MUST_NOT));
-                                });
+                            access => fil.Add(
+                                new FilterClause(
+                                    new TermsFilter(new Term("ForumId", access.ForumID.ToString())),
+                                    Occur.MUST_NOT)));
                     }
                 }
 
@@ -942,16 +949,18 @@ namespace YAF.Core.Services
             }
 
             var booleanFilter = new BooleanFilter
-                                    {
-                                        new FilterClause(new TermsFilter(new Term("TopicId", filter)), Occur.MUST_NOT)
-                                    };
+            {
+                new FilterClause(new TermsFilter(new Term("TopicId", filter)), Occur.MUST_NOT)
+            };
 
             var hitsLimit = this.Get<BoardSettings>().ReturnSearchMax;
 
             var parser = new QueryParser(MatchVersion, searchField, this.standardAnalyzer);
             var query = ParseQuery(searchQuery, parser);
 
-            var hits = searcher.Search(query, booleanFilter, hitsLimit).ScoreDocs;
+            var hits = filter.IsSet()
+                ? searcher.Search(query, booleanFilter, hitsLimit).ScoreDocs
+                : searcher.Search(query, hitsLimit).ScoreDocs;
 
             var results = MapSearchToDataList(searcher, hits, userAccessList);
 

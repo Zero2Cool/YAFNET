@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Diagnostics;
 using IBits = YAF.Lucene.Net.Util.IBits;
@@ -74,14 +75,8 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
         public virtual IBits LiveDocs
         {
-            get
-            {
-                return this.m_liveDocs; // LUCENENET specific - per MSDN, a property must always have a getter
-            }
-            set
-            {
-                this.m_liveDocs = value;
-            }
+            get => this.m_liveDocs; // LUCENENET specific - per MSDN, a property must always have a getter
+            set => this.m_liveDocs = value;
         }
 
         public virtual void Seek(SegmentTermEnum segmentTermEnum)
@@ -144,15 +139,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             }
         }
 
-        public int Doc
-        {
-            get { return doc; }
-        }
+        public int Doc => doc;
 
-        public int Freq
-        {
-            get { return freq; }
-        }
+        public int Freq => freq;
 
         protected internal virtual void SkippingDoc()
         {
@@ -182,7 +171,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     else
                     {
                         freq = m_freqStream.ReadVInt32(); // else read freq
-                        Debug.Assert(freq != 1);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(freq != 1);
                     }
                 }
 

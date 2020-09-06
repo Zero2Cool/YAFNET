@@ -1,4 +1,5 @@
-﻿using YAF.Lucene.Net.Index;
+﻿using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Search;
 using YAF.Lucene.Net.Util;
 using System;
@@ -91,10 +92,7 @@ namespace YAF.Lucene.Net.Sandbox.Queries
         }
 
         /// <summary>Returns the selector in use for this sort</summary>
-        public Selector Selector
-        {
-            get { return selector; }
-        }
+        public Selector Selector => selector;
 
         public override int GetHashCode()
         {
@@ -135,10 +133,7 @@ namespace YAF.Lucene.Net.Sandbox.Queries
         /// </summary>
         public override object MissingValue
         {
-            get
-            {
-                return base.m_missingValue;
-            }
+            get => base.m_missingValue;
             set
             {
                 if (value != STRING_FIRST && value != STRING_LAST)
@@ -196,7 +191,7 @@ namespace YAF.Lucene.Net.Sandbox.Queries
                         case Selector.MIDDLE_MAX: return new MiddleMaxValue(randomOrds);
                         case Selector.MIN:
                         default:
-                            Debug.Assert(false);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(false);
                             return null;
                     }
                 }
@@ -229,10 +224,7 @@ namespace YAF.Lucene.Net.Sandbox.Queries
                 @in.LookupOrd(ord, result);
             }
 
-            public override int ValueCount
-            {
-                get { return (int)@in.ValueCount; }
-            }
+            public override int ValueCount => (int)@in.ValueCount;
 
             public override int LookupTerm(BytesRef key)
             {
@@ -269,10 +261,7 @@ namespace YAF.Lucene.Net.Sandbox.Queries
                 @in.LookupOrd(ord, result);
             }
 
-            public override int ValueCount
-            {
-                get { return (int)@in.ValueCount; }
-            }
+            public override int ValueCount => (int)@in.ValueCount;
 
             public override int LookupTerm(BytesRef key)
             {
@@ -309,10 +298,7 @@ namespace YAF.Lucene.Net.Sandbox.Queries
                 @in.LookupOrd(ord, result);
             }
 
-            public override int ValueCount
-            {
-                get { return (int)@in.ValueCount; }
-            }
+            public override int ValueCount => (int)@in.ValueCount;
 
             public override int LookupTerm(BytesRef key)
             {
@@ -349,10 +335,7 @@ namespace YAF.Lucene.Net.Sandbox.Queries
                 @in.LookupOrd(ord, result);
             }
 
-            public override int ValueCount
-            {
-                get { return (int)@in.ValueCount; }
-            }
+            public override int ValueCount => (int)@in.ValueCount;
 
             public override int LookupTerm(BytesRef key)
             {

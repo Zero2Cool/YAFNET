@@ -68,7 +68,7 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (!this.PageContext.IsHostAdmin)
+            if (!this.PageContext.User.UserFlags.IsHostAdmin)
             {
                 BuildLink.AccessDenied();
             }
@@ -87,9 +87,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_BOARDS", "TITLE"), string.Empty);
 
             this.Page.Header.Title =

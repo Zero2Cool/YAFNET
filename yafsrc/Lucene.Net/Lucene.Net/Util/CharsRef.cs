@@ -1,7 +1,8 @@
 using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using WritableArrayAttribute = YAF.Lucene.Net.Support.WritableArrayAttribute;
 
@@ -34,14 +35,14 @@ namespace YAF.Lucene.Net.Util
 #if FEATURE_SERIALIZABLE
     [Serializable]
 #endif
-    public sealed class CharsRef : IComparable<CharsRef>, ICharSequence
+    public sealed class CharsRef : IComparable<CharsRef>, ICharSequence, IEquatable<CharsRef> // LUCENENET specific - implemented IEquatable<CharsRef>
 #if FEATURE_CLONEABLE
         , System.ICloneable
 #endif
     {
         /// <summary>
         /// An empty character array for convenience </summary>
-        public static readonly char[] EMPTY_CHARS = new char[0];
+        public static readonly char[] EMPTY_CHARS = Arrays.Empty<char>();
 
         bool ICharSequence.HasValue => true;
 
@@ -52,7 +53,7 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public char[] Chars
         {
-            get { return chars; }
+            get => chars;
             set
             {
                 if (value == null)
@@ -98,7 +99,7 @@ namespace YAF.Lucene.Net.Util
             this.chars = chars;
             this.Offset = offset;
             this.Length = length;
-            Debug.Assert(IsValid());
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsValid());
         }
 
         /// <summary>
@@ -148,6 +149,9 @@ namespace YAF.Lucene.Net.Util
             }
             return false;
         }
+
+        bool IEquatable<CharsRef>.Equals(CharsRef other) // LUCENENET specific - implemented IEquatable<CharsRef>
+            => CharsEquals(other);
 
         public bool CharsEquals(CharsRef other)
         {
@@ -224,7 +228,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public void Grow(int newLength)
         {
-            Debug.Assert(Offset == 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(Offset == 0);
             if (chars.Length < newLength)
             {
                 chars = ArrayUtil.Grow(chars, newLength);
@@ -274,7 +278,7 @@ namespace YAF.Lucene.Net.Util
         //    // NOTE: must do a real check here to meet the specs of CharSequence
         //    if (index < 0 || index >= Length)
         //    {
-        //        throw new System.IndexOutOfRangeException();
+        //        throw new IndexOutOfRangeException();
         //    }
         //    return Chars[Offset + index];
         //}
@@ -298,7 +302,7 @@ namespace YAF.Lucene.Net.Util
             // NOTE: must do a real check here to meet the specs of CharSequence
             //if (start < 0 || end > Length || start > end)
             //{
-            //    throw new System.IndexOutOfRangeException();
+            //    throw new IndexOutOfRangeException();
             //}
 
             // LUCENENET specific - changed semantics from start/end to startIndex/length to match .NET
@@ -319,13 +323,7 @@ namespace YAF.Lucene.Net.Util
 
         /// @deprecated this comparer is only a transition mechanism
         [Obsolete("this comparer is only a transition mechanism")]
-        public static IComparer<CharsRef> UTF16SortedAsUTF8Comparer
-        {
-            get
-            {
-                return utf16SortedAsUTF8SortOrder;
-            }
-        }
+        public static IComparer<CharsRef> UTF16SortedAsUTF8Comparer => utf16SortedAsUTF8SortOrder;
 
         /// @deprecated this comparer is only a transition mechanism
         [Obsolete("this comparer is only a transition mechanism")]

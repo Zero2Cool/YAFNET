@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace YAF.Lucene.Net.Index
@@ -22,8 +22,8 @@ namespace YAF.Lucene.Net.Index
      * limitations under the License.
      */
 
-    using IBits = YAF.Lucene.Net.Util.IBits;
     using Directory = YAF.Lucene.Net.Store.Directory;
+    using IBits = YAF.Lucene.Net.Util.IBits;
     using InfoStream = YAF.Lucene.Net.Util.InfoStream;
     using MonotonicAppendingInt64Buffer = YAF.Lucene.Net.Util.Packed.MonotonicAppendingInt64Buffer;
 
@@ -55,10 +55,7 @@ namespace YAF.Lucene.Net.Index
 
             /// <summary>
             /// Returns the number of not-deleted documents. </summary>
-            public int NumDocs
-            {
-                get { return MaxDoc - NumDeletedDocs; }
-            }
+            public int NumDocs => MaxDoc - NumDeletedDocs;
 
             /// <summary>
             /// Returns the number of deleted documents. </summary>
@@ -66,10 +63,7 @@ namespace YAF.Lucene.Net.Index
 
             /// <summary>
             /// Returns <c>true</c> if there are any deletions. </summary>
-            public virtual bool HasDeletions
-            {
-                get { return NumDeletedDocs > 0; }
-            }
+            public virtual bool HasDeletions => NumDeletedDocs > 0;
 
             /// <summary>
             /// Creates a <see cref="DocMap"/> instance appropriate for
@@ -88,7 +82,7 @@ namespace YAF.Lucene.Net.Index
 
             internal static DocMap Build(int maxDoc, IBits liveDocs)
             {
-                Debug.Assert(liveDocs != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(liveDocs != null);
                 MonotonicAppendingInt64Buffer docMap = new MonotonicAppendingInt64Buffer();
                 int del = 0;
                 for (int i = 0; i < maxDoc; ++i)
@@ -101,7 +95,7 @@ namespace YAF.Lucene.Net.Index
                 }
                 docMap.Freeze();
                 int numDeletedDocs = del;
-                Debug.Assert(docMap.Count == maxDoc);
+                if (Debugging.AssertsEnabled) Debugging.Assert(docMap.Count == maxDoc);
                 return new DocMapAnonymousInnerClassHelper(maxDoc, liveDocs, docMap, numDeletedDocs);
             }
 
@@ -129,15 +123,9 @@ namespace YAF.Lucene.Net.Index
                     return (int)docMap.Get(docID);
                 }
 
-                public override int MaxDoc
-                {
-                    get { return maxDoc; }
-                }
+                public override int MaxDoc => maxDoc;
 
-                public override int NumDeletedDocs
-                {
-                    get { return numDeletedDocs; }
-                }
+                public override int NumDeletedDocs => numDeletedDocs;
             }
         }
 
@@ -155,15 +143,9 @@ namespace YAF.Lucene.Net.Index
                 return docID;
             }
 
-            public override int MaxDoc
-            {
-                get { return maxDoc; }
-            }
+            public override int MaxDoc => maxDoc;
 
-            public override int NumDeletedDocs
-            {
-                get { return 0; }
-            }
+            public override int NumDeletedDocs => 0;
         }
 
         /// <summary>

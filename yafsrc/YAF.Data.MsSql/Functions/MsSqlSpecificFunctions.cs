@@ -71,44 +71,6 @@ namespace YAF.Data.MsSql.Functions
         /// <returns>
         /// Returns the current SQL Engine Edition.
         /// </returns>
-        public static string GetSQLEngine(this IDbAccess dbAccess)
-        {
-            CodeContracts.VerifyNotNull(dbAccess, "dbAccess");
-
-            try
-            {
-                using (var cmd = dbAccess.GetCommand("select SERVERPROPERTY('EngineEdition')", CommandType.Text))
-                {
-                    switch (dbAccess.ExecuteScalar(cmd).ToType<int>())
-                    {
-                        case 1:
-                            return "Personal";
-                        case 2:
-                            return "Standard";
-                        case 3:
-                            return "Enterprise";
-                        case 4:
-                            return "Express";
-                        case 5:
-                            return "Azure";
-                        default:
-                            return "Unknown";
-                    }
-                }
-            }
-            catch
-            {
-                return "Unknown";
-            }
-        }
-
-        /// <summary>
-        /// Gets the current SQL Engine Edition.
-        /// </summary>
-        /// <param name="dbAccess">The database access.</param>
-        /// <returns>
-        /// Returns the current SQL Engine Edition.
-        /// </returns>
         public static string GetSQLVersion(this IDbAccess dbAccess)
         {
             CodeContracts.VerifyNotNull(dbAccess, "dbAccess");
@@ -194,7 +156,7 @@ namespace YAF.Data.MsSql.Functions
         /// <param name="useTransactions">
         /// The use transactions.
         /// </param>
-        public static void SystemInitializeExecutescripts(
+        public static void SystemInitializeExecuteScripts(
             this IDbAccess dbAccess,
             [NotNull] string script,
             [NotNull] string scriptFile,
@@ -274,7 +236,7 @@ namespace YAF.Data.MsSql.Functions
         }
 
         /// <summary>
-        /// The system_initialize_fixaccess.
+        /// system initialize fix access.
         /// </summary>
         /// <param name="dbAccess">
         /// The db Access.
@@ -282,7 +244,7 @@ namespace YAF.Data.MsSql.Functions
         /// <param name="grant">
         /// The grant.
         /// </param>
-        public static void SystemInitializeFixaccess(this IDbAccess dbAccess, bool grant)
+        public static void SystemInitializeFixAccess(this IDbAccess dbAccess, bool grant)
         {
 
             using (var trans = dbAccess.CreateConnectionOpen().BeginTransaction())
@@ -397,7 +359,7 @@ namespace YAF.Data.MsSql.Functions
         private static string messageRunSql;
 
         /// <summary>
-        /// The db_runsql.
+        /// Run SQL
         /// </summary>
         /// <param name="dbAccess">
         /// The db Access.
@@ -408,9 +370,6 @@ namespace YAF.Data.MsSql.Functions
         /// <param name="useTransaction">
         /// The use Transaction.
         /// </param>
-        /// <returns>
-        /// The db_runsql.
-        /// </returns>
         public static string RunSQL(this IDbAccess dbAccess, [NotNull] string sql, bool useTransaction)
         {
             try
@@ -438,7 +397,7 @@ namespace YAF.Data.MsSql.Functions
         }
 
         /// <summary>
-        /// Called from db_runsql -- just runs a sql command according to specificiations.
+        /// Called from RunSql -- just runs a sql command according to specifications.
         /// </summary>
         /// <param name="command">
         /// </param>
@@ -460,58 +419,55 @@ namespace YAF.Data.MsSql.Functions
                     command.Transaction = useTransaction ? command.Transaction : null;
                     reader = command.ExecuteReader();
 
-                    if (reader != null)
+                    if (reader.HasRows)
                     {
-                        if (reader.HasRows)
+                        var rowIndex = 1;
+                        var columnNames = reader.GetSchemaTable().Rows.Cast<DataRow>()
+                            .Select(r => r["ColumnName"].ToString()).ToList();
+
+                        results.Append("RowNumber");
+
+                        columnNames.ForEach(
+                            n =>
+                            {
+                                results.Append(",");
+                                results.Append(n);
+                            });
+
+                        results.AppendLine();
+
+                        while (reader.Read())
                         {
-                            var rowIndex = 1;
-                            var columnNames = reader.GetSchemaTable().Rows.Cast<DataRow>()
-                                .Select(r => r["ColumnName"].ToString()).ToList();
+                            results.AppendFormat(@"""{0}""", rowIndex++);
 
-                            results.Append("RowNumber");
-
+                            // dump all columns...
                             columnNames.ForEach(
-                                n =>
-                                    {
-                                        results.Append(",");
-                                        results.Append(n);
-                                    });
+                                col => results.AppendFormat(
+                                    @",""{0}""",
+                                    reader[col].ToString().Replace("\"", "\"\"")));
 
                             results.AppendLine();
-
-                            while (reader.Read())
-                            {
-                                results.AppendFormat(@"""{0}""", rowIndex++);
-
-                                // dump all columns...
-                                columnNames.ForEach(
-                                    col => results.AppendFormat(
-                                        @",""{0}""",
-                                        reader[col].ToString().Replace("\"", "\"\"")));
-
-                                results.AppendLine();
-                            }
                         }
-                        else if (reader.RecordsAffected > 0)
-                        {
-                            results.AppendFormat("{0} Record(s) Affected", reader.RecordsAffected);
-                            results.AppendLine();
-                        }
-                        else
-                        {
-                            if (messageRunSql.IsSet())
-                            {
-                                results.AppendLine(messageRunSql);
-                                results.AppendLine();
-                            }
-
-                            results.AppendLine("No Results Returned.");
-                        }
-
-                        reader.Close();
-
-                        command.Transaction?.Commit();
                     }
+                    else if (reader.RecordsAffected > 0)
+                    {
+                        results.AppendFormat("{0} Record(s) Affected", reader.RecordsAffected);
+                        results.AppendLine();
+                    }
+                    else
+                    {
+                        if (messageRunSql.IsSet())
+                        {
+                            results.AppendLine(messageRunSql);
+                            results.AppendLine();
+                        }
+
+                        results.AppendLine("No Results Returned.");
+                    }
+
+                    reader.Close();
+
+                    command.Transaction?.Commit();
                 }
                 finally
                 {

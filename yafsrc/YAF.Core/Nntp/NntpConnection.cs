@@ -210,16 +210,17 @@ namespace YAF.Core.Nntp
                     throw new NntpException(line, request);
                 }
 
-                if (code == 480)
+                if (code != 480)
                 {
-                    if (this.SendIdentity())
-                    {
-                        continue;
-                    }
+                    return new Response(code, line.Length >= 5 ? line.Substring(4) : null, request);
+                }
+
+                if (this.SendIdentity())
+                {
+                    continue;
                 }
 
                 return new Response(code, line.Length >= 5 ? line.Substring(4) : null, request);
-                break;
             }
         }
 
@@ -445,7 +446,6 @@ namespace YAF.Core.Nntp
                     string line;
                     while ((line = this.sr.ReadLine()) != null && line != ".")
                     {
-                        ;
                     }
                 }
             }
@@ -769,7 +769,7 @@ namespace YAF.Core.Nntp
                     // reference ids
                     article.Header.ReferenceIds = values[5].Trim().Length == 0 ? new string[0] : values[5].Split(' ');
 
-                    if (values.Length < 8 || values[7] == null || values[7].Trim() == string.Empty)
+                    if (values.Length < 8 || values[7].Trim() == string.Empty)
                     {
                         article.Header.LineCount = 0;
                     }
@@ -924,7 +924,6 @@ namespace YAF.Core.Nntp
                     string response;
                     while ((response = this.sr.ReadLine()) != null && response != ".")
                     {
-                        ;
                     }
                 }
 

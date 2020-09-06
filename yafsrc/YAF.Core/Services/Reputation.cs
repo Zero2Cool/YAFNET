@@ -24,7 +24,6 @@
 
 namespace YAF.Core.Services
 {
-    using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
@@ -104,7 +103,7 @@ namespace YAF.Core.Services
                            style=""width:{percentage.ToString(formatInfo)}%;"" 
                            aria-valuenow=""{percentage.ToString(formatInfo)}"" 
                            aria-valuemax=""100"">
-                      {percentage.ToString(formatInfo)}% ({GetReputationBarText(percentage)})
+                      {percentage.ToString(formatInfo)}% ({this.GetReputationBarText(percentage)})
                       </div>
                   </div>";
         }
@@ -138,7 +137,7 @@ namespace YAF.Core.Services
                     lookup.OrderBy(s => s.Key).Where(x => percentage < x.Key).Select(x => x.Value).FirstOrDefault();
             }
 
-            return BoardContext.Current.Get<ILocalization>().GetText("REPUTATION_VALUES", pageName);
+            return this.Get<ILocalization>().GetText("REPUTATION_VALUES", pageName);
         }
 
         /// <summary>

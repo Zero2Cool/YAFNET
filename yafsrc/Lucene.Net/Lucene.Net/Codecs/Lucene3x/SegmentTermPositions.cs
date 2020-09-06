@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using System;
 using System.Diagnostics;
@@ -151,7 +152,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
         public sealed override int Read(int[] docs, int[] freqs)
         {
-            throw new System.NotSupportedException("TermPositions does not support processing multiple documents in one call. Use TermDocs instead.");
+            throw new NotSupportedException("TermPositions does not support processing multiple documents in one call. Use TermDocs instead.");
         }
 
         /// <summary>
@@ -168,7 +169,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
         private void SkipPositions(int n)
         {
-            Debug.Assert(m_indexOptions == IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
+            if (Debugging.AssertsEnabled) Debugging.Assert(m_indexOptions == IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
             for (int f = n; f > 0; f--) // skip unread positions
             {
                 ReadDeltaPosition();
@@ -220,13 +221,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             }
         }
 
-        public int PayloadLength
-        {
-            get
-            {
-                return payloadLength;
-            }
-        }
+        public int PayloadLength => payloadLength;
 
         public BytesRef GetPayload()
         {
@@ -254,12 +249,6 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             return payload;
         }
 
-        public bool IsPayloadAvailable
-        {
-            get
-            {
-                return needToLoadPayload && payloadLength > 0;
-            }
-        }
+        public bool IsPayloadAvailable => needToLoadPayload && payloadLength > 0;
     }
 }

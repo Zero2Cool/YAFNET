@@ -28,8 +28,7 @@ namespace YAF.Core.Services
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Web;
-
+    
     using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -43,15 +42,6 @@ namespace YAF.Core.Services
     /// </summary>
     public class LoadMessage
     {
-        #region Constants and Fields
-
-        /// <summary>
-        ///   The _load string list.
-        /// </summary>
-        private readonly List<MessageNotification> loadStringList = new List<MessageNotification>();
-
-        #endregion
-
         #region Constructors and Destructors
 
         /// <summary>
@@ -59,9 +49,9 @@ namespace YAF.Core.Services
         /// </summary>
         public LoadMessage()
         {
-            if (this.SessionLoadString.Any())
+            if (this.SessionLoadString != null && this.SessionLoadString.Any())
             {
-                this.loadStringList.AddRange(this.SessionLoadString);
+                this.LoadStringList.AddRange(this.SessionLoadString);
 
                 // session load string no longer needed
                 this.SessionLoadString.Clear();
@@ -78,19 +68,7 @@ namespace YAF.Core.Services
         ///   Gets LoadStringList.
         /// </summary>
         [NotNull]
-        public List<MessageNotification> LoadStringList => this.loadStringList;
-
-        /*
-        /// <summary>
-        ///   Gets StringJavascript.
-        /// </summary>
-        public string StringJavascript
-        {
-            get
-            {
-                return CleanJsString(this.LoadString);
-            }
-        }*/
+        public List<MessageNotification> LoadStringList { get; } = new List<MessageNotification>();
 
         /// <summary>
         /// Gets the session load string.
@@ -99,12 +77,15 @@ namespace YAF.Core.Services
         {
             get
             {
-                if (BoardContext.Current.Get<HttpSessionStateBase>()["LoadStringList"] == null)
+                if (BoardContext.Current.Get<IDataCache>().Get("LoadStringList") == null)
                 {
-                    BoardContext.Current.Get<HttpSessionStateBase>()["LoadStringList"] = new List<MessageNotification>();
+                    BoardContext.Current.Get<IDataCache>().Set(
+                        "LoadStringList",
+                        new List<MessageNotification>(),
+                        TimeSpan.FromMinutes(30));
                 }
 
-                return BoardContext.Current.Get<HttpSessionStateBase>()["LoadStringList"] as List<MessageNotification>;
+                return BoardContext.Current.Get<IDataCache>().Get("LoadStringList") as List<MessageNotification>;
             }
         }
 

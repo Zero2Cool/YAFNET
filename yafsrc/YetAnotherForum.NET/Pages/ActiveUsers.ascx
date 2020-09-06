@@ -17,7 +17,7 @@
                     <div class="card-body">
                         <div class="table-responsive">
 	                        <table class="table tablesorter table-bordered table-striped" id="ActiveUsers">
-                                <thead class="thead-light">
+                                <thead class="table-light">
                                     <tr>
                                         <th>
                                             <YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" 
@@ -48,7 +48,7 @@
                                                                 LocalizedTag="platform" />
 		                                </th>
                                         <th id="Iptd_header1" runat="server" 
-                                            visible='<%# this.PageContext.IsAdmin %>'>
+                                            visible="<%# this.PageContext.IsAdmin %>">
                                             IP
 		                                </th>
                                     </tr>
@@ -59,6 +59,7 @@
                         <tr>
 				        <td>		
 					        <YAF:UserLink ID="NameLink" runat="server" 
+                                          Suspended='<%# this.Eval("Suspended").ToType<DateTime?>() %>'
                                           ReplaceName='<%# this.Eval(this.Get<BoardSettings>().EnableDisplayName ? "UserDisplayName" : "UserName") %>' 
                                           CrawlerName='<%# this.Eval("IsCrawler").ToType<int>() > 0 ? this.Eval("Browser").ToString() : string.Empty %>'
                                           UserID='<%# this.Eval("UserID").ToType<int>() %>' 
@@ -94,7 +95,7 @@
 				        <td>
 					        <%# this.Eval("Platform") %>
 				        </td>
-                        <td id="Iptd1" runat="server" visible='<%# this.PageContext.IsAdmin %>'>
+                        <td id="Iptd1" runat="server" visible="<%# this.PageContext.IsAdmin %>">
 					         <a id="Iplink1" href='<%# string.Format(this.PageContext.BoardSettings.IPInfoPageURL,IPHelper.GetIp4Address(this.Eval("IP").ToString())) %>'
                                 title='<%# this.GetText("COMMON","TT_IPDETAILS") %>' target="_blank" runat="server">
                              <%# IPHelper.GetIp4Address(this.Eval("IP").ToString())%></a>
@@ -106,23 +107,51 @@
                         </div>
                         </div>
             <div class="card-footer">
-            <div id="ActiveUsersPager" class="tableSorterPager form-inline">
-                <select class="pagesize custom-select custom-select-sm">
-                    <option selected="selected"  value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="30">30</option>
-                    <option  value="40">40</option>
-                </select>
-                &nbsp;
-                <div class="btn-group"  role="group">
-                    <a href="#" class="first btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-left"></i></span></a>
-                    <a href="#" class="prev btn btn-secondary btn-sm"><span><i class="fas fa-angle-left"></i></span></a>
-                    <input type="button" class="pagedisplay  btn btn-secondary btn-sm disabled"  style="width:150px" />
-                    <a href="#" class="next btn btn-secondary btn-sm"><span><i class="fas fa-angle-right"></i></span></a>
-                    <a href="#" class="last btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-right"></i></span></a>
+                <div id="ActiveUsersPager" class="row justify-content-between align-items-center">
+                <div class="col-auto mb-1">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-text">
+                            <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
+                        </div>
+                        <select class="pagesize form-select form-select-sm w-25">
+                            <option selected="selected" value="5">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_5" />
+                            </option>
+                            <option value="10">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_10" />
+
+                            </option>
+                            <option value="20">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_20" />
+
+                            </option>
+                            <option value="25">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_25" />
+
+                            </option>
+                            <option value="50">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_50" />
+
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-auto mb-1">
+                    <div class="btn-group" role="group">
+                        <a href="#" class="first  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-left"></i></span></a>
+                        <a href="#" class="prev  btn btn-secondary btn-sm"><span><i class="fas fa-angle-left"></i></span></a>
+                        <input type="button" class="pagedisplay  btn btn-secondary btn-sm disabled"  style="width:150px" />
+                        <a href="#" class="next btn btn-secondary btn-sm"><span><i class="fas fa-angle-right"></i></span></a>
+                        <a href="#" class="last  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-right"></i></span></a>
+                    </div>
                 </div>
             </div>
-                </div>
+            </div>
             </div>
         </div>
                             </div>

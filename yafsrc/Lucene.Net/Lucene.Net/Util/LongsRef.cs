@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
@@ -45,7 +45,7 @@ namespace YAF.Lucene.Net.Util
         /// <para/>
         /// NOTE: This was EMPTY_LONGS in Lucene
         /// </summary>
-        public static readonly long[] EMPTY_INT64S = new long[0];
+        public static readonly long[] EMPTY_INT64S = Arrays.Empty<long>();
 
         /// <summary>
         /// The contents of the <see cref="Int64sRef"/>. Should never be <c>null</c>. 
@@ -56,7 +56,7 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public long[] Int64s
         {
-            get { return longs; }
+            get => longs;
             set
             {
                 if (value == null)
@@ -101,7 +101,7 @@ namespace YAF.Lucene.Net.Util
             this.longs = longs;
             this.Offset = offset;
             this.Length = length;
-            Debug.Assert(IsValid());
+            if (Debugging.AssertsEnabled) Debugging.Assert(IsValid());
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public void Grow(int newLength)
         {
-            Debug.Assert(Offset == 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(Offset == 0);
             if (longs.Length < newLength)
             {
                 longs = ArrayUtil.Grow(longs, newLength);

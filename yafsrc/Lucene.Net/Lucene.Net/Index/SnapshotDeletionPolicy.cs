@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Index
 {
@@ -127,10 +127,10 @@ namespace YAF.Lucene.Net.Index
             int? refCount = m_refCounts[gen];
             if (refCount == null)
             {
-                throw new System.ArgumentException("commit gen=" + gen + " is not currently snapshotted");
+                throw new ArgumentException("commit gen=" + gen + " is not currently snapshotted");
             }
             int refCountInt = (int)refCount;
-            Debug.Assert(refCountInt > 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(refCountInt > 0);
             refCountInt--;
             if (refCountInt == 0)
             {
@@ -311,61 +311,19 @@ namespace YAF.Lucene.Net.Index
                 }
             }
 
-            public override Directory Directory
-            {
-                get
-                {
-                    return m_cp.Directory;
-                }
-            }
+            public override Directory Directory => m_cp.Directory;
 
-            public override ICollection<string> FileNames
-            {
-                get
-                {
-                    return m_cp.FileNames;
-                }
-            }
+            public override ICollection<string> FileNames => m_cp.FileNames;
 
-            public override long Generation
-            {
-                get
-                {
-                    return m_cp.Generation;
-                }
-            }
+            public override long Generation => m_cp.Generation;
 
-            public override string SegmentsFileName
-            {
-                get
-                {
-                    return m_cp.SegmentsFileName;
-                }
-            }
+            public override string SegmentsFileName => m_cp.SegmentsFileName;
 
-            public override IDictionary<string, string> UserData
-            {
-                get
-                {
-                    return m_cp.UserData;
-                }
-            }
+            public override IDictionary<string, string> UserData => m_cp.UserData;
 
-            public override bool IsDeleted
-            {
-                get
-                {
-                    return m_cp.IsDeleted;
-                }
-            }
+            public override bool IsDeleted => m_cp.IsDeleted;
 
-            public override int SegmentCount
-            {
-                get
-                {
-                    return m_cp.SegmentCount;
-                }
-            }
+            public override int SegmentCount => m_cp.SegmentCount;
         }
     }
 }

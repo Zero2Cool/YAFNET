@@ -27,7 +27,6 @@ namespace YAF.Web.Controls
     using System.Web.UI;
     using System.Web.UI.WebControls;
 
-    using YAF.Core;
     using YAF.Core.Context;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -78,23 +77,6 @@ namespace YAF.Web.Controls
             }
 
             set => this.ViewState["DefaultState"] = value;
-        }
-
-        /// <summary>
-        ///   Gets PageContext.
-        /// </summary>
-        public BoardContext PageContext
-        {
-            get
-            {
-                if (this.Site != null && this.Site.DesignMode)
-                {
-                    // design-time, return null...
-                    return null;
-                }
-
-                return BoardContext.Current;
-            }
         }
 
         /// <summary>

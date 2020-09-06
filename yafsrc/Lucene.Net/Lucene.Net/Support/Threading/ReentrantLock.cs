@@ -67,9 +67,8 @@ namespace YAF.Lucene.Net.Support.Threading
             }
         }
 
-        public bool HasQueuedThreads
-        {
-            get { return _queueLength > 0; }
-        }
+        public bool HasQueuedThreads => _queueLength > 0;
+
+        public bool IsHeldByCurrentThread => Monitor.IsEntered(_lock);
     }
 }

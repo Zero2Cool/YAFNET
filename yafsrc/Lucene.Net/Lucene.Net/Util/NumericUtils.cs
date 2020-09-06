@@ -1,5 +1,6 @@
 using J2N.Numerics;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -60,12 +61,8 @@ namespace YAF.Lucene.Net.Util
     /// @lucene.internal
     /// @since 2.9, API changed non backwards-compliant in 4.0
     /// </summary>
-    public sealed class NumericUtils
+    public static class NumericUtils // LUCENENET specific - changed to static
     {
-        private NumericUtils() // no instance!
-        {
-        }
-
         /// <summary>
         /// The default precision step used by <see cref="Documents.Int32Field"/>,
         /// <see cref="Documents.SingleField"/>, <see cref="Documents.Int64Field"/>, 
@@ -118,6 +115,7 @@ namespace YAF.Lucene.Net.Util
         /// <param name="val"> The numeric value </param>
         /// <param name="shift"> How many bits to strip from the right </param>
         /// <param name="bytes"> Will contain the encoded value </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Int64ToPrefixCoded(long val, int shift, BytesRef bytes)
         {
             Int64ToPrefixCodedBytes(val, shift, bytes);
@@ -133,6 +131,7 @@ namespace YAF.Lucene.Net.Util
         /// <param name="val"> The numeric value </param>
         /// <param name="shift"> How many bits to strip from the right </param>
         /// <param name="bytes"> Will contain the encoded value </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Int32ToPrefixCoded(int val, int shift, BytesRef bytes)
         {
             Int32ToPrefixCodedBytes(val, shift, bytes);
@@ -152,7 +151,7 @@ namespace YAF.Lucene.Net.Util
         {
             if ((shift & ~0x3f) != 0) // ensure shift is 0..63
             {
-                throw new System.ArgumentException("Illegal shift value, must be 0..63");
+                throw new ArgumentException("Illegal shift value, must be 0..63");
             }
             int nChars = (((63 - shift) * 37) >> 8) + 1; // i/7 is the same as (i*37)>>8 for i in 0..63
             bytes.Offset = 0;
@@ -187,7 +186,7 @@ namespace YAF.Lucene.Net.Util
         {
             if ((shift & ~0x1f) != 0) // ensure shift is 0..31
             {
-                throw new System.ArgumentException("Illegal shift value, must be 0..31");
+                throw new ArgumentException("Illegal shift value, must be 0..31");
             }
             int nChars = (((31 - shift) * 37) >> 8) + 1; // i/7 is the same as (i*37)>>8 for i in 0..63
             bytes.Offset = 0;
@@ -215,12 +214,13 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         /// <exception cref="FormatException"> if the supplied <see cref="BytesRef"/> is
         /// not correctly prefix encoded. </exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetPrefixCodedInt64Shift(BytesRef val)
         {
             int shift = val.Bytes[val.Offset] - SHIFT_START_INT64;
             if (shift > 63 || shift < 0)
             {
-                throw new System.FormatException("Invalid shift value (" + shift + ") in prefixCoded bytes (is encoded value really an INT?)");
+                throw new FormatException("Invalid shift value (" + shift + ") in prefixCoded bytes (is encoded value really an INT?)");
             }
             return shift;
         }
@@ -232,12 +232,13 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         /// <exception cref="FormatException"> if the supplied <see cref="BytesRef"/> is
         /// not correctly prefix encoded. </exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetPrefixCodedInt32Shift(BytesRef val)
         {
             int shift = val.Bytes[val.Offset] - SHIFT_START_INT32;
             if (shift > 31 || shift < 0)
             {
-                throw new System.FormatException("Invalid shift value in prefixCoded bytes (is encoded value really an INT?)");
+                throw new FormatException("Invalid shift value in prefixCoded bytes (is encoded value really an INT?)");
             }
             return shift;
         }
@@ -261,7 +262,7 @@ namespace YAF.Lucene.Net.Util
                 var b = val.Bytes[i];
                 if (b < 0)
                 {
-                    throw new System.FormatException("Invalid prefixCoded numerical value representation (byte " + (b & 0xff).ToString("x") + " at position " + (i - val.Offset) + " is invalid)");
+                    throw new FormatException("Invalid prefixCoded numerical value representation (byte " + (b & 0xff).ToString("x") + " at position " + (i - val.Offset) + " is invalid)");
                 }
                 sortableBits |= (byte)b;
             }
@@ -287,7 +288,7 @@ namespace YAF.Lucene.Net.Util
                 var b = val.Bytes[i];
                 if (b < 0)
                 {
-                    throw new System.FormatException("Invalid prefixCoded numerical value representation (byte " + (b & 0xff).ToString("x") + " at position " + (i - val.Offset) + " is invalid)");
+                    throw new FormatException("Invalid prefixCoded numerical value representation (byte " + (b & 0xff).ToString("x") + " at position " + (i - val.Offset) + " is invalid)");
                 }
                 sortableBits |= b;
             }
@@ -305,6 +306,7 @@ namespace YAF.Lucene.Net.Util
         /// NOTE: This was doubleToSortableLong() in Lucene
         /// </summary>
         /// <seealso cref="SortableInt64ToDouble(long)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long DoubleToSortableInt64(double val)
         {
             long f = J2N.BitConversion.DoubleToInt64Bits(val);
@@ -321,6 +323,7 @@ namespace YAF.Lucene.Net.Util
         /// NOTE: This was sortableLongToDouble() in Lucene
         /// </summary>
         /// <seealso cref="DoubleToSortableInt64(double)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double SortableInt64ToDouble(long val)
         {
             if (val < 0)
@@ -341,6 +344,7 @@ namespace YAF.Lucene.Net.Util
         /// NOTE: This was floatToSortableInt() in Lucene
         /// </summary>
         /// <seealso cref="SortableInt32ToSingle(int)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SingleToSortableInt32(float val)
         {
             int f = J2N.BitConversion.SingleToInt32Bits(val);
@@ -357,6 +361,7 @@ namespace YAF.Lucene.Net.Util
         /// NOTE: This was sortableIntToFloat() in Lucene
         /// </summary>
         /// <seealso cref="SingleToSortableInt32"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SortableInt32ToSingle(int val)
         {
             if (val < 0)
@@ -377,6 +382,7 @@ namespace YAF.Lucene.Net.Util
         /// <para/>
         /// NOTE: This was splitLongRange() in Lucene
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SplitInt64Range(Int64RangeBuilder builder, int precisionStep, long minBound, long maxBound)
         {
             SplitRange(builder, 64, precisionStep, minBound, maxBound);
@@ -393,6 +399,7 @@ namespace YAF.Lucene.Net.Util
         /// <para/>
         /// NOTE: This was splitIntRange() in Lucene
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SplitInt32Range(Int32RangeBuilder builder, int precisionStep, int minBound, int maxBound)
         {
             SplitRange(builder, 32, precisionStep, minBound, maxBound);
@@ -404,7 +411,7 @@ namespace YAF.Lucene.Net.Util
         {
             if (precisionStep < 1)
             {
-                throw new System.ArgumentException("precisionStep must be >=1");
+                throw new ArgumentException("precisionStep must be >=1");
             }
             if (minBound > maxBound)
             {
@@ -463,7 +470,7 @@ namespace YAF.Lucene.Net.Util
 
                 default:
                     // Should not happen!
-                    throw new System.ArgumentException("valSize must be 32 or 64.");
+                    throw new ArgumentException("valSize must be 32 or 64.");
             }
         }
 
@@ -484,7 +491,7 @@ namespace YAF.Lucene.Net.Util
             /// </summary>
             public virtual void AddRange(BytesRef minPrefixCoded, BytesRef maxPrefixCoded)
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
 
             /// <summary>
@@ -517,7 +524,7 @@ namespace YAF.Lucene.Net.Util
             /// </summary>
             public virtual void AddRange(BytesRef minPrefixCoded, BytesRef maxPrefixCoded)
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
 
             /// <summary>

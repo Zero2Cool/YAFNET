@@ -8,21 +8,32 @@
 <YAF:PageLinks ID="PageLinks" runat="server" />
 
     <div class="row">
-    <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" LocalizedTag="HEADER" LocalizedPage="ADMIN_BBCODE" /></h1>
-    </div>
-    </div>
-    <div class="row">
         <div class="col-xl-12">
             <div class="card mb-3">
-                <asp:Repeater ID="bbCodeList" runat="server" OnItemCommand="BbCodeListItemCommand">
-                    <HeaderTemplate>
-                        <div class="card-header">
+                <div class="card-header">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="col-auto">
                             <YAF:IconHeader runat="server"
                                             IconName="plug"
                                             LocalizedTag="HEADER" 
                                             LocalizedPage="ADMIN_BBCODE"></YAF:IconHeader>
                         </div>
+                        <div class="col-auto">
+                            <div class="input-group input-group-sm mr-2" role="group">
+                                <div class="input-group-text">
+                                    <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
+                                </div>
+                                <asp:DropDownList runat="server" ID="PageSize"
+                                                  AutoPostBack="True"
+                                                  OnSelectedIndexChanged="PageSizeSelectedIndexChanged"
+                                                  CssClass="form-select">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <asp:Repeater ID="bbCodeList" runat="server" OnItemCommand="BbCodeListItemCommand">
+                    <HeaderTemplate>
                         <div class="card-body">
                             <ul class="list-group">
                         </HeaderTemplate>
@@ -31,10 +42,9 @@
                                  <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">
                                         <asp:CheckBox ID="chkSelected" runat="server"
-                                                      Text="&nbsp;"
-                                                      CssClass="custom-control custom-checkbox d-inline-flex"/>
+                                                      Text='<%# this.Eval("Name") %>'
+                                                      CssClass="form-check" />
                                         <asp:HiddenField ID="hiddenBBCodeID" runat="server" Value='<%# this.Eval("ID") %>' />
-                                        <%# this.Eval("Name") %>
                                     </h5>
                                 </div>
                                 <p class="mb-1">
@@ -107,18 +117,22 @@
                        </ul>
                     </div>
                     <div class="card-footer text-center">
-                        <YAF:ThemeButton runat="server" 
-                                         CommandName="add" ID="Linkbutton3" 
+                        <YAF:ThemeButton runat="server"  ID="Linkbutton3" 
+                                         CssClass="mb-1"
+                                         CommandName="add"
                                          Type="Primary"
                                          Icon="plus-square" 
                                          TextLocalizedTag="ADD" TextLocalizedPage="ADMIN_BBCODE" />
-                        <YAF:ThemeButton runat="server" Icon="upload" 
+                        <YAF:ThemeButton runat="server" ID="Linkbutton5"
+                                         CssClass="mb-1"
+                                         Icon="upload" 
                                          DataTarget="BBCodeImportDialog"  
                                          DataToggle="modal"  
-                                         ID="Linkbutton5" 
                                          Type="Info"
                                          TextLocalizedTag="IMPORT" TextLocalizedPage="ADMIN_BBCODE" />
-                        <YAF:ThemeButton runat="server" CommandName="export" ID="Linkbutton4" 
+                        <YAF:ThemeButton runat="server" ID="Linkbutton4"  
+                                         CssClass="mb-1"
+                                         CommandName="export" 
                                          Type="Warning"
                                          Icon="download" 
                                          TextLocalizedTag="EXPORT" TextLocalizedPage="ADMIN_BBCODE" />
@@ -128,5 +142,10 @@
             </div>
         </div>
     </div>
+<div class="row justify-content-end">
+    <div class="col-auto">
+        <YAF:Pager ID="PagerTop" runat="server" OnPageChange="PagerTop_PageChange" />
+    </div>
+</div>
 
 <modal:Import ID="ImportDialog" runat="server" />

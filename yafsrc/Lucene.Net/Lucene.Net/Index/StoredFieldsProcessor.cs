@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Index
@@ -139,7 +139,7 @@ namespace YAF.Lucene.Net.Index
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal override void FinishDocument()
         {
-            Debug.Assert(docWriter.TestPoint("StoredFieldsWriter.finishDocument start"));
+            if (Debugging.AssertsEnabled) Debugging.Assert(docWriter.TestPoint("StoredFieldsWriter.finishDocument start"));
 
             InitFieldsWriter(IOContext.DEFAULT);
             Fill(docState.docID);
@@ -156,7 +156,7 @@ namespace YAF.Lucene.Net.Index
             }
 
             Reset();
-            Debug.Assert(docWriter.TestPoint("StoredFieldsWriter.finishDocument end"));
+            if (Debugging.AssertsEnabled) Debugging.Assert(docWriter.TestPoint("StoredFieldsWriter.finishDocument end"));
         }
 
         public override void AddField(int docID, IIndexableField field, FieldInfo fieldInfo)
@@ -179,7 +179,7 @@ namespace YAF.Lucene.Net.Index
                 fieldInfos[numStoredFields] = fieldInfo;
                 numStoredFields++;
 
-                Debug.Assert(docState.TestPoint("StoredFieldsWriterPerThread.processFields.writeField"));
+                if (Debugging.AssertsEnabled) Debugging.Assert(docState.TestPoint("StoredFieldsWriterPerThread.processFields.writeField"));
             }
         }
     }

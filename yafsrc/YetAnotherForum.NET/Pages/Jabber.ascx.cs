@@ -30,11 +30,13 @@ namespace YAF.Pages
     using System.Web;
 
     using YAF.Core.BasePages;
-    using YAF.Core.UsersRoles;
+    using YAF.Core.Extensions;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
+    using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Web.Extensions;
 
@@ -91,7 +93,7 @@ namespace YAF.Pages
             }
 
             // get user data...
-            var userHe = UserMembershipHelper.GetMembershipUserById(this.UserID);
+            var userHe = this.GetRepository<User>().GetById(this.UserID);
 
             if (userHe == null)
             {
@@ -104,16 +106,10 @@ namespace YAF.Pages
                 BuildLink.AccessDenied();
             }
 
-            var displayNameHe = UserMembershipHelper.GetDisplayNameFromID(this.UserID);
-
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.PageContext.BoardSettings.EnableDisplayName ? displayNameHe : userHe.UserName,
-                BuildLink.GetLink(
-                    ForumPages.Profile,
-                    "u={0}&name={1}",
-                    this.UserID,
-                    this.PageContext.BoardSettings.EnableDisplayName ? displayNameHe : userHe.UserName));
+            this.PageLinks.AddUser(
+                this.UserID,
+                userHe.DisplayOrUserName());
             this.PageLinks.AddLink(this.GetText("TITLE"), string.Empty);
 
             if (this.UserID == this.PageContext.PageUserID)
@@ -123,20 +119,17 @@ namespace YAF.Pages
             }
             else
             {
-                // Data for current page user
-                var userMe = UserMembershipHelper.GetMembershipUserById(this.PageContext.PageUserID);
-
                 // get full user data...
-                var userDataHe = new CombinedUserDataHelper(userHe, this.UserID);
-                var userDataMe = new CombinedUserDataHelper(userMe, this.PageContext.PageUserID);
+                var userDataHe = this.Get<IAspNetUsersHelper>().GetUser(userHe.ProviderUserKey);
 
-                var serverHe = userDataHe.Profile.XMPP
-                    .Substring(userDataHe.Profile.XMPP.IndexOf("@", StringComparison.Ordinal) + 1).Trim();
-                var serverMe = userDataMe.Profile.XMPP
-                    .Substring(userDataMe.Profile.XMPP.IndexOf("@", StringComparison.Ordinal) + 1).Trim();
+                var serverHe = userDataHe.Profile_XMPP
+                    .Substring(userDataHe.Profile_XMPP.IndexOf("@", StringComparison.Ordinal) + 1).Trim();
+                
+                var serverMe = this.PageContext.MembershipUser.Profile_XMPP
+                    .Substring(this.PageContext.MembershipUser.Profile_XMPP.IndexOf("@", StringComparison.Ordinal) + 1).Trim();
 
                 this.NotifyLabel.Text = serverMe == serverHe
-                                            ? this.GetTextFormatted("SERVERSAME", userDataHe.Profile.XMPP)
+                                            ? this.GetTextFormatted("SERVERSAME", userDataHe.Profile_XMPP)
                                             : this.GetTextFormatted("SERVEROTHER", $"http://{serverHe}");
 
                 this.Alert.Type = MessageTypes.info;

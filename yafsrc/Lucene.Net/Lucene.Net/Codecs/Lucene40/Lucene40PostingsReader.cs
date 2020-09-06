@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Support;
 using System;
@@ -192,13 +193,13 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
               System.out.println("  freqFP=" + termState2.freqOffset);
             }
             */
-            Debug.Assert(termState2.freqOffset < freqIn.Length);
+            if (Debugging.AssertsEnabled) Debugging.Assert(termState2.freqOffset < freqIn.Length);
 
             if (termState2.DocFreq >= skipMinimum)
             {
                 termState2.skipOffset = @in.ReadVInt64();
                 // if (DEBUG) System.out.println("  skipOffset=" + termState2.skipOffset + " vs freqIn.length=" + freqIn.length());
-                Debug.Assert(termState2.freqOffset + termState2.skipOffset < freqIn.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termState2.freqOffset + termState2.skipOffset < freqIn.Length);
             }
             else
             {
@@ -355,7 +356,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 // cases
                 freqIn.Seek(termState.freqOffset);
                 m_limit = termState.DocFreq;
-                Debug.Assert(m_limit > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(m_limit > 0);
                 m_ord = 0;
                 m_doc = -1;
                 m_accum = 0;
@@ -373,15 +374,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 return this;
             }
 
-            public override sealed int Freq
-            {
-                get { return m_freq; }
-            }
+            public override sealed int Freq => m_freq;
 
-            public override sealed int DocID
-            {
-                get { return m_doc; }
-            }
+            public override sealed int DocID => m_doc;
 
             public override sealed int Advance(int target)
             {
@@ -551,7 +546,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 : base(outerInstance, startFreqIn, null)
             {
                 this.outerInstance = outerInstance;
-                Debug.Assert(m_liveDocs == null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(m_liveDocs == null);
             }
 
             public override int NextDoc()
@@ -644,7 +639,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 : base(outerInstance, startFreqIn, liveDocs)
             {
                 this.outerInstance = outerInstance;
-                Debug.Assert(liveDocs != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(liveDocs != null);
             }
 
             public override int NextDoc()
@@ -788,8 +783,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
 
             public SegmentDocsAndPositionsEnum Reset(FieldInfo fieldInfo, StandardTermState termState, IBits liveDocs)
             {
-                Debug.Assert(fieldInfo.IndexOptions == IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
-                Debug.Assert(!fieldInfo.HasPayloads);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(fieldInfo.IndexOptions == IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
+                    Debugging.Assert(!fieldInfo.HasPayloads);
+                }
 
                 this.liveDocs = liveDocs;
 
@@ -800,7 +798,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 lazyProxPointer = termState.proxOffset;
 
                 limit = termState.DocFreq;
-                Debug.Assert(limit > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(limit > 0);
 
                 ord = 0;
                 doc = -1;
@@ -857,15 +855,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 return (doc = accum);
             }
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
-            public override int Freq
-            {
-                get { return freq; }
-            }
+            public override int Freq => freq;
 
             public override int Advance(int target)
             {
@@ -941,20 +933,14 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
 
                 posPendingCount--;
 
-                Debug.Assert(posPendingCount >= 0, "nextPosition() was called too many times (more than freq() times) posPendingCount=" + posPendingCount);
+                if (Debugging.AssertsEnabled) Debugging.Assert(posPendingCount >= 0, () => "nextPosition() was called too many times (more than freq() times) posPendingCount=" + posPendingCount);
 
                 return position;
             }
 
-            public override int StartOffset
-            {
-                get { return -1; }
-            }
+            public override int StartOffset => -1;
 
-            public override int EndOffset
-            {
-                get { return -1; }
-            }
+            public override int EndOffset => -1;
 
             /// <summary>
             /// Returns the payload at this position, or <c>null</c> if no
@@ -1020,8 +1006,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
             {
                 storeOffsets = fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS) >= 0;
                 storePayloads = fieldInfo.HasPayloads;
-                Debug.Assert(fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS) >= 0);
-                Debug.Assert(storePayloads || storeOffsets);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS) >= 0);
+                    Debugging.Assert(storePayloads || storeOffsets);
+                }
                 if (payload == null)
                 {
                     payload = new BytesRef();
@@ -1094,15 +1083,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 return (doc = accum);
             }
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
-            public override int Freq
-            {
-                get { return freq; }
-            }
+            public override int Freq => freq;
 
             public override int Advance(int target)
             {
@@ -1183,9 +1166,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                         {
                             // new payload length
                             payloadLength = proxIn.ReadVInt32();
-                            Debug.Assert(payloadLength >= 0);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(payloadLength >= 0);
                         }
-                        Debug.Assert(payloadLength != -1);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(payloadLength != -1);
                     }
 
                     if (storeOffsets)
@@ -1223,9 +1206,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                     {
                         // new payload length
                         payloadLength = proxIn.ReadVInt32();
-                        Debug.Assert(payloadLength >= 0);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(payloadLength >= 0);
                     }
-                    Debug.Assert(payloadLength != -1);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(payloadLength != -1);
 
                     payloadPending = true;
                     code_ = (int)((uint)code_ >> 1);
@@ -1245,21 +1228,15 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
 
                 posPendingCount--;
 
-                Debug.Assert(posPendingCount >= 0, "nextPosition() was called too many times (more than freq() times) posPendingCount=" + posPendingCount);
+                if (Debugging.AssertsEnabled) Debugging.Assert(posPendingCount >= 0, () => "nextPosition() was called too many times (more than freq() times) posPendingCount=" + posPendingCount);
 
                 //System.out.println("StandardR.D&PE nextPos   return pos=" + position);
                 return position;
             }
 
-            public override int StartOffset
-            {
-                get { return storeOffsets ? startOffset : -1; }
-            }
+            public override int StartOffset => storeOffsets ? startOffset : -1;
 
-            public override int EndOffset
-            {
-                get { return storeOffsets ? startOffset + offsetLength : -1; }
-            }
+            public override int EndOffset => storeOffsets ? startOffset + offsetLength : -1;
 
             /// <summary>
             /// Returns the payload at this position, or <c>null</c> if no
@@ -1273,8 +1250,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                     {
                         return null;
                     }
-                    Debug.Assert(lazyProxPointer == -1);
-                    Debug.Assert(posPendingCount < freq);
+                    if (Debugging.AssertsEnabled)
+                    {
+                        Debugging.Assert(lazyProxPointer == -1);
+                        Debugging.Assert(posPendingCount < freq);
+                    }
 
                     if (payloadPending)
                     {

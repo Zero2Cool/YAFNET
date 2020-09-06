@@ -60,7 +60,7 @@ namespace YAF.Core.Model
             int tagId,
             int topicId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var newId = repository.Insert(
                 new TopicTag
@@ -86,13 +86,12 @@ namespace YAF.Core.Model
         /// </returns>
         public static List<Tuple<TopicTag, Tag>> List(this IRepository<TopicTag> repository, int topicId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var expression = OrmLiteConfig.DialectProvider.SqlExpression<TopicTag>();
 
             expression.Join<Tag>((topicTag, tag) => tag.ID == topicTag.TagID)
-                .Where<TopicTag>(t => t.TopicID == topicId)
-                .Select();
+                .Where<TopicTag>(t => t.TopicID == topicId);
 
             return repository.DbAccess.Execute(
                 db => db.Connection.SelectMulti<TopicTag, Tag>(expression));
@@ -112,9 +111,9 @@ namespace YAF.Core.Model
         /// </returns>
         public static string ListAsDelimitedString(this IRepository<TopicTag> repository, int topicId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
-            
-            return  repository.List(topicId).Select(t => t.Item2.TagName).ToDelimitedString(",");
+            CodeContracts.VerifyNotNull(repository);
+
+            return repository.List(topicId).Select(t => t.Item2.TagName).ToDelimitedString(",");
         }
 
         #endregion

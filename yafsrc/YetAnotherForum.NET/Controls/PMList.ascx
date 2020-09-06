@@ -1,55 +1,75 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" Inherits="YAF.Controls.PMList" EnableTheming="true" Codebehind="PMList.ascx.cs" EnableViewState="true" %>
-<%@ Import Namespace="YAF.Types.Extensions" %>
 <%@ Import Namespace="YAF.Types.Constants" %>
 <%@ Import Namespace="YAF.Core.Extensions" %>
 
-<YAF:Pager ID="PagerTop" runat="server" OnPageChange="PagerTop_PageChange" />
-
-<div class="btn-group mb-2">
-    <YAF:ThemeButton ID="Sort" runat="server"
-                     CssClass="dropdown-toggle"
-                     Type="Secondary"
-                     DataToggle="dropdown"
-                     TextLocalizedTag="SORT_BY"
-                     Icon="sort"
-                     Visible="<%# this.Messages.Items.Count > 0 %>"/>
-    <div class="dropdown-menu">
-        <YAF:ThemeButton ID="SortFromAsc" runat="server"
-                         CssClass="dropdown-item"
-                         Type="None" 
-                         OnClick="FromLinkAsc_Click"
-                         TextLocalizedTag='<%# this.View == PmView.Outbox ? "TO_ASC" : "FROM_ASC" %>'/>
-        <YAF:ThemeButton ID="SortFromDesc" runat="server"
-                         CssClass="dropdown-item"
-                         Type="None" 
-                         OnClick="FromLinkDesc_Click"
-                         TextLocalizedTag='<%# this.View == PmView.Outbox ? "TO_DESC" : "FROM_DESC" %>'/>
-        <div class="dropdown-divider"></div>
-        <YAF:ThemeButton ID="SortSubjectAsc" runat="server"
-                         CssClass="dropdown-item"
-                         Type="None" 
-                         OnClick="SubjectLinkAsc_Click"
-                         TextLocalizedTag="SUBJECT_ASC" />
-        <YAF:ThemeButton ID="SortSubjectDesc" runat="server"
-                         CssClass="dropdown-item"
-                         Type="None" 
-                         OnClick="SubjectLinkDesc_Click"
-                         TextLocalizedTag="SUBJECT_DESC" />
-        <div class="dropdown-divider"></div>
-        <YAF:ThemeButton ID="SortDatedAsc" runat="server"
-                         CssClass="dropdown-item"
-                         Type="None" 
-                         OnClick="DateLinkAsc_Click"
-                         TextLocalizedTag="DATE_ASC" />
-        <YAF:ThemeButton ID="SortDateDesc" runat="server"
-                         CssClass="dropdown-item"
-                         Type="None" 
-                         OnClick="DateLinkDesc_Click"
-                         TextLocalizedTag="DATE_DESC" />
+<div class="card-header">
+    <div class="row justify-content-between align-items-center">
+        <div class="col-auto">
+            <YAF:IconHeader runat="server"
+                            IconName="inbox"
+                            ID="IconHeader"/>
+        </div>
+        <div class="col-auto">
+            <div class="btn-toolbar" role="toolbar">
+                <div class="input-group input-group-sm mr-2" role="group">
+                    <div class="input-group-text">
+                        <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
+                    </div>
+                    <asp:DropDownList runat="server" ID="PageSize"
+                                      AutoPostBack="True"
+                                      OnSelectedIndexChanged="PageSizeSelectedIndexChanged"
+                                      CssClass="form-select">
+                    </asp:DropDownList>
+                </div>
+                <div class="btn-group btn-group-sm">
+                   
+                    <YAF:ThemeButton ID="Sort" runat="server"
+                                     CssClass="dropdown-toggle"
+                                     Type="Secondary"
+                                     DataToggle="dropdown"
+                                     TextLocalizedTag="SORT_BY"
+                                     Icon="sort"
+                                     Visible="<%# this.Messages.Items.Count > 0 %>"/>
+                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left">
+                       
+                        <YAF:ThemeButton ID="SortFromAsc" runat="server"
+                                         CssClass="dropdown-item"
+                                         Type="None" 
+                                         OnClick="FromLinkAsc_Click"/>
+                        <YAF:ThemeButton ID="SortFromDesc" runat="server"
+                                         CssClass="dropdown-item"
+                                         Type="None" 
+                                         OnClick="FromLinkDesc_Click"/>
+                        <div class="dropdown-divider"></div>
+                        <YAF:ThemeButton ID="SortSubjectAsc" runat="server"
+                                         CssClass="dropdown-item"
+                                         Type="None" 
+                                         OnClick="SubjectLinkAsc_Click"
+                                         TextLocalizedTag="SUBJECT_ASC" />
+                        <YAF:ThemeButton ID="SortSubjectDesc" runat="server"
+                                         CssClass="dropdown-item"
+                                         Type="None" 
+                                         OnClick="SubjectLinkDesc_Click"
+                                         TextLocalizedTag="SUBJECT_DESC" />
+                        <div class="dropdown-divider"></div>
+                        <YAF:ThemeButton ID="SortDatedAsc" runat="server"
+                                         CssClass="dropdown-item"
+                                         Type="None" 
+                                         OnClick="DateLinkAsc_Click"
+                                         TextLocalizedTag="DATE_ASC" />
+                        <YAF:ThemeButton ID="SortDateDesc" runat="server"
+                                         CssClass="dropdown-item"
+                                         Type="None" 
+                                         OnClick="DateLinkDesc_Click"
+                                         TextLocalizedTag="DATE_DESC" />
+                    </div>
+                    </div>
+            </div>
+        </div>
     </div>
 </div>
-
-<asp:Repeater runat="server" ID="Messages">
+<div class="card-body">
+    <asp:Repeater runat="server" ID="Messages">
     <HeaderTemplate>
         <ul class="list-group">
     </HeaderTemplate>
@@ -60,31 +80,36 @@
         <li class="list-group-item list-group-item-action">
                 <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1 text-break">
-                        <asp:HiddenField ID="MessageID" runat="server" Value='<%# this.Eval("UserPMessageID") %>' />
+                        <asp:HiddenField ID="MessageID" runat="server" Value="<%# (Container.DataItem as dynamic).UserPMessageID %>" />
                         <asp:CheckBox runat="server" ID="ItemCheck" 
                                        Text="&nbsp;"
-                                       CssClass="custom-control custom-checkbox d-inline-flex"/>
+                                       CssClass="form-check d-inline-flex"/>
                         <YAF:Icon runat="server"
-                                  IconName='<%# this.Eval("IsRead").ToType<bool>() ? "envelope-open" : "envelope" %>'
-                                  IconType='<%# this.Eval("IsRead").ToType<bool>() ? "text-secondary" : "text-success" %>'></YAF:Icon>
-                        <a href='<%# this.GetMessageLink(this.Eval("UserPMessageID")) %>'>
-                        <%# this.HtmlEncode(this.Eval("Subject")) %>
+                                  IconName='<%# (Container.DataItem as dynamic).IsRead ? "envelope-open" : "envelope" %>'
+                                  IconType='<%# (Container.DataItem as dynamic).IsRead ? "text-secondary" : "text-success" %>'></YAF:Icon>
+                        <a href="<%# this.GetMessageLink((Container.DataItem as dynamic).UserPMessageID) %>">
+                        <%# this.HtmlEncode((string)(Container.DataItem as dynamic).Subject) %>
                         </a>
                     </h5>
                     <small class="d-none d-md-block">
                         <span class="font-weight-bold">
-                            <YAF:LocalizedLabel ID="LocalizedLabel5" runat="server" LocalizedTag="DATE" />
+                            <YAF:LocalizedLabel ID="LocalizedLabel5" runat="server" 
+                                                LocalizedTag="DATE" />
                         </span>
                         <YAF:DisplayDateTime ID="PostedDateTime" runat="server" 
-                                             DateTime='<%# Container.DataItemToField<DateTime>("Created") %>'></YAF:DisplayDateTime>
+                                             DateTime='<%# (Container.DataItem as dynamic).Created %>'></YAF:DisplayDateTime>
                     </small>
                 </div>
                 <p class="mb-1">
                     <span class="font-weight-bold">
-                        <YAF:LocalizedLabel ID="LocalizedLabel6" runat="server" LocalizedTag='<%# this.View == PmView.Outbox ? "TO" : "FROM" %>' />:
+                        <YAF:LocalizedLabel ID="LocalizedLabel6" runat="server" 
+                                            LocalizedTag='<%# this.View == PmView.Outbox ? "TO" : "FROM" %>' />:
                     </span>
-                    <YAF:UserLink ID="UserLink1" runat="server" 
-                                  UserID='<%# (this.View == PmView.Outbox ? this.Eval("ToUserID") : this.Eval("FromUserID" )).ToType<int>() %>' />
+                    <YAF:UserLink ID="UserLink1" runat="server"
+                                  ReplaceName="<%# this.View == PmView.Outbox ? this.PageContext.BoardSettings.EnableDisplayName ? (Container.DataItem as dynamic).ToUserDisplayName : (Container.DataItem as dynamic).ToUser : this.PageContext.BoardSettings.EnableDisplayName ? (Container.DataItem as dynamic).FromUserDisplayName : (Container.DataItem as dynamic).FromUser %>"
+                                  Suspended="<%# this.View == PmView.Outbox ? (Container.DataItem as dynamic).ToSuspended : (Container.DataItem as dynamic).FromSuspended  %>"
+                                  Style="<%# this.View == PmView.Outbox ? (Container.DataItem as dynamic).ToStyle : (Container.DataItem as dynamic).FromStyle %>"
+                                  UserID="<%# this.View == PmView.Outbox ? (Container.DataItem as dynamic).ToUserID : (Container.DataItem as dynamic).FromUserID %>" />
                 </p>
             </li>
     </ItemTemplate>
@@ -93,7 +118,7 @@
 <asp:UpdatePanel ID="upPanExport" runat="server">
     <ContentTemplate>
         <div class="btn-toolbar mt-3" role="toolbar">
-            <div class="btn-group mr-2" role="group">
+            <div class="btn-group mr-2 mb-1" role="group">
                 <YAF:ThemeButton runat="server" ID="MarkAsRead" 
                                  Size="Small"
                                  TextLocalizedTag="MARK_ALL_ASREAD" 
@@ -101,7 +126,7 @@
                                  Type="Secondary" 
                                  Icon="eye"/>
             </div>
-            <div class="btn-group mr-2" role="group">
+            <div class="btn-group mr-2 mb-1" role="group">
                 <YAF:ThemeButton runat="server" ID="ArchiveSelected" 
                                  Size="Small"
                                  TextLocalizedTag="ARCHIVESELECTED" 
@@ -115,7 +140,7 @@
                                  OnClick="ArchiveAll_Click"
                                  Type="Secondary" Icon="archive" />
             </div>
-            <div class="btn-group mr-2" role="group">
+            <div class="btn-group mr-2 mb-1" role="group">
                 <YAF:ThemeButton runat="server" ID="ExportSelected" 
                                  Size="Small"
                                  TextLocalizedTag="EXPORTSELECTED" 
@@ -129,7 +154,7 @@
                                  Type="Secondary" 
                                  Icon="file-export" />
             </div>
-            <div class="btn-group" role="group">
+            <div class="btn-group mb-1" role="group">
                 <YAF:ThemeButton runat="server" ID="DeleteSelected" 
                              Size="Small"
                              TextLocalizedTag="DELETESELECTED" 
@@ -153,11 +178,16 @@
         <asp:PostBackTrigger ControlID="ExportAll" />
     </Triggers>
 </asp:UpdatePanel>
-
-<YAF:Pager ID="PagerBottom" runat="server" LinkedPager="PagerTop" />
+    
+<div class="row justify-content-end">
+    <div class="col-auto">
+        <YAF:Pager ID="PagerTop" runat="server" 
+                   OnPageChange="PagerTop_PageChange" />
+    </div>
+</div>
 
 <asp:Label id="lblExportType" runat="server"></asp:Label>
-<div class="custom-control custom-radio custom-control-inline">
+<div class="form-check form-check-inline">
     <asp:RadioButtonList runat="server" id="ExportType" 
                          RepeatLayout="UnorderedList"
                          CssClass="list-unstyled">
@@ -168,15 +198,9 @@
 </div>
 
 <YAF:Alert runat="server" ID="NoMessage" Type="info">
-    <YAF:LocalizedLabel runat="server" LocalizedTag="NO_MESSAGES"></YAF:LocalizedLabel>
+    <YAF:Icon runat="server" 
+              IconName="info-circle" />
+    <YAF:LocalizedLabel runat="server" 
+                        LocalizedTag="NO_MESSAGES" />
 </YAF:Alert>
-
-</div>
-
-
-
-<div class="card-footer">
-    <small class="text-muted">
-        <asp:Label ID="PMInfoLink" runat="server"></asp:Label>
-    </small>
 </div>

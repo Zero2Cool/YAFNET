@@ -30,10 +30,14 @@ namespace YAF.Core.Services
 
     using YAF.Configuration;
     using YAF.Core.Context;
+    using YAF.Core.Extensions;
     using YAF.Core.Services.CheckForSpam;
     using YAF.Types;
+    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
+    using YAF.Utils.Helpers;
 
     /// <summary>
     /// User and Content Spam Checking
@@ -89,7 +93,7 @@ namespace YAF.Core.Services
                 return false;
             }
 
-            if (BoardContext.Current.CurrentUserData.NumPosts
+            if (BoardContext.Current.User.NumPosts
                 >= this.Get<BoardSettings>().IgnoreSpamWordCheckPostCount)
             {
                 return false;
@@ -199,6 +203,78 @@ namespace YAF.Core.Services
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Check Content for Spam URLs (Count URLs inside Messages)
+        /// </summary>
+        /// <param name="message">
+        /// The message to check for URLs.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public bool ContainsSpamUrls(string message)
+        {
+            // Check posts for urls if the user has only x posts
+            if (BoardContext.Current.User.NumPosts >
+                this.Get<BoardSettings>().IgnoreSpamWordCheckPostCount || BoardContext.Current.IsAdmin ||
+                BoardContext.Current.ForumModeratorAccess)
+            {
+                return false;
+            }
+
+            var urlCount = UrlHelper.CountUrls(message);
+
+            if (urlCount <= this.Get<BoardSettings>().AllowedNumberOfUrls)
+            {
+                return false;
+            }
+
+            var spamResult =
+                $"The user posted {urlCount} urls but allowed only {this.Get<BoardSettings>().AllowedNumberOfUrls}";
+
+            switch (this.Get<BoardSettings>().SpamMessageHandling)
+            {
+                case 0:
+                    this.Get<ILogger>().Log(
+                        BoardContext.Current.PageUserID,
+                        "Spam Message Detected",
+                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {BoardContext.Current.User.DisplayOrUserName()}",
+                        EventLogTypes.SpamMessageDetected);
+                    break;
+                case 1:
+                    this.Get<ILogger>().Log(
+                        BoardContext.Current.PageUserID,
+                        "Spam Message Detected",
+                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {(BoardContext.Current.IsGuest ? "Guest" : BoardContext.Current.User.DisplayOrUserName())}, it was flagged as unapproved post",
+                        EventLogTypes.SpamMessageDetected);
+                    break;
+                case 2:
+                    this.Get<ILogger>().Log(
+                        BoardContext.Current.PageUserID,
+                        "Spam Message Detected",
+                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {BoardContext.Current.User.DisplayOrUserName()}, post was rejected",
+                        EventLogTypes.SpamMessageDetected);
+
+                    BoardContext.Current.AddLoadMessage(this.Get<ILocalization>().GetText("SPAM_MESSAGE"), MessageTypes.danger);
+
+                    break;
+                case 3:
+                    this.Get<ILogger>().Log(
+                        BoardContext.Current.PageUserID,
+                        "Spam Message Detected",
+                        $"Spam Check detected possible SPAM ({spamResult}) posted by User: {BoardContext.Current.User.DisplayOrUserName()}, user was deleted and bannded",
+                        EventLogTypes.SpamMessageDetected);
+
+                    this.Get<IAspNetUsersHelper>().DeleteAndBanUser(
+                        BoardContext.Current.PageUserID,
+                        BoardContext.Current.MembershipUser,
+                        BoardContext.Current.User.IP);
+                    break;
+            }
+
+            return true;
         }
 
         /// <summary>

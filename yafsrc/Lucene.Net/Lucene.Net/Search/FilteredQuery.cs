@@ -1,6 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace YAF.Lucene.Net.Search
@@ -65,11 +66,11 @@ namespace YAF.Lucene.Net.Search
         {
             if (query == null || filter == null)
             {
-                throw new System.ArgumentException("Query and filter cannot be null.");
+                throw new ArgumentException("Query and filter cannot be null.");
             }
             if (strategy == null)
             {
-                throw new System.ArgumentException("FilterStrategy can not be null");
+                throw new ArgumentException("FilterStrategy can not be null");
             }
             this.strategy = strategy;
             this.query = query;
@@ -98,10 +99,7 @@ namespace YAF.Lucene.Net.Search
                 this.weight = weight;
             }
 
-            public override bool ScoresDocsOutOfOrder
-            {
-                get { return true; }
-            }
+            public override bool ScoresDocsOutOfOrder => true;
 
             public override float GetValueForNormalization()
             {
@@ -136,18 +134,12 @@ namespace YAF.Lucene.Net.Search
             }
 
             // return this query
-            public override Query Query
-            {
-                get
-                {
-                    return outerInstance;
-                }
-            }
+            public override Query Query => outerInstance;
 
             // return a filtering scorer
             public override Scorer GetScorer(AtomicReaderContext context, IBits acceptDocs)
             {
-                Debug.Assert(outerInstance.filter != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.filter != null);
 
                 DocIdSet filterDocIdSet = outerInstance.filter.GetDocIdSet(context, acceptDocs);
                 if (filterDocIdSet == null)
@@ -162,7 +154,7 @@ namespace YAF.Lucene.Net.Search
             // return a filtering top scorer
             public override BulkScorer GetBulkScorer(AtomicReaderContext context, bool scoreDocsInOrder, IBits acceptDocs)
             {
-                Debug.Assert(outerInstance.filter != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.filter != null);
 
                 DocIdSet filterDocIdSet = outerInstance.filter.GetDocIdSet(context, acceptDocs);
                 if (filterDocIdSet == null)
@@ -220,20 +212,14 @@ namespace YAF.Lucene.Net.Search
                 }
             }
 
-            public override int DocID
-            {
-                get { return scorerDoc; }
-            }
+            public override int DocID => scorerDoc;
 
             public override float GetScore()
             {
                 return scorer.GetScore();
             }
 
-            public override int Freq
-            {
-                get { return scorer.Freq; }
-            }
+            public override int Freq => scorer.Freq;
 
             public override ICollection<ChildScorer> GetChildren()
             {
@@ -348,20 +334,14 @@ namespace YAF.Lucene.Net.Search
                 return AdvanceToNextCommonDoc();
             }
 
-            public override sealed int DocID
-            {
-                get { return m_secondaryDoc; }
-            }
+            public override sealed int DocID => m_secondaryDoc;
 
             public override sealed float GetScore()
             {
                 return scorer.GetScore();
             }
 
-            public override sealed int Freq
-            {
-                get { return scorer.Freq; }
-            }
+            public override sealed int Freq => scorer.Freq;
 
             public override sealed ICollection<ChildScorer> GetChildren()
             {
@@ -424,33 +404,15 @@ namespace YAF.Lucene.Net.Search
 
         /// <summary>
         /// Returns this <see cref="FilteredQuery"/>'s (unfiltered) <see cref="Query"/> </summary>
-        public Query Query
-        {
-            get
-            {
-                return query;
-            }
-        }
+        public Query Query => query;
 
         /// <summary>
         /// Returns this <see cref="FilteredQuery"/>'s filter </summary>
-        public Filter Filter
-        {
-            get
-            {
-                return filter;
-            }
-        }
+        public Filter Filter => filter;
 
         /// <summary>
         /// Returns this <see cref="FilteredQuery"/>'s <seealso cref="FilterStrategy"/> </summary>
-        public virtual FilterStrategy Strategy
-        {
-            get
-            {
-                return this.strategy;
-            }
-        }
+        public virtual FilterStrategy Strategy => this.strategy;
 
         /// <summary>
         /// Expert: adds all terms occurring in this query to the terms set. Only
@@ -487,7 +449,7 @@ namespace YAF.Lucene.Net.Search
             {
                 return false;
             }
-            Debug.Assert(o is FilteredQuery);
+            if (Debugging.AssertsEnabled) Debugging.Assert(o is FilteredQuery);
             FilteredQuery fq = (FilteredQuery)o;
             return fq.query.Equals(this.query) && fq.filter.Equals(this.filter) && fq.strategy.Equals(this.strategy);
         }
@@ -569,7 +531,7 @@ namespace YAF.Lucene.Net.Search
             /// <param name="docIdSet"> the filter <see cref="DocIdSet"/> to apply </param>
             /// <returns> a filtered scorer
             /// </returns>
-            /// <exception cref="System.IO.IOException"> if an <see cref="System.IO.IOException"/> occurs </exception>
+            /// <exception cref="IOException"> if an <see cref="IOException"/> occurs </exception>
             public abstract Scorer FilteredScorer(AtomicReaderContext context, Weight weight, DocIdSet docIdSet);
 
             /// <summary>
@@ -632,7 +594,7 @@ namespace YAF.Lucene.Net.Search
                 }
                 else
                 {
-                    Debug.Assert(firstFilterDoc > -1);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(firstFilterDoc > -1);
                     // we are gonna advance() this scorer, so we set inorder=true/toplevel=false
                     // we pass null as acceptDocs, as our filter has already respected acceptDocs, no need to do twice
                     Scorer scorer = weight.GetScorer(context, null);

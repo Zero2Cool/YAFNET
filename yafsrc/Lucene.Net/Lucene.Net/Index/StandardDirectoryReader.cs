@@ -1,7 +1,8 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Text;
 
 namespace YAF.Lucene.Net.Index
@@ -69,14 +70,14 @@ namespace YAF.Lucene.Net.Index
                 var readers = new SegmentReader[sis.Count];
                 for (int i = sis.Count - 1; i >= 0; i--)
                 {
-                    System.IO.IOException prior = null;
+                    IOException prior = null;
                     bool success = false;
                     try
                     {
                         readers[i] = new SegmentReader(sis.Info(i), termInfosIndexDivisor, IOContext.READ);
                         success = true;
                     }
-                    catch (System.IO.IOException ex)
+                    catch (IOException ex)
                     {
                         prior = ex;
                     }
@@ -116,7 +117,7 @@ namespace YAF.Lucene.Net.Index
                     // actual instance of SegmentInfoPerCommit in
                     // IndexWriter's segmentInfos:
                     SegmentCommitInfo info = infos.Info(i);
-                    Debug.Assert(info.Info.Dir == dir);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(info.Info.Dir == dir);
                     ReadersAndUpdates rld = writer.readerPool.Get(info, true);
                     try
                     {
@@ -234,8 +235,11 @@ namespace YAF.Lucene.Net.Index
                             // there are changes to the reader, either liveDocs or DV updates
                             readerShared[i] = false;
                             // Steal the ref returned by SegmentReader ctor:
-                            Debug.Assert(infos.Info(i).Info.Dir == newReaders[i].SegmentInfo.Info.Dir);
-                            Debug.Assert(infos.Info(i).HasDeletions || infos.Info(i).HasFieldUpdates);
+                            if (Debugging.AssertsEnabled)
+                            {
+                                Debugging.Assert(infos.Info(i).Info.Dir == newReaders[i].SegmentInfo.Info.Dir);
+                                Debugging.Assert(infos.Info(i).HasDeletions || infos.Info(i).HasFieldUpdates);
+                            }
                             if (newReaders[i].SegmentInfo.DelGen == infos.Info(i).DelGen)
                             {
                                 // only DV updates
@@ -388,7 +392,7 @@ namespace YAF.Lucene.Net.Index
             {
                 if (m_directory != commit.Directory)
                 {
-                    throw new System.IO.IOException("the specified commit does not match the specified Directory");
+                    throw new IOException("the specified commit does not match the specified Directory");
                 }
                 if (segmentInfos != null && commit.SegmentsFileName.Equals(segmentInfos.GetSegmentsFileName(), StringComparison.Ordinal))
                 {
@@ -532,61 +536,19 @@ namespace YAF.Lucene.Net.Index
                 return "DirectoryReader.ReaderCommit(" + segmentsFileName + ")";
             }
 
-            public override int SegmentCount
-            {
-                get
-                {
-                    return segmentCount;
-                }
-            }
+            public override int SegmentCount => segmentCount;
 
-            public override string SegmentsFileName
-            {
-                get
-                {
-                    return segmentsFileName;
-                }
-            }
+            public override string SegmentsFileName => segmentsFileName;
 
-            public override ICollection<string> FileNames
-            {
-                get
-                {
-                    return files;
-                }
-            }
+            public override ICollection<string> FileNames => files;
 
-            public override Directory Directory
-            {
-                get
-                {
-                    return dir;
-                }
-            }
+            public override Directory Directory => dir;
 
-            public override long Generation
-            {
-                get
-                {
-                    return generation;
-                }
-            }
+            public override long Generation => generation;
 
-            public override bool IsDeleted
-            {
-                get
-                {
-                    return false;
-                }
-            }
+            public override bool IsDeleted => false;
 
-            public override IDictionary<string, string> UserData
-            {
-                get
-                {
-                    return userData;
-                }
-            }
+            public override IDictionary<string, string> UserData => userData;
 
             public override void Delete()
             {

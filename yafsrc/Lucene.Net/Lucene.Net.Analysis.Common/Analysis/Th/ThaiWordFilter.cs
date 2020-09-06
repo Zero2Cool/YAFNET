@@ -3,7 +3,6 @@ using ICU4N.Text;
 using YAF.Lucene.Net.Analysis.Core;
 using YAF.Lucene.Net.Analysis.TokenAttributes;
 using YAF.Lucene.Net.Analysis.Util;
-using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Globalization;
@@ -66,6 +65,8 @@ namespace YAF.Lucene.Net.Analysis.Th
         private bool hasMoreTokensInClone = false;
         private bool hasIllegalOffsets = false; // only if the length changed before this filter
 
+        private static readonly Regex thaiPattern = new Regex(@"\p{IsThai}", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
         /// <summary>
         /// Creates a new <see cref="ThaiWordFilter"/> with the specified match version. </summary>
         public ThaiWordFilter(LuceneVersion matchVersion, TokenStream input)
@@ -111,7 +112,7 @@ namespace YAF.Lucene.Net.Analysis.Th
                 return false;
             }
 
-            if (termAtt.Length == 0 || !Regex.IsMatch(termAtt.ToString().Substring(0, 1), @"\p{IsThai}"))
+            if (termAtt.Length == 0 || !thaiPattern.IsMatch(string.Empty + termAtt[0]))
             {
                 return true;
             }

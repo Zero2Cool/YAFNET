@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -26,12 +27,8 @@ namespace YAF.Lucene.Net.Util
     /// <summary>
     /// Class containing some useful methods used by command line tools
     /// </summary>
-    public sealed class CommandLineUtil
+    public static class CommandLineUtil // LUCENENET specific - made static
     {
-        private CommandLineUtil()
-        {
-        }
-
         /// <summary>
         /// Creates a specific <see cref="FSDirectory"/> instance starting from its class name. </summary>
         /// <param name="clazzName"> The name of the <see cref="FSDirectory"/> class to load. </param>
@@ -46,19 +43,19 @@ namespace YAF.Lucene.Net.Util
             }
             catch (TypeLoadException e)
             {
-                throw new System.ArgumentException(typeof(FSDirectory).Name + " implementation not found: " + clazzName, e);
+                throw new ArgumentException(typeof(FSDirectory).Name + " implementation not found: " + clazzName, e);
             }
-            catch (System.InvalidCastException e)
+            catch (InvalidCastException e)
             {
-                throw new System.ArgumentException(clazzName + " is not a " + typeof(FSDirectory).Name + " implementation", e);
+                throw new ArgumentException(clazzName + " is not a " + typeof(FSDirectory).Name + " implementation", e);
             }
             catch (MissingMethodException e)
             {
-                throw new System.ArgumentException(clazzName + " constructor with " + typeof(FileInfo).Name + " as parameter not found", e);
+                throw new ArgumentException(clazzName + " constructor with " + typeof(FileInfo).Name + " as parameter not found", e);
             }
             catch (Exception e)
             {
-                throw new System.ArgumentException("Error creating " + clazzName + " instance", e);
+                throw new ArgumentException("Error creating " + clazzName + " instance", e);
             }
         }
 
@@ -66,7 +63,7 @@ namespace YAF.Lucene.Net.Util
         /// Loads a specific <see cref="Directory"/> implementation. </summary>
         /// <param name="clazzName"> The name of the <see cref="Directory"/> class to load. </param>
         /// <returns> The <see cref="Directory"/> class loaded. </returns>
-        /// <exception cref="System.TypeLoadException"> If the specified class cannot be found. </exception>
+        /// <exception cref="TypeLoadException"> If the specified class cannot be found. </exception>
         public static Type LoadDirectoryClass(string clazzName)
         {
             return Type.GetType(AdjustDirectoryClassName(clazzName));
@@ -76,7 +73,7 @@ namespace YAF.Lucene.Net.Util
         /// Loads a specific <see cref="FSDirectory"/> implementation. </summary>
         /// <param name="clazzName"> The name of the <see cref="FSDirectory"/> class to load. </param>
         /// <returns> The <see cref="FSDirectory"/> class loaded. </returns>
-        /// <exception cref="System.TypeLoadException"> If the specified class cannot be found. </exception>
+        /// <exception cref="TypeLoadException"> If the specified class cannot be found. </exception>
         public static Type LoadFSDirectoryClass(string clazzName)
         {
             return Type.GetType(AdjustDirectoryClassName(clazzName));
@@ -86,7 +83,7 @@ namespace YAF.Lucene.Net.Util
         {
             if (clazzName == null || clazzName.Trim().Length == 0)
             {
-                throw new System.ArgumentException("The " + typeof(FSDirectory).Name + " implementation cannot be null or empty");
+                throw new ArgumentException("The " + typeof(FSDirectory).Name + " implementation cannot be null or empty");
             }
 
             // LUCENENET specific: Changed to use char rather than string so we get StringComparison.Ordinal,
@@ -108,7 +105,7 @@ namespace YAF.Lucene.Net.Util
         /// <exception cref="MissingMethodException"> If the <see cref="Directory"/> does not have a constructor that takes <see cref="DirectoryInfo"/>. </exception>
         /// <exception cref="MemberAccessException"> If the class is abstract or an interface. </exception>
         /// <exception cref="TypeLoadException"> If the constructor does not have public visibility. </exception>
-        /// <exception cref="System.Reflection.TargetInvocationException"> If the constructor throws an exception </exception>
+        /// <exception cref="TargetInvocationException"> If the constructor throws an exception </exception>
         public static FSDirectory NewFSDirectory(Type clazz, DirectoryInfo dir)
         {
             // Assuming every FSDirectory has a ctor(File):

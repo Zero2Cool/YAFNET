@@ -276,7 +276,7 @@ namespace YAF.Web.Controls
                           <span aria-hidden=""true"">&times;</span>
                       </button></div>",
                 this.GetText("GO_TO_ANSWER"),
-                BuildLink.GetLink(ForumPages.Posts, "m={0}#post{0}", messageId));
+                BuildLink.GetLink(ForumPages.Posts, "m={0}&name={1}#post{0}", messageId, this.PageContext.PageTopicName));
         }
 
         /// <summary>
@@ -298,9 +298,10 @@ namespace YAF.Web.Controls
             }
             else
             {
-                var formattedMessage =
-                    this.Get<IFormatMessage>().Format(
-                        this.HighlightMessage(this.Message, true), this.MessageFlags);
+                var formattedMessage = this.Get<IFormatMessage>().Format(
+                    this.MessageID.Value,
+                    this.HighlightMessage(this.Message, true),
+                    this.MessageFlags);
 
                 // tha_watcha : Since HTML message and BBCode can be mixed now, message should be always replace BBCode
                 this.RenderModulesInBBCode(

@@ -24,6 +24,7 @@
 namespace YAF.Core.Model
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Web.Hosting;
@@ -46,6 +47,24 @@ namespace YAF.Core.Model
     public static class AttachmentRepositoryExtensions
     {
         #region Public Methods and Operators
+
+        /// <summary>
+        /// Gets all Messages with Attachments
+        /// </summary>
+        /// <param name="repository">
+        /// The repository.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
+        public static List<Message> GetMessageAttachments(this IRepository<Attachment> repository)
+        {
+            var expression = OrmLiteConfig.DialectProvider.SqlExpression<Message>();
+
+            expression.Join<Attachment>((m, a) => a.MessageID == m.ID);
+
+            return repository.DbAccess.Execute(db => db.Connection.Select(expression));
+        }
 
         /// <summary>
         /// Gets the Attachment by ID (without the FileData)
@@ -89,7 +108,7 @@ namespace YAF.Core.Model
         /// </param>
         public static void Delete(this IRepository<Attachment> repository, int attachmentId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var attachment = repository.GetById(attachmentId);
 
@@ -120,7 +139,7 @@ namespace YAF.Core.Model
         /// </param>
         public static void DeleteByMessageId(this IRepository<Attachment> repository, int messageId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var attachments = repository.Get(a => a.MessageID == messageId);
 
@@ -154,7 +173,7 @@ namespace YAF.Core.Model
         /// <param name="attachmentId">The attachment identifier.</param>
         public static void IncrementDownloadCounter(this IRepository<Attachment> repository, int attachmentId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             repository.UpdateAdd(() => new Attachment { Downloads = 1 }, a => a.ID == attachmentId);
         }
@@ -179,7 +198,7 @@ namespace YAF.Core.Model
             string contentType,
             byte[] fileData = null)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var entity = new Attachment
                              {

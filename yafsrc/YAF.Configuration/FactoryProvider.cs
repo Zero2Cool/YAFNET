@@ -42,12 +42,6 @@ namespace YAF.Configuration
         /// The builder factory.
         /// </summary>
         private static ITypeFactoryInstance<IUrlBuilder> builderFactory;
-
-        /// <summary>
-        /// The user display name factory.
-        /// </summary>
-        private static ITypeFactoryInstance<IUserDisplayName> userDisplayNameFactory;
-
         #endregion
 
         #region Properties
@@ -59,29 +53,9 @@ namespace YAF.Configuration
         {
             get
             {
-                if (builderFactory == null)
-                {
-                    builderFactory = new TypeFactoryInstanceApplicationBoardScope<IUrlBuilder>(UrlBuilderType);
-                }
+                builderFactory ??= new TypeFactoryInstanceApplicationBoardScope<IUrlBuilder>(UrlBuilderType);
 
                 return builderFactory.Get();
-            }
-        }
-
-        /// <summary>
-        /// Gets current <see cref="IUserDisplayName"/>.
-        /// </summary>
-        public static IUserDisplayName UserDisplayName
-        {
-            get
-            {
-                if (userDisplayNameFactory == null)
-                {
-                    userDisplayNameFactory =
-                        new TypeFactoryInstanceApplicationBoardScope<IUserDisplayName>(UserDisplayNameType);
-                }
-
-                return userDisplayNameFactory.Get();
             }
         }
 
@@ -107,10 +81,6 @@ namespace YAF.Configuration
                 {
                     urlAssembly = "YAF.Mojo.MojoPortalUrlBuilder,YAF.Mojo";
                 }
-                else if (Config.IsRainbow)
-                {
-                    urlAssembly = "yaf_rainbow.RainbowUrlBuilder,yaf_rainbow";
-                }
                 else if (Config.IsPortal)
                 {
                     urlAssembly = "Portal.UrlBuilder,Portal";
@@ -127,14 +97,6 @@ namespace YAF.Configuration
                 return urlAssembly;
             }
         }
-
-        /// <summary>
-        /// Gets UserDisplayNameType.
-        /// </summary>
-        private static string UserDisplayNameType =>
-            Config.GetProvider("UserDisplayName").IsSet()
-                ? Config.GetProvider("UserDisplayName")
-                : "YAF.Core.DefaultUserDisplayName,YAF.Core";
 
         #endregion
     }

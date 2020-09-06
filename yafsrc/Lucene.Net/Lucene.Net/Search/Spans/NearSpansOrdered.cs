@@ -1,7 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using JCG = J2N.Collections.Generic;
 
@@ -114,7 +114,7 @@ namespace YAF.Lucene.Net.Search.Spans
             sorter = new InPlaceMergeSorterAnonymousInnerClassHelper(this);
             if (spanNearQuery.GetClauses().Length < 2)
             {
-                throw new System.ArgumentException("Less than 2 clauses: " + spanNearQuery);
+                throw new ArgumentException("Less than 2 clauses: " + spanNearQuery);
             }
             this.collectPayloads = collectPayloads;
             allowedSlop = spanNearQuery.Slop;
@@ -132,31 +132,19 @@ namespace YAF.Lucene.Net.Search.Spans
 
         /// <summary>
         /// Returns the document number of the current match.  Initially invalid. </summary>
-        public override int Doc
-        {
-            get { return matchDoc; }
-        }
+        public override int Doc => matchDoc;
 
         /// <summary>
         /// Returns the start position of the current match.  Initially invalid. </summary>
-        public override int Start
-        {
-            get { return matchStart; }
-        }
+        public override int Start => matchStart;
 
         /// <summary>
         /// Returns the end position of the current match.  Initially invalid. </summary>
-        public override int End
-        {
-            get { return matchEnd; }
-        }
+        public override int End => matchEnd;
 
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        public virtual Spans[] SubSpans
-        {
-            get { return subSpans; }
-        }
+        public virtual Spans[] SubSpans => subSpans;
 
         // TODO: Remove warning after API has been finalized
         // TODO: Would be nice to be able to lazy load payloads
@@ -166,13 +154,7 @@ namespace YAF.Lucene.Net.Search.Spans
         }
 
         // TODO: Remove warning after API has been finalized
-        public override bool IsPayloadAvailable
-        {
-            get
-            {
-                return matchPayload.Count == 0 == false;
-            }
-        }
+        public override bool IsPayloadAvailable => matchPayload.Count == 0 == false;
 
         public override long GetCost()
         {
@@ -303,7 +285,7 @@ namespace YAF.Lucene.Net.Search.Spans
             }
             for (int i = 0; i < subSpansByDoc.Length; i++)
             {
-                Debug.Assert((subSpansByDoc[i].Doc == maxDoc), " NearSpansOrdered.toSameDoc() spans " + subSpansByDoc[0] + "\n at doc " + subSpansByDoc[i].Doc + ", but should be at " + maxDoc);
+                if (Debugging.AssertsEnabled) Debugging.Assert(subSpansByDoc[i].Doc == maxDoc, () => " NearSpansOrdered.toSameDoc() spans " + subSpansByDoc[0] + "\n at doc " + subSpansByDoc[i].Doc + ", but should be at " + maxDoc);
             }
             inSameDoc = true;
             return true;
@@ -316,7 +298,7 @@ namespace YAF.Lucene.Net.Search.Spans
         ///              and <paramref name="spans1"/> ends before <paramref name="spans2"/>. </returns>
         internal static bool DocSpansOrdered(Spans spans1, Spans spans2)
         {
-            Debug.Assert(spans1.Doc == spans2.Doc, "doc1 " + spans1.Doc + " != doc2 " + spans2.Doc);
+            if (Debugging.AssertsEnabled) Debugging.Assert(spans1.Doc == spans2.Doc, () => "doc1 " + spans1.Doc + " != doc2 " + spans2.Doc);
             int start1 = spans1.Start;
             int start2 = spans2.Start;
             /* Do not call docSpansOrdered(int,int,int,int) to avoid invoking .end() : */
@@ -427,7 +409,7 @@ namespace YAF.Lucene.Net.Search.Spans
                     possibleMatchPayloads.UnionWith(possiblePayload);
                 }
 
-                Debug.Assert(prevStart <= matchStart);
+                if (Debugging.AssertsEnabled) Debugging.Assert(prevStart <= matchStart);
                 if (matchStart > prevEnd) // Only non overlapping spans add to slop.
                 {
                     matchSlop += (matchStart - prevEnd);

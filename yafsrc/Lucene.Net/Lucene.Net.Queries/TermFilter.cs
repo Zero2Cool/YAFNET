@@ -1,6 +1,7 @@
 ﻿using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Search;
 using YAF.Lucene.Net.Util;
+using System;
 
 namespace YAF.Lucene.Net.Queries
 {
@@ -33,23 +34,17 @@ namespace YAF.Lucene.Net.Queries
         {
             if (term == null)
             {
-                throw new System.ArgumentException("Term must not be null");
+                throw new ArgumentException("Term must not be null");
             }
             else if (term.Field == null)
             {
-                throw new System.ArgumentException("Field must not be null");
+                throw new ArgumentException("Field must not be null");
             }
             this.term = term;
         }
 
         /// <summary> Gets the term this filter includes documents with. </summary>
-        public Term Term
-        {
-            get
-            {
-                return term;
-            }
-        }
+        public Term Term => term;
 
         public override DocIdSet GetDocIdSet(AtomicReaderContext context, IBits acceptDocs)
         {

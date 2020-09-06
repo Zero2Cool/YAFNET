@@ -37,8 +37,9 @@ namespace YAF.Core.BBCode
     using YAF.Configuration;
     using YAF.Core.BBCode.ReplaceRules;
     using YAF.Core.Context;
-    using YAF.Core.Services;
+    using YAF.Core.Extensions;
     using YAF.Types;
+    using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
@@ -108,7 +109,7 @@ namespace YAF.Core.BBCode
                     "CustomBBCodeRegExDictionary",
                     () =>
                         {
-                            var bbcodeTable = this.Get<DataBroker>().GetCustomBBCode();
+                            var bbcodeTable = this.GetCustomBBCode();
                             return bbcodeTable
                                 .Where(b => (b.UseModule ?? false) && b.ModuleClass.IsSet() && b.SearchRegex.IsSet())
                                 .ToDictionary(codeRow => codeRow, codeRow => new Regex(codeRow.SearchRegex, Options));
@@ -216,7 +217,7 @@ namespace YAF.Core.BBCode
         /// The converted text
         /// </returns>
         [Obsolete]
-        public string ConvertBBCodeToHtmlForEdit(string message)
+        /*public string ConvertBBCodeToHtmlForEdit(string message)
         {
             // get the rules engine from the creator...
             var ruleEngine = this.ProcessReplaceRulesFactory(
@@ -231,7 +232,7 @@ namespace YAF.Core.BBCode
             ruleEngine.Process(ref message);
 
             return message;
-        }
+        }*/
 
         /// <summary>
         /// Converts a message containing HTML to YAF BBCode for editing in a rich BBCode editor.
@@ -531,6 +532,9 @@ namespace YAF.Core.BBCode
         /// <summary>
         /// Creates the rules that convert <see cref="BBCode"/> to HTML
         /// </summary>
+        /// <param name="messageId">
+        /// The message Id.
+        /// </param>
         /// <param name="ruleEngine">
         /// The rule Engine.
         /// </param>
@@ -547,6 +551,7 @@ namespace YAF.Core.BBCode
         /// Indicates if the formatting is for the Editor.
         /// </param>
         public void CreateBBCodeRules(
+            [NotNull] int messageId,
             IProcessReplaceRules ruleEngine,
             bool doFormatting,
             bool targetBlankOverride,
@@ -743,28 +748,47 @@ namespace YAF.Core.BBCode
                         "<div style=\"margin-left:40px\">${inner}</div>",
                         Options));
 
+                string imageHtml;
+                string imageHtmlWithDesc;
+
+                if (messageId > 0)
+                {
+                    imageHtml = "<a href=\"${http}${inner}\" data-gallery=\"#blueimp-gallery-" + 
+                                    messageId +
+                                    "\"><img src=\"${http}${inner}\" alt=\"UserPostedImage\" class=\"img-user-posted img-thumbnail\" style=\"max-height:${height}px;\"></a>";
+                    imageHtmlWithDesc = "<a href=\"${http}${inner}\" alt=\"${description}\" title=\"${description}\" data-gallery=\"#blueimp-gallery-" + 
+                                messageId +
+                                "\"><img src=\"${http}${inner}\" alt=\"UserPostedImage\" class=\"img-user-posted img-thumbnail\" style=\"max-height:${height}px;\"></a>";
+                }
+                else
+                {
+                    imageHtml = "<img src=\"${http}${inner}\" alt=\"UserPostedImage\" class=\"img-user-posted img-thumbnail\" style=\"max-height:${height}px;\">";
+                    imageHtmlWithDesc =
+                        "<img src=\"${http}${inner}\" alt=\"${description}\" title=\"${description}\" class=\"img-user-posted img-thumbnail\" style=\"max-height:${height}px;\">";
+                }
+
                 // image
                 ruleEngine.AddRule(
                     new VariableRegexReplaceRule(
                         new Regex(
                             @"\[img\](?<http>(http://)|(https://)|(ftp://)|(ftps://))?(?<inner>((?!.+logout)[^""\r\n\]\[]+?\.((googleusercontent[^\[]*)|(jpg[^\[]*)|(jpeg[^\[]*)|(bmp[^\[]*)|(png[^\[]*)|(gif[^\[]*)|(tif[^\[]*)|(ashx[^\[]*)|(php[^\[]*)|(aspx[^\[]*))))\[/img\]",
                             Options | RegexOptions.Compiled),
-                        "<img src=\"${http}${inner}\" alt=\"UserPostedImage\" class=\"img-user-posted img-thumbnail\" style=\"max-width:auto;max-height:${height}px;\" />",
+                        imageHtml,
                         new[]
-                            {
-                                "http", "height"
-                            },
-                        new[] { "http://", this.Get<BoardSettings>().ImageThumbnailMaxHeight.ToString() })
                         {
-                            RuleRank = 70
-                        });
+                            "http", "height"
+                        },
+                        new[] { "http://", this.Get<BoardSettings>().ImageThumbnailMaxHeight.ToString() })
+                    {
+                        RuleRank = 70
+                    });
 
                 ruleEngine.AddRule(
                     new VariableRegexReplaceRule(
                         new Regex(
                             @"\[img=(?<http>(http://)|(https://)|(ftp://)|(ftps://))?(?<inner>((?!.+logout)[^""\r\n\]\[]+?\.((googleusercontent[^\[]*)|(jpg[^\]\[/img\]]*)|(jpeg[^\[\[/img\]]*)|(bmp[^\[\[/img\]]*)|(png[^\]\[/img\]]*)|(gif[^\]\[/img\]]*)|(tif[^\]\[/img\]]*)|(ashx[^\]\[/img\]]*)|(php[^\]\[/img\]]*)|(aspx[^\]\[/img\]]*))))\]\[/img\]",
                             Options | RegexOptions.Compiled),
-                        "<img src=\"${http}${inner}\" alt=\"UserPostedImage\" class=\"img-user-posted img-thumbnail\" style=\"max-width:auto;max-height:${height}px;\" />",
+                        imageHtml,
                         new[]
                             {
                                 "http", "height"
@@ -779,7 +803,7 @@ namespace YAF.Core.BBCode
                         new Regex(
                             @"\[img=(?<http>(http://)|(https://)|(ftp://)|(ftps://))?(?<inner>((?!.+logout)[^""\r\n\]\[]+?\.((googleusercontent[^\[]*)|(jpg[^\]]*)|(jpeg[^\]]*)|(bmp[^\]]*)|(png[^\]]*)|(gif[^\]]*)|(tif[^\]]*)|(ashx[^\]]*)|(php[^\]]*)|(aspx[^\]]*))))\](?<description>[^\[]*)\[/img\]",
                             Options | RegexOptions.Compiled),
-                        "<img src=\"${http}${inner}\" alt=\"${description}\" title=\"${description}\" class=\"img-user-posted img-thumbnail\" style=\"max-width:auto;max-height:${height}px;\" />",
+                        imageHtmlWithDesc,
                         new[]
                             {
                                 "http", "description", "height"
@@ -816,7 +840,7 @@ namespace YAF.Core.BBCode
             ruleEngine.AddRule(
                 new SyntaxHighlighterRegexReplaceRule(
                     isEditMode,
-                    new Regex(@"\[code=(?<language>[^\]]*)\](?<inner>(.*?))\[/code\]", Options),
+                    new Regex(@"\[code=(?<language>[^\]]*)\](?<inner>(.*?))\[/code\]\r\n|\[code=(?<language>[^\]]*)\](?<inner>(.*?))\[/code\]", Options),
                     @"<div class=""code"">${inner}</div>")
                     {
                         RuleRank = 2
@@ -829,7 +853,7 @@ namespace YAF.Core.BBCode
             ruleEngine.AddRule(
                 new SyntaxHighlighterRegexReplaceRule(
                     isEditMode,
-                    new Regex(@"\[code\](?<inner>(.*?))\[/code\]", Options),
+                    new Regex(@"\[code\](?<inner>(.*?))\[/code\]\r\n|\[code\](?<inner>(.*?))\[/code\]", Options),
                     @"<div class=""code"">${inner}</div>"));
 
             ruleEngine.AddRule(
@@ -837,7 +861,7 @@ namespace YAF.Core.BBCode
                     @"\[quote=(?<quote>(.*?))]",
                     @"<blockquote class=""blockquote blockquote-custom pt-3 px-1 pb-1 mb-4 border border-secondary rounded"">
                                          <div class=""blockquote-custom-icon bg-secondary"">
-                                             <i class=""fa fa-quote-left fa-sm text-white""></i>
+                                             <i class=""fa fa-quote-left fa-sm link-light""></i>
                                          </div>${quote}",
                     Options));
 
@@ -845,7 +869,7 @@ namespace YAF.Core.BBCode
             var simpleOpenQuoteReplace =
                 $@"<blockquote class=""blockquote blockquote-custom pt-3 px-1 pb-1 mb-4 border border-secondary rounded"">
                           <div class=""blockquote-custom-icon bg-secondary"">
-                              <i class=""fa fa-quote-left fa-sm text-white""></i>
+                              <i class=""fa fa-quote-left fa-sm link-light""></i>
                           </div>
                           <footer class=""blockquote-footer""><cite>{localQuoteStr}</cite></footer>
                           <p class=""mb-0"">";
@@ -856,19 +880,6 @@ namespace YAF.Core.BBCode
             // and finally the closing quote tag
             ruleEngine.AddRule(
                 new SingleRegexReplaceRule(@"\[/quote\]", "</p></blockquote>", Options) { RuleRank = 63 });
-
-            // post and topic rules...
-            ruleEngine.AddRule(
-                new PostTopicRegexReplaceRule(
-                    @"\[post=(?<post>[0-9]*)\](?<inner>(.*?))\[/post\]",
-                    @"<a href=""${post}"" title=""${inner}"">${inner}</a>",
-                    Options));
-
-            ruleEngine.AddRule(
-                new PostTopicRegexReplaceRule(
-                    @"\[topic=(?<topic>[0-9]*)\](?<inner>(.*?))\[/topic\]",
-                    @"<a href=""${topic}"" title=""${inner}"">${inner}</a>",
-                    Options));
         }
 
         /// <summary>
@@ -935,6 +946,7 @@ namespace YAF.Core.BBCode
             if (!ruleEngine.HasRules)
             {
                 this.CreateBBCodeRules(
+                    0,
                     ruleEngine,
                     doFormatting,
                     targetBlankOverride,
@@ -976,7 +988,7 @@ namespace YAF.Core.BBCode
         /// </param>
         public void RegisterCustomBBCodePageElements(Page currentPage, Type currentType, string editorID)
         {
-            var codes = this.Get<DataBroker>().GetCustomBBCode();
+            var codes = this.GetCustomBBCode();
             const string ScriptID = "custombbcode";
             var javaScriptScriptBuilder = new StringBuilder();
             var cssBuilder = new StringBuilder();
@@ -1031,6 +1043,17 @@ namespace YAF.Core.BBCode
             }
         }
 
+        /// <summary>
+        ///     The get custom bb code.
+        /// </summary>
+        /// <returns> Returns List with Custom BBCodes </returns>
+        public IEnumerable<Types.Models.BBCode> GetCustomBBCode()
+        {
+            return this.Get<IDataCache>().GetOrSet(
+                Constants.Cache.CustomBBCode,
+                () => this.GetRepository<Types.Models.BBCode>().GetByBoardId());
+        }
+
         #endregion
 
         #endregion
@@ -1045,7 +1068,7 @@ namespace YAF.Core.BBCode
         /// </param>
         protected void AddCustomBBCodeRules(IProcessReplaceRules rulesEngine)
         {
-            var bbcodeTable = this.Get<DataBroker>().GetCustomBBCode();
+            var bbcodeTable = this.GetCustomBBCode();
 
             // handle custom bbcodes row by row...
             bbcodeTable.Where(codeRow => !(codeRow.UseModule ?? false) && codeRow.SearchRegex.IsSet()).ForEach(

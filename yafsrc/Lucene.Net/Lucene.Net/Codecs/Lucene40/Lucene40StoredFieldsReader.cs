@@ -1,6 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Diagnostics;
-using System.Reflection;
+using System.IO;
 
 namespace YAF.Lucene.Net.Codecs.Lucene40
 {
@@ -91,8 +92,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
 
                 CodecUtil.CheckHeader(indexStream, Lucene40StoredFieldsWriter.CODEC_NAME_IDX, Lucene40StoredFieldsWriter.VERSION_START, Lucene40StoredFieldsWriter.VERSION_CURRENT);
                 CodecUtil.CheckHeader(fieldsStream, Lucene40StoredFieldsWriter.CODEC_NAME_DAT, Lucene40StoredFieldsWriter.VERSION_START, Lucene40StoredFieldsWriter.VERSION_CURRENT);
-                Debug.Assert(Lucene40StoredFieldsWriter.HEADER_LENGTH_DAT == fieldsStream.GetFilePointer());
-                Debug.Assert(Lucene40StoredFieldsWriter.HEADER_LENGTH_IDX == indexStream.GetFilePointer());
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(Lucene40StoredFieldsWriter.HEADER_LENGTH_DAT == fieldsStream.GetFilePointer());
+                    Debugging.Assert(Lucene40StoredFieldsWriter.HEADER_LENGTH_IDX == indexStream.GetFilePointer());
+                }
                 long indexSize = indexStream.Length - Lucene40StoredFieldsWriter.HEADER_LENGTH_IDX;
                 this.size = (int)(indexSize >> 3);
                 // Verify two sources of "maxDoc" agree:
@@ -128,7 +132,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         {
             if (closed)
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "this FieldsReader is closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "this FieldsReader is closed");
             }
         }
 
@@ -136,7 +140,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         /// Closes the underlying <see cref="Lucene.Net.Store.IndexInput"/> streams.
         /// This means that the <see cref="Index.Fields"/> values will not be accessible.
         /// </summary>
-        /// <exception cref="System.IO.IOException"> If an I/O error occurs. </exception>
+        /// <exception cref="IOException"> If an I/O error occurs. </exception>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -154,10 +158,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
         /// <para/>
         /// NOTE: This was size() in Lucene.
         /// </summary>
-        public int Count
-        {
-            get { return size; }
-        }
+        public int Count => size;
 
         private void SeekIndex(int docID)
         {
@@ -176,7 +177,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
                 FieldInfo fieldInfo = fieldInfos.FieldInfo(fieldNumber);
 
                 int bits = fieldsStream.ReadByte() & 0xFF;
-                Debug.Assert(bits <= (Lucene40StoredFieldsWriter.FIELD_IS_NUMERIC_MASK | Lucene40StoredFieldsWriter.FIELD_IS_BINARY), "bits=" + bits.ToString("x"));
+                if (Debugging.AssertsEnabled) Debugging.Assert(bits <= (Lucene40StoredFieldsWriter.FIELD_IS_NUMERIC_MASK | Lucene40StoredFieldsWriter.FIELD_IS_BINARY), () => "bits=" + bits.ToString("x"));
 
                 switch (visitor.NeedsField(fieldInfo))
                 {
@@ -283,7 +284,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene40
             {
                 long offset;
                 int docID = startDocID + count + 1;
-                Debug.Assert(docID <= numTotalDocs);
+                if (Debugging.AssertsEnabled) Debugging.Assert(docID <= numTotalDocs);
                 if (docID < numTotalDocs)
                 {
                     offset = indexStream.ReadInt64();

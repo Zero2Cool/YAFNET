@@ -36,15 +36,8 @@ namespace YAF.Types.Models
     [Serializable]
 
     [UniqueConstraint(nameof(Hash))]
-    public partial class CheckEmail : IEntity, IHaveID
+    public class CheckEmail : IEntity, IHaveID
     {
-        partial void OnCreated();
-
-        public CheckEmail()
-        {
-            this.OnCreated();
-        }
-
         #region Properties
 
         [AutoIncrement]
@@ -63,7 +56,6 @@ namespace YAF.Types.Models
 
         [Required]
         [Index]
-        [StringLength(32)]
         public string Hash { get; set; }
 
         #endregion

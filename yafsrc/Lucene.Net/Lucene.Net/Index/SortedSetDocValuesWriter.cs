@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Index
@@ -66,11 +66,11 @@ namespace YAF.Lucene.Net.Index
         {
             if (value == null)
             {
-                throw new System.ArgumentException("field \"" + fieldInfo.Name + "\": null value not allowed");
+                throw new ArgumentException("field \"" + fieldInfo.Name + "\": null value not allowed");
             }
             if (value.Length > (ByteBlockPool.BYTE_BLOCK_SIZE - 2))
             {
-                throw new System.ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" is too large, must be <= " + (ByteBlockPool.BYTE_BLOCK_SIZE - 2));
+                throw new ArgumentException("DocValuesField \"" + fieldInfo.Name + "\" is too large, must be <= " + (ByteBlockPool.BYTE_BLOCK_SIZE - 2));
             }
 
             if (docID != currentDoc)
@@ -164,7 +164,7 @@ namespace YAF.Lucene.Net.Index
         {
             int maxDoc = state.SegmentInfo.DocCount;
             int maxCountPerDoc = maxCount;
-            Debug.Assert(pendingCounts.Count == maxDoc);
+            if (Debugging.AssertsEnabled) Debugging.Assert(pendingCounts.Count == maxDoc);
             int valueCount = hash.Count;
 
             int[] sortedValues = hash.Sort(BytesRef.UTF8SortedAsUnicodeComparer);
@@ -191,9 +191,10 @@ namespace YAF.Lucene.Net.Index
 
         private IEnumerable<BytesRef> GetBytesRefEnumberable(int valueCount, int[] sortedValues)
         {
+            var scratch = new BytesRef();
+
             for (int i = 0; i < valueCount; ++i)
             {
-                var scratch = new BytesRef();
                 yield return hash.Get(sortedValues[i], scratch);
             }
         }
@@ -202,11 +203,11 @@ namespace YAF.Lucene.Net.Index
         {
             AppendingDeltaPackedInt64Buffer.Iterator iter = pendingCounts.GetIterator();
 
-            Debug.Assert(maxDoc == pendingCounts.Count, "MaxDoc: " + maxDoc + ", pending.Count: " + pending.Count);
+            if (Debugging.AssertsEnabled) Debugging.Assert(pendingCounts.Count == maxDoc, () => "MaxDoc: " + maxDoc + ", pending.Count: " + pending.Count);
 
             for (int i = 0; i < maxDoc; ++i)
             {
-                yield return (int)iter.Next();
+                yield return iter.Next();
             }
         }
 

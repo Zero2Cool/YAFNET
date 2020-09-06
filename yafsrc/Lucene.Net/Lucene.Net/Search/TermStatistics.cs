@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -37,8 +37,11 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public TermStatistics(BytesRef term, long docFreq, long totalTermFreq)
         {
-            Debug.Assert(docFreq >= 0);
-            Debug.Assert(totalTermFreq == -1 || totalTermFreq >= docFreq); // #positions must be >= #postings
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(docFreq >= 0);
+                Debugging.Assert(totalTermFreq == -1 || totalTermFreq >= docFreq); // #positions must be >= #postings
+            }
             this.term = term;
             this.docFreq = docFreq;
             this.totalTermFreq = totalTermFreq;
@@ -46,25 +49,16 @@ namespace YAF.Lucene.Net.Search
 
         /// <summary>
         /// Returns the term text </summary>
-        public BytesRef Term
-        {
-            get { return term; }
-        }
+        public BytesRef Term => term;
 
         /// <summary>
         /// Returns the number of documents this term occurs in </summary>
         /// <seealso cref="Index.TermsEnum.DocFreq"/>
-        public long DocFreq
-        {
-            get { return docFreq; }
-        }
+        public long DocFreq => docFreq;
 
         /// <summary>
         /// Returns the total number of occurrences of this term </summary>
         /// <seealso cref="Index.TermsEnum.TotalTermFreq"/>
-        public long TotalTermFreq
-        {
-            get { return totalTermFreq; }
-        }
+        public long TotalTermFreq => totalTermFreq;
     }
 }

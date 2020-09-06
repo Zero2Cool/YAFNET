@@ -31,6 +31,7 @@ namespace YAF.Controls
 
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -88,6 +89,11 @@ namespace YAF.Controls
             {
                 return;
             }
+
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
 
             var previousPageSize = this.Get<ISession>().UserActivityPageSize;
 
@@ -150,7 +156,7 @@ namespace YAF.Controls
                 return;
             }
 
-            var activity = (Activity)e.Item.DataItem;
+            var activity = (Tuple<Activity, User, Topic>)e.Item.DataItem;
 
             var messageHolder = e.Item.FindControlAs<PlaceHolder>("Message");
             var displayDateTime = e.Item.FindControlAs<DisplayDateTime>("DisplayDateTime");
@@ -161,20 +167,23 @@ namespace YAF.Controls
             var icon = string.Empty;
 
             var topicLink = new ThemeButton
-                                {
-                                    NavigateUrl =
-                                        BuildLink.GetLink(
-                                            ForumPages.Posts,
-                                            "m={0}#post{0}",
-                                            activity.MessageID.Value),
-                                    Type = ButtonStyle.None,
-                                    Text = this.GetRepository<Topic>().GetById(activity.TopicID.Value).TopicName,
-                                    Icon = "comment"
-                                };
-
-            if (activity.ActivityFlags.ReceivedThanks)
             {
-                var userLink = new UserLink { UserID = activity.FromUserID.Value };
+                NavigateUrl = BuildLink.GetTopicLink(activity.Item1.MessageID.Value, activity.Item3.TopicName),
+                Type = ButtonStyle.None,
+                Text = activity.Item3.TopicName,
+                Icon = "comment",
+                IconCssClass = "far"
+            };
+
+            if (activity.Item1.ActivityFlags.ReceivedThanks)
+            {
+                var userLink = new UserLink
+                {
+                    UserID = activity.Item1.FromUserID.Value,
+                    Suspended = activity.Item2.Suspended,
+                    Style = activity.Item2.UserStyle,
+                    ReplaceName = activity.Item2.DisplayOrUserName()
+                };
 
                 icon = "heart";
                 message = this.GetTextFormatted(
@@ -183,9 +192,15 @@ namespace YAF.Controls
                     topicLink.RenderToString());
             }
 
-            if (activity.ActivityFlags.WasMentioned)
+            if (activity.Item1.ActivityFlags.WasMentioned)
             {
-                var userLink = new UserLink { UserID = activity.FromUserID.Value };
+                var userLink = new UserLink
+                {
+                    UserID = activity.Item1.FromUserID.Value,
+                    Suspended = activity.Item2.Suspended,
+                    Style = activity.Item2.UserStyle,
+                    ReplaceName = activity.Item2.DisplayOrUserName()
+                };
 
                 icon = "at";
                 message = this.GetTextFormatted(
@@ -194,9 +209,15 @@ namespace YAF.Controls
                     topicLink.RenderToString());
             }
 
-            if (activity.ActivityFlags.WasQuoted)
+            if (activity.Item1.ActivityFlags.WasQuoted)
             {
-                var userLink = new UserLink { UserID = activity.FromUserID.Value };
+                var userLink = new UserLink
+                {
+                    UserID = activity.Item1.FromUserID.Value,
+                    Suspended = activity.Item2.Suspended,
+                    Style = activity.Item2.UserStyle,
+                    ReplaceName = activity.Item2.DisplayOrUserName()
+                };
 
                 icon = "quote-left";
                 message = this.GetTextFormatted(
@@ -205,21 +226,21 @@ namespace YAF.Controls
                     topicLink.RenderToString());
             }
 
-            var notify = activity.Notification ? "text-success" : "text-secondary";
+            var notify = activity.Item1.Notification ? "text-success" : "text-secondary";
 
             iconLabel.Text = $@"<i class=""fas fa-circle fa-stack-2x {notify}""></i>
                <i class=""fas fa-{icon} fa-stack-1x fa-inverse""></i>";
 
-            displayDateTime.DateTime = activity.Created;
+            displayDateTime.DateTime = activity.Item1.Created;
 
             messageHolder.Controls.Add(new Literal { Text = message });
 
-            if (!activity.Notification)
+            if (!activity.Item1.Notification)
             {
                 return;
             }
 
-            markRead.CommandArgument = activity.MessageID.Value.ToString();
+            markRead.CommandArgument = activity.Item1.MessageID.Value.ToString();
             markRead.Visible = true;
         }
 
@@ -330,24 +351,26 @@ namespace YAF.Controls
         {
             this.PagerTop.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
-            var stream = this.GetRepository<Activity>().Get(x => x.UserID == this.PageContext.PageUserID && x.FromUserID.HasValue);
+            var stream = this.GetRepository<Activity>().Notifications(this.PageContext.PageUserID);
 
             if (!this.WasMentioned.Checked)
             {
-                stream.RemoveAll(a => a.WasMentioned);
+                stream.RemoveAll(a => a.Item1.WasMentioned);
             }
 
             if (!this.ReceivedThanks.Checked)
             {
-                stream.RemoveAll(a => a.ReceivedThanks);
+                stream.RemoveAll(a => a.Item1.ReceivedThanks);
             }
 
             if (!this.WasQuoted.Checked)
             {
-                stream.RemoveAll(a => a.WasQuoted);
+                stream.RemoveAll(a => a.Item1.WasQuoted);
             }
 
-            var paged = stream.OrderByDescending(item => item.ID)
+            stream.RemoveAll(a => a.Item1.GivenThanks);
+
+            var paged = stream
                 .Skip(this.PagerTop.CurrentPageIndex * this.PagerTop.PageSize).Take(this.PagerTop.PageSize).ToList();
 
             this.ActivityStream.DataSource = paged;

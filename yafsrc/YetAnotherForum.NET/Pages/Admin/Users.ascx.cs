@@ -15,7 +15,6 @@
  * https://www.apache.org/licenses/LICENSE-2.0
 
  * Unless required by applicable law or agreed to in writing,
- * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
@@ -33,22 +32,21 @@ namespace YAF.Pages.Admin
     using System.IO;
     using System.Linq;
     using System.Web;
-    using System.Web.Security;
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Tasks;
-    using YAF.Core.UsersRoles;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -104,7 +102,7 @@ namespace YAF.Pages.Admin
                     using (var dataTable = this.GetRepository<User>().ListAsDataTable(
                         this.PageContext.PageBoardID,
                         e.CommandArgument.ToType<int>(),
-                        DBNull.Value))
+                        true))
                     {
                         // examine each if he's possible to delete
                         dataTable.Rows.Cast<DataRow>().ForEach(row =>
@@ -132,7 +130,7 @@ namespace YAF.Pages.Admin
                     }
 
                     // all is good, user can be deleted
-                    UserMembershipHelper.DeleteUser(e.CommandArgument.ToType<int>());
+                    this.Get<IAspNetUsersHelper>().DeleteUser(e.CommandArgument.ToType<int>());
 
                     // rebind data
                     this.BindData();
@@ -212,7 +210,7 @@ namespace YAF.Pages.Admin
             var flag = new UserFlags((int)userFlag);
             return flag.IsApproved
                        ? string.Empty
-                       : $@"<span class=""badge badge-warning"">{this.GetText("DISABLED")}</span>";
+                       : $@"<span class=""badge bg-warning text-dark"">{this.GetText("DISABLED")}</span>";
         }
 
         #endregion
@@ -230,7 +228,7 @@ namespace YAF.Pages.Admin
                 JavaScriptBlocks.BlockUiExecuteJs("SyncUsersMessage", $"#{this.SyncUsers.ClientID}"));
 
             // setup jQuery and Jquery Ui Tabs.
-            BoardContext.Current.PageElements.RegisterJsBlock("dropDownToggleJs", JavaScriptBlocks.DropDownToggleJs());
+            this.PageContext.PageElements.RegisterJsBlock("dropDownToggleJs", JavaScriptBlocks.DropDownToggleJs());
 
             base.OnPreRender(e);
         }
@@ -244,9 +242,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // link to administration index
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             // current page label (no link)
             this.PageLinks.AddLink(this.GetText("ADMIN_USERS", "TITLE"), string.Empty);
@@ -334,12 +330,30 @@ namespace YAF.Pages.Admin
             this.rank.DataValueField = "ID";
             this.rank.DataBind();
 
-            // TODO : page size definable?
-            this.PagerTop.PageSize = 25;
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
+            this.PagerTop.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
             // Hide "New User" & Sync Button on DotNetNuke
             this.ImportAndSyncHolder.Visible = !Config.IsDotNetNuke;
 
+            this.BindData();
+        }
+
+        /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
             this.BindData();
         }
 
@@ -399,7 +413,7 @@ namespace YAF.Pages.Admin
         /// </param>
         protected void LockAccountsClick(object sender, EventArgs e)
         {
-            UserMembershipHelper.LockInactiveAccounts(DateTime.UtcNow.AddYears(-this.YearsOld.Text.ToType<int>()));
+            this.Get<IAspNetUsersHelper>().LockInactiveAccounts(DateTime.UtcNow.AddYears(-this.YearsOld.Text.ToType<int>()));
         }
 
         /// <summary>
@@ -459,7 +473,7 @@ namespace YAF.Pages.Admin
             using (var dt = this.GetRepository<User>().ListAsDataTable(
                 this.PageContext.PageBoardID,
                 null,
-                null,
+                true,
                 this.group.SelectedIndex <= 0 ? null : this.group.SelectedValue,
                 this.rank.SelectedIndex <= 0 ? null : this.rank.SelectedValue,
                 false))
@@ -569,36 +583,32 @@ namespace YAF.Pages.Admin
             usersList.Columns.Add("Google");
             usersList.Columns.Add("GoogleId");
 
-            usersList.Columns.Add("Roles");
-
             usersList.AcceptChanges();
 
             usersList.Rows.Cast<DataRow>().ForEach(user =>
             {
-                var userProfile = Utils.UserProfile.GetProfile((string)user["Name"]);
+                var userProfile = this.Get<IAspNetUsersHelper>().GetUserByName((string)user["Name"]);
 
                 // Add Profile Fields to User List Table.
-                user["RealName"] = userProfile.RealName;
-                user["Blog"] = userProfile.Blog;
-                user["Gender"] = userProfile.Gender;
-                user["Birthday"] = userProfile.Birthday;
-                user["GoogleId"] = userProfile.GoogleId;
-                user["Location"] = userProfile.Location;
-                user["Country"] = userProfile.Country;
-                user["Region"] = userProfile.Region;
-                user["City"] = userProfile.City;
-                user["Interests"] = userProfile.Interests;
-                user["Homepage"] = userProfile.Homepage;
-                user["Skype"] = userProfile.Skype;
-                user["ICQ"] = userProfile.ICQ;
-                user["XMPP"] = userProfile.XMPP;
-                user["Occupation"] = userProfile.Occupation;
-                user["Twitter"] = userProfile.Twitter;
-                user["TwitterId"] = userProfile.TwitterId;
-                user["Facebook"] = userProfile.Facebook;
-                user["FacebookId"] = userProfile.FacebookId;
-
-                user["Roles"] = this.Get<RoleProvider>().GetRolesForUser((string)user["Name"]).ToDelimitedString(",");
+                user["RealName"] = userProfile.Profile_RealName;
+                user["Blog"] = userProfile.Profile_Blog;
+                user["Gender"] = userProfile.Profile_Gender;
+                user["Birthday"] = userProfile.Profile_Birthday;
+                user["GoogleId"] = userProfile.Profile_GoogleId;
+                user["Location"] = userProfile.Profile_Location;
+                user["Country"] = userProfile.Profile_Country;
+                user["Region"] = userProfile.Profile_Region;
+                user["City"] = userProfile.Profile_City;
+                user["Interests"] = userProfile.Profile_Interests;
+                user["Homepage"] = userProfile.Profile_Homepage;
+                user["Skype"] = userProfile.Profile_Skype;
+                user["ICQ"] = userProfile.Profile_ICQ;
+                user["XMPP"] = userProfile.Profile_XMPP;
+                user["Occupation"] = userProfile.Profile_Occupation;
+                user["Twitter"] = userProfile.Profile_Twitter;
+                user["TwitterId"] = userProfile.Profile_TwitterId;
+                user["Facebook"] = userProfile.Profile_Facebook;
+                user["FacebookId"] = userProfile.Profile_FacebookId;
 
                 usersList.AcceptChanges();
             });

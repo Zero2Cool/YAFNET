@@ -1,10 +1,10 @@
+using J2N.Collections.Generic.Extensions;
 using J2N.Numerics;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace YAF.Lucene.Net.Store
 {
@@ -120,7 +120,7 @@ namespace YAF.Lucene.Net.Store
             }
             else
             {
-                Debug.Assert(!(directory is CompoundFileDirectory), "compound file inside of compound file: " + fileName);
+                if (Debugging.AssertsEnabled) Debugging.Assert(!(directory is CompoundFileDirectory), () => "compound file inside of compound file: " + fileName);
                 this.entries = SENTINEL;
                 this.IsOpen = true;
                 writer = new CompoundFileWriter(directory, fileName);
@@ -277,21 +277,9 @@ namespace YAF.Lucene.Net.Store
             return entries;
         }
 
-        public Directory Directory
-        {
-            get
-            {
-                return directory;
-            }
-        }
+        public Directory Directory => directory;
 
-        public string Name
-        {
-            get
-            {
-                return fileName;
-            }
-        }
+        public string Name => fileName;
 
         protected override void Dispose(bool disposing)
         {
@@ -307,7 +295,7 @@ namespace YAF.Lucene.Net.Store
                     IsOpen = false;
                     if (writer != null)
                     {
-                        Debug.Assert(openForWrite);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(openForWrite);
                         writer.Dispose();
                     }
                     else
@@ -323,7 +311,7 @@ namespace YAF.Lucene.Net.Store
             lock (this)
             {
                 EnsureOpen();
-                Debug.Assert(!openForWrite);
+                if (Debugging.AssertsEnabled) Debugging.Assert(!openForWrite);
                 string id = IndexFileNames.StripSegmentName(name);
                 if (!entries.TryGetValue(id, out FileEntry entry) || entry == null)
                 {
@@ -427,7 +415,7 @@ namespace YAF.Lucene.Net.Store
         public override IndexInputSlicer CreateSlicer(string name, IOContext context)
         {
             EnsureOpen();
-            Debug.Assert(!openForWrite);
+            if (Debugging.AssertsEnabled) Debugging.Assert(!openForWrite);
             string id = IndexFileNames.StripSegmentName(name);
             if (!entries.TryGetValue(id, out FileEntry entry) || entry == null)
             {

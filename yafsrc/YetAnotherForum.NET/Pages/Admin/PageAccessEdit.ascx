@@ -5,18 +5,11 @@
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
     <div class="row">
-    <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" 
-                                LocalizedTag="TITLE"  
-                                LocalizedPage="ADMIN_PAGEACCESSEDIT" /></h1>
-    </div>
-    </div>
-    <div class="row">
         <div class="col-xl-12">
             <div class="card mb-3">
                 <div class="card-header">
                     <YAF:IconHeader runat="server" ID="IconHeader"
-                                    IconName="building"></YAF:IconHeader>
+                                    IconName="building"/>
                 </div>
                 <div class="card-body">
                     <asp:Repeater ID="AccessList" OnItemDataBound="AccessList_OnItemDataBound" runat="server">
@@ -32,7 +25,7 @@
                                 </span>
                                 <asp:Label ID="PageName" runat="server" 
                                            AssociatedControlID="ReadAccess" />
-                                <div class="custom-control custom-switch">
+                                <div class="form-check form-switch">
                                     <asp:CheckBox  ID="ReadAccess" runat="server" 
                                                    Text='<%# this.GetText("CANACCESS") %>'/>
                                 </div>

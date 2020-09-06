@@ -1,4 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System.Diagnostics;
+using System.IO;
 
 namespace YAF.Lucene.Net.Codecs
 {
@@ -143,10 +145,10 @@ namespace YAF.Lucene.Net.Codecs
         /// the max level is skip data is to be written to.
         /// </summary>
         /// <param name="df"> The current document frequency. </param>
-        /// <exception cref="System.IO.IOException"> If an I/O error occurs. </exception>
+        /// <exception cref="IOException"> If an I/O error occurs. </exception>
         public virtual void BufferSkip(int df)
         {
-            Debug.Assert(df % skipInterval == 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(df % skipInterval == 0);
             int numLevels = 1;
             df /= skipInterval;
 

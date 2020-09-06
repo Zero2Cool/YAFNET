@@ -66,9 +66,9 @@ namespace YAF.Core.URLBuilder
                 return newUrl;
             }
 
-            const string gsr = "getsearchresults";
-            scriptName = scriptName.Replace(gsr, scriptFile);
-            newUrl = newUrl.Replace(gsr, scriptFile);
+            //const string gsr = "getsearchresults";
+            //scriptName = scriptName.Replace(gsr, scriptFile);
+            //newUrl = newUrl.Replace(gsr, scriptFile);
 
             if (scriptName.EndsWith(scriptFile))
             {
@@ -82,7 +82,7 @@ namespace YAF.Core.URLBuilder
                 var useKey = string.Empty;
                 var description = string.Empty;
                 var pageName = parser["g"];
-                var forumPage = ForumPages.forum;
+                var forumPage = ForumPages.Board;
                 var getDescription = false;
 
                 var isFeed = false;
@@ -105,16 +105,10 @@ namespace YAF.Core.URLBuilder
                 {
                     switch (forumPage)
                     {
-                        case ForumPages.topics:
+                        case ForumPages.Topics:
                             useKey = "f";
                             pageName += "/";
-
-                            // description = UrlRewriteHelper.GetForumName(parser[useKey].ToType<int>());
-                            description =
-                                UrlRewriteHelper.CleanStringForURL(
-                                    parser["name"].IsSet()
-                                        ? parser["name"]
-                                        : UrlRewriteHelper.GetForumName(parser[useKey].ToType<int>()));
+                            description = parser["name"];
                             handlePage = true;
                             break;
                         case ForumPages.Posts:
@@ -123,42 +117,30 @@ namespace YAF.Core.URLBuilder
                             {
                                 useKey = "t";
                                 pageName += "t";
-                                description = UrlRewriteHelper.GetTopicName(parser[useKey].ToType<int>());
+                                description = UrlRewriteHelper.CleanStringForURL(parser["name"]);
                             }
                             else if (parser["m"].IsSet())
                             {
                                 useKey = "m";
                                 pageName += "m";
-
-                                try
-                                {
-                                    description = UrlRewriteHelper.GetTopicNameFromMessage(parser[useKey].ToType<int>());
-                                }
-                                catch (Exception)
-                                {
-                                    description = "posts";
-                                }
+                                description = UrlRewriteHelper.CleanStringForURL(parser["name"]);
                             }
 
                             handlePage = true;
                             break;
-                        case ForumPages.Profile:
+                        case ForumPages.UserProfile:
                             useKey = "u";
                             pageName += "/";
-                            description =
-                                UrlRewriteHelper.CleanStringForURL(
-                                    parser["name"].IsSet()
-                                        ? parser["name"]
-                                        : UrlRewriteHelper.GetProfileName(parser[useKey].ToType<int>()));
+                            description = UrlRewriteHelper.CleanStringForURL(parser["name"]);
 
                             parser.Parameters.Remove("name");
                             break;
-                        case ForumPages.forum:
+                        case ForumPages.Board:
                             pageName = "category/";
                             if (parser["c"].IsSet())
                             {
                                 useKey = "c";
-                                description = UrlRewriteHelper.GetCategoryName(parser[useKey].ToType<int>());
+                                description = UrlRewriteHelper.CleanStringForURL(parser["name"]);
                             }
                             else
                             {
@@ -176,17 +158,17 @@ namespace YAF.Core.URLBuilder
 
                             if (parser["f"].IsSet())
                             {
-                                description += $"_{UrlRewriteHelper.GetForumName(parser["f"].ToType<int>())}";
+                                description += $"_{parser["name"]}";
                             }
 
                             if (parser["t"].IsSet())
                             {
-                                description += $"_{UrlRewriteHelper.GetTopicName(parser["t"].ToType<int>())}";
+                                description += $"_{parser["name"]}";
                             }
 
                             if (parser["c"].IsSet())
                             {
-                                description += $"_{UrlRewriteHelper.GetCategoryName(parser["c"].ToType<int>())}";
+                                description += $"_{parser["name"]}";
                             }
 
                             handlePage = true;
@@ -195,10 +177,25 @@ namespace YAF.Core.URLBuilder
                     }
                 }
 
-                // special handling for admin pages
-                if (parser["g"].StartsWith("admin_"))
+                if (parser["g"].StartsWith("Admin_"))
                 {
-                    pageName = parser["g"].Replace("_", "/");
+                    // special handling for admin pages
+                    pageName = parser["g"].Replace("Admin_", "Admin/");
+                }
+                else if (parser["g"].StartsWith("Moderate_"))
+                {
+                    // special handling for moderate pages
+                    pageName = parser["g"].Replace("Moderate_", "Moderate/");
+                }
+                else if (parser["g"].StartsWith("Profile_"))
+                {
+                    // special handling for Profile pages
+                    pageName = parser["g"].Replace("Profile_", "Profile/");
+                }
+                else if (parser["g"].StartsWith("Account_"))
+                {
+                    // special handling for Account pages
+                    pageName = parser["g"].Replace("Account_", "Account/");
                 }
 
                 newUrl += pageName;

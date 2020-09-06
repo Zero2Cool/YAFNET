@@ -1,4 +1,5 @@
 using J2N.Text;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using System;
 using System.Collections.Generic;
@@ -145,10 +146,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
         // true when segments are used for "normal" searching;
         // it's only false during testing, to create a pre-flex
         // index, using the test-only PreFlexRW.
-        protected virtual bool SortTermsByUnicode
-        {
-            get { return true; }
-        }
+        protected virtual bool SortTermsByUnicode => true;
 
         public override IEnumerator<string> GetEnumerator()
         {
@@ -166,19 +164,13 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
         {
             get
             {
-                Debug.Assert(preTerms.Count == fields.Count);
+                if (Debugging.AssertsEnabled) Debugging.Assert(preTerms.Count == fields.Count);
                 return fields.Count;
             }
         }
 
         [Obsolete("iterate fields and add their Count instead.")]
-        public override long UniqueTermCount
-        {
-            get
-            {
-                return TermsDict.Count;
-            }
-        }
+        public override long UniqueTermCount => TermsDict.Count;
 
         private TermInfosReader TermsDict
         {
@@ -242,59 +234,29 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 }
             }
 
-            public override long Count
-            {
-                get { return -1; }
-            }
+            public override long Count => -1;
 
-            public override long SumTotalTermFreq
-            {
-                get
-                {
-                    return -1;
-                }
-            }
+            public override long SumTotalTermFreq => -1;
 
-            public override long SumDocFreq
-            {
-                get
-                {
-                    return -1;
-                }
-            }
+            public override long SumDocFreq => -1;
 
-            public override int DocCount
-            {
-                get
-                {
-                    return -1;
-                }
-            }
+            public override int DocCount => -1;
 
-            public override bool HasFreqs
-            {
-                get { return fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS) >= 0; }
-            }
+            public override bool HasFreqs => fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS) >= 0;
 
             public override bool HasOffsets
             {
                 get
                 {
                     // preflex doesn't support this
-                    Debug.Assert(fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS) < 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS) < 0);
                     return false;
                 }
             }
 
-            public override bool HasPositions
-            {
-                get { return fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS) >= 0; }
-            }
+            public override bool HasPositions => fieldInfo.IndexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS) >= 0;
 
-            public override bool HasPayloads
-            {
-                get { return fieldInfo.HasPayloads; }
-            }
+            public override bool HasPayloads => fieldInfo.HasPayloads;
         }
 
         private class PreTermsEnum : TermsEnum
@@ -342,11 +304,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             {
                 int savLength = term.Length;
 
-                Debug.Assert(term.Offset == 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(term.Offset == 0);
 
                 // The 3 bytes starting at downTo make up 1
                 // unicode character:
-                Debug.Assert(IsHighBMPChar(term.Bytes, pos));
+                if (Debugging.AssertsEnabled) Debugging.Assert(IsHighBMPChar(term.Bytes, pos));
 
                 // NOTE: we cannot make this assert, because
                 // AutomatonQuery legitimately sends us malformed UTF8
@@ -399,7 +361,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 // Now test if prefix is identical and we found
                 // a non-BMP char at the same position:
                 BytesRef b2 = t2.Bytes;
-                Debug.Assert(b2.Offset == 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(b2.Offset == 0);
 
                 bool matches;
                 if (b2.Length >= term.Length && IsNonBMPChar(b2.Bytes, pos))
@@ -503,8 +465,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     Console.WriteLine("  try pop");
                 }
 
-                Debug.Assert(newSuffixStart <= prevTerm.Length);
-                Debug.Assert(newSuffixStart < scratchTerm.Length || newSuffixStart == 0);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(newSuffixStart <= prevTerm.Length);
+                    Debugging.Assert(newSuffixStart < scratchTerm.Length || newSuffixStart == 0);
+                }
 
                 if (prevTerm.Length > newSuffixStart && IsNonBMPChar(prevTerm.Bytes, newSuffixStart) && IsHighBMPChar(scratchTerm.Bytes, newSuffixStart))
                 {
@@ -533,7 +498,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                         }
 
                         BytesRef b2 = t2.Bytes;
-                        Debug.Assert(b2.Offset == 0);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(b2.Offset == 0);
 
                         // Set newSuffixStart -- we can't use
                         // termEnum's since the above seek may have
@@ -634,8 +599,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
                 // this code assumes TermInfosReader/SegmentTermEnum
                 // always use BytesRef.offset == 0
-                Debug.Assert(prevTerm.Offset == 0);
-                Debug.Assert(scratchTerm.Offset == 0);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(prevTerm.Offset == 0);
+                    Debugging.Assert(scratchTerm.Offset == 0);
+                }
 
                 // Need to loop here because we may need to do multiple
                 // pops, and possibly a continue in the end, ie:
@@ -688,7 +656,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     if (IsNonBMPChar(scratchTerm.Bytes, upTo) && (upTo > newSuffixStart || (upTo >= prevTerm.Length || (!IsNonBMPChar(prevTerm.Bytes, upTo) && !IsHighBMPChar(prevTerm.Bytes, upTo)))))
                     {
                         // A non-BMP char (4 bytes UTF8) starts here:
-                        Debug.Assert(scratchTerm.Length >= upTo + 4);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(scratchTerm.Length >= upTo + 4);
 
                         int savLength = scratchTerm.Length;
                         scratch[0] = (sbyte)scratchTerm.Bytes[upTo];
@@ -736,7 +704,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                         if (t2 != null && t2.Field == internedFieldName)
                         {
                             BytesRef b2 = t2.Bytes;
-                            Debug.Assert(b2.Offset == 0);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(b2.Offset == 0);
                             if (b2.Length >= upTo + 3 && IsHighBMPChar(b2.Bytes, upTo))
                             {
                                 matches = true;
@@ -846,13 +814,10 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
             public override void SeekExact(long ord)
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
 
-            public override long Ord
-            {
-                get { throw new System.NotSupportedException(); }
-            }
+            public override long Ord => throw new NotSupportedException();
 
             public override SeekStatus SeekCeil(BytesRef term)
             {
@@ -864,7 +829,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 TermInfosReader tis = outerInstance.TermsDict;
                 Term t0 = new Term(fieldInfo.Name, term);
 
-                Debug.Assert(termEnum != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termEnum != null);
 
                 tis.SeekEnum(termEnum, t0, false);
 
@@ -895,7 +860,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     // find an E, try swapping in S, backwards:
                     scratchTerm.CopyBytes(term);
 
-                    Debug.Assert(scratchTerm.Offset == 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(scratchTerm.Offset == 0);
 
                     for (int i = scratchTerm.Length - 1; i >= 0; i--)
                     {
@@ -944,7 +909,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     }
 
                     BytesRef br = t.Bytes;
-                    Debug.Assert(br.Offset == 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(br.Offset == 0);
 
                     SetNewSuffixStart(term, br);
 
@@ -954,14 +919,14 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     if (t2 == null || t2.Field != internedFieldName)
                     {
                         // PreFlex codec interns field names; verify:
-                        Debug.Assert(t2 == null || !t2.Field.Equals(internedFieldName, StringComparison.Ordinal));
+                        if (Debugging.AssertsEnabled) Debugging.Assert(t2 == null || !t2.Field.Equals(internedFieldName, StringComparison.Ordinal));
                         current = null;
                         return SeekStatus.END;
                     }
                     else
                     {
                         current = t2.Bytes;
-                        Debug.Assert(!unicodeSortOrder || term.CompareTo(current) < 0, "term=" + UnicodeUtil.ToHexString(term.Utf8ToString()) + " vs current=" + UnicodeUtil.ToHexString(current.Utf8ToString()));
+                        if (Debugging.AssertsEnabled) Debugging.Assert(!unicodeSortOrder || term.CompareTo(current) < 0, () => "term=" + UnicodeUtil.ToHexString(term.Utf8ToString()) + " vs current=" + UnicodeUtil.ToHexString(current.Utf8ToString()));
                         return SeekStatus.NOT_FOUND;
                     }
                 }
@@ -1037,7 +1002,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     if (t == null || t.Field != internedFieldName)
                     {
                         // PreFlex codec interns field names; verify:
-                        Debug.Assert(t == null || !t.Field.Equals(internedFieldName, StringComparison.Ordinal));
+                        if (Debugging.AssertsEnabled) Debugging.Assert(t == null || !t.Field.Equals(internedFieldName, StringComparison.Ordinal));
                         current = null;
                     }
                     else
@@ -1062,7 +1027,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     if (t == null || t.Field != internedFieldName)
                     {
                         // PreFlex codec interns field names; verify:
-                        Debug.Assert(t == null || !t.Field.Equals(internedFieldName, StringComparison.Ordinal));
+                        if (Debugging.AssertsEnabled) Debugging.Assert(t == null || !t.Field.Equals(internedFieldName, StringComparison.Ordinal));
                         return null;
                     }
                     else
@@ -1073,20 +1038,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 }
             }
 
-            public override BytesRef Term
-            {
-                get { return current; }
-            }
+            public override BytesRef Term => current;
 
-            public override int DocFreq
-            {
-                get { return termEnum.DocFreq; }
-            }
+            public override int DocFreq => termEnum.DocFreq;
 
-            public override long TotalTermFreq
-            {
-                get { return -1; }
-            }
+            public override long TotalTermFreq => -1;
 
             public override DocsEnum Docs(IBits liveDocs, DocsEnum reuse, DocsFlags flags)
             {
@@ -1142,13 +1098,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 docs = new SegmentTermDocs(outerInstance.FreqStream, outerInstance.TermsDict, outerInstance.fieldInfos);
             }
 
-            internal IndexInput FreqStream
-            {
-                get
-                {
-                    return outerInstance.FreqStream;
-                }
-            }
+            internal IndexInput FreqStream => outerInstance.FreqStream;
 
             public PreDocsEnum Reset(SegmentTermEnum termEnum, IBits liveDocs)
             {
@@ -1183,15 +1133,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 }
             }
 
-            public override int Freq
-            {
-                get { return docs.Freq; }
-            }
+            public override int Freq => docs.Freq;
 
-            public override int DocID
-            {
-                get { return docID; }
-            }
+            public override int DocID => docID;
 
             public override long GetCost()
             {
@@ -1212,13 +1156,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 pos = new SegmentTermPositions(outerInstance.FreqStream, outerInstance.ProxStream, outerInstance.TermsDict, outerInstance.fieldInfos);
             }
 
-            internal IndexInput FreqStream
-            {
-                get
-                {
-                    return outerInstance.FreqStream;
-                }
-            }
+            internal IndexInput FreqStream => outerInstance.FreqStream;
 
             public DocsAndPositionsEnum Reset(SegmentTermEnum termEnum, IBits liveDocs)
             {
@@ -1252,31 +1190,19 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 }
             }
 
-            public override int Freq
-            {
-                get { return pos.Freq; }
-            }
+            public override int Freq => pos.Freq;
 
-            public override int DocID
-            {
-                get { return docID; }
-            }
+            public override int DocID => docID;
 
             public override int NextPosition()
             {
-                Debug.Assert(docID != NO_MORE_DOCS);
+                if (Debugging.AssertsEnabled) Debugging.Assert(docID != NO_MORE_DOCS);
                 return pos.NextPosition();
             }
 
-            public override int StartOffset
-            {
-                get { return -1; }
-            }
+            public override int StartOffset => -1;
 
-            public override int EndOffset
-            {
-                get { return -1; }
-            }
+            public override int EndOffset => -1;
 
             public override BytesRef GetPayload()
             {

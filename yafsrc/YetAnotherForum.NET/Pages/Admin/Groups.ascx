@@ -4,11 +4,6 @@
 <%@ Import Namespace="YAF.Core.Extensions" %>
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
-    <div class="row">
-    <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" LocalizedTag="TITLE" LocalizedPage="ADMIN_GROUPS" /></h1>
-    </div>
-    </div>
     <div class="row" runat="server" Visible="<%# this.RoleListNet.Items.Count > 0 %>">
         <div class="col-xl-12">
             <div class="card mb-3">
@@ -20,6 +15,7 @@
                 </div>
                 <div class="card-body">
                     <YAF:Alert runat="server" Type="danger">
+                        <YAF:Icon runat="server" IconName="info-circle" />
                         <YAF:LocalizedLabel ID="LocalizedLabel4" runat="server" 
                                             LocalizedTag="NOTE_DELETE" 
                                             LocalizedPage="ADMIN_GROUPS" />
@@ -84,6 +80,7 @@
                 </div>
                 <div class="card-body">
                     <YAF:Alert runat="server" Type="danger">
+                        <YAF:Icon runat="server" IconName="info-circle" />
                         <YAF:LocalizedLabel ID="LocalizedLabel5" runat="server" 
                                             LocalizedTag="NOTE_DELETE_LINKED" 
                                             LocalizedPage="ADMIN_GROUPS" />
@@ -211,24 +208,26 @@
                     </ul>
                 </p>
                 <small>
-                    <YAF:ThemeButton ID="ThemeButtonEdit" runat="server" 
-                                     Type="Info" 
-                                     Size="Small"
-                                     CommandName="edit" CommandArgument='<%# this.Eval( "ID") %>'
-                                     TitleLocalizedTag="EDIT"
-                                     Icon="edit"
-                                     TextLocalizedTag="EDIT">
-                    </YAF:ThemeButton>
-                    <YAF:ThemeButton ID="ThemeButtonDelete" runat="server" 
-                                     Type="Danger" 
-                                     Size="Small" 
-                                     Visible='<%#!this.Eval( "Flags" ).BinaryAnd(2)%>'
-                                     CommandName="delete" CommandArgument='<%# this.Eval( "ID") %>'
-                                     ReturnConfirmText='<%# this.GetText("ADMIN_GROUPGS", "CONFIRM_DELETE") %>'
-                                     TitleLocalizedTag="DELETE"
-                                     Icon="trash"
-                                     TextLocalizedTag="DELETE">
-                    </YAF:ThemeButton>
+                    <div class="btn-group btn-group-sm">
+                        <YAF:ThemeButton ID="ThemeButtonEdit" runat="server" 
+                                         Type="Info" 
+                                         Size="Small"
+                                         CommandName="edit" CommandArgument='<%# this.Eval( "ID") %>'
+                                         TitleLocalizedTag="EDIT"
+                                         Icon="edit"
+                                         TextLocalizedTag="EDIT">
+                        </YAF:ThemeButton>
+                        <YAF:ThemeButton ID="ThemeButtonDelete" runat="server" 
+                                         Type="Danger" 
+                                         Size="Small" 
+                                         Visible='<%#!this.Eval( "Flags" ).BinaryAnd(2)%>'
+                                         CommandName="delete" CommandArgument='<%# this.Eval( "ID") %>'
+                                         ReturnConfirmText='<%# this.GetText("ADMIN_GROUPGS", "CONFIRM_DELETE") %>'
+                                         TitleLocalizedTag="DELETE"
+                                         Icon="trash"
+                                         TextLocalizedTag="DELETE">
+                        </YAF:ThemeButton>
+                    </div>
                     <div class="dropdown-menu context-menu" aria-labelledby="context menu">
                         <YAF:ThemeButton ID="ThemeButton1" runat="server" 
                                          Type="None"

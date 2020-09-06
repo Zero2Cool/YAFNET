@@ -124,9 +124,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("TEAM", "FORUMS"), BuildLink.GetLink(ForumPages.Admin_Forums));
             this.PageLinks.AddLink(this.GetText("ADMIN_DELETEFORUM", "TITLE"), string.Empty);
@@ -153,9 +151,6 @@ namespace YAF.Pages.Admin
 
             // rebind...
             this.BindData();
-
-            // clear caches...
-            this.ClearCaches();
 
             BuildLink.Redirect(ForumPages.Admin_Forums);
         }
@@ -206,21 +201,6 @@ namespace YAF.Pages.Admin
             this.ForumList.Enabled = this.MoveTopics.Checked;
 
             this.BindParentList();
-        }
-
-        /// <summary>
-        /// Clears the caches.
-        /// </summary>
-        private void ClearCaches()
-        {
-            // clear moderators cache
-            this.Get<IDataCache>().Remove(Constants.Cache.ForumModerators);
-
-            // clear category cache...
-            this.Get<IDataCache>().Remove(Constants.Cache.ForumCategory);
-
-            // clear active discussions cache..
-            this.Get<IDataCache>().Remove(Constants.Cache.ForumActiveDiscussions);
         }
 
         /// <summary>

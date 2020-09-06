@@ -38,23 +38,11 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
             this.m_sources = sources;
         }
 
-        public virtual IList<ValueSource> Sources
-        {
-            get
-            {
-                return m_sources;
-            }
-        }
+        public virtual IList<ValueSource> Sources => m_sources;
 
-        public override int Dimension
-        {
-            get { return m_sources.Count; }
-        }
+        public override int Dimension => m_sources.Count;
 
-        public virtual string Name
-        {
-            get { return "vector"; }
-        }
+        public virtual string Name => "vector";
 
         public override FunctionValues GetValues(IDictionary context, AtomicReaderContext readerContext)
         {
@@ -282,15 +270,10 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
         public override bool Equals(object o)
         {
             if (this == o)
-            {
                 return true;
-            }
-            if (!(o is VectorValueSource))
-            {
-                return false;
-            }
 
-            var that = (VectorValueSource)o;
+            if (!(o is VectorValueSource that))
+                return false;
 
             // LUCENENET specific: use structural equality comparison
             return JCG.ListEqualityComparer<ValueSource>.Default.Equals(m_sources, that.m_sources);

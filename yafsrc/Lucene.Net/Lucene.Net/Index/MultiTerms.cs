@@ -1,7 +1,7 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace YAF.Lucene.Net.Index
 {
@@ -54,7 +54,7 @@ namespace YAF.Lucene.Net.Index
             this.subSlices = subSlices;
 
             IComparer<BytesRef> _termComp = null;
-            Debug.Assert(subs.Length > 0, "inefficient: don't use MultiTerms over one sub");
+            if (Debugging.AssertsEnabled) Debugging.Assert(subs.Length > 0, "inefficient: don't use MultiTerms over one sub");
             bool _hasFreqs = true;
             bool _hasOffsets = true;
             bool _hasPositions = true;
@@ -132,10 +132,7 @@ namespace YAF.Lucene.Net.Index
             }
         }
 
-        public override long Count
-        {
-            get { return -1; }
-        }
+        public override long Count => -1;
 
         public override long SumTotalTermFreq
         {
@@ -191,32 +188,14 @@ namespace YAF.Lucene.Net.Index
             }
         }
 
-        public override IComparer<BytesRef> Comparer
-        {
-            get
-            {
-                return termComp;
-            }
-        }
+        public override IComparer<BytesRef> Comparer => termComp;
 
-        public override bool HasFreqs
-        {
-            get { return hasFreqs; }
-        }
+        public override bool HasFreqs => hasFreqs;
 
-        public override bool HasOffsets
-        {
-            get { return hasOffsets; }
-        }
+        public override bool HasOffsets => hasOffsets;
 
-        public override bool HasPositions
-        {
-            get { return hasPositions; }
-        }
+        public override bool HasPositions => hasPositions;
 
-        public override bool HasPayloads
-        {
-            get { return hasPayloads; }
-        }
+        public override bool HasPayloads => hasPayloads;
     }
 }

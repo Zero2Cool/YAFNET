@@ -1,6 +1,6 @@
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Store
@@ -143,10 +143,7 @@ namespace YAF.Lucene.Net.Store
 
         public override long Length
         {
-            get
-            {
-                return file.length;
-            }
+            get => file.length;
             set
             {
             }
@@ -165,7 +162,7 @@ namespace YAF.Lucene.Net.Store
 
         public override void WriteBytes(byte[] b, int offset, int len)
         {
-            Debug.Assert(b != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(b != null);
             crc.Update(b, offset, len);
             while (len > 0)
             {
@@ -226,12 +223,6 @@ namespace YAF.Lucene.Net.Store
             return (long)file.NumBuffers * (long)BUFFER_SIZE;
         }
 
-        public override long Checksum
-        {
-            get
-            {
-                return crc.Value;
-            }
-        }
+        public override long Checksum => crc.Value;
     }
 }

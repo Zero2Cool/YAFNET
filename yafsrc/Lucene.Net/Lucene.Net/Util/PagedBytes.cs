@@ -1,6 +1,8 @@
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -51,7 +53,7 @@ namespace YAF.Lucene.Net.Util
         private byte[] currentBlock;
         private readonly long bytesUsedPerBlock;
 
-        private static readonly byte[] EMPTY_BYTES = new byte[0];
+        private static readonly byte[] EMPTY_BYTES = Arrays.Empty<byte>();
 
         /// <summary>
         /// Provides methods to read <see cref="BytesRef"/>s from a frozen
@@ -94,8 +96,11 @@ namespace YAF.Lucene.Net.Util
             /// </summary>
             public void FillSlice(BytesRef b, long start, int length)
             {
-                Debug.Assert(length >= 0, "length=" + length);
-                Debug.Assert(length <= blockSize + 1, "length=" + length);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(length >= 0, () => "length=" + length);
+                    Debugging.Assert(length <= blockSize + 1, () => "length=" + length);
+                }
                 b.Length = length;
                 if (length == 0)
                 {
@@ -143,7 +148,7 @@ namespace YAF.Lucene.Net.Util
                 {
                     b.Length = ((block[offset] & 0x7f) << 8) | (block[1 + offset] & 0xff);
                     b.Offset = offset + 2;
-                    Debug.Assert(b.Length > 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(b.Length > 0);
                 }
             }
 
@@ -161,7 +166,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public PagedBytes(int blockBits)
         {
-            Debug.Assert(blockBits > 0 && blockBits <= 31, blockBits.ToString());
+            if (Debugging.AssertsEnabled) Debugging.Assert(blockBits > 0 && blockBits <= 31, () => blockBits.ToString(CultureInfo.InvariantCulture));
             this.blockSize = 1 << blockBits;
             this.blockBits = blockBits;
             blockMask = blockSize - 1;
@@ -220,8 +225,8 @@ namespace YAF.Lucene.Net.Util
                 }
                 currentBlock = new byte[blockSize];
                 upto = 0;
-                left = blockSize;
-                Debug.Assert(bytes.Length <= blockSize);
+                //left = blockSize; // LUCENENET: Unnecessary assignment
+                if (Debugging.AssertsEnabled) Debugging.Assert(bytes.Length <= blockSize);
                 // TODO: we could also support variable block sizes
             }
 
@@ -290,14 +295,14 @@ namespace YAF.Lucene.Net.Util
         {
             if (bytes.Length >= 32768)
             {
-                throw new System.ArgumentException("max length is 32767 (got " + bytes.Length + ")");
+                throw new ArgumentException("max length is 32767 (got " + bytes.Length + ")");
             }
 
             if (upto + bytes.Length + 2 > blockSize)
             {
                 if (bytes.Length + 2 > blockSize)
                 {
-                    throw new System.ArgumentException("block size " + blockSize + " is too small to store length " + bytes.Length + " bytes");
+                    throw new ArgumentException("block size " + blockSize + " is too small to store length " + bytes.Length + " bytes");
                 }
                 if (currentBlock != null)
                 {
@@ -375,7 +380,7 @@ namespace YAF.Lucene.Net.Util
 
             public override void ReadBytes(byte[] b, int offset, int len)
             {
-                Debug.Assert(b.Length >= offset + len);
+                if (Debugging.AssertsEnabled) Debugging.Assert(b.Length >= offset + len);
                 int offsetEnd = offset + len;
                 while (true)
                 {
@@ -409,9 +414,9 @@ namespace YAF.Lucene.Net.Util
         {
             private readonly PagedBytes outerInstance;
 
-            public PagedBytesDataOutput(PagedBytes outerInstance)
+            public PagedBytesDataOutput(PagedBytes pagedBytes)
             {
-                this.outerInstance = outerInstance;
+                this.outerInstance = pagedBytes;
             }
 
             public override void WriteByte(byte b)
@@ -431,7 +436,7 @@ namespace YAF.Lucene.Net.Util
 
             public override void WriteBytes(byte[] b, int offset, int length)
             {
-                Debug.Assert(b.Length >= offset + length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(b.Length >= offset + length);
                 if (length == 0)
                 {
                     return;

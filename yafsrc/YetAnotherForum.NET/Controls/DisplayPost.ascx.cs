@@ -35,19 +35,17 @@ namespace YAF.Controls
     using ServiceStack;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.BaseControls;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
     using YAF.Core.Model;
-    using YAF.Core.UsersRoles;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
     using YAF.Types.Flags;
     using YAF.Types.Interfaces;
+    using YAF.Types.Interfaces.Identity;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -87,7 +85,7 @@ namespace YAF.Controls
         /// <summary>
         ///   Gets a value indicating whether IsGuest.
         /// </summary>
-        public bool IsGuest => this.PostData == null || UserMembershipHelper.IsGuestUser(this.PostData.UserId);
+        public bool IsGuest => this.PostData == null || this.Get<IAspNetUsersHelper>().IsGuestUser(this.PostData.UserId);
 
         /// <summary>
         ///   Gets or sets Post Count.
@@ -139,13 +137,13 @@ namespace YAF.Controls
 
             this.Edit.Visible = this.Edit2.Visible =
                                     !this.PostData.PostDeleted && this.PostData.CanEditPost && !this.PostData.IsLocked;
-            this.Edit.NavigateUrl = this.Edit2.NavigateUrl = BuildLink.GetLinkNotEscaped(
+            this.Edit.NavigateUrl = this.Edit2.NavigateUrl = BuildLink.GetLink(
                                         ForumPages.PostMessage,
                                         "m={0}",
                                         this.PostData.MessageId);
             this.MovePost.Visible =
                 this.Move.Visible = this.PageContext.ForumModeratorAccess && !this.PostData.IsLocked;
-            this.MovePost.NavigateUrl = this.Move.NavigateUrl = BuildLink.GetLinkNotEscaped(
+            this.MovePost.NavigateUrl = this.Move.NavigateUrl = BuildLink.GetLink(
                                             ForumPages.MoveMessage,
                                             "m={0}",
                                             this.PostData.MessageId);
@@ -153,12 +151,12 @@ namespace YAF.Controls
                                       !this.PostData.PostDeleted && this.PostData.CanDeletePost
                                                                  && !this.PostData.IsLocked;
 
-            this.Delete.NavigateUrl = this.Delete2.NavigateUrl = BuildLink.GetLinkNotEscaped(
+            this.Delete.NavigateUrl = this.Delete2.NavigateUrl = BuildLink.GetLink(
                                           ForumPages.DeleteMessage,
                                           "m={0}&action=delete",
                                           this.PostData.MessageId);
             this.UnDelete.Visible = this.UnDelete2.Visible = this.PostData.CanUnDeletePost && !this.PostData.IsLocked;
-            this.UnDelete.NavigateUrl = this.UnDelete2.NavigateUrl = BuildLink.GetLinkNotEscaped(
+            this.UnDelete.NavigateUrl = this.UnDelete2.NavigateUrl = BuildLink.GetLink(
                                             ForumPages.DeleteMessage,
                                             "m={0}&action=undelete",
                                             this.PostData.MessageId);
@@ -175,7 +173,7 @@ namespace YAF.Controls
             {
                 this.ContextMenu.Attributes.Add(
                     "data-url",
-                    BuildLink.GetLinkNotEscaped(
+                    BuildLink.GetLink(
                         ForumPages.PostMessage,
                         "t={0}&f={1}",
                         this.PageContext.PageTopicID,
@@ -198,14 +196,14 @@ namespace YAF.Controls
 
             this.MultiQuote.Visible = !this.PostData.PostDeleted && this.PostData.CanReply && !this.PostData.IsLocked;
 
-            this.Quote.NavigateUrl = this.Quote2.NavigateUrl = BuildLink.GetLinkNotEscaped(
+            this.Quote.NavigateUrl = this.Quote2.NavigateUrl = BuildLink.GetLink(
                                          ForumPages.PostMessage,
                                          "t={0}&f={1}&q={2}",
                                          this.PageContext.PageTopicID,
                                          this.PageContext.PageForumID,
                                          this.PostData.MessageId);
 
-            this.Reply.NavigateUrl = this.ReplyFooter.NavigateUrl = BuildLink.GetLinkNotEscaped(
+            this.Reply.NavigateUrl = this.ReplyFooter.NavigateUrl = BuildLink.GetLink(
                                          ForumPages.PostMessage,
                                          "t={0}&f={1}",
                                          this.PageContext.PageTopicID,
@@ -217,10 +215,10 @@ namespace YAF.Controls
                     "onclick",
                     $"handleMultiQuoteButton(this, '{this.PostData.MessageId}', '{this.PostData.TopicId}')");
 
-                BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                this.PageContext.PageElements.RegisterJsBlockStartup(
                     "MultiQuoteButtonJs",
                     JavaScriptBlocks.MultiQuoteButtonJs);
-                BoardContext.Current.PageElements.RegisterJsBlockStartup(
+                this.PageContext.PageElements.RegisterJsBlockStartup(
                     "MultiQuoteCallbackSuccessJS",
                     JavaScriptBlocks.MultiQuoteCallbackSuccessJs);
 
@@ -247,7 +245,7 @@ namespace YAF.Controls
                 this.ManageDropPlaceHolder.Visible = false;
             }
 
-            BoardContext.Current.PageElements.RegisterJsBlockStartup(
+            this.PageContext.PageElements.RegisterJsBlockStartup(
                 "asynchCallFailedJs",
                 "function CallFailed(res){console.log(res);  }");
 
@@ -257,12 +255,15 @@ namespace YAF.Controls
 
             this.panMessage.CssClass = "col";
 
-            var userId = this.PostData.UserId;
+            var avatarUrl = this.Get<IAvatars>().GetAvatarUrlForUser(
+                this.PostData.UserId,
+                this.DataRow.Field<string>("Avatar"),
+                this.DataRow.Field<int>("HasAvatarImage") > 0,
+                string.Empty);
 
-            var avatarUrl = this.Get<IAvatars>().GetAvatarUrlForUser(userId);
             var displayName = this.Get<BoardSettings>().EnableDisplayName
-                                  ? UserMembershipHelper.GetDisplayNameFromID(userId)
-                                  : UserMembershipHelper.GetUserNameFromID(userId);
+                ? this.DataRow.Field<string>("DisplayName")
+                : this.DataRow.Field<string>("UserName");
 
             if (avatarUrl.IsSet())
             {
@@ -280,11 +281,11 @@ namespace YAF.Controls
             if (this.Get<IPermissions>().Check(this.Get<BoardSettings>().ReportPostPermissions)
                 && !this.PostData.PostDeleted)
             {
-                if (!this.PageContext.IsGuest && this.PageContext.User != null)
+                if (!this.PageContext.IsGuest && this.PageContext.MembershipUser != null)
                 {
                     this.ReportPost.Visible = this.ReportPost2.Visible = true;
 
-                    this.ReportPost.NavigateUrl = this.ReportPost2.NavigateUrl = BuildLink.GetLinkNotEscaped(
+                    this.ReportPost.NavigateUrl = this.ReportPost2.NavigateUrl = BuildLink.GetLink(
                                                       ForumPages.ReportPost,
                                                       "m={0}",
                                                       this.PostData.MessageId);
@@ -292,7 +293,7 @@ namespace YAF.Controls
             }
 
             // mark post as answer
-            if (!this.PostData.PostDeleted && !this.PageContext.IsGuest && this.PageContext.User != null
+            if (!this.PostData.PostDeleted && !this.PageContext.IsGuest && this.PageContext.MembershipUser != null
                 && this.PageContext.PageUserID.Equals(this.DataRow["TopicOwnerID"].ToType<int>())
                 && !this.PostData.UserId.Equals(this.PageContext.PageUserID))
             {
@@ -370,7 +371,11 @@ namespace YAF.Controls
                 this.GetRepository<Message>().UpdateFlags(this.PostData.MessageId, messageFlags.BitValue);
             }
 
-            BuildLink.Redirect(ForumPages.Posts, "m={0}#post{0}", this.PostData.MessageId);
+            BuildLink.Redirect(
+                ForumPages.Posts,
+                "m={0}&name={1}#post{0}",
+                this.PostData.MessageId,
+                this.PageContext.PageTopicID);
         }
 
         /// <summary>
@@ -399,12 +404,12 @@ namespace YAF.Controls
                         var thanksDate = DateTime.Parse(subChunks[1]);
 
                         // Get the username related to this User ID
-                        var displayName = this.Get<IUserDisplayName>().GetName(userId);
+                        var displayName = this.Get<IUserDisplayName>().GetNameById(userId);
 
                         sb.AppendFormat(
                             @"<li><a id=""{0}"" href=""{1}""><u>{2}</u></a>",
                             userId,
-                            BuildLink.GetLink(ForumPages.Profile, "u={0}&name={1}", userId, displayName),
+                            BuildLink.GetUserProfileLink(userId, displayName),
                             this.Get<HttpServerUtilityBase>().HtmlEncode(displayName));
 
                         // If showing thanks date is enabled, add it to the formatted string.
@@ -445,12 +450,14 @@ namespace YAF.Controls
         {
             this.UserProfileLink.UserID = this.PostData.UserId;
             this.UserProfileLink.ReplaceName = this.Get<BoardSettings>().EnableDisplayName
-                                                   ? this.DataRow.Field<string>("DisplayName")
-                                                   : this.DataRow.Field<string>("UserName");
+                ? this.DataRow.Field<string>("DisplayName")
+                : this.DataRow.Field<string>("UserName");
             this.UserProfileLink.PostfixText = this.DataRow.Field<string>("IP") == "NNTP"
                                                    ? this.GetText("EXTERNALUSER")
                                                    : string.Empty;
             this.UserProfileLink.Style = this.DataRow.Field<string>("Style");
+
+            this.UserProfileLink.Suspended = this.DataRow.Field<DateTime?>("Suspended");
 
             if (this.IsGuest)
             {
@@ -650,10 +657,11 @@ namespace YAF.Controls
 
             if (this.Get<BoardSettings>().EnableBuddyList && this.PageContext.PageUserID != this.PostData.UserId)
             {
+                var userBlockFlags = new UserBlockFlags(this.DataRow.Field<int>("BlockFlags")); 
+
                 // Should we add the "Add Buddy" item?
-                if (!this.Get<IBuddy>().IsBuddy(this.PostData.UserId, false) && !this.PageContext.IsGuest
-                                                                             && !this.GetRepository<User>()
-                                                                                 .GetById(this.PostData.UserId).Block
+                if (!this.Get<IFriends>().IsBuddy(this.PostData.UserId, false) && !this.PageContext.IsGuest
+                                                                             && !userBlockFlags
                                                                                  .BlockFriendRequests)
                 {
                     var addFriendButton = new ThemeButton
@@ -667,7 +675,7 @@ namespace YAF.Controls
 
                     addFriendButton.Click += (sender, args) =>
                         {
-                            var strBuddyRequest = this.Get<IBuddy>().AddRequest(this.PostData.UserId);
+                            var strBuddyRequest = this.Get<IFriends>().AddRequest(this.PostData.UserId);
 
                             if (Convert.ToBoolean(strBuddyRequest[1].ToType<int>()))
                             {
@@ -687,7 +695,7 @@ namespace YAF.Controls
 
                     this.UserDropHolder.Controls.Add(addFriendButton);
                 }
-                else if (this.Get<IBuddy>().IsBuddy(this.PostData.UserId, true) && !this.PageContext.IsGuest)
+                else if (this.Get<IFriends>().IsBuddy(this.PostData.UserId, true) && !this.PageContext.IsGuest)
                 {
                     // Are the users approved buddies? Add the "Remove buddy" item.
                     var removeFriendButton = new ThemeButton
@@ -704,14 +712,14 @@ namespace YAF.Controls
 
                     removeFriendButton.Click += (sender, args) =>
                         {
-                            this.Get<IBuddy>().Remove(this.PostData.UserId);
+                            this.Get<IFriends>().Remove(this.PostData.UserId);
 
                             this.Get<HttpResponseBase>().Redirect(this.Get<HttpRequestBase>().RawUrl);
 
                             this.PageContext.AddLoadMessage(
                                 this.GetTextFormatted(
                                     "REMOVEBUDDY_NOTIFICATION",
-                                    this.Get<IBuddy>().Remove(this.PostData.UserId)),
+                                    this.Get<IFriends>().Remove(this.PostData.UserId)),
                                 MessageTypes.success);
                         };
 
@@ -737,13 +745,13 @@ namespace YAF.Controls
                 }
 
                 // Check if the User matches minimal requirements for voting up
-                if (this.PageContext.Reputation >= this.Get<BoardSettings>().ReputationMinUpVoting)
+                if (this.PageContext.User.Points >= this.Get<BoardSettings>().ReputationMinUpVoting)
                 {
                     this.AddReputation.Visible = true;
                 }
 
                 // Check if the User matches minimal requirements for voting down
-                if (this.PageContext.Reputation < this.Get<BoardSettings>().ReputationMinDownVoting)
+                if (this.PageContext.User.Points < this.Get<BoardSettings>().ReputationMinDownVoting)
                 {
                     return;
                 }
@@ -832,10 +840,9 @@ namespace YAF.Controls
                 return;
             }
 
-            var username = this.HtmlEncode(
-                this.Get<BoardSettings>().EnableDisplayName
-                    ? UserMembershipHelper.GetDisplayNameFromID(this.PostData.UserId)
-                    : UserMembershipHelper.GetUserNameFromID(this.PostData.UserId));
+            var username = this.HtmlEncode(this.Get<BoardSettings>().EnableDisplayName
+                ? this.DataRow.Field<string>("DisplayName")
+                : this.DataRow.Field<string>("UserName"));
 
             var thanksLabelText = thanksNumber == 1
                                       ? this.Get<ILocalization>().GetTextFormatted("THANKSINFOSINGLE", username)

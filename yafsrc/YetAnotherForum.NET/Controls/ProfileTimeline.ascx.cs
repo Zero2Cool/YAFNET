@@ -31,14 +31,13 @@ namespace YAF.Controls
 
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
-    using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
-    using YAF.Types.Interfaces.Events;
     using YAF.Types.Models;
     using YAF.Utils;
     using YAF.Utils.Helpers;
@@ -89,6 +88,11 @@ namespace YAF.Controls
                 return;
             }
 
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
             var previousPageSize = this.Get<ISession>().UserActivityPageSize;
 
             if (previousPageSize.HasValue)
@@ -104,20 +108,6 @@ namespace YAF.Controls
             }
 
             this.BindData();
-        }
-
-        /// <summary>
-        /// The get first item class.
-        /// </summary>
-        /// <param name="itemIndex">
-        /// The item index.
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
-        protected string GetFirstItemClass(int itemIndex)
-        {
-            return itemIndex > 0 ? "border-right" : string.Empty;
         }
 
         /// <summary>
@@ -150,7 +140,7 @@ namespace YAF.Controls
                 return;
             }
 
-            var activity = (Activity)e.Item.DataItem;
+            var activity = (Tuple<Activity, Topic>)e.Item.DataItem;
 
             var card = e.Item.FindControlAs<Panel>("Card");
             var iconLabel = e.Item.FindControlAs<Label>("Icon");
@@ -163,36 +153,40 @@ namespace YAF.Controls
             var icon = string.Empty;
 
             var topicLink = new ThemeButton
-                                {
-                                    NavigateUrl =
-                                        BuildLink.GetLink(
-                                            ForumPages.Posts,
-                                            "m={0}#post{0}",
-                                            activity.MessageID.Value),
-                                    Type = ButtonStyle.None,
-                                    Text = this.GetRepository<Topic>().GetById(activity.TopicID.Value).TopicName,
-                                    Icon = "comment"
-                                };
-
-            if (activity.ActivityFlags.CreatedTopic)
             {
-                topicLink.NavigateUrl = BuildLink.GetLink(ForumPages.Posts, "t={0}", activity.TopicID.Value);
+                NavigateUrl = BuildLink.GetTopicLink(activity.Item2.ID, activity.Item2.TopicName),
+                Type = ButtonStyle.None,
+                Text = activity.Item2.TopicName,
+                Icon = "comment",
+                IconCssClass = "far"
+            };
 
+            if (activity.Item1.ActivityFlags.CreatedTopic)
+            {
+                topicLink.NavigateUrl = BuildLink.GetTopicLink(activity.Item1.TopicID.Value, activity.Item2.TopicName);
                 title.Text = this.GetText("ACCOUNT", "CREATED_TOPIC");
                 icon = "comment";
                 message = this.GetTextFormatted("CREATED_TOPIC_MSG", topicLink.RenderToString());
             }
 
-            if (activity.ActivityFlags.CreatedReply)
+            if (activity.Item1.ActivityFlags.CreatedReply)
             {
                 title.Text = this.GetText("ACCOUNT", "CREATED_REPLY");
                 icon = "comment";
                 message = this.GetTextFormatted("CREATED_REPLY_MSG", topicLink.RenderToString());
             }
 
-            if (activity.ActivityFlags.GivenThanks)
+            if (activity.Item1.ActivityFlags.GivenThanks)
             {
-                var userLink = new UserLink { UserID = activity.FromUserID.Value };
+                var user = this.GetRepository<User>().GetById(activity.Item1.FromUserID.Value);
+
+                var userLink = new UserLink
+                {
+                    UserID = activity.Item1.FromUserID.Value,
+                    Suspended = user.Suspended,
+                    Style = user.UserStyle,
+                    ReplaceName = user.DisplayOrUserName()
+                };
 
                 title.Text = this.GetText("ACCOUNT", "GIVEN_THANKS");
                 icon = "heart";
@@ -202,23 +196,23 @@ namespace YAF.Controls
                     topicLink.RenderToString());
             }
 
-            var notify = activity.Notification ? "text-success" : "text-secondary";
+            var notify = activity.Item1.Notification ? "text-success" : "text-secondary";
 
-            card.CssClass = activity.Notification ? "card shadow" : "card";
+            card.CssClass = activity.Item1.Notification ? "card shadow" : "card";
 
             iconLabel.Text = $@"<i class=""fas fa-circle fa-stack-2x {notify}""></i>
-               <i class=""fas fa-{icon} fa-stack-1x fa-inverse""></i>;";
+               <i class=""fas fa-{icon} fa-stack-1x fa-inverse""></i>";
 
-            displayDateTime.DateTime = activity.Created;
+            displayDateTime.DateTime = activity.Item1.Created;
 
             messageHolder.Controls.Add(new Literal { Text = message });
 
-            if (!activity.Notification)
+            if (!activity.Item1.Notification)
             {
                 return;
             }
 
-            markRead.CommandArgument = activity.MessageID.Value.ToString();
+            markRead.CommandArgument = activity.Item1.MessageID.Value.ToString();
             markRead.Visible = true;
         }
 
@@ -230,24 +224,6 @@ namespace YAF.Controls
         protected void PagerTop_PageChange([NotNull] object sender, [NotNull] EventArgs e)
         {
             // rebind
-            this.BindData();
-        }
-
-        /// <summary>
-        /// Mark all Activity as read
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        protected void MarkAll_Click(object sender, EventArgs e)
-        {
-            this.GetRepository<Activity>().MarkAllAsRead(this.PageContext.PageUserID);
-
-            this.Get<IRaiseEvent>().Raise(new UpdateUserEvent(this.PageContext.PageUserID));
-
             this.BindData();
         }
 
@@ -302,7 +278,7 @@ namespace YAF.Controls
             this.CreatedTopic.Checked = true;
             this.CreatedReply.Checked = true;
             this.GivenThanks.Checked = true;
-            
+
             this.BindData();
         }
 
@@ -325,43 +301,33 @@ namespace YAF.Controls
         /// <summary>
         /// The bind data.
         /// </summary>
-            private void BindData()
+        private void BindData()
         {
             this.PagerTop.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
-            var stream = this.GetRepository<Activity>().Get(x => x.UserID == this.PageContext.PageUserID && !x.FromUserID.HasValue);
+            var stream = this.GetRepository<Activity>().Timeline(this.PageContext.PageUserID);
 
             if (!this.CreatedTopic.Checked)
             {
-                stream.RemoveAll(a => a.CreatedTopic);
+                stream.RemoveAll(a => a.Item1.CreatedTopic);
             }
 
             if (!this.CreatedReply.Checked)
             {
-                stream.RemoveAll(a => a.CreatedReply);
+                stream.RemoveAll(a => a.Item1.CreatedReply);
             }
 
             if (!this.GivenThanks.Checked)
             {
-                stream.RemoveAll(a => a.GivenThanks);
+                stream.RemoveAll(a => a.Item1.GivenThanks);
             }
 
-            var paged = stream.OrderByDescending(item => item.ID)
-                .Skip(this.PagerTop.CurrentPageIndex * this.PagerTop.PageSize).Take(this.PagerTop.PageSize).ToList();
+            var paged = stream.Skip(this.PagerTop.CurrentPageIndex * this.PagerTop.PageSize)
+                .Take(this.PagerTop.PageSize).ToList();
 
             this.ActivityStream.DataSource = paged;
 
-            if (paged.Any())
-            {
-                this.PagerTop.Count = stream.Count;
-
-                this.ItemCount = paged.Count;
-            }
-            else
-            {
-                this.PagerTop.Count = 0;
-                this.ItemCount = 0;
-            }
+            this.ItemCount = paged.Any() ? paged.Count : 0;
 
             this.DataBind();
         }

@@ -9,12 +9,7 @@
 
 	<asp:Repeater ID="list" runat="server">
 		<HeaderTemplate>
-    <div class="row">
-    <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" LocalizedTag="TITLE" LocalizedPage="ADMIN_REPLACEWORDS" /></h1>
-    </div>
-    </div>
-    <div class="row">
+            <div class="row">
         <div class="col-xl-12">
             <div class="card mb-3">
                 <div class="card-header">
@@ -124,6 +119,7 @@
                 <div class="card-footer text-center">
 					<YAF:ThemeButton runat="server" 
                                      CommandName="add" 
+                                     CssClass="mb-1"
                                      ID="Linkbutton3" 
                                      Type="Primary"
 					                 Icon="plus-square" 
@@ -131,6 +127,7 @@
                                      TextLocalizedPage="ADMIN_REPLACEWORDS">
                     </YAF:ThemeButton>
 					<YAF:ThemeButton runat="server" 
+                                     CssClass="mb-1"
                                      Icon="upload"   
                                      DataToggle="modal" 
                                      DataTarget="ReplaceWordsImportDialog" 
@@ -140,6 +137,7 @@
                                      TextLocalizedPage="ADMIN_REPACEWORDS">
                     </YAF:ThemeButton>
 					<YAF:ThemeButton runat="server" 
+                                     CssClass="mb-1"
                                      CommandName="export" 
                                      ID="Linkbutton4" 
                                      Type="Warning"

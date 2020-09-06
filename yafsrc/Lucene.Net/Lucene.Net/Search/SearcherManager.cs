@@ -1,5 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Diagnostics;
+using System.IO;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -82,7 +83,7 @@ namespace YAF.Lucene.Net.Search
         ///          don't require the searcher to be warmed before going live or other
         ///          custom behavior.
         /// </param>
-        /// <exception cref="System.IO.IOException"> if there is a low-level I/O error </exception>
+        /// <exception cref="IOException"> if there is a low-level I/O error </exception>
         public SearcherManager(IndexWriter writer, bool applyAllDeletes, SearcherFactory searcherFactory)
         {
             if (searcherFactory == null)
@@ -100,7 +101,7 @@ namespace YAF.Lucene.Net.Search
         ///        <c>null</c> if you don't require the searcher to be warmed
         ///        before going live or other custom behavior.
         /// </param>
-        /// <exception cref="System.IO.IOException"> If there is a low-level I/O error </exception>
+        /// <exception cref="IOException"> If there is a low-level I/O error </exception>
         public SearcherManager(Directory dir, SearcherFactory searcherFactory)
         {
             if (searcherFactory == null)
@@ -119,7 +120,7 @@ namespace YAF.Lucene.Net.Search
         protected override IndexSearcher RefreshIfNeeded(IndexSearcher referenceToRefresh)
         {
             IndexReader r = referenceToRefresh.IndexReader;
-            Debug.Assert(r is DirectoryReader, "searcher's IndexReader should be a DirectoryReader, but got " + r);
+            if (Debugging.AssertsEnabled) Debugging.Assert(r is DirectoryReader, () => "searcher's IndexReader should be a DirectoryReader, but got " + r);
             IndexReader newReader = DirectoryReader.OpenIfChanged((DirectoryReader)r);
             if (newReader == null)
             {
@@ -151,7 +152,7 @@ namespace YAF.Lucene.Net.Search
             try
             {
                 IndexReader r = searcher.IndexReader;
-                Debug.Assert(r is DirectoryReader, "searcher's IndexReader should be a DirectoryReader, but got " + r);
+                if (Debugging.AssertsEnabled) Debugging.Assert(r is DirectoryReader, () => "searcher's IndexReader should be a DirectoryReader, but got " + r);
                 return ((DirectoryReader)r).IsCurrent();
             }
             finally

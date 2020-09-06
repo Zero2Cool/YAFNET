@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace YAF.Lucene.Net.Analysis
 {
     /*
@@ -56,7 +59,7 @@ namespace YAF.Lucene.Net.Analysis
         /// The default implementation chains the call to the input TokenStream, so
         /// be sure to call <c>base.End()</c> first when overriding this method.
         /// </summary>
-        /// <exception cref="System.IO.IOException"> If an I/O error occurs </exception>
+        /// <exception cref="IOException"> If an I/O error occurs </exception>
         public override void End()
         {
             m_input.End();
@@ -67,7 +70,7 @@ namespace YAF.Lucene.Net.Analysis
         /// <para/>
         /// If you override this method, always call <c>base.Dispose(disposing)</c>, otherwise
         /// some internal state will not be correctly reset (e.g., <see cref="Tokenizer"/> will
-        /// throw <see cref="System.InvalidOperationException"/> on reuse).
+        /// throw <see cref="InvalidOperationException"/> on reuse).
         /// <para/>
         /// <b>NOTE:</b>
         /// The default implementation chains the call to the input TokenStream, so
@@ -90,7 +93,7 @@ namespace YAF.Lucene.Net.Analysis
         /// <para/>
         /// If you override this method, always call <c>base.Reset()</c>, otherwise
         /// some internal state will not be correctly reset (e.g., <see cref="Tokenizer"/> will
-        /// throw <see cref="System.InvalidOperationException"/> on further usage).
+        /// throw <see cref="InvalidOperationException"/> on further usage).
         /// </summary>
         /// <remarks>
         /// <b>NOTE:</b>

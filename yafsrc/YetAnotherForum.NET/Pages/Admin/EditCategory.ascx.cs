@@ -36,6 +36,7 @@ namespace YAF.Pages.Admin
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -79,11 +80,10 @@ namespace YAF.Pages.Admin
         {
             using (var dt = new DataTable("Files"))
             {
-                dt.Columns.Add("FileID", typeof(long));
                 dt.Columns.Add("FileName", typeof(string));
                 dt.Columns.Add("Description", typeof(string));
+                
                 var dr = dt.NewRow();
-                dr["FileID"] = 0;
                 dr["FileName"] =
                     $"{BoardInfo.ForumClientFileRoot}Content/images/spacer.gif"; // use spacer.gif for Description Entry
                 dr["Description"] = "None";
@@ -94,23 +94,8 @@ namespace YAF.Pages.Admin
                 if (dir.Exists)
                 {
                     var files = dir.GetFiles("*.*");
-                    long fileId = 1;
 
-                    var filesList = from file in files
-                                let sExt = file.Extension.ToLower()
-                                where sExt == ".png" || sExt == ".gif" || sExt == ".jpg"
-                                select file;
-
-                    filesList.ForEach(
-                        file =>
-                        {
-                            dr = dt.NewRow();
-                            dr["FileID"] = fileId++;
-                            dr["FileName"] =
-                                $"{BoardInfo.ForumClientFileRoot}{BoardFolders.Current.Categories}/{file.Name}";
-                            dr["Description"] = file.Name;
-                            dt.Rows.Add(dr);
-                        });
+                    dt.AddImageFiles(files, BoardFolders.Current.Categories);
                 }
 
                 this.CategoryImages.DataSource = dt;
@@ -132,6 +117,10 @@ namespace YAF.Pages.Admin
                 return;
             }
 
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.Save.ClientID));
+
             // Populate Category Table
             this.CreateImagesDataTable();
 
@@ -144,9 +133,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"),
-                BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             this.PageLinks.AddLink(this.GetText("TEAM", "FORUMS"), BuildLink.GetLink(ForumPages.Admin_Forums));
             this.PageLinks.AddLink(this.GetText("ADMIN_EDITCATEGORY", "TITLE"), string.Empty);
@@ -162,7 +149,6 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void SaveClick([NotNull] object sender, [NotNull] EventArgs e)
         {
-            var name = this.Name.Text.Trim();
             string categoryImage = null;
 
             if (this.CategoryImages.SelectedIndex > 0)
@@ -178,21 +164,7 @@ namespace YAF.Pages.Admin
                 return;
             }
 
-            if (!short.TryParse(this.SortOrder.Text.Trim(), out var sortOrder))
-            {
-                // error...
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_EDITCATEGORY", "MSG_NUMBER"), MessageTypes.danger);
-                return;
-            }
-
-            if (name.IsNotSet())
-            {
-                // error...
-                this.PageContext.AddLoadMessage(this.GetText("ADMIN_EDITCATEGORY", "MSG_VALUE"), MessageTypes.danger);
-                return;
-            }
-
-            var category = this.GetRepository<Category>().GetSingle(c => c.Name == name);
+            var category = this.GetRepository<Category>().GetSingle(c => c.Name == this.Name.Text);
 
             // Check Name duplicate only if new Category
             if (category != null && this.CategoryId == 0)
@@ -204,10 +176,7 @@ namespace YAF.Pages.Admin
             }
 
             // save category
-            this.GetRepository<Category>().Save(this.CategoryId, name, categoryImage, sortOrder);
-
-            // remove category cache...
-            this.Get<IDataCache>().Remove(Constants.Cache.ForumCategory);
+            this.GetRepository<Category>().Save(this.CategoryId, this.Name.Text, categoryImage, this.SortOrder.Text.ToType<short>());
 
             // redirect
             BuildLink.Redirect(ForumPages.Admin_Forums);
@@ -220,8 +189,6 @@ namespace YAF.Pages.Admin
         {
             if (!this.Get<HttpRequestBase>().QueryString.Exists("c"))
             {
-                this.LocalizedLabel2.LocalizedTag = "NEW_CATEGORY";
-
                 this.IconHeader.Text = this.GetText("NEW_CATEGORY");
                     
                 // Currently creating a New Category, and auto fill the Category Sort Order + 1
@@ -253,8 +220,6 @@ namespace YAF.Pages.Admin
             this.SortOrder.Text = category.SortOrder.ToString();
 
             this.IconHeader.Text = $"{this.GetText("ADMIN_EDITCATEGORY", "HEADER")} <strong>{this.Name.Text}</strong>";
-
-            this.Label1.Text = this.Name.Text;
 
             var item = this.CategoryImages.Items.FindByText(category.CategoryImage);
 

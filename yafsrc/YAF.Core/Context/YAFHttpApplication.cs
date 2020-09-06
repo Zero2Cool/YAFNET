@@ -29,6 +29,7 @@ namespace YAF.Core.Context
     using System.Web.Http;
 
     using YAF.Core.Context.Start;
+    using YAF.Core.Helpers;
 
     /// <summary>
     /// The YAF HttpApplication.
@@ -48,6 +49,8 @@ namespace YAF.Core.Context
         {
             // Pass a delegate to the Configure method.
             GlobalConfiguration.Configure(WebApiConfig.Register);
+
+            ScriptManagerHelper.RegisterJQuery();
         }
     }
 }

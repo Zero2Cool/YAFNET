@@ -1,8 +1,8 @@
 using J2N;
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -89,18 +89,18 @@ namespace YAF.Lucene.Net.Search
 
             if (minimumNrMatchers <= 0)
             {
-                throw new System.ArgumentException("Minimum nr of matchers must be positive");
+                throw new ArgumentException("Minimum nr of matchers must be positive");
             }
             if (numScorers <= 1)
             {
-                throw new System.ArgumentException("There must be at least 2 subScorers");
+                throw new ArgumentException("There must be at least 2 subScorers");
             }
 
             this.mm = minimumNrMatchers;
             this.sortedSubScorers = subScorers.ToArray();
             // sorting by decreasing subscorer cost should be inversely correlated with
             // next docid (assuming costs are due to generating many postings)
-            ArrayUtil.TimSort(sortedSubScorers, Comparer<Scorer>.Create((o1,o2)=> (o2.GetCost() - o1.GetCost()).Signum()));
+            ArrayUtil.TimSort(sortedSubScorers, Comparer<Scorer>.Create((o1, o2) => (o2.GetCost() - o1.GetCost()).Signum()));
             // take mm-1 most costly subscorers aside
             this.mmStack = new Scorer[mm - 1];
             for (int i = 0; i < mm - 1; i++)
@@ -116,7 +116,7 @@ namespace YAF.Lucene.Net.Search
                 this.subScorers[i] = this.sortedSubScorers[mm - 1 + i];
             }
             MinheapHeapify();
-            Debug.Assert(MinheapCheck());
+            if (Debugging.AssertsEnabled) Debugging.Assert(MinheapCheck());
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace YAF.Lucene.Net.Search
 
         public override int NextDoc()
         {
-            Debug.Assert(doc != NO_MORE_DOCS);
+            if (Debugging.AssertsEnabled) Debugging.Assert(doc != NO_MORE_DOCS);
             while (true)
             {
                 // to remove current doc, call next() on all subScorers on current doc within heap
@@ -261,15 +261,9 @@ namespace YAF.Lucene.Net.Search
             return (float)score;
         }
 
-        public override int DocID
-        {
-            get { return doc; }
-        }
+        public override int DocID => doc;
 
-        public override int Freq
-        {
-            get { return m_nrMatchers; }
-        }
+        public override int Freq => m_nrMatchers;
 
         /// <summary>
         /// Advances to the first match beyond the current whose document number is

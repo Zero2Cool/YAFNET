@@ -27,7 +27,6 @@ namespace YAF.Controls
     #region Using
 
     using System;
-    using System.Data;
     using System.Drawing;
     using System.IO;
     using System.Security.Cryptography;
@@ -36,6 +35,7 @@ namespace YAF.Controls
 
     using YAF.Configuration;
     using YAF.Core.BaseControls;
+    using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -74,7 +74,7 @@ namespace YAF.Controls
         protected void Back_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
             BuildLink.Redirect(
-                this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.Admin_Users : ForumPages.Account);
+                this.PageContext.CurrentForumPage.IsAdminPage ? ForumPages.Admin_Users : ForumPages.MyAccount);
         }
 
         /// <summary>
@@ -98,12 +98,10 @@ namespace YAF.Controls
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
         {
-            this.PageContext.QueryIDs = new QueryStringIDHelper("u");
-
             if (this.PageContext.CurrentForumPage.IsAdminPage && this.PageContext.IsAdmin
-                                                              && this.PageContext.QueryIDs.ContainsKey("u"))
+                                                              && this.Get<HttpRequestBase>().QueryString.Exists("u"))
             {
-                this.currentUserId = this.PageContext.QueryIDs["u"].ToType<int>();
+                this.currentUserId = Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("u"));
             }
             else
             {
@@ -137,7 +135,7 @@ namespace YAF.Controls
                 addAdminParam = $"u={this.currentUserId}";
             }
 
-            this.OurAvatar.NavigateUrl = BuildLink.GetLinkNotEscaped(ForumPages.Avatar, addAdminParam);
+            this.OurAvatar.NavigateUrl = BuildLink.GetLink(ForumPages.Profile_Avatar, addAdminParam);
 
             this.noteRemote.Text = this.GetTextFormatted(
                 "NOTE_REMOTE",
@@ -299,7 +297,7 @@ namespace YAF.Controls
                 this.Logger.Log(
                     exception.Message,
                     EventLogTypes.Error,
-                    this.PageContext.CurrentUserData.UserName,
+                    this.PageContext.PageUserID,
                     string.Empty,
                     exception);
 
@@ -313,41 +311,35 @@ namespace YAF.Controls
         /// </summary>
         private void BindData()
         {
-            DataRow row;
-
-            using (var dt = this.GetRepository<User>().ListAsDataTable(
-                this.PageContext.PageBoardID,
-                this.currentUserId,
-                null))
-            {
-                row = dt.GetFirstRow();
-            }
+            var user = this.PageContext.CurrentForumPage.IsAdminPage
+                ? this.GetRepository<User>().GetById(this.currentUserId)
+                : this.PageContext.User;
 
             this.AvatarImg.Visible = true;
             this.Avatar.Text = string.Empty;
             this.DeleteAvatar.Visible = false;
             this.NoAvatar.Visible = false;
 
-            if (row["HasAvatarImage"] != null && long.Parse(row["HasAvatarImage"].ToString()) > 0)
+            if (!user.AvatarImage.IsNullOrEmptyDBField())
             {
                 this.AvatarImg.ImageUrl =
                     $"{BoardInfo.ForumClientFileRoot}resource.ashx?u={this.currentUserId}&v={DateTime.Now.Ticks}";
                 this.Avatar.Text = string.Empty;
                 this.DeleteAvatar.Visible = true;
             }
-            else if (row["Avatar"].ToString().Length > 0)
+            else if (user.Avatar.IsSet())
             {
                 // Took out PageContext.BoardSettings.AvatarRemote
                 this.AvatarImg.ImageUrl =
-                    $"{BoardInfo.ForumClientFileRoot}resource.ashx?url={this.Server.UrlEncode(row["Avatar"].ToString())}&width={this.Get<BoardSettings>().AvatarWidth}&height={this.Get<BoardSettings>().AvatarHeight}&v={DateTime.Now.Ticks}";
+                    $"{BoardInfo.ForumClientFileRoot}resource.ashx?url={this.Server.UrlEncode(user.Avatar)}&width={this.Get<BoardSettings>().AvatarWidth}&height={this.Get<BoardSettings>().AvatarHeight}&v={DateTime.Now.Ticks}";
 
-                this.Avatar.Text = row["Avatar"].ToString();
+                this.Avatar.Text = user.Avatar;
                 this.DeleteAvatar.Visible = true;
             }
             else if (this.Get<BoardSettings>().AvatarGravatar)
             {
                 var x = new MD5CryptoServiceProvider();
-                var bs = Encoding.UTF8.GetBytes(this.PageContext.User.Email);
+                var bs = Encoding.UTF8.GetBytes(this.PageContext.MembershipUser.Email);
                 bs = x.ComputeHash(bs);
                 var s = new StringBuilder();
 

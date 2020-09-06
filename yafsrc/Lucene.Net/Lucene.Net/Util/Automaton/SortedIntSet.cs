@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using JCG = J2N.Collections.Generic;
 
@@ -59,8 +59,7 @@ namespace YAF.Lucene.Net.Util.Automaton
             if (useTreeMap)
             {
                 int key = num;
-                int val;
-                if (!map.TryGetValue(key, out val))
+                if (!map.TryGetValue(key, out int val))
                 {
                     map[key] = 1;
                 }
@@ -158,7 +157,7 @@ namespace YAF.Lucene.Net.Util.Automaton
                     return;
                 }
             }
-            Debug.Assert(false);
+            if (Debugging.AssertsEnabled) Debugging.Assert(false);
         }
 
         public void ComputeHash()

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 
@@ -67,7 +66,7 @@ namespace YAF.Lucene.Net.Util
                     Type simpleTextType = Type.GetType("Lucene.Net.Codecs.SimpleText.SimpleTextCodec, Lucene.Net.Codecs");
                     if (simpleTextType != null)
                     {
-                        codecsAssembly = simpleTextType.GetTypeInfo().Assembly;
+                        codecsAssembly = simpleTextType.Assembly;
                     }
                 }
 
@@ -85,10 +84,10 @@ namespace YAF.Lucene.Net.Util
         {
             return
                 type != null &&
-                type.GetTypeInfo().IsPublic &&
-                !type.GetTypeInfo().IsAbstract &&
-                typeof(TService).GetTypeInfo().IsAssignableFrom(type) &&
-                type.GetTypeInfo().GetCustomAttribute<ExcludeServiceAttribute>(inherit: true) == null;
+                type.IsPublic &&
+                !type.IsAbstract &&
+                typeof(TService).IsAssignableFrom(type) &&
+                type.GetCustomAttribute<ExcludeServiceAttribute>(inherit: true) == null;
         }
 
         /// <summary>
@@ -99,10 +98,10 @@ namespace YAF.Lucene.Net.Util
         public static string GetServiceName(Type type)
         {
             // Check for ServiceName attribute
-            var nameAttributes = type.GetTypeInfo().GetCustomAttributes(typeof(ServiceNameAttribute), inherit: true);
-            if (nameAttributes.Any())
+            var nameAttributes = type.GetCustomAttributes(typeof(ServiceNameAttribute), inherit: true);
+            if (nameAttributes.Length > 0)
             {
-                ServiceNameAttribute nameAttribute = nameAttributes.FirstOrDefault() as ServiceNameAttribute;
+                ServiceNameAttribute nameAttribute = nameAttributes[0] as ServiceNameAttribute;
                 if (nameAttribute != null)
                 {
                     string name = nameAttribute.Name;
@@ -131,7 +130,7 @@ namespace YAF.Lucene.Net.Util
                 genericSuffix = "Generic" + name.Substring(genericIndex + 1);
                 name = name.Substring(0, genericIndex);
             }
-            string serviceName = typeof(TService).GetTypeInfo().Name;
+            string serviceName = typeof(TService).Name;
             if (name.EndsWith(serviceName, StringComparison.Ordinal))
             {
                 name = name.Substring(0, name.Length - serviceName.Length);
@@ -147,14 +146,14 @@ namespace YAF.Lucene.Net.Util
             // based on harmony charset.java
             if (name.Length >= 128)
             {
-                throw new System.ArgumentException("Illegal service name: '" + name + "' is too long (must be < 128 chars).");
+                throw new ArgumentException("Illegal service name: '" + name + "' is too long (must be < 128 chars).");
             }
             for (int i = 0, len = name.Length; i < len; i++)
             {
                 char c = name[i];
                 if (!IsLetterOrDigit(c))
                 {
-                    throw new System.ArgumentException("Illegal service name: '" + name + "' must be simple ascii alphanumeric.");
+                    throw new ArgumentException("Illegal service name: '" + name + "' must be simple ascii alphanumeric.");
                 }
             }
         }

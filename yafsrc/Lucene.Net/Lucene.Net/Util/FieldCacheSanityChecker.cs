@@ -53,7 +53,7 @@ namespace YAF.Lucene.Net.Util
     /// <seealso cref="FieldCacheSanityChecker.InsanityType"/>
     public sealed class FieldCacheSanityChecker
     {
-        private bool estimateRam;
+        private readonly bool estimateRam;
 
         public FieldCacheSanityChecker()
         {
@@ -105,7 +105,7 @@ namespace YAF.Lucene.Net.Util
         {
             if (null == cacheEntries || 0 == cacheEntries.Length)
             {
-                return new Insanity[0];
+                return Arrays.Empty<Insanity>();
             }
 
             if (estimateRam)
@@ -311,7 +311,7 @@ namespace YAF.Lucene.Net.Util
                             }
                         }
                     }
-                    catch (System.ObjectDisposedException)
+                    catch (ObjectDisposedException)
                     {
                         // ignore this reader
                     }
@@ -326,10 +326,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         private sealed class ReaderField
         {
-            public object ReaderKey
-            {
-                get { return readerKey; }
-            }
+            public object ReaderKey => readerKey;
             private readonly object readerKey;
             public string FieldName { get; private set; }
 
@@ -377,11 +374,11 @@ namespace YAF.Lucene.Net.Util
             {
                 if (null == type)
                 {
-                    throw new System.ArgumentException("Insanity requires non-null InsanityType");
+                    throw new ArgumentException("Insanity requires non-null InsanityType");
                 }
                 if (null == entries || 0 == entries.Length)
                 {
-                    throw new System.ArgumentException("Insanity requires non-null/non-empty CacheEntry[]");
+                    throw new ArgumentException("Insanity requires non-null/non-empty CacheEntry[]");
                 }
                 this.type = type;
                 this.msg = msg;
@@ -391,34 +388,19 @@ namespace YAF.Lucene.Net.Util
             /// <summary>
             /// Type of insane behavior this object represents
             /// </summary>
-            public InsanityType Type
-            {
-                get
-                {
-                    return type;
-                }
-            }
+            public InsanityType Type => type;
 
             /// <summary>
             /// Description of the insane behavior
             /// </summary>
-            public string Msg
-            {
-                get
-                {
-                    return msg;
-                }
-            }
+            public string Msg => msg;
 
             /// <summary>
             /// <see cref="FieldCache.CacheEntry"/> objects which suggest a problem
             /// </summary>
             [WritableArray]
             [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-            public FieldCache.CacheEntry[] CacheEntries
-            {
-                get { return entries; }
-            }
+            public FieldCache.CacheEntry[] CacheEntries => entries;
 
             /// <summary>
             /// Multi-Line representation of this <see cref="Insanity"/> object, starting with

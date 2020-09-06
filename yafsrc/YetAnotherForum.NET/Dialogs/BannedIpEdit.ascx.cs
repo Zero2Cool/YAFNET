@@ -30,11 +30,11 @@ namespace YAF.Dialogs
     using System.Text;
 
     using YAF.Configuration;
-    using YAF.Core;
+    
     using YAF.Core.BaseControls;
-    using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -101,12 +101,38 @@ namespace YAF.Dialogs
         }
 
         /// <summary>
+        /// The page_ load.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender. 
+        /// </param>
+        /// <param name="e">
+        /// The e. 
+        /// </param>
+        protected void Page_Load([NotNull] object sender, [NotNull] EventArgs e)
+        {
+            if (!this.IsPostBack)
+            {
+                return;
+            }
+
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                "loadValidatorFormJs",
+                JavaScriptBlocks.FormValidatorJs(this.Save.ClientID));
+        }
+
+        /// <summary>
         /// Handles the Click event of the Add control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Save_OnClick([NotNull] object sender, [NotNull] EventArgs e)
         {
+            if (!this.Page.IsValid)
+            {
+                return;
+            }
+
             var ipParts = this.mask.Text.Trim().Split('.');
 
             // do some validation...
@@ -159,14 +185,14 @@ namespace YAF.Dialogs
                 this.BanReason.Text.Trim(),
                 this.PageContext.PageUserID);
 
-            if (BoardContext.Current.Get<BoardSettings>().LogBannedIP)
+            if (this.PageContext.Get<BoardSettings>().LogBannedIP)
             {
                 this.Logger.Log(
-                    $"IP or mask {this.mask.Text.Trim()} was saved by {(this.Get<BoardSettings>().EnableDisplayName ? this.PageContext.CurrentUserData.DisplayName : this.PageContext.CurrentUserData.UserName)}.",
+                    $"IP or mask {this.mask.Text.Trim()} was saved by {this.PageContext.User.DisplayOrUserName()}.",
                     EventLogTypes.IpBanSet);
             }
 
-            // go back to banned IP's administration page
+            // go back to banned IPs administration page
             BuildLink.Redirect(ForumPages.Admin_BannedIps);
         }
 

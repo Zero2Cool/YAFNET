@@ -1,5 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
-using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Util.Packed
@@ -50,21 +52,18 @@ namespace YAF.Lucene.Net.Util.Packed
             finished = false;
         }
 
-        protected internal override PackedInt32s.Format Format
-        {
-            get
-            {
-                return format;
-            }
-        }
+        protected internal override PackedInt32s.Format Format => format;
 
         public override void Add(long v)
         {
-            Debug.Assert(m_bitsPerValue == 64 || (v >= 0 && v <= PackedInt32s.MaxValue(m_bitsPerValue)), m_bitsPerValue.ToString());
-            Debug.Assert(!finished);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(m_bitsPerValue == 64 || (v >= 0 && v <= PackedInt32s.MaxValue(m_bitsPerValue)), () => m_bitsPerValue.ToString(CultureInfo.InvariantCulture));
+                Debugging.Assert(!finished);
+            }
             if (m_valueCount != -1 && written >= m_valueCount)
             {
-                throw new System.IO.EndOfStreamException("Writing past end of stream");
+                throw new EndOfStreamException("Writing past end of stream");
             }
             nextValues[off++] = v;
             if (off == nextValues.Length)
@@ -76,7 +75,7 @@ namespace YAF.Lucene.Net.Util.Packed
 
         public override void Finish()
         {
-            Debug.Assert(!finished);
+            if (Debugging.AssertsEnabled) Debugging.Assert(!finished);
             if (m_valueCount != -1)
             {
                 while (written < m_valueCount)
@@ -98,9 +97,6 @@ namespace YAF.Lucene.Net.Util.Packed
             off = 0;
         }
 
-        public override int Ord
-        {
-            get { return written - 1; }
-        }
+        public override int Ord => written - 1;
     }
 }

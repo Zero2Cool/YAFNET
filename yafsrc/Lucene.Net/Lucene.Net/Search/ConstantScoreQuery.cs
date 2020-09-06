@@ -1,7 +1,7 @@
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 using System.Text;
 
 namespace YAF.Lucene.Net.Search
@@ -45,12 +45,8 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public ConstantScoreQuery(Query query)
         {
-            if (query == null)
-            {
-                throw new System.NullReferenceException("Query may not be null");
-            }
             this.m_filter = null;
-            this.m_query = query;
+            this.m_query = query ?? throw new NullReferenceException("Query may not be null");
         }
 
         /// <summary>
@@ -62,33 +58,17 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public ConstantScoreQuery(Filter filter)
         {
-            if (filter == null)
-            {
-                throw new System.NullReferenceException("Filter may not be null");
-            }
-            this.m_filter = filter;
+            this.m_filter = filter ?? throw new NullReferenceException("Filter may not be null");
             this.m_query = null;
         }
 
         /// <summary>
         /// Returns the encapsulated filter, returns <c>null</c> if a query is wrapped. </summary>
-        public virtual Filter Filter
-        {
-            get
-            {
-                return m_filter;
-            }
-        }
+        public virtual Filter Filter => m_filter;
 
         /// <summary>
         /// Returns the encapsulated query, returns <c>null</c> if a filter is wrapped. </summary>
-        public virtual Query Query
-        {
-            get
-            {
-                return m_query;
-            }
-        }
+        public virtual Query Query => m_query;
 
         public override Query Rewrite(IndexReader reader)
         {
@@ -104,7 +84,7 @@ namespace YAF.Lucene.Net.Search
             }
             else
             {
-                Debug.Assert(m_filter != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(m_filter != null);
                 // Fix outdated usage pattern from Lucene 2.x/early-3.x:
                 // because ConstantScoreQuery only accepted filters,
                 // QueryWrapperFilter was used to wrap queries.
@@ -145,13 +125,7 @@ namespace YAF.Lucene.Net.Search
                 this.innerWeight = (outerInstance.m_query == null) ? null : outerInstance.m_query.CreateWeight(searcher);
             }
 
-            public override Query Query
-            {
-                get
-                {
-                    return outerInstance;
-                }
-            }
+            public override Query Query => outerInstance;
 
             public override float GetValueForNormalization()
             {
@@ -180,12 +154,12 @@ namespace YAF.Lucene.Net.Search
                 //DocIdSetIterator disi;
                 if (outerInstance.m_filter != null)
                 {
-                    Debug.Assert(outerInstance.m_query == null);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.m_query == null);
                     return base.GetBulkScorer(context, scoreDocsInOrder, acceptDocs);
                 }
                 else
                 {
-                    Debug.Assert(outerInstance.m_query != null && innerWeight != null);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.m_query != null && innerWeight != null);
                     BulkScorer bulkScorer = innerWeight.GetBulkScorer(context, scoreDocsInOrder, acceptDocs);
                     if (bulkScorer == null)
                     {
@@ -200,7 +174,7 @@ namespace YAF.Lucene.Net.Search
                 DocIdSetIterator disi;
                 if (outerInstance.m_filter != null)
                 {
-                    Debug.Assert(outerInstance.m_query == null);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.m_query == null);
                     DocIdSet dis = outerInstance.m_filter.GetDocIdSet(context, acceptDocs);
                     if (dis == null)
                     {
@@ -210,7 +184,7 @@ namespace YAF.Lucene.Net.Search
                 }
                 else
                 {
-                    Debug.Assert(outerInstance.m_query != null && innerWeight != null);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.m_query != null && innerWeight != null);
                     disi = innerWeight.GetScorer(context, acceptDocs);
                 }
 
@@ -221,10 +195,7 @@ namespace YAF.Lucene.Net.Search
                 return new ConstantScorer(outerInstance, disi, this, queryWeight);
             }
 
-            public override bool ScoresDocsOutOfOrder
-            {
-                get { return (innerWeight != null) ? innerWeight.ScoresDocsOutOfOrder : false; }
-            }
+            public override bool ScoresDocsOutOfOrder => (innerWeight != null) ? innerWeight.ScoresDocsOutOfOrder : false;
 
             public override Explanation Explain(AtomicReaderContext context, int doc)
             {
@@ -310,10 +281,7 @@ namespace YAF.Lucene.Net.Search
                     collector.SetNextReader(context);
                 }
 
-                public virtual bool AcceptsDocsOutOfOrder
-                {
-                    get { return collector.AcceptsDocsOutOfOrder; }
-                }
+                public virtual bool AcceptsDocsOutOfOrder => collector.AcceptsDocsOutOfOrder;
             }
         }
 
@@ -338,21 +306,15 @@ namespace YAF.Lucene.Net.Search
                 return docIdSetIterator.NextDoc();
             }
 
-            public override int DocID
-            {
-                get { return docIdSetIterator.DocID; }
-            }
+            public override int DocID => docIdSetIterator.DocID;
 
             public override float GetScore()
             {
-                Debug.Assert(docIdSetIterator.DocID != NO_MORE_DOCS);
+                if (Debugging.AssertsEnabled) Debugging.Assert(docIdSetIterator.DocID != NO_MORE_DOCS);
                 return theScore;
             }
 
-            public override int Freq
-            {
-                get { return 1; }
-            }
+            public override int Freq => 1;
 
             public override int Advance(int target)
             {

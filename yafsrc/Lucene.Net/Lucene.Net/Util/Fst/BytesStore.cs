@@ -1,6 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Util.Fst
@@ -122,13 +121,7 @@ namespace YAF.Lucene.Net.Util.Fst
             }
         }
 
-        internal virtual int BlockBits
-        {
-            get
-            {
-                return blockBits;
-            }
-        }
+        internal virtual int BlockBits => blockBits;
 
         /// <summary>
         /// Absolute writeBytes without changing the current
@@ -138,7 +131,7 @@ namespace YAF.Lucene.Net.Util.Fst
         internal virtual void WriteBytes(long dest, byte[] b, int offset, int len)
         {
             //System.out.println("  BS.writeBytes dest=" + dest + " offset=" + offset + " len=" + len);
-            Debug.Assert(dest + len <= Position, "dest=" + dest + " pos=" + Position + " len=" + len);
+            if (Debugging.AssertsEnabled) Debugging.Assert(dest + len <= Position, () => "dest=" + dest + " pos=" + Position + " len=" + len);
 
             // Note: weird: must go "backwards" because copyBytes
             // calls us with overlapping src/dest.  If we
@@ -205,7 +198,7 @@ namespace YAF.Lucene.Net.Util.Fst
         public virtual void CopyBytes(long src, long dest, int len)
         {
             //System.out.println("BS.copyBytes src=" + src + " dest=" + dest + " len=" + len);
-            Debug.Assert(src < dest);
+            if (Debugging.AssertsEnabled) Debugging.Assert(src < dest);
 
             // Note: weird: must go "backwards" because copyBytes
             // calls us with overlapping src/dest.  If we
@@ -294,8 +287,11 @@ namespace YAF.Lucene.Net.Util.Fst
         /// Reverse from <paramref name="srcPos"/>, inclusive, to <paramref name="destPos"/>, inclusive. </summary>
         public virtual void Reverse(long srcPos, long destPos)
         {
-            Debug.Assert(srcPos < destPos);
-            Debug.Assert(destPos < Position);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(srcPos < destPos);
+                Debugging.Assert(destPos < Position);
+            }
             //System.out.println("reverse src=" + srcPos + " dest=" + destPos);
 
             int srcBlockIndex = (int)(srcPos >> blockBits);
@@ -354,13 +350,7 @@ namespace YAF.Lucene.Net.Util.Fst
             }
         }
 
-        public virtual long Position
-        {
-            get
-            {
-                return ((long)blocks.Count - 1) * blockSize + nextWrite;
-            }
-        }
+        public virtual long Position => ((long)blocks.Count - 1) * blockSize + nextWrite;
 
         /// <summary>
         /// Pos must be less than the max position written so far!
@@ -368,8 +358,11 @@ namespace YAF.Lucene.Net.Util.Fst
         /// </summary>
         public virtual void Truncate(long newLen)
         {
-            Debug.Assert(newLen <= Position);
-            Debug.Assert(newLen >= 0);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(newLen <= Position);
+                Debugging.Assert(newLen >= 0);
+            }
             int blockIndex = (int)(newLen >> blockBits);
             nextWrite = (int)(newLen & blockMask);
             if (nextWrite == 0)
@@ -386,7 +379,7 @@ namespace YAF.Lucene.Net.Util.Fst
             {
                 current = blocks[blockIndex];
             }
-            Debug.Assert(newLen == Position);
+            if (Debugging.AssertsEnabled) Debugging.Assert(newLen == Position);
         }
 
         public virtual void Finish()
@@ -445,7 +438,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
             public override void SkipBytes(int count)
             {
-                Position = Position + count;
+                Position += count;
             }
 
             public override void ReadBytes(byte[] b, int offset, int len)
@@ -475,24 +468,18 @@ namespace YAF.Lucene.Net.Util.Fst
 
             public override long Position
             {
-                get
-                {
-                    return ((long)nextBuffer - 1) * outerInstance.blockSize + nextRead;
-                }
+                get => ((long)nextBuffer - 1) * outerInstance.blockSize + nextRead;
                 set
                 {
                     int bufferIndex = (int)(value >> outerInstance.blockBits);
                     nextBuffer = bufferIndex + 1;
                     current = outerInstance.blocks[bufferIndex];
                     nextRead = (int)(value & outerInstance.blockMask);
-                    Debug.Assert(this.Position == value, "pos=" + value + " Position=" + this.Position);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(this.Position == value, () => "pos=" + value + " Position=" + this.Position);
                 }
             }
 
-            public override bool IsReversed
-            {
-                get { return false; }
-            }
+            public override bool IsReversed => false;
         }
 
         public virtual FST.BytesReader GetReverseReader()
@@ -537,7 +524,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
             public override void SkipBytes(int count)
             {
-                Position = Position - count;
+                Position -= count;
             }
 
             public override void ReadBytes(byte[] b, int offset, int len)
@@ -550,10 +537,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
             public override long Position
             {
-                get
-                {
-                    return ((long)nextBuffer + 1) * outerInstance.blockSize + nextRead;
-                }
+                get => ((long)nextBuffer + 1) * outerInstance.blockSize + nextRead;
                 set
                 {
                     // NOTE: a little weird because if you
@@ -564,14 +548,11 @@ namespace YAF.Lucene.Net.Util.Fst
                     nextBuffer = bufferIndex - 1;
                     current = outerInstance.blocks[bufferIndex];
                     nextRead = (int)(value & outerInstance.blockMask);
-                    Debug.Assert(this.Position == value, "value=" + value + " this.Position=" + this.Position);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(this.Position == value, () => "value=" + value + " this.Position=" + this.Position);
                 }
             }
 
-            public override bool IsReversed
-            {
-                get { return true; }
-            }
+            public override bool IsReversed => true;
         }
     }
 }

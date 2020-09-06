@@ -1,5 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Index
 {
@@ -60,7 +60,7 @@ namespace YAF.Lucene.Net.Index
             }
             else
             {
-                Debug.Assert(reader is AtomicReader);
+                if (Debugging.AssertsEnabled) Debugging.Assert(reader is AtomicReader);
                 return (AtomicReader)reader;
             }
         }
@@ -174,7 +174,7 @@ namespace YAF.Lucene.Net.Index
             {
                 return null;
             }
-            Debug.Assert(map != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(map != null);
             int size = @in.Leaves.Count;
             var values = new SortedSetDocValues[size];
             int[] starts = new int[size + 1];
@@ -205,23 +205,13 @@ namespace YAF.Lucene.Net.Index
             return @in.GetTermVectors(docID);
         }
 
-        public override int NumDocs
-        {
-            get
-            {
-                // Don't call ensureOpen() here (it could affect performance)
-                return @in.NumDocs;
-            }
-        }
+        public override int NumDocs =>
+            // Don't call ensureOpen() here (it could affect performance)
+            @in.NumDocs;
 
-        public override int MaxDoc
-        {
-            get
-            {
-                // Don't call ensureOpen() here (it could affect performance)
-                return @in.MaxDoc;
-            }
-        }
+        public override int MaxDoc =>
+            // Don't call ensureOpen() here (it could affect performance)
+            @in.MaxDoc;
 
         public override void Document(int docID, StoredFieldVisitor visitor)
         {
@@ -247,21 +237,9 @@ namespace YAF.Lucene.Net.Index
             }
         }
 
-        public override object CoreCacheKey
-        {
-            get
-            {
-                return @in.CoreCacheKey;
-            }
-        }
+        public override object CoreCacheKey => @in.CoreCacheKey;
 
-        public override object CombinedCoreAndDeletesKey
-        {
-            get
-            {
-                return @in.CombinedCoreAndDeletesKey;
-            }
-        }
+        public override object CombinedCoreAndDeletesKey => @in.CombinedCoreAndDeletesKey;
 
         protected internal override void DoClose()
         {

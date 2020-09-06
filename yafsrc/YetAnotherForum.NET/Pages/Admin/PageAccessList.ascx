@@ -5,11 +5,6 @@
 <YAF:PageLinks runat="server" ID="PageLinks" />
 
     <div class="row">
-    <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel1" runat="server" LocalizedTag="TITLE" LocalizedPage="ADMIN_PAGEACCESSLIST" /></h1>
-    </div>
-    </div>
-    <div class="row">
         <div class="col-xl-12">
             <div class="card mb-3">
                 <div class="card-header">
@@ -30,12 +25,7 @@
                             <%# this.HtmlEncode(this.Get<BoardSettings>().EnableDisplayName ? this.Eval("DisplayName") : this.Eval("Name"))%>
                         </h5>
                     </div>
-                    <p class="mb-1">
-                        <YAF:LocalizedLabel ID="BoardNameLabel" runat="server" 
-                                            LocalizedTag="BOARDnAME"  
-                                            LocalizedPage="ADMIN_PAGEACCESSLIST" />:
-                        <%# this.HtmlEncode(this.Eval( "BoardName")) %>
-                    </p>
+                    
                     <small>
                         <div class="btn-group btn-group-sm">
                             <YAF:ThemeButton ID="ThemeButtonEdit" runat="server" 
@@ -43,7 +33,7 @@
                                              Size="Small"
                                              TitleLocalizedPage="ADMIN_PAGEACCESSLIST" 
                                              CommandName="edit" 
-                                             CommandArgument='<%# this.Eval( "UserID") %>'
+                                             CommandArgument='<%# this.Eval( "ID") %>'
                                              TitleLocalizedTag="EDIT"
                                              Icon="edit"
                                              TextLocalizedTag="EDIT">

@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Store;
 using YAF.Lucene.Net.Util;
@@ -5,8 +6,6 @@ using YAF.Lucene.Net.Util.Packed;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 
 namespace YAF.Lucene.Net.Codecs.Compressing
 {
@@ -79,7 +78,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 indexStream = d.OpenChecksumInput(indexStreamFN, context);
                 string codecNameIdx = formatName + CompressingTermVectorsWriter.CODEC_SFX_IDX;
                 version = CodecUtil.CheckHeader(indexStream, codecNameIdx, CompressingTermVectorsWriter.VERSION_START, CompressingTermVectorsWriter.VERSION_CURRENT);
-                Debug.Assert(CodecUtil.HeaderLength(codecNameIdx) == indexStream.GetFilePointer());
+                if (Debugging.AssertsEnabled) Debugging.Assert(CodecUtil.HeaderLength(codecNameIdx) == indexStream.GetFilePointer());
                 indexReader = new CompressingStoredFieldsIndexReader(indexStream, si);
 
                 if (version >= CompressingTermVectorsWriter.VERSION_CHECKSUM)
@@ -105,7 +104,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 {
                     throw new Exception("Version mismatch between stored fields index and data: " + version + " != " + version2);
                 }
-                Debug.Assert(CodecUtil.HeaderLength(codecNameDat) == vectorsStream.GetFilePointer());
+                if (Debugging.AssertsEnabled) Debugging.Assert(CodecUtil.HeaderLength(codecNameDat) == vectorsStream.GetFilePointer());
 
                 packedIntsVersion = vectorsStream.ReadVInt32();
                 chunkSize = vectorsStream.ReadVInt32();
@@ -123,63 +122,27 @@ namespace YAF.Lucene.Net.Codecs.Compressing
             }
         }
 
-        internal CompressionMode CompressionMode
-        {
-            get
-            {
-                return compressionMode;
-            }
-        }
+        internal CompressionMode CompressionMode => compressionMode;
 
-        internal int ChunkSize
-        {
-            get
-            {
-                return chunkSize;
-            }
-        }
+        internal int ChunkSize => chunkSize;
 
         /// <summary>
         /// NOTE: This was getPackedIntsVersion() in Lucene
         /// </summary>
-        internal int PackedInt32sVersion
-        {
-            get
-            {
-                return packedIntsVersion;
-            }
-        }
+        internal int PackedInt32sVersion => packedIntsVersion;
 
-        internal int Version
-        {
-            get
-            {
-                return version;
-            }
-        }
+        internal int Version => version;
 
-        internal CompressingStoredFieldsIndexReader Index
-        {
-            get
-            {
-                return indexReader;
-            }
-        }
+        internal CompressingStoredFieldsIndexReader Index => indexReader;
 
-        internal IndexInput VectorsStream
-        {
-            get
-            {
-                return vectorsStream;
-            }
-        }
+        internal IndexInput VectorsStream => vectorsStream;
 
         /// <exception cref="ObjectDisposedException"> if this <see cref="TermVectorsReader"/> is disposed. </exception>
         private void EnsureOpen()
         {
             if (closed)
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "this FieldsReader is closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "this FieldsReader is closed");
             }
         }
 
@@ -253,7 +216,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
             int[] fieldNums;
             {
                 int token = vectorsStream.ReadByte() & 0xFF;
-                Debug.Assert(token != 0); // means no term vectors, cannot happen since we checked for numFields == 0
+                if (Debugging.AssertsEnabled) Debugging.Assert(token != 0); // means no term vectors, cannot happen since we checked for numFields == 0
                 int bitsPerFieldNum = token & 0x1F;
                 int totalDistinctFields = (int)((uint)token >> 5);
                 if (totalDistinctFields == 0x07)
@@ -283,7 +246,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                         for (int i = 0; i < totalFields; ++i)
                         {
                             int fieldNumOff = (int)allFieldNumOffs.Get(i);
-                            Debug.Assert(fieldNumOff >= 0 && fieldNumOff < fieldNums.Length);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(fieldNumOff >= 0 && fieldNumOff < fieldNums.Length);
                             int fgs = (int)fieldFlags.Get(fieldNumOff);
                             f.Set(i, fgs);
                         }
@@ -420,7 +383,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                         totalPayloads += freq;
                     }
                 }
-                Debug.Assert(i != totalFields - 1 || termIndex == totalTerms, termIndex + " " + totalTerms);
+                if (Debugging.AssertsEnabled) Debugging.Assert(i != totalFields - 1 || termIndex == totalTerms, () => termIndex + " " + totalTerms);
             }
 
             int[][] positionIndex = PositionIndex(skip, numFields, numTerms, termFreqs);
@@ -553,7 +516,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                                 ++posIdx;
                             }
                         }
-                        Debug.Assert(posIdx == totalFreq);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(posIdx == totalFreq);
                     }
                     termIndex += termCount;
                 }
@@ -575,7 +538,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                     }
                     termIndex += termCount;
                 }
-                Debug.Assert(termIndex == totalTerms, termIndex + " " + totalTerms);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termIndex == totalTerms, () => termIndex + " " + totalTerms);
             }
 
             // decompress data
@@ -614,7 +577,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 }
             }
 
-            Debug.Assert(Sum(fieldLengths) == docLen, Sum(fieldLengths) + " != " + docLen);
+            if (Debugging.AssertsEnabled) Debugging.Assert(Sum(fieldLengths) == docLen, () => Sum(fieldLengths) + " != " + docLen);
 
             return new TVFields(this, fieldNums, FieldFlags, fieldNumOffs, fieldNumTerms, fieldLengths, prefixLengths, suffixLengths, fieldTermFreqs, positionIndex, positions, startOffsets, lengths, payloadBytes, payloadIndex, suffixBytes);
         }
@@ -769,14 +732,11 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                         break;
                     }
                 }
-                Debug.Assert(fieldLen >= 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(fieldLen >= 0);
                 return new TVTerms(outerInstance, numTerms[idx], fieldFlags[idx], prefixLengths[idx], suffixLengths[idx], termFreqs[idx], positionIndex[idx], positions[idx], startOffsets[idx], lengths[idx], payloadIndex[idx], payloadBytes, new BytesRef(suffixBytes.Bytes, suffixBytes.Offset + fieldOff, fieldLen));
             }
 
-            public override int Count
-            {
-                get { return fieldNumOffs.Length; }
-            }
+            public override int Count => fieldNumOffs.Length;
         }
 
         private class TVTerms : Terms
@@ -819,62 +779,23 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 return termsEnum;
             }
 
-            public override IComparer<BytesRef> Comparer 
-            {
-                get
-                {
-                    return BytesRef.UTF8SortedAsUnicodeComparer;
-                }
-            }
+            public override IComparer<BytesRef> Comparer => BytesRef.UTF8SortedAsUnicodeComparer;
 
-            public override long Count
-            {
-                get { return numTerms; }
-            }
+            public override long Count => numTerms;
 
-            public override long SumTotalTermFreq
-            {
-                get
-                {
-                    return -1L;
-                }
-            }
+            public override long SumTotalTermFreq => -1L;
 
-            public override long SumDocFreq
-            {
-                get
-                {
-                    return numTerms;
-                }
-            }
+            public override long SumDocFreq => numTerms;
 
-            public override int DocCount
-            {
-                get
-                {
-                    return 1;
-                }
-            }
+            public override int DocCount => 1;
 
-            public override bool HasFreqs
-            {
-                get { return true; }
-            }
+            public override bool HasFreqs => true;
 
-            public override bool HasOffsets
-            {
-                get { return (flags & CompressingTermVectorsWriter.OFFSETS) != 0; }
-            }
+            public override bool HasOffsets => (flags & CompressingTermVectorsWriter.OFFSETS) != 0;
 
-            public override bool HasPositions
-            {
-                get { return (flags & CompressingTermVectorsWriter.POSITIONS) != 0; }
-            }
+            public override bool HasPositions => (flags & CompressingTermVectorsWriter.POSITIONS) != 0;
 
-            public override bool HasPayloads
-            {
-                get { return (flags & CompressingTermVectorsWriter.PAYLOADS) != 0; }
-            }
+            public override bool HasPayloads => (flags & CompressingTermVectorsWriter.PAYLOADS) != 0;
         }
 
         private class TVTermsEnum : TermsEnum
@@ -922,7 +843,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 }
                 else
                 {
-                    Debug.Assert(ord < numTerms);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(ord < numTerms);
                     ++ord;
                 }
 
@@ -938,13 +859,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 return term;
             }
 
-            public override IComparer<BytesRef> Comparer
-            {
-                get
-                {
-                    return BytesRef.UTF8SortedAsUnicodeComparer;
-                }
-            }
+            public override IComparer<BytesRef> Comparer => BytesRef.UTF8SortedAsUnicodeComparer;
 
             public override TermsEnum.SeekStatus SeekCeil(BytesRef text)
             {
@@ -982,28 +897,16 @@ namespace YAF.Lucene.Net.Codecs.Compressing
 
             public override void SeekExact(long ord)
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
 
-            public override BytesRef Term
-            {
-                get { return term; }
-            }
+            public override BytesRef Term => term;
 
-            public override long Ord
-            {
-                get { throw new System.NotSupportedException(); }
-            }
+            public override long Ord => throw new NotSupportedException();
 
-            public override int DocFreq
-            {
-                get { return 1; }
-            }
+            public override int DocFreq => 1;
 
-            public override long TotalTermFreq
-            {
-                get { return termFreqs[ord]; }
-            }
+            public override long TotalTermFreq => termFreqs[ord];
 
             public override sealed DocsEnum Docs(IBits liveDocs, DocsEnum reuse, DocsFlags flags)
             {
@@ -1071,11 +974,11 @@ namespace YAF.Lucene.Net.Codecs.Compressing
             {
                 if (doc == NO_MORE_DOCS)
                 {
-                    throw new Exception("DocsEnum exhausted");
+                    throw new InvalidOperationException("DocsEnum exhausted");
                 }
                 else if (doc == -1)
                 {
-                    throw new Exception("DocsEnum not started");
+                    throw new InvalidOperationException("DocsEnum not started");
                 }
             }
 
@@ -1084,11 +987,11 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 CheckDoc();
                 if (i < 0)
                 {
-                    throw new Exception("Position enum not started");
+                    throw new InvalidOperationException("Position enum not started");
                 }
                 else if (i >= termFreq)
                 {
-                    throw new Exception("Read past last position");
+                    throw new InvalidOperationException("Read past last position");
                 }
             }
 
@@ -1096,11 +999,11 @@ namespace YAF.Lucene.Net.Codecs.Compressing
             {
                 if (doc != 0)
                 {
-                    throw new Exception();
+                    throw new InvalidOperationException();
                 }
                 else if (i >= termFreq - 1)
                 {
-                    throw new Exception("Read past last position");
+                    throw new InvalidOperationException("Read past last position");
                 }
 
                 ++i;
@@ -1175,10 +1078,7 @@ namespace YAF.Lucene.Net.Codecs.Compressing
                 }
             }
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             public override int NextDoc()
             {
@@ -1205,7 +1105,10 @@ namespace YAF.Lucene.Net.Codecs.Compressing
 
         private static int Sum(int[] arr)
         {
-            return arr.Sum();
+            int sum = 0;
+            for (int i = 0; i < arr.Length; i++)
+                sum += arr[i];
+            return sum;
         }
 
         public override long RamBytesUsed()

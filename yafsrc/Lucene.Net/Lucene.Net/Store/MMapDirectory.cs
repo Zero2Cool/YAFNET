@@ -1,9 +1,8 @@
 using J2N.IO;
 using J2N.IO.MemoryMappedFiles;
 using J2N.Numerics;
-using YAF.Lucene.Net.Support;
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 
@@ -109,10 +108,10 @@ namespace YAF.Lucene.Net.Store
         {
             if (maxChunkSize <= 0)
             {
-                throw new System.ArgumentException("Maximum chunk size for mmap must be >0");
+                throw new ArgumentException("Maximum chunk size for mmap must be >0");
             }
             this.chunkSizePower = 31 - maxChunkSize.LeadingZeroCount();
-            Debug.Assert(this.chunkSizePower >= 0 && this.chunkSizePower <= 30);
+            if (Debugging.AssertsEnabled) Debugging.Assert(this.chunkSizePower >= 0 && this.chunkSizePower <= 30);
         }
 
         /// <summary>
@@ -175,13 +174,7 @@ namespace YAF.Lucene.Net.Store
         /// <summary>
         /// Returns the current mmap chunk size. </summary>
         /// <seealso cref="MMapDirectory(DirectoryInfo, LockFactory, int)"/>
-        public int MaxChunkSize
-        {
-            get
-            {
-                return 1 << chunkSizePower;
-            }
-        }
+        public int MaxChunkSize => 1 << chunkSizePower;
 
         /// <summary>
         /// Creates an <see cref="IndexInput"/> for the file with the given name. </summary>

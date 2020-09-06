@@ -178,12 +178,12 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
         private readonly WordDelimiterIterator iterator;
 
         // used for concatenating runs of similar typed subwords (word,number)
-        private WordDelimiterConcatenation concat;
+        private readonly WordDelimiterConcatenation concat;
         // number of subwords last output by concat.
         private int lastConcatCount = 0;
 
         // used for catenate all
-        private WordDelimiterConcatenation concatAll;
+        private readonly WordDelimiterConcatenation concatAll;
 
         // used for accumulating position increment gaps
         private int accumPosInc = 0;
@@ -224,7 +224,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
 
             if (!matchVersion.OnOrAfter(LuceneVersion.LUCENE_48))
             {
-                throw new System.ArgumentException("This class only works with Lucene 4.8+. To emulate the old (broken) behavior of WordDelimiterFilter, use Lucene47WordDelimiterFilter");
+                throw new ArgumentException("This class only works with Lucene 4.8+. To emulate the old (broken) behavior of WordDelimiterFilter, use Lucene47WordDelimiterFilter");
             }
             this.flags = configurationFlags;
             this.protWords = protWords;
@@ -455,12 +455,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
             }
         }
 
-        private OffsetSorter sorter;
-
-        internal OffsetSorter Sorter
-        {
-            get { return this.sorter; }
-        }
+        private readonly OffsetSorter sorter;
 
         private void Buffer()
         {
@@ -727,13 +722,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
             /// Determines if the concatenation is empty
             /// </summary>
             /// <returns> <c>true</c> if the concatenation is empty, <c>false</c> otherwise </returns>
-            internal bool IsEmpty
-            {
-                get
-                {
-                    return buffer.Length == 0;
-                }
-            }
+            internal bool IsEmpty => buffer.Length == 0;
 
             /// <summary>
             /// Clears the concatenation and resets its state

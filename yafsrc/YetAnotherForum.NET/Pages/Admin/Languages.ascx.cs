@@ -27,15 +27,14 @@ namespace YAF.Pages.Admin
     #region Using
 
     using System;
+    using System.Linq;
     using System.Web.UI.WebControls;
 
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
     using YAF.Core.Helpers;
     using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
-    using YAF.Types.Extensions;
     using YAF.Types.Interfaces;
     using YAF.Utils;
     using YAF.Web.Extensions;
@@ -90,8 +89,7 @@ namespace YAF.Pages.Admin
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
             this.PageLinks.AddLink(this.GetText("ADMIN_LANGUAGES", "TITLE"), string.Empty);
 
             this.Page.Header.Title =
@@ -122,11 +120,11 @@ namespace YAF.Pages.Admin
 
             this.List.DataSource = cultureTable;
 
-            BoardContext.Current.PageElements.RegisterJsBlock(
+            this.PageContext.PageElements.RegisterJsBlock(
                "tablesorterLoadJs",
                JavaScriptBlocks.LoadTableSorter(
                    "#language-table",
-                   cultureTable.HasRows() ? "headers: { 4: { sorter: false }}" : null));
+                   cultureTable.Any() ? "headers: { 4: { sorter: false }}" : null));
 
             this.DataBind();
         }

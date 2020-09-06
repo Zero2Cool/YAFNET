@@ -25,6 +25,7 @@ namespace YAF.Core.Model
 {
     using System;
     using System.Data;
+
     using System.Data.SqlClient;
 
     using YAF.Types;
@@ -112,7 +113,7 @@ namespace YAF.Core.Model
             [NotNull] object isMobileDevice,
             [NotNull] object dontTrack)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var tries = 0;
             while (true)
@@ -180,7 +181,7 @@ namespace YAF.Core.Model
             [NotNull] object userId,
             [NotNull] object isGuest)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             return repository.DbFunction.GetAsDataTable(
                 cdb => cdb.pageaccess(

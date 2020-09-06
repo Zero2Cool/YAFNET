@@ -1,4 +1,6 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
+using YAF.Lucene.Net.Index;
+using YAF.Lucene.Net.Support;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -19,8 +21,6 @@ namespace YAF.Lucene.Net.Search
      * limitations under the License.
      */
 
-    using YAF.Lucene.Net.Index;
-    using YAF.Lucene.Net.Support;
     using Similarity = YAF.Lucene.Net.Search.Similarities.Similarity;
 
     internal sealed class ExactPhraseScorer : Scorer
@@ -210,15 +210,9 @@ namespace YAF.Lucene.Net.Search
             return "ExactPhraseScorer(" + m_weight + ")";
         }
 
-        public override int Freq
-        {
-            get { return freq; }
-        }
+        public override int Freq => freq;
 
-        public override int DocID
-        {
-            get { return docID; }
-        }
+        public override int DocID => docID;
 
         public override float GetScore()
         {
@@ -269,7 +263,7 @@ namespace YAF.Lucene.Net.Search
                             cs.LastPos = cs.Pos;
                             int posIndex = cs.Pos - chunkStart;
                             counts[posIndex] = 1;
-                            Debug.Assert(gens[posIndex] != gen);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(gens[posIndex] != gen);
                             gens[posIndex] = gen;
                         }
 

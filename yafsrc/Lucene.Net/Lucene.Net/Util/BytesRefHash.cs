@@ -1,7 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 #if FEATURE_SERIALIZABLE_EXCEPTIONS
 using System.Runtime.Serialization;
 #endif
@@ -103,10 +103,7 @@ namespace YAF.Lucene.Net.Util
         /// NOTE: This was size() in Lucene.
         /// </summary>
         /// <returns> The number of <see cref="BytesRef"/> values in this <see cref="BytesRefHash"/>. </returns>
-        public int Count
-        {
-            get { return count; }
-        }
+        public int Count => count;
 
         /// <summary>
         /// Populates and returns a <see cref="BytesRef"/> with the bytes for the given
@@ -124,8 +121,11 @@ namespace YAF.Lucene.Net.Util
         ///         bytesID </returns>
         public BytesRef Get(int bytesID, BytesRef @ref)
         {
-            Debug.Assert(bytesStart != null, "bytesStart is null - not initialized");
-            Debug.Assert(bytesID < bytesStart.Length, "bytesID exceeds byteStart len: " + bytesStart.Length);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(bytesStart != null, "bytesStart is null - not initialized");
+                Debugging.Assert(bytesID < bytesStart.Length, () => "bytesID exceeds byteStart len: " + bytesStart.Length);
+            }
             pool.SetBytesRef(@ref, bytesStart[bytesID]);
             return @ref;
         }
@@ -140,7 +140,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public int[] Compact()
         {
-            Debug.Assert(bytesStart != null, "bytesStart is null - not initialized");
+            if (Debugging.AssertsEnabled) Debugging.Assert(bytesStart != null, "bytesStart is null - not initialized");
             int upto = 0;
             for (int i = 0; i < hashSize; i++)
             {
@@ -155,7 +155,7 @@ namespace YAF.Lucene.Net.Util
                 }
             }
 
-            Debug.Assert(upto == count);
+            if (Debugging.AssertsEnabled) Debugging.Assert(upto == count);
             lastCount = count;
             return ids;
         }
@@ -201,7 +201,7 @@ namespace YAF.Lucene.Net.Util
             protected override int Compare(int i, int j)
             {
                 int id1 = compact[i], id2 = compact[j];
-                Debug.Assert(outerInstance.bytesStart.Length > id1 && outerInstance.bytesStart.Length > id2);
+                if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.bytesStart.Length > id1 && outerInstance.bytesStart.Length > id2);
                 outerInstance.pool.SetBytesRef(outerInstance.scratch1, outerInstance.bytesStart[id1]);
                 outerInstance.pool.SetBytesRef(scratch2, outerInstance.bytesStart[id2]);
                 return comp.Compare(outerInstance.scratch1, scratch2);
@@ -210,14 +210,14 @@ namespace YAF.Lucene.Net.Util
             protected override void SetPivot(int i)
             {
                 int id = compact[i];
-                Debug.Assert(outerInstance.bytesStart.Length > id);
+                if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.bytesStart.Length > id);
                 outerInstance.pool.SetBytesRef(pivot, outerInstance.bytesStart[id]);
             }
 
             protected override int ComparePivot(int j)
             {
                 int id = compact[j];
-                Debug.Assert(outerInstance.bytesStart.Length > id);
+                if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.bytesStart.Length > id);
                 outerInstance.pool.SetBytesRef(scratch2, outerInstance.bytesStart[id]);
                 return comp.Compare(pivot, scratch2);
             }
@@ -304,7 +304,7 @@ namespace YAF.Lucene.Net.Util
         ///           <see cref="ByteBlockPool.BYTE_BLOCK_SIZE"/> </exception>
         public int Add(BytesRef bytes)
         {
-            Debug.Assert(bytesStart != null, "Bytesstart is null - not initialized");
+            if (Debugging.AssertsEnabled) Debugging.Assert(bytesStart != null, "bytesStart is null - not initialized");
             int length = bytes.Length;
             // final position
             int hashPos = FindHash(bytes);
@@ -327,7 +327,7 @@ namespace YAF.Lucene.Net.Util
                 if (count >= bytesStart.Length)
                 {
                     bytesStart = bytesStartArray.Grow();
-                    Debug.Assert(count < bytesStart.Length + 1, "count: " + count + " len: " + bytesStart.Length);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(count < bytesStart.Length + 1, () => "count: " + count + " len: " + bytesStart.Length);
                 }
                 e = count++;
 
@@ -342,7 +342,7 @@ namespace YAF.Lucene.Net.Util
                     // 1 byte to store length
                     buffer[bufferUpto] = (byte)length;
                     pool.ByteUpto += length + 1;
-                    Debug.Assert(length >= 0, "Length must be positive: " + length);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(length >= 0, () => "Length must be positive: " + length);
                     System.Buffer.BlockCopy(bytes.Bytes, bytes.Offset, buffer, bufferUpto + 1, length);
                 }
                 else
@@ -353,7 +353,7 @@ namespace YAF.Lucene.Net.Util
                     pool.ByteUpto += length + 2;
                     System.Buffer.BlockCopy(bytes.Bytes, bytes.Offset, buffer, bufferUpto + 2, length);
                 }
-                Debug.Assert(ids[hashPos] == -1);
+                if (Debugging.AssertsEnabled) Debugging.Assert(ids[hashPos] == -1);
                 ids[hashPos] = e;
 
                 if (count == hashHalfSize)
@@ -380,7 +380,7 @@ namespace YAF.Lucene.Net.Util
 
         private int FindHash(BytesRef bytes)
         {
-            Debug.Assert(bytesStart != null, "bytesStart is null - not initialized");
+            if (Debugging.AssertsEnabled) Debugging.Assert(bytesStart != null, "bytesStart is null - not initialized");
 
             int code = DoHash(bytes.Bytes, bytes.Offset, bytes.Length);
 
@@ -412,7 +412,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public int AddByPoolOffset(int offset)
         {
-            Debug.Assert(bytesStart != null, "Bytesstart is null - not initialized");
+            if (Debugging.AssertsEnabled) Debugging.Assert(bytesStart != null, "bytesStart is null - not initialized");
             // final position
             int code = offset;
             int hashPos = offset & hashMask;
@@ -434,11 +434,11 @@ namespace YAF.Lucene.Net.Util
                 if (count >= bytesStart.Length)
                 {
                     bytesStart = bytesStartArray.Grow();
-                    Debug.Assert(count < bytesStart.Length + 1, "count: " + count + " len: " + bytesStart.Length);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(count < bytesStart.Length + 1, () => "count: " + count + " len: " + bytesStart.Length);
                 }
                 e = count++;
                 bytesStart[e] = offset;
-                Debug.Assert(ids[hashPos] == -1);
+                if (Debugging.AssertsEnabled) Debugging.Assert(ids[hashPos] == -1);
                 ids[hashPos] = e;
 
                 if (count == hashHalfSize)
@@ -492,7 +492,7 @@ namespace YAF.Lucene.Net.Util
                     }
 
                     int hashPos = code & newMask;
-                    Debug.Assert(hashPos >= 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(hashPos >= 0);
                     if (newHash[hashPos] != -1)
                     {
                         // Conflict; use linear probe to find an open slot
@@ -549,8 +549,11 @@ namespace YAF.Lucene.Net.Util
         ///         <see cref="ByteBlockPool"/> for the given id </returns>
         public int ByteStart(int bytesID)
         {
-            Debug.Assert(bytesStart != null, "bytesStart is null - not initialized");
-            Debug.Assert(bytesID >= 0 && bytesID < count, bytesID.ToString());
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(bytesStart != null, "bytesStart is null - not initialized");
+                Debugging.Assert(bytesID >= 0 && bytesID < count, () => bytesID.ToString());
+            }
             return bytesStart[bytesID];
         }
 
@@ -648,7 +651,7 @@ namespace YAF.Lucene.Net.Util
 
             public override int[] Grow()
             {
-                Debug.Assert(bytesStart != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(bytesStart != null);
                 return bytesStart = ArrayUtil.Grow(bytesStart, bytesStart.Length + 1);
             }
 

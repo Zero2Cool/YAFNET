@@ -2,6 +2,7 @@
 using J2N;
 using YAF.Lucene.Net.Analysis;
 using YAF.Lucene.Net.Analysis.TokenAttributes;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Search.Spans;
 using YAF.Lucene.Net.Util;
@@ -285,16 +286,13 @@ namespace YAF.Lucene.Net.Search.PostingsHighlight
                 return int.MaxValue;
             }
 
-            public override int Freq
-            {
-                get { return int.MaxValue; } // lie
-            }
+            public override int Freq => int.MaxValue; // lie
 
             public override int StartOffset
             {
                 get
                 {
-                    Debug.Assert(currentStartOffset >= 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(currentStartOffset >= 0);
                     return currentStartOffset;
                 }
             }
@@ -303,7 +301,7 @@ namespace YAF.Lucene.Net.Search.PostingsHighlight
             {
                 get
                 {
-                    Debug.Assert(currentEndOffset >= 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(currentEndOffset >= 0);
                     return currentEndOffset;
                 }
             }
@@ -318,10 +316,7 @@ namespace YAF.Lucene.Net.Search.PostingsHighlight
                 return matchDescriptions[currentMatch];
             }
 
-            public override int DocID
-            {
-                get { return currentDoc; }
-            }
+            public override int DocID => currentDoc;
 
             public override int NextDoc()
             {

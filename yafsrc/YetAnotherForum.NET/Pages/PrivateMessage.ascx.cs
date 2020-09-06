@@ -27,21 +27,23 @@ namespace YAF.Pages
     #region Using
 
     using System;
+    using System.Linq;
     using System.Web;
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
     using YAF.Core.BasePages;
+    using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.EventProxies;
     using YAF.Types.Extensions;
+    using YAF.Types.Flags;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Events;
     using YAF.Types.Models;
     using YAF.Utils;
-    using YAF.Utils.Helpers;
     using YAF.Web.Extensions;
 
     #endregion
@@ -68,22 +70,12 @@ namespace YAF.Pages
         /// <summary>
         ///   Gets or sets a value indicating whether IsArchived.
         /// </summary>
-        protected bool IsArchived
-        {
-            get => this.ViewState["IsArchived"] != null && (bool)this.ViewState["IsArchived"];
-
-            set => this.ViewState["IsArchived"] = value;
-        }
+        protected bool IsArchived { get; set; }
 
         /// <summary>
         ///   Gets or sets a value indicating whether IsOutbox.
         /// </summary>
-        protected bool IsOutbox
-        {
-            get => this.ViewState["IsOutbox"] != null && (bool)this.ViewState["IsOutbox"];
-
-            set => this.ViewState["IsOutbox"] = value;
-        }
+        protected bool IsOutbox { get; set; }
 
         #endregion
 
@@ -103,7 +95,7 @@ namespace YAF.Pages
 
                     this.BindData();
                     this.PageContext.AddLoadMessage(this.GetText("msg_deleted"), MessageTypes.success);
-                    BuildLink.Redirect(ForumPages.PM);
+                    BuildLink.Redirect(ForumPages.MyMessages);
                     break;
                 case "reply":
                     BuildLink.Redirect(ForumPages.PostPrivateMessage, "p={0}&q=0", e.CommandArgument);
@@ -130,14 +122,14 @@ namespace YAF.Pages
                 BuildLink.RedirectInfoPage(InfoMessage.Disabled);
             }
 
+            if (!this.Get<HttpRequestBase>().QueryString.Exists("pm"))
+            {
+                BuildLink.AccessDenied();
+            }
+
             if (this.IsPostBack)
             {
                 return;
-            }
-
-            if (this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("pm").IsNotSet())
-            {
-                BuildLink.AccessDenied();
             }
 
             // handle custom YafBBCode javascript or CSS...
@@ -152,11 +144,7 @@ namespace YAF.Pages
         protected override void CreatePageLinks()
         {
             this.PageLinks.AddRoot();
-            this.PageLinks.AddLink(
-                this.Get<BoardSettings>().EnableDisplayName
-                    ? this.PageContext.CurrentUserData.DisplayName
-                    : this.PageContext.PageUserName,
-                BuildLink.GetLink(ForumPages.Account));
+            this.PageLinks.AddLink(this.PageContext.User.DisplayOrUserName(), BuildLink.GetLink(ForumPages.MyAccount));
         }
 
         /// <summary>
@@ -164,62 +152,43 @@ namespace YAF.Pages
         /// </summary>
         private void BindData()
         {
-            using (
-                var dt =
-                    this.GetRepository<PMessage>().ListAsDataTable(
-                        Security.StringToLongOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("pm"))))
+            var messageId =
+                Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("pm"));
+
+            var messages = this.GetRepository<PMessage>().List(messageId, true);
+
+            if (messages != null && messages.Any())
             {
-                if (dt.HasRows())
+                messages.ForEach(
+                    m => this.GetRepository<UserPMessage>().MarkAsRead((int)m.PMessageID, new PMessageFlags(m.UserPMFlags)));
+
+                var message = messages.FirstOrDefault();
+
+                this.SetMessageView(message.FromUserID, message.ToUserID, message.IsInOutbox, message.IsArchived);
+
+                // get the return link to the pm listing
+                if (this.IsOutbox)
                 {
-                    var row = dt.GetFirstRow();
-
-                    // Check if Message is Reply
-                    if (!row["ReplyTo"].IsNullOrEmptyDBField())
-                    {
-                        var replyTo = row["ReplyTo"].ToType<int>();
-
-                        var message = new PMessage
-                                          {
-                                              ReplyTo = row["ReplyTo"].ToType<int>(),
-                                              ID = row["PMessageID"].ToType<int>()
-                                          };
-
-                        dt.Merge(this.GetRepository<PMessage>().GetReplies(message, replyTo));
-                    }
-
-                    var dataView = dt.DefaultView;
-                    dataView.Sort = "Created ASC";
-
-                    this.SetMessageView(
-                        row["FromUserID"],
-                        row["ToUserID"],
-                        Convert.ToBoolean(row["IsInOutbox"]),
-                        Convert.ToBoolean(row["IsArchived"]));
-
-                    // get the return link to the pm listing
-                    if (this.IsOutbox)
-                    {
-                        this.PageLinks.AddLink(
-                            this.GetText("SENTITEMS"), BuildLink.GetLink(ForumPages.PM, "v=out"));
-                    }
-                    else if (this.IsArchived)
-                    {
-                        this.PageLinks.AddLink(
-                            this.GetText("ARCHIVE"), BuildLink.GetLink(ForumPages.PM, "v=arch"));
-                    }
-                    else
-                    {
-                        this.PageLinks.AddLink(this.GetText("INBOX"), BuildLink.GetLink(ForumPages.PM));
-                    }
-
-                    this.PageLinks.AddLink(row["Subject"].ToString());
-
-                    this.Inbox.DataSource = dataView;
+                    this.PageLinks.AddLink(
+                        this.GetText("SENTITEMS"),
+                        BuildLink.GetLink(ForumPages.MyMessages, "v=out"));
+                }
+                else if (this.IsArchived)
+                {
+                    this.PageLinks.AddLink(this.GetText("ARCHIVE"), BuildLink.GetLink(ForumPages.MyMessages, "v=arch"));
                 }
                 else
                 {
-                    BuildLink.Redirect(ForumPages.PM);
+                    this.PageLinks.AddLink(this.GetText("INBOX"), BuildLink.GetLink(ForumPages.MyMessages));
                 }
+
+                this.PageLinks.AddLink((string)message.Subject);
+
+                this.Inbox.DataSource = messages;
+            }
+            else
+            {
+                BuildLink.Redirect(ForumPages.MyMessages);
             }
 
             this.DataBind();
@@ -229,37 +198,32 @@ namespace YAF.Pages
                 return;
             }
 
-            var userPmessageId = this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("pm");
-
-            this.GetRepository<UserPMessage>().MarkAsRead(userPmessageId);
-            this.Get<IDataCache>().Remove(string.Format(Constants.Cache.ActiveUserLazyData, this.PageContext.PageUserID));
-            this.Get<IRaiseEvent>().Raise(
-                new UpdateUserPrivateMessageEvent(this.PageContext.PageUserID, userPmessageId));
+            this.Get<IRaiseEvent>().Raise(new UpdateUserPrivateMessageEvent(this.PageContext.PageUserID, messageId));
         }
 
         /// <summary>
         /// Sets the IsOutbox property as appropriate for this private message.
         /// </summary>
-        /// <remarks>
-        /// User id parameters are downcast to object to allow for potential future use of non-integer user id's
-        /// </remarks>
-        /// <param name="fromUserID">
-        /// The from User ID.
+        /// <param name="fromUserId">
+        /// The from User Id.
         /// </param>
-        /// <param name="toUserID">
-        /// The to User ID.
+        /// <param name="toUserId">
+        /// The to User Id.
         /// </param>
         /// <param name="messageIsInOutbox">
-        /// Bool indicating whether the message is in the sender's outbox
+        /// Indicating whether the message is in the sender's outbox
         /// </param>
         /// <param name="messageIsArchived">
         /// The message Is Archived.
         /// </param>
         private void SetMessageView(
-            [NotNull] object fromUserID, [NotNull] object toUserID, bool messageIsInOutbox, bool messageIsArchived)
+            [NotNull] int fromUserId,
+            [NotNull] int toUserId,
+            bool messageIsInOutbox,
+            bool messageIsArchived)
         {
-            var isCurrentUserFrom = fromUserID.Equals(this.PageContext.PageUserID);
-            var isCurrentUserTo = toUserID.Equals(this.PageContext.PageUserID);
+            var isCurrentUserFrom = fromUserId.Equals(this.PageContext.PageUserID);
+            var isCurrentUserTo = toUserId.Equals(this.PageContext.PageUserID);
 
             // check if it's the same user...
             if (isCurrentUserFrom && isCurrentUserTo)
@@ -271,11 +235,11 @@ namespace YAF.Pages
                 // see if the message got deleted, if so, redirect to their outbox/archive
                 if (this.IsOutbox && !messageIsInOutbox)
                 {
-                    BuildLink.Redirect(ForumPages.PM, "v=out");
+                    BuildLink.Redirect(ForumPages.MyMessages, "v=out");
                 }
                 else if (this.IsArchived && !messageIsArchived)
                 {
-                    BuildLink.Redirect(ForumPages.PM, "v=arch");
+                    BuildLink.Redirect(ForumPages.MyMessages, "v=arch");
                 }
             }
             else if (isCurrentUserFrom)
@@ -284,7 +248,7 @@ namespace YAF.Pages
                 if (!messageIsInOutbox)
                 {
                     // deleted for this user, redirect...
-                    BuildLink.Redirect(ForumPages.PM, "v=out");
+                    BuildLink.Redirect(ForumPages.MyMessages, "v=out");
                 }
                 else
                 {
@@ -297,6 +261,10 @@ namespace YAF.Pages
                 // get the status for the receiver
                 this.IsArchived = messageIsArchived;
                 this.IsOutbox = false;
+            }
+            else
+            {
+                BuildLink.AccessDenied();
             }
         }
 

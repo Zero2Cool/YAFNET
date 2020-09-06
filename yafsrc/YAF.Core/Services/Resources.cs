@@ -42,12 +42,10 @@ namespace YAF.Core.Services
     using ServiceStack;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.Context;
     using YAF.Core.Extensions;
     using YAF.Core.Helpers;
-    using YAF.Core.Services.Auth;
-    using YAF.Core.UsersRoles;
+    using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -94,11 +92,9 @@ namespace YAF.Core.Services
             {
                 var userId = context.Request.QueryString.GetFirstOrDefaultAs<int>("userinfo");
 
-                var boardId = context.Request.QueryString.GetFirstOrDefaultAs<int>("boardId");
+                var user = this.GetRepository<User>().GetBoardUser(userId);
 
-                var user = UserMembershipHelper.GetMembershipUserById(userId, boardId);
-
-                if (user == null || user.ProviderUserKey.ToString() == "0")
+                if (user == null || user.Item1.ID == 0)
                 {
                     context.Response.Write(
                    "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
@@ -114,8 +110,6 @@ namespace YAF.Core.Services
                     return;
                 }
 
-                var userData = new CombinedUserDataHelper(user, userId);
-
                 context.Response.Clear();
 
                 context.Response.ContentType = "application/json";
@@ -125,7 +119,7 @@ namespace YAF.Core.Services
                     System.DateTime.UtcNow.AddMilliseconds(BoardContext.Current.Get<BoardSettings>().OnlineStatusCacheTimeout));
                 context.Response.Cache.SetLastModified(System.DateTime.UtcNow);
 
-                var avatarUrl = this.Get<IAvatars>().GetAvatarUrlForUser(userId);
+                var avatarUrl = this.Get<IAvatars>().GetAvatarUrlForUser(user.Item1);
 
                 avatarUrl = avatarUrl.IsNotSet()
                            ? $"{BoardInfo.ForumClientFileRoot}images/noavatar.svg"
@@ -133,27 +127,29 @@ namespace YAF.Core.Services
 
                 var activeUsers = this.Get<IDataCache>().GetOrSet(
                     Constants.Cache.UsersOnlineStatus,
-                    () =>
-                    this.Get<DataBroker>().GetActiveList(
-                        false, BoardContext.Current.Get<BoardSettings>().ShowCrawlersInActiveList),
+                    () => this.GetRepository<Active>().ListAsDataTable(
+                        false,
+                        this.Get<BoardSettings>().ShowCrawlersInActiveList,
+                        this.Get<BoardSettings>().ActiveListTime,
+                        this.Get<BoardSettings>().UseStyledNicks),
                     TimeSpan.FromMilliseconds(BoardContext.Current.Get<BoardSettings>().OnlineStatusCacheTimeout));
 
                 var userIsOnline =
                     activeUsers.AsEnumerable().Any(
                         x => x.Field<int>("UserId").Equals(userId) && !x.Field<bool>("IsHidden"));
 
-                var userName = this.Get<BoardSettings>().EnableDisplayName ? userData.DisplayName : userData.UserName;
+                var userName = user.Item1.DisplayOrUserName();
 
                 userName = HttpUtility.HtmlEncode(userName);
 
-                var location = userData.Profile.Country.IsSet()
+                var location = user.Item2.Profile_Country.IsSet()
                                    ? BoardContext.Current.Get<IHaveLocalization>().GetText(
-                                       "COUNTRY", userData.Profile.Country.Trim())
-                                   : userData.Profile.Location;
+                                       "COUNTRY", user.Item2.Profile_Country.Trim())
+                                   : user.Item2.Profile_Location;
 
-                if (userData.Profile.Region.IsSet() && userData.Profile.Country.IsSet())
+                if (user.Item2.Profile_Region.IsSet() && user.Item2.Profile_Country.IsSet())
                 {
-                    var tag = $"RGN_{userData.Profile.Country.Trim()}_{userData.Profile.Region}";
+                    var tag = $"RGN_{user.Item2.Profile_Country.Trim()}_{user.Item2.Profile_Region}";
 
                     location += $", {this.Get<IHaveLocalization>().GetText("REGION", tag)}";
                 }
@@ -161,22 +157,21 @@ namespace YAF.Core.Services
                 var userInfo = new ForumUserInfo
                 {
                     Name = userName,
-                    RealName = HttpUtility.HtmlEncode(userData.Profile.RealName),
+                    RealName = HttpUtility.HtmlEncode(user.Item2.Profile_RealName),
                     Avatar = avatarUrl,
-                    Interests = HttpUtility.HtmlEncode(userData.Profile.Interests),
-                    HomePage = userData.Profile.Homepage,
-                    Posts = $"{userData.NumPosts:N0}",
-                    Rank = userData.RankName,
+                    Interests = HttpUtility.HtmlEncode(user.Item2.Profile_Interests),
+                    HomePage = user.Item2.Profile_Homepage,
+                    Posts = $"{user.Item1.NumPosts:N0}",
+                    Rank = user.Item3.Name,
                     Location = location,
                     Joined =
-                        $"{this.Get<IHaveLocalization>().GetText("PROFILE", "JOINED")} {this.Get<IDateTime>().FormatDateLong(userData.Joined)}",
-                    Online = userIsOnline/*,
-                    ProfileLink = BuildLink.GetLink(ForumPages.Profile, true, "u={0}&name={1}", userId, userName)*/
+                        $"{this.Get<IHaveLocalization>().GetText("PROFILE", "JOINED")} {this.Get<IDateTime>().FormatDateLong(user.Item1.Joined)}",
+                    Online = userIsOnline
                 };
 
                 if (BoardContext.Current.Get<BoardSettings>().EnableUserReputation)
                 {
-                    userInfo.Points = (userData.Points.ToType<int>() > 0 ? "+" : string.Empty) + userData.Points;
+                    userInfo.Points = (user.Item1.Points > 0 ? "+" : string.Empty) + user.Item1.Points;
                 }
 
                 context.Response.Write(userInfo.ToJson());
@@ -208,7 +203,7 @@ namespace YAF.Core.Services
                     return;
                 }
 
-                var customBbCode = this.Get<DataBroker>().GetCustomBBCode()
+                var customBbCode = this.GetRepository<BBCode>().GetByBoardId()
                     .Where(e => e.Name != "ALBUMIMG" && e.Name != "ATTACH").Select(e => e.Name).ToList();
 
                 context.Response.Clear();
@@ -259,7 +254,7 @@ namespace YAF.Core.Services
                                 : user.Name.StartsWith(searchQuery));
 
                 var users = usersList.AsEnumerable().Where(u => !this.Get<IUserIgnored>().IsIgnored(u.ID)).Select(
-                    u => new { id = u.ID, name = this.Get<BoardSettings>().EnableDisplayName ? u.DisplayName : u.Name });
+                    u => new { id = u.ID, name = u.DisplayOrUserName() });
 
                 context.Response.Clear();
 
@@ -267,47 +262,6 @@ namespace YAF.Core.Services
                 context.Response.ContentEncoding = Encoding.UTF8;
 
                 context.Response.Write(JsonConvert.SerializeObject(users));
-
-                HttpContext.Current.ApplicationInstance.CompleteRequest();
-            }
-            catch (Exception x)
-            {
-                this.Get<ILogger>().Log(BoardContext.Current.PageUserID, this, x, EventLogTypes.Information);
-
-                context.Response.Write(
-                    "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
-            }
-        }
-
-        /// <summary>
-        /// Gets the twitter user info as JSON string for the hover cards
-        /// </summary>
-        /// <param name="context">The context.</param>
-        public void GetTwitterUserInfo([NotNull] HttpContext context)
-        {
-            try
-            {
-                var twitterName = context.Request.QueryString.GetFirstOrDefault("twitterinfo");
-
-                if (!Config.IsTwitterEnabled)
-                {
-                    context.Response.Write(
-                    "Error: Resource has been moved or is unavailable. Please contact the forum admin.");
-
-                    return;
-                }
-
-                var authTwitter = new OAuthTwitter
-                {
-                    ConsumerKey = Config.TwitterConsumerKey,
-                    ConsumerSecret = Config.TwitterConsumerSecret,
-                    Token = Config.TwitterToken,
-                    TokenSecret = Config.TwitterTokenSecret
-                };
-
-                var tweetApi = new TweetAPI(authTwitter);
-
-                context.Response.Write(tweetApi.UsersLookupJson(twitterName));
 
                 HttpContext.Current.ApplicationInstance.CompleteRequest();
             }

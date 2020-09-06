@@ -1,4 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -63,49 +65,28 @@ namespace YAF.Lucene.Net.Codecs
         /// </summary>
         public MergeState MergeState
         {
-            get
-            {
-                return this.mergeState; // LUCENENET specific - per MSDN properties should always have a getter
-            }
-            set
-            {
-                this.mergeState = value;
-            }
+            get => this.mergeState; // LUCENENET specific - per MSDN properties should always have a getter
+            set => this.mergeState = value;
         }
 
         /// <summary>
         /// How many sub-readers we are merging. </summary>
         /// <seealso cref="Subs"/>
-        public int NumSubs
-        {
-            get
-            {
-                return numSubs;
-            }
-        }
+        public int NumSubs => numSubs;
 
         /// <summary>
         /// Returns sub-readers we are merging. </summary>
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        public MultiDocsEnum.EnumWithSlice[] Subs
-        {
-            get { return subs; }
-        }
+        public MultiDocsEnum.EnumWithSlice[] Subs => subs;
 
-        public override int Freq
-        {
-            get { return current.Freq; }
-        }
+        public override int Freq => current.Freq;
 
-        public override int DocID
-        {
-            get { return doc; }
-        }
+        public override int DocID => doc;
 
         public override int Advance(int target)
         {
-            throw new System.NotSupportedException();
+            throw new NotSupportedException();
         }
 
         public override int NextDoc()
@@ -125,7 +106,7 @@ namespace YAF.Lucene.Net.Codecs
                         current = subs[upto].DocsEnum;
                         currentBase = mergeState.DocBase[reader];
                         currentMap = mergeState.DocMaps[reader];
-                        Debug.Assert(currentMap.MaxDoc == subs[upto].Slice.Length, "readerIndex=" + reader + " subs.len=" + subs.Length + " len1=" + currentMap.MaxDoc + " vs " + subs[upto].Slice.Length);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(currentMap.MaxDoc == subs[upto].Slice.Length, () => "readerIndex=" + reader + " subs.len=" + subs.Length + " len1=" + currentMap.MaxDoc + " vs " + subs[upto].Slice.Length);
                     }
                 }
 

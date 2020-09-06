@@ -1,10 +1,9 @@
+using J2N.Collections.Generic.Extensions;
 using J2N.Threading.Atomic;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using JCG = J2N.Collections.Generic;
 
@@ -130,23 +129,11 @@ namespace YAF.Lucene.Net.Store
 
         /// <summary>
         /// Returns the directory of the compound file. </summary>
-        internal Directory Directory
-        {
-            get
-            {
-                return directory;
-            }
-        }
+        internal Directory Directory => directory;
 
         /// <summary>
         /// Returns the name of the compound file. </summary>
-        internal string Name
-        {
-            get
-            {
-                return dataFileName;
-            }
-        }
+        internal string Name => dataFileName;
 
         /// <summary>
         /// Disposes all resources and writes the entry table
@@ -173,7 +160,7 @@ namespace YAF.Lucene.Net.Store
                 closed = true;
                 // open the compound stream
                 GetOutput();
-                Debug.Assert(dataOut != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(dataOut != null);
                 CodecUtil.WriteFooter(dataOut);
             }
             catch (IOException e)
@@ -203,7 +190,7 @@ namespace YAF.Lucene.Net.Store
         {
             if (closed)
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "CFS Directory is already closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "CFS Directory is already closed");
             }
         }
 
@@ -266,7 +253,7 @@ namespace YAF.Lucene.Net.Store
             bool outputLocked = false;
             try
             {
-                Debug.Assert(name != null, "name must not be null");
+                if (Debugging.AssertsEnabled) Debugging.Assert(name != null, "name must not be null");
                 if (entries.ContainsKey(name))
                 {
                     throw new ArgumentException("File " + name + " already exists");
@@ -275,7 +262,7 @@ namespace YAF.Lucene.Net.Store
                 entry.File = name;
                 entries[name] = entry;
                 string id = IndexFileNames.StripSegmentName(name);
-                Debug.Assert(!seenIDs.Contains(id), "file=\"" + name + "\" maps to id=\"" + id + "\", which was already written");
+                if (Debugging.AssertsEnabled) Debugging.Assert(!seenIDs.Contains(id), () => "file=\"" + name + "\" maps to id=\"" + id + "\", which was already written");
                 seenIDs.Add(id);
                 DirectCFSIndexOutput @out;
 
@@ -298,7 +285,7 @@ namespace YAF.Lucene.Net.Store
                     entries.Remove(name);
                     if (outputLocked) // release the output lock if not successful
                     {
-                        Debug.Assert(outputTaken);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(outputTaken);
                         ReleaseOutputLock();
                     }
                 }
@@ -328,7 +315,7 @@ namespace YAF.Lucene.Net.Store
                 finally
                 {
                     bool compareAndSet = outputTaken.CompareAndSet(true, false);
-                    Debug.Assert(compareAndSet);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(compareAndSet);
                 }
             }
         }
@@ -410,7 +397,7 @@ namespace YAF.Lucene.Net.Store
             [Obsolete("(4.1) this method will be removed in Lucene 5.0")]
             public override void Seek(long pos)
             {
-                Debug.Assert(!closed);
+                if (Debugging.AssertsEnabled) Debugging.Assert(!closed);
                 @delegate.Seek(offset + pos);
             }
 
@@ -418,32 +405,26 @@ namespace YAF.Lucene.Net.Store
             {
                 get
                 {
-                    Debug.Assert(!closed);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(!closed);
                     return @delegate.Length - offset;
                 }
             }
 
             public override void WriteByte(byte b)
             {
-                Debug.Assert(!closed);
+                if (Debugging.AssertsEnabled) Debugging.Assert(!closed);
                 writtenBytes++;
                 @delegate.WriteByte(b);
             }
 
             public override void WriteBytes(byte[] b, int offset, int length)
             {
-                Debug.Assert(!closed);
+                if (Debugging.AssertsEnabled) Debugging.Assert(!closed);
                 writtenBytes += length;
                 @delegate.WriteBytes(b, offset, length);
             }
 
-            public override long Checksum
-            {
-                get
-                {
-                    return @delegate.Checksum;
-                }
-            }
+            public override long Checksum => @delegate.Checksum;
         }
     }
 }

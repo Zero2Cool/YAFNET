@@ -33,9 +33,9 @@ namespace YAF.Pages
     using System.Web.UI.WebControls;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
+    using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Utilities;
     using YAF.Types;
@@ -136,9 +136,6 @@ namespace YAF.Pages
         /// <param name="literals">
         /// The literals.
         /// </param>
-        /// <param name="lastUserId">
-        /// The last User Id.
-        /// </param>
         /// <param name="specialSymbol">
         /// The special Symbol.
         /// </param>
@@ -148,7 +145,7 @@ namespace YAF.Pages
         /// <returns>
         /// The Members List
         /// </returns>
-        protected DataTable GetUserList(string literals, int lastUserId, bool specialSymbol, out int totalCount)
+        protected DataTable GetUserList(string literals, bool specialSymbol, out int totalCount)
         {
             this.userListDataTable = this.GetRepository<User>().ListMembersAsDataTable(
                 this.PageContext.PageBoardID,
@@ -157,7 +154,6 @@ namespace YAF.Pages
                 this.Group.SelectedIndex <= 0 ? null : this.Group.SelectedValue,
                 this.Ranks.SelectedIndex <= 0 ? null : this.Ranks.SelectedValue,
                 this.Get<BoardSettings>().UseStyledNicks,
-                lastUserId,
                 literals,
                 specialSymbol,
                 specialSymbol,
@@ -196,14 +192,17 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void Page_Load(object sender, EventArgs e)
         {
-            //this.Page.Form.DefaultButton = this.SearchByUserName.UniqueID;
-
             this.UserSearchName.Focus();
 
             if (this.IsPostBack)
             {
                 return;
             }
+
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
 
             this.ViewState["SortNameField"] = 1;
             this.ViewState["SortRankNameField"] = 0;
@@ -231,6 +230,32 @@ namespace YAF.Pages
             this.Ranks.DataValueField = "ID";
             this.Ranks.DataBind();
 
+            // get list of user ranks for filtering
+            var groups = this.GetRepository<Group>().GetByBoardId().OrderBy(r => r.SortOrder).ToList();
+
+            groups.Insert(0, new Group { Name = this.GetText("ALL"), ID = 0 });
+
+            groups.RemoveAll(r => r.Name == "Guests");
+
+            this.Group.DataSource = groups;
+            this.Group.DataTextField = "Name";
+            this.Group.DataValueField = "ID";
+            this.Group.DataBind();
+
+            this.BindData();
+        }
+
+        /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
             this.BindData();
         }
 
@@ -463,29 +488,29 @@ namespace YAF.Pages
         /// </summary>
         private void BindData()
         {
-            this.Pager.PageSize = this.Get<BoardSettings>().MemberListPageSize;
+            this.Pager.PageSize = this.PageSize.SelectedValue.ToType<int>();
             var selectedCharLetter = this.AlphaSort1.CurrentLetter;
 
             // get the user list...
             var selectedLetter = this.UserSearchName.Text.IsSet() ? this.UserSearchName.Text.Trim() : selectedCharLetter.ToString();
 
-            if (this.NumPostsTB.Text.Trim().IsSet() &&
-                (!int.TryParse(this.NumPostsTB.Text.Trim(), out var numpostsTb) || numpostsTb < 0 || numpostsTb > int.MaxValue))
-            {
-                this.PageContext.AddLoadMessage(this.GetText("MEMBERS", "INVALIDPOSTSVALUE"), MessageTypes.warning);
-                return;
-            }
+            var numberOfPosts = this.NumPostsTB.Text.ToType<int>();
 
-            if (this.NumPostsTB.Text.Trim().IsNotSet())
+            if (this.NumPostsTB.Text.IsNotSet())
             {
                 this.NumPostsTB.Text = "0";
                 this.NumPostDDL.SelectedValue = "3";
             }
 
+            if (numberOfPosts < 0)
+            {
+                this.PageContext.AddLoadMessage(this.GetText("MEMBERS", "INVALIDPOSTSVALUE"), MessageTypes.warning);
+                return;
+            }
+
             // get the user list...
             this.userListDataTable = this.GetUserList(
                 selectedLetter,
-                0,
                 this.UserSearchName.Text.IsNotSet() || selectedCharLetter == char.MinValue && selectedCharLetter == '#',
                 out var totalCount);
             

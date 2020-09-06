@@ -51,18 +51,18 @@ namespace YAF.Pages.Admin
         /// <summary>
         /// The bit set.
         /// </summary>
-        /// <param name="_o">
-        /// The _o.
+        /// <param name="flag">
+        /// The flag.
         /// </param>
         /// <param name="bitmask">
         /// The bitmask.
         /// </param>
         /// <returns>
-        /// The bit set.
+        /// The <see cref="bool"/>.
         /// </returns>
-        protected bool BitSet([NotNull] object _o, int bitmask)
+        protected bool BitSet([NotNull] object flag, int bitmask)
         {
-            var i = (int)_o;
+            var i = (int)flag;
             return (i & bitmask) != 0;
         }
 
@@ -75,7 +75,7 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddRoot();
 
             // administration index
-            this.PageLinks.AddLink(this.GetText("ADMIN_ADMIN", "Administration"), BuildLink.GetLink(ForumPages.Admin_Admin));
+            this.PageLinks.AddAdminIndex();
 
             // current page label (no link)
             this.PageLinks.AddLink(this.GetText("ADMIN_ACCESSMASKS", "TITLE"));
@@ -96,7 +96,7 @@ namespace YAF.Pages.Admin
         protected string GetItemColor(bool enabled)
         {
             // show enabled flag red
-            return enabled ? "badge badge-success" : "badge badge-danger";
+            return enabled ? "badge bg-success" : "badge bg-danger";
         }
 
         /// <summary>
@@ -120,6 +120,8 @@ namespace YAF.Pages.Admin
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void ListItemCommand([NotNull] object source, [NotNull] RepeaterCommandEventArgs e)
         {
+            var maskId = e.CommandArgument.ToType<int>();
+
             switch (e.CommandName)
             {
                 case "edit":
@@ -129,19 +131,22 @@ namespace YAF.Pages.Admin
                     break;
                 case "delete":
 
+                    var isInUse = this.GetRepository<ForumAccess>().Exists(x => x.AccessMaskID == maskId) ||
+                                  this.GetRepository<UserForum>().Exists(x => x.AccessMaskID == maskId);
+
                     // attempt to delete access masks
-                    if (this.GetRepository<AccessMask>().DeleteById(e.CommandArgument.ToType<int>()))
-                    {
-                        // remove cache of forum moderators
-                        this.Get<IDataCache>().Remove(Constants.Cache.ForumModerators);
-                        this.BindData();
-                    }
-                    else
+                    if (isInUse)
                     {
                         // used masks cannot be deleted
                         this.PageContext.AddLoadMessage(
                             this.GetText("ADMIN_ACCESSMASKS", "MSG_NOT_DELETE"),
                             MessageTypes.warning);
+                    }
+                    else
+                    {
+                        this.GetRepository<AccessMask>().DeleteById(maskId);
+
+                        this.BindData();
                     }
 
                     // quit switch

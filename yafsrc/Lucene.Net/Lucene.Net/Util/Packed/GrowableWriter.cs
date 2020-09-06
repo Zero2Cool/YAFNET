@@ -1,5 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Util.Packed
 {
@@ -56,36 +56,18 @@ namespace YAF.Lucene.Net.Util.Packed
             return current.Get(index);
         }
 
-        public override int Count
-        {
-            get { return current.Count; }
-        }
+        public override int Count => current.Count;
 
-        public override int BitsPerValue
-        {
-            get
-            {
-                return current.BitsPerValue;
-            }
-        }
+        public override int BitsPerValue => current.BitsPerValue;
 
-        public virtual PackedInt32s.Mutable Mutable
-        {
-            get
-            {
-                return current;
-            }
-        }
+        public virtual PackedInt32s.Mutable Mutable => current;
 
         public override object GetArray()
         {
             return current.GetArray();
         }
 
-        public override bool HasArray
-        {
-            get { return current.HasArray; }
-        }
+        public override bool HasArray => current.HasArray;
 
         private void EnsureCapacity(long value)
         {
@@ -94,7 +76,7 @@ namespace YAF.Lucene.Net.Util.Packed
                 return;
             }
             int bitsRequired = value < 0 ? 64 : PackedInt32s.BitsRequired(value);
-            Debug.Assert(bitsRequired > current.BitsPerValue);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsRequired > current.BitsPerValue);
             int valueCount = Count;
             PackedInt32s.Mutable next = PackedInt32s.GetMutable(valueCount, bitsRequired, acceptableOverheadRatio);
             PackedInt32s.Copy(current, 0, next, 0, valueCount, PackedInt32s.DEFAULT_BUFFER_SIZE);

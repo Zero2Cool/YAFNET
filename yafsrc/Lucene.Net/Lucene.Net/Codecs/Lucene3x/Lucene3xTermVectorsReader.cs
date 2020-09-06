@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using System;
 using System.Collections;
@@ -139,8 +140,11 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 tvf = d.OpenInput(fn, context);
                 int tvfFormat = CheckValidFormat(tvf);
 
-                Debug.Assert(format == tvdFormat);
-                Debug.Assert(format == tvfFormat);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(format == tvdFormat);
+                    Debugging.Assert(format == tvfFormat);
+                }
 
                 numTotalDocs = (int)(tvx.Length >> 4);
 
@@ -148,7 +152,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 {
                     this.docStoreOffset = 0;
                     this.size = numTotalDocs;
-                    Debug.Assert(size == 0 || numTotalDocs == size);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(size == 0 || numTotalDocs == size);
                 }
                 else
                 {
@@ -156,7 +160,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     this.size = size;
                     // Verify the file is long enough to hold all of our
                     // docs
-                    Debug.Assert(numTotalDocs >= size + docStoreOffset, "numTotalDocs=" + numTotalDocs + " size=" + size + " docStoreOffset=" + docStoreOffset);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(numTotalDocs >= size + docStoreOffset, () => "numTotalDocs=" + numTotalDocs + " size=" + size + " docStoreOffset=" + docStoreOffset);
                 }
 
                 this.fieldInfos = fieldInfos;
@@ -215,10 +219,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
         /// <para/>
         /// NOTE: This was size() in Lucene.
         /// </summary>
-        internal virtual int Count
-        {
-            get { return size; }
-        }
+        internal virtual int Count => size;
 
         private class TVFields : Fields
         {
@@ -235,7 +236,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 outerInstance.tvd.Seek(outerInstance.tvx.ReadInt64());
 
                 int fieldCount = outerInstance.tvd.ReadVInt32();
-                Debug.Assert(fieldCount >= 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(fieldCount >= 0);
                 if (fieldCount != 0)
                 {
                     fieldNumbers = new int[fieldCount];
@@ -293,21 +294,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     return false;
                 }
 
-                public string Current
-                {
-                    get
-                    {
-                        return current;
-                    }
-                }
+                public string Current => current;
 
-                object IEnumerator.Current
-                {
-                    get
-                    {
-                        return Current;
-                    }
-                }
+                object IEnumerator.Current => Current;
 
                 public void Reset()
                 {
@@ -395,35 +384,15 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 return termsEnum;
             }
 
-            public override long Count
-            {
-                get { return numTerms; }
-            }
+            public override long Count => numTerms;
 
-            public override long SumTotalTermFreq
-            {
-                get
-                {
-                    return -1;
-                }
-            }
+            public override long SumTotalTermFreq => -1;
 
-            public override long SumDocFreq
-            {
-                get
-                {
-                    // Every term occurs in just one doc:
-                    return numTerms;
-                }
-            }
+            public override long SumDocFreq =>
+                // Every term occurs in just one doc:
+                numTerms;
 
-            public override int DocCount
-            {
-                get
-                {
-                    return 1;
-                }
-            }
+            public override int DocCount => 1;
 
             public override IComparer<BytesRef> Comparer
             {
@@ -440,25 +409,13 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 }
             }
 
-            public override bool HasFreqs
-            {
-                get { return true; }
-            }
+            public override bool HasFreqs => true;
 
-            public override bool HasOffsets
-            {
-                get { return storeOffsets; }
-            }
+            public override bool HasOffsets => storeOffsets;
 
-            public override bool HasPositions
-            {
-                get { return storePositions; }
-            }
+            public override bool HasPositions => storePositions;
 
-            public override bool HasPayloads
-            {
-                get { return false; }
-            }
+            public override bool HasPayloads => false;
         }
 
         internal class TermAndPostings
@@ -589,7 +546,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
             public override void SeekExact(long ord)
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
 
             public override BytesRef Next()
@@ -601,25 +558,13 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                 return Term;
             }
 
-            public override BytesRef Term
-            {
-                get { return termAndPostings[currentTerm].Term; }
-            }
+            public override BytesRef Term => termAndPostings[currentTerm].Term;
 
-            public override long Ord
-            {
-                get { throw new System.NotSupportedException(); }
-            }
+            public override long Ord => throw new NotSupportedException();
 
-            public override int DocFreq
-            {
-                get { return 1; }
-            }
+            public override int DocFreq => 1;
 
-            public override long TotalTermFreq
-            {
-                get { return termAndPostings[currentTerm].Freq; }
-            }
+            public override long TotalTermFreq => termAndPostings[currentTerm].Freq;
 
             public override DocsEnum Docs(IBits liveDocs, DocsEnum reuse, DocsFlags flags) // ignored
             {
@@ -681,15 +626,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             internal int freq;
             internal IBits liveDocs;
 
-            public override int Freq
-            {
-                get { return freq; }
-            }
+            public override int Freq => freq;
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             public override int NextDoc()
             {
@@ -750,16 +689,13 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     }
                     else
                     {
-                        Debug.Assert(startOffsets != null);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(startOffsets != null);
                         return startOffsets.Length;
                     }
                 }
             }
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             public override int NextDoc()
             {
@@ -804,13 +740,17 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
 
             public override int NextPosition()
             {
-                // LUCENENET TODO: on .NET Core 2.0, this assert causes an uncatchable exception.
-                // See: https://github.com/Microsoft/vstest/issues/1022
-                // Once the issue has been identified and fixed we can remove this conditional
-                // compilation for it on .NET Core 2.0.
-#if !NETSTANDARD2_0 && !NETSTANDARD2_1
-                Debug.Assert((positions != null && nextPos < positions.Length) || startOffsets != null && nextPos < startOffsets.Length);
-#endif
+                //if (Debugging.AssertsEnabled) Debugging.Assert((positions != null && nextPos < positions.Length) || startOffsets != null && nextPos < startOffsets.Length);
+
+                // LUCENENET: The above assertion was for control flow when testing. In Java, it would throw an AssertionError, which is
+                // caught by the BaseTermVectorsFormatTestCase.assertEquals(RandomTokenStream tk, FieldType ft, Terms terms) method in the
+                // part that is checking for an error after reading to the end of the enumerator.
+
+                // In .NET it is more natural to throw an InvalidOperationException in this case, since we would potentially get an
+                // IndexOutOfRangeException if we didn't, which doesn't really provide good feedback as to what the cause is.
+                // This matches the behavior of Lucene 8.x. See #267.
+                if (((positions != null && nextPos < positions.Length) || startOffsets != null && nextPos < startOffsets.Length) == false)
+                    throw new InvalidOperationException("Read past last position");
 
                 if (positions != null)
                 {

@@ -103,13 +103,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// <para/>
         /// NOTE: This was size() in Lucene.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return _size;
-            }
-        }
+        public int Count => _size;
 
         /// <summary>
         /// Returns acceptance status for given state.
@@ -122,13 +116,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// <summary>
         /// Returns initial state.
         /// </summary>
-        public int InitialState
-        {
-            get
-            {
-                return m_initial;
-            }
-        }
+        public int InitialState => m_initial;
 
         /// <summary>
         /// Returns array of codepoint class interval start points. The array should
@@ -154,7 +142,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// <param name="a"> An automaton. </param>
         /// <param name="maxInterval"></param>
         /// <param name="tableize"></param>
-        public RunAutomaton(Automaton a, int maxInterval, bool tableize)
+        protected RunAutomaton(Automaton a, int maxInterval, bool tableize) // LUCENENET specific - marked protected instead of public
         {
             this._maxInterval = maxInterval;
             a.Determinize();

@@ -1,5 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -68,14 +68,8 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public virtual int TermCountCutoff
         {
-            set
-            {
-                termCountCutoff = value;
-            }
-            get
-            {
-                return termCountCutoff;
-            }
+            get => termCountCutoff;
+            set => termCountCutoff = value;
         }
 
         /// <summary>
@@ -87,14 +81,8 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public virtual double DocCountPercent
         {
-            set
-            {
-                docCountPercent = value;
-            }
-            get
-            {
-                return docCountPercent;
-            }
+            get => docCountPercent;
+            set => docCountPercent = value;
         }
 
         protected override BooleanQuery GetTopLevelQuery()
@@ -175,7 +163,7 @@ namespace YAF.Lucene.Net.Search
                 }
 
                 TermState termState = termsEnum.GetTermState();
-                Debug.Assert(termState != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termState != null);
                 if (pos < 0)
                 {
                     pos = (-pos) - 1;
@@ -247,7 +235,7 @@ namespace YAF.Lucene.Net.Search
             {
                 int[] ord = base.Init();
                 termState = new TermContext[ArrayUtil.Oversize(ord.Length, RamUsageEstimator.NUM_BYTES_OBJECT_REF)];
-                Debug.Assert(termState.Length >= ord.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termState.Length >= ord.Length);
                 return ord;
             }
 
@@ -260,7 +248,7 @@ namespace YAF.Lucene.Net.Search
                     Array.Copy(termState, 0, tmpTermState, 0, termState.Length);
                     termState = tmpTermState;
                 }
-                Debug.Assert(termState.Length >= ord.Length);
+                if (Debugging.AssertsEnabled) Debugging.Assert(termState.Length >= ord.Length);
                 return ord;
             }
 

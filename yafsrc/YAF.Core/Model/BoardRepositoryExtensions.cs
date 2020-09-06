@@ -24,10 +24,7 @@
 namespace YAF.Core.Model
 {
     using System;
-    using System.Collections.Generic;
     using System.Data;
-
-    using ServiceStack.OrmLite;
 
     using YAF.Core.Context;
     using YAF.Core.Extensions;
@@ -134,12 +131,6 @@ namespace YAF.Core.Model
         /// <param name="languageFile">
         /// The language file.
         /// </param>
-        /// <param name="membershipAppName">
-        /// The membership app name.
-        /// </param>
-        /// <param name="rolesAppName">
-        /// The roles app name.
-        /// </param>
         /// <param name="userName">
         /// The user name.
         /// </param>
@@ -163,15 +154,13 @@ namespace YAF.Core.Model
             string boardName, 
             string culture, 
             string languageFile, 
-            string membershipAppName, 
-            string rolesAppName, 
             string userName, 
             string userEmail, 
             string userKey, 
             bool isHostAdmin, 
             string rolePrefix)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var boardId =
                 (int)
@@ -179,8 +168,6 @@ namespace YAF.Core.Model
                     BoardName: boardName, 
                     Culture: culture, 
                     LanguageFile: languageFile, 
-                    MembershipAppName: membershipAppName, 
-                    RolesAppName: rolesAppName, 
                     UserName: userName, 
                     UserEmail: userEmail, 
                     UserKey: userKey, 
@@ -191,46 +178,6 @@ namespace YAF.Core.Model
             repository.FireNew(boardId);
 
             return boardId;
-        }
-
-        /// <summary>
-        /// The list.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="boardID">
-        /// The board id.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DataTable"/>.
-        /// </returns>
-        /*public static DataTable List(this IRepository<Board> repository, int? boardID = null)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return repository.DbFunction.GetData.board_list(BoardID: boardID);
-        }*/
-
-        /// <summary>
-        /// The list typed.
-        /// </summary>
-        /// <param name="repository">
-        /// The repository.
-        /// </param>
-        /// <param name="boardID">
-        /// The board id.
-        /// </param>
-        /// <returns>
-        /// The <see cref="IList"/>.
-        /// </returns>
-        public static IList<Board> ListTyped(this IRepository<Board> repository, int? boardID = null)
-        {
-            CodeContracts.VerifyNotNull(repository, "repository");
-
-            return boardID.HasValue
-                ? new List<Board> { repository.GetById(boardID.Value) }
-                : repository.DbAccess.Execute(cmd => cmd.Connection.Select<Board>());
         }
 
         /// <summary>
@@ -245,7 +192,7 @@ namespace YAF.Core.Model
         /// </returns>
         public static DataRow PostStats(this IRepository<Board> repository, int boardID, bool styledNicks, bool showNoCountPosts)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             var dt =
                 (DataTable)
@@ -276,7 +223,7 @@ namespace YAF.Core.Model
         /// </param>
         public static void ReSync(this IRepository<Board> repository, int? boardID = null)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             repository.DbFunction.Query.board_resync(BoardID: boardID);
         }
@@ -296,7 +243,7 @@ namespace YAF.Core.Model
             string languageFile,
             string culture)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             BoardContext.Current.GetRepository<Registry>().Save("culture", culture, boardId);
             BoardContext.Current.GetRepository<Registry>().Save("language", languageFile, boardId);
@@ -320,7 +267,7 @@ namespace YAF.Core.Model
         /// </returns>
         public static DataRow Stats(this IRepository<Board> repository, int? boardID)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             return repository.DbFunction.GetAsDataTable(f => f.board_stats(BoardID: boardID)).GetFirstRow();
         }
@@ -339,7 +286,7 @@ namespace YAF.Core.Model
         /// </returns>
         public static DataRow UserStats(this IRepository<Board> repository, int? boardID)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             return repository.DbFunction.GetAsDataTable(f => f.board_userstats(BoardID: boardID)).GetFirstRow();
         }
@@ -355,7 +302,7 @@ namespace YAF.Core.Model
         /// </param>
         public static void DeleteBoard(this IRepository<Board> repository, int boardId)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             repository.DbFunction.Query.board_delete(BoardID: boardId);
         }

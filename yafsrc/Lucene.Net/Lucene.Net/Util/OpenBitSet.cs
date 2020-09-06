@@ -1,7 +1,7 @@
 using J2N.Numerics;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -121,7 +121,7 @@ namespace YAF.Lucene.Net.Util
         {
             if (numWords > bits.Length)
             {
-                throw new System.ArgumentException("numWords cannot exceed bits.length");
+                throw new ArgumentException("numWords cannot exceed bits.length");
             }
             this.m_bits = bits;
             this.m_wlen = numWords;
@@ -133,27 +133,15 @@ namespace YAF.Lucene.Net.Util
             return new OpenBitSetIterator(m_bits, m_wlen);
         }
 
-        public override IBits Bits
-        {
-            get { return this; }
-        }
+        public override IBits Bits => this;
 
         /// <summary>
         /// This DocIdSet implementation is cacheable. </summary>
-        public override bool IsCacheable
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsCacheable => true;
 
         /// <summary>
         /// Returns the current capacity in bits (1 greater than the index of the last bit). </summary>
-        public virtual long Capacity
-        {
-            get { return m_bits.Length << 6; }
-        }
+        public virtual long Capacity => m_bits.Length << 6;
 
         // LUCENENET specific - eliminating this extra property, since it is identical to
         // Length anyway, and Length is required by the IBits interface.
@@ -171,20 +159,11 @@ namespace YAF.Lucene.Net.Util
         /// <para/>
         /// NOTE: This is equivalent to size() or length() in Lucene.
         /// </summary>
-        public virtual int Length
-        {
-            get { return m_bits.Length << 6; }
-        }
+        public virtual int Length => m_bits.Length << 6;
 
         /// <summary>
         /// Returns <c>true</c> if there are no set bits </summary>
-        public virtual bool IsEmpty
-        {
-            get
-            {
-                return Cardinality() == 0;
-            }
-        }
+        public virtual bool IsEmpty => Cardinality() == 0;
 
         /// <summary>
         /// Expert: returns the <see cref="T:long[]"/> storing the bits. </summary>
@@ -196,13 +175,7 @@ namespace YAF.Lucene.Net.Util
 
         /// <summary>
         /// Expert: gets the number of <see cref="long"/>s in the array that are in use. </summary>
-        public virtual int NumWords
-        {
-            get
-            {
-                return m_wlen;
-            }
-        }
+        public virtual int NumWords => m_wlen;
 
         /// <summary>
         /// Returns <c>true</c> or <c>false</c> for the specified bit <paramref name="index"/>. </summary>
@@ -227,7 +200,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual bool FastGet(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int i = index >> 6; // div 64
             // signed shift will keep a negative index and force an
             // array-index-out-of-bounds-exception, removing the need for an explicit check.
@@ -257,7 +230,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual bool FastGet(long index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int i = (int)(index >> 6); // div 64
             int bit = (int)index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -282,7 +255,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual int GetBit(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int i = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             return ((int)((long)((ulong)m_bits[i] >> bit))) & 0x01;
@@ -313,7 +286,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual void FastSet(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -326,7 +299,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual void FastSet(long index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = (int)(index >> 6);
             int bit = (int)index & 0x3f;
             long bitmask = 1L << bit;
@@ -381,7 +354,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual void FastClear(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6;
             int bit = index & 0x03f;
             long bitmask = 1L << bit;
@@ -401,7 +374,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual void FastClear(long index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = (int)(index >> 6); // div 64
             int bit = (int)index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -520,7 +493,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual bool GetAndSet(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -535,7 +508,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual bool GetAndSet(long index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = (int)(index >> 6); // div 64
             int bit = (int)index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -550,7 +523,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual void FastFlip(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -563,7 +536,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual void FastFlip(long index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = (int)(index >> 6); // div 64
             int bit = (int)index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -586,7 +559,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual bool FlipAndGet(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -600,7 +573,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public virtual bool FlipAndGet(long index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = (int)(index >> 6); // div 64
             int bit = (int)index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -940,7 +913,7 @@ namespace YAF.Lucene.Net.Util
             // https://github.com/apache/lucenenet/pull/154
             int oldLen = m_wlen;
             EnsureCapacityWords(newLen);
-            Debug.Assert((numBits = Math.Max(other.numBits, numBits)) >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert((numBits = Math.Max(other.numBits, numBits)) >= 0);
 
             long[] thisArr = this.m_bits;
             long[] otherArr = other.m_bits;
@@ -980,7 +953,7 @@ namespace YAF.Lucene.Net.Util
             // https://github.com/apache/lucenenet/pull/154
             int oldLen = m_wlen;
             EnsureCapacityWords(newLen);
-            Debug.Assert((numBits = Math.Max(other.numBits, numBits)) >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert((numBits = Math.Max(other.numBits, numBits)) >= 0);
 
             long[] thisArr = this.m_bits;
             long[] otherArr = other.m_bits;
@@ -1038,7 +1011,7 @@ namespace YAF.Lucene.Net.Util
         {
             m_bits = ArrayUtil.Grow(m_bits, numWords);
             m_wlen = numWords;
-            Debug.Assert((this.numBits = Math.Max(this.numBits, numWords << 6)) >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert((this.numBits = Math.Max(this.numBits, numWords << 6)) >= 0);
         }
 
         /// <summary>
@@ -1050,7 +1023,7 @@ namespace YAF.Lucene.Net.Util
             EnsureCapacityWords(Bits2words(numBits));
             // ensureCapacityWords sets numBits to a multiple of 64, but we want to set
             // it to exactly what the app asked.
-            Debug.Assert((this.numBits = Math.Max(this.numBits, numBits)) >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert((this.numBits = Math.Max(this.numBits, numBits)) >= 0);
         }
 
         /// <summary>

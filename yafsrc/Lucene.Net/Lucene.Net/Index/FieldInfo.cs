@@ -1,3 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -85,28 +87,31 @@ namespace YAF.Lucene.Net.Index
                 this.normType = DocValuesType.NONE;
             }
             this.attributes = attributes;
-            Debug.Assert(CheckConsistency());
+            if (Debugging.AssertsEnabled) Debugging.Assert(CheckConsistency());
         }
 
         private bool CheckConsistency()
         {
             if (!indexed)
             {
-                Debug.Assert(!storeTermVector);
-                Debug.Assert(!storePayloads);
-                Debug.Assert(!omitNorms);
-                Debug.Assert(normType == DocValuesType.NONE);
-                Debug.Assert(indexOptions == IndexOptions.NONE);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(!storeTermVector);
+                    Debugging.Assert(!storePayloads);
+                    Debugging.Assert(!omitNorms);
+                    Debugging.Assert(normType == DocValuesType.NONE);
+                    Debugging.Assert(indexOptions == IndexOptions.NONE);
+                }
             }
             else
             {
-                Debug.Assert(indexOptions != IndexOptions.NONE);
+                if (Debugging.AssertsEnabled) Debugging.Assert(indexOptions != IndexOptions.NONE);
                 if (omitNorms)
                 {
-                    Debug.Assert(normType == DocValuesType.NONE);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(normType == DocValuesType.NONE);
                 }
                 // Cannot store payloads unless positions are indexed:
-                Debug.Assert(indexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS) >= 0 || !this.storePayloads);
+                if (Debugging.AssertsEnabled) Debugging.Assert(indexOptions.CompareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS) >= 0 || !this.storePayloads);
             }
 
             return true;
@@ -158,56 +163,38 @@ namespace YAF.Lucene.Net.Index
                     }
                 }
             }
-            Debug.Assert(CheckConsistency());
+            if (Debugging.AssertsEnabled) Debugging.Assert(CheckConsistency());
         }
 
         public DocValuesType DocValuesType
         {
+            get => docValueType;
             internal set
             {
                 if (docValueType != DocValuesType.NONE && docValueType != value)
                 {
-                    throw new System.ArgumentException("cannot change DocValues type from " + docValueType + " to " + value + " for field \"" + Name + "\"");
+                    throw new ArgumentException("cannot change DocValues type from " + docValueType + " to " + value + " for field \"" + Name + "\"");
                 }
                 docValueType = value;
-                Debug.Assert(CheckConsistency());
-            }
-            get
-            {
-                return docValueType;
+                if (Debugging.AssertsEnabled) Debugging.Assert(CheckConsistency());
             }
         }
 
         /// <summary>
         /// Returns <see cref="Index.IndexOptions"/> for the field, or <c>null</c> if the field is not indexed </summary>
-        public IndexOptions IndexOptions
-        {
-            get
-            {
-                return indexOptions;
-            }
-        }
+        public IndexOptions IndexOptions => indexOptions;
 
         /// <summary>
         /// Returns <c>true</c> if this field has any docValues.
         /// </summary>
-        public bool HasDocValues
-        {
-            get { return docValueType != DocValuesType.NONE; }
-        }
+        public bool HasDocValues => docValueType != DocValuesType.NONE;
 
         /// <summary>
         /// Gets or Sets the docValues generation of this field, or -1 if no docValues. </summary>
         public long DocValuesGen
         {
-            set
-            {
-                this.dvGen = value;
-            }
-            get
-            {
-                return dvGen;
-            }
+            get => dvGen;
+            set => this.dvGen = value;
         }
 
         /// <summary>
@@ -215,25 +202,22 @@ namespace YAF.Lucene.Net.Index
         /// </summary>
         public DocValuesType NormType
         {
-            get
-            {
-                return normType;
-            }
+            get => normType;
             internal set
             {
                 if (normType != DocValuesType.NONE && normType != value)
                 {
-                    throw new System.ArgumentException("cannot change Norm type from " + normType + " to " + value + " for field \"" + Name + "\"");
+                    throw new ArgumentException("cannot change Norm type from " + normType + " to " + value + " for field \"" + Name + "\"");
                 }
                 normType = value;
-                Debug.Assert(CheckConsistency());
+                if (Debugging.AssertsEnabled) Debugging.Assert(CheckConsistency());
             }
         }
 
         internal void SetStoreTermVectors()
         {
             storeTermVector = true;
-            Debug.Assert(CheckConsistency());
+            if (Debugging.AssertsEnabled) Debugging.Assert(CheckConsistency());
         }
 
         internal void SetStorePayloads()
@@ -242,51 +226,33 @@ namespace YAF.Lucene.Net.Index
             {
                 storePayloads = true;
             }
-            Debug.Assert(CheckConsistency());
+            if (Debugging.AssertsEnabled) Debugging.Assert(CheckConsistency());
         }
 
         /// <summary>
         /// Returns <c>true</c> if norms are explicitly omitted for this field
         /// </summary>
-        public bool OmitsNorms
-        {
-            get { return omitNorms; }
-        }
+        public bool OmitsNorms => omitNorms;
 
         /// <summary>
         /// Returns <c>true</c> if this field actually has any norms.
         /// </summary>
-        public bool HasNorms
-        {
-            get { return normType != DocValuesType.NONE; }
-        }
+        public bool HasNorms => normType != DocValuesType.NONE;
 
         /// <summary>
         /// Returns <c>true</c> if this field is indexed.
         /// </summary>
-        public bool IsIndexed
-        {
-            get
-            {
-                return indexed;
-            }
-        }
+        public bool IsIndexed => indexed;
 
         /// <summary>
         /// Returns <c>true</c> if any payloads exist for this field.
         /// </summary>
-        public bool HasPayloads
-        {
-            get { return storePayloads; }
-        }
+        public bool HasPayloads => storePayloads;
 
         /// <summary>
         /// Returns <c>true</c> if any term vectors exist for this field.
         /// </summary>
-        public bool HasVectors
-        {
-            get { return storeTermVector; }
-        }
+        public bool HasVectors => storeTermVector;
 
         /// <summary>
         /// Get a codec attribute value, or <c>null</c> if it does not exist
@@ -336,10 +302,7 @@ namespace YAF.Lucene.Net.Index
         /// <summary>
         /// Returns internal codec attributes map. May be <c>null</c> if no mappings exist.
         /// </summary>
-        public IDictionary<string, string> Attributes
-        {
-            get { return attributes; }
-        }
+        public IDictionary<string, string> Attributes => attributes;
     }
 
     /// <summary>

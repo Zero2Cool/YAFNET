@@ -1,8 +1,9 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Index
@@ -60,7 +61,7 @@ namespace YAF.Lucene.Net.Index
             {
                 if (info.Number < 0)
                 {
-                    throw new System.ArgumentException("illegal field number: " + info.Number + " for field " + info.Name);
+                    throw new ArgumentException("illegal field number: " + info.Number + " for field " + info.Name);
                 }
 
                 FieldInfo previous;
@@ -100,52 +101,31 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// Returns <c>true</c> if any fields have freqs </summary>
-        public virtual bool HasFreq
-        {
-            get { return hasFreq; }
-        }
+        public virtual bool HasFreq => hasFreq;
 
         /// <summary>
         /// Returns <c>true</c> if any fields have positions </summary>
-        public virtual bool HasProx
-        {
-            get { return hasProx; }
-        }
+        public virtual bool HasProx => hasProx;
 
         /// <summary>
         /// Returns <c>true</c> if any fields have payloads </summary>
-        public virtual bool HasPayloads
-        {
-            get { return hasPayloads; }
-        }
+        public virtual bool HasPayloads => hasPayloads;
 
         /// <summary>
         /// Returns <c>true</c> if any fields have offsets </summary>
-        public virtual bool HasOffsets
-        {
-            get { return hasOffsets; }
-        }
+        public virtual bool HasOffsets => hasOffsets;
 
         /// <summary>
         /// Returns <c>true</c> if any fields have vectors </summary>
-        public virtual bool HasVectors
-        {
-            get { return hasVectors; }
-        }
+        public virtual bool HasVectors => hasVectors;
 
         /// <summary>
         /// Returns <c>true</c> if any fields have norms </summary>
-        public virtual bool HasNorms
-        {
-            get { return hasNorms; }
-        }
+        public virtual bool HasNorms => hasNorms;
 
         /// <summary>
         /// Returns <c>true</c> if any fields have <see cref="DocValues"/> </summary>
-        public virtual bool HasDocValues
-        {
-            get { return hasDocValues; }
-        }
+        public virtual bool HasDocValues => hasDocValues;
 
         /// <summary>
         /// Returns the number of fields.
@@ -156,7 +136,7 @@ namespace YAF.Lucene.Net.Index
         {
             get
             {
-                Debug.Assert(byNumber.Count == byName.Count);
+                if (Debugging.AssertsEnabled) Debugging.Assert(byNumber.Count == byName.Count);
                 return byNumber.Count;
             }
         }
@@ -197,7 +177,7 @@ namespace YAF.Lucene.Net.Index
         {
             if (fieldNumber < 0)
             {
-                throw new System.ArgumentException("Illegal field number: " + fieldNumber);
+                throw new ArgumentException("Illegal field number: " + fieldNumber);
             }
             Index.FieldInfo ret;
             byNumber.TryGetValue(fieldNumber, out ret);
@@ -246,7 +226,7 @@ namespace YAF.Lucene.Net.Index
                         }
                         else if (currentDVType != DocValuesType.NONE && currentDVType != dvType)
                         {
-                            throw new System.ArgumentException("cannot change DocValues type from " + currentDVType + " to " + dvType + " for field \"" + fieldName + "\"");
+                            throw new ArgumentException("cannot change DocValues type from " + currentDVType + " to " + dvType + " for field \"" + fieldName + "\"");
                         }
                     }
                     int? fieldNumber;
@@ -334,7 +314,7 @@ namespace YAF.Lucene.Net.Index
             {
                 lock (this)
                 {
-                    Debug.Assert(ContainsConsistent(number, name, dvType));
+                    if (Debugging.AssertsEnabled) Debugging.Assert(ContainsConsistent(number, name, dvType));
                     docValuesType[name] = dvType;
                 }
             }
@@ -355,7 +335,7 @@ namespace YAF.Lucene.Net.Index
             /// </summary>
             internal Builder(FieldNumbers globalFieldNumbers)
             {
-                Debug.Assert(globalFieldNumbers != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(globalFieldNumbers != null);
                 this.globalFieldNumbers = globalFieldNumbers;
             }
 
@@ -386,8 +366,8 @@ namespace YAF.Lucene.Net.Index
 
             private FieldInfo AddOrUpdateInternal(string name, int preferredFieldNumber, bool isIndexed, bool storeTermVector, bool omitNorms, bool storePayloads, IndexOptions indexOptions, DocValuesType docValues, DocValuesType normType)
             {
-                FieldInfo fi = FieldInfo(name);
-                if (fi == null)
+                // LUCENENET: Bypass FieldInfo method so we can access the quick boolean check
+                if (!TryGetFieldInfo(name, out FieldInfo fi) || fi is null)
                 {
                     // this field wasn't yet added to this in-RAM
                     // segment's FieldInfo, so now we get a global
@@ -396,8 +376,11 @@ namespace YAF.Lucene.Net.Index
                     // else we'll allocate a new one:
                     int fieldNumber = globalFieldNumbers.AddOrGet(name, preferredFieldNumber, docValues);
                     fi = new FieldInfo(name, isIndexed, fieldNumber, storeTermVector, omitNorms, storePayloads, indexOptions, docValues, normType, null);
-                    Debug.Assert(!byName.ContainsKey(fi.Name));
-                    Debug.Assert(globalFieldNumbers.ContainsConsistent(fi.Number, fi.Name, fi.DocValuesType));
+                    if (Debugging.AssertsEnabled)
+                    {
+                        Debugging.Assert(!byName.ContainsKey(fi.Name));
+                        Debugging.Assert(globalFieldNumbers.ContainsConsistent(fi.Number, fi.Name, fi.DocValuesType));
+                    }
                     byName[fi.Name] = fi;
                 }
                 else
@@ -431,11 +414,9 @@ namespace YAF.Lucene.Net.Index
                 return AddOrUpdateInternal(fi.Name, fi.Number, fi.IsIndexed, fi.HasVectors, fi.OmitsNorms, fi.HasPayloads, fi.IndexOptions, fi.DocValuesType, fi.NormType);
             }
 
-            public FieldInfo FieldInfo(string fieldName)
+            public bool TryGetFieldInfo(string fieldName, out FieldInfo ret) // LUCENENET specific - changed from FieldInfo to TryGetFieldInfo
             {
-                FieldInfo ret;
-                byName.TryGetValue(fieldName, out ret);
-                return ret;
+                return byName.TryGetValue(fieldName, out ret);
             }
 
             public FieldInfos Finish()

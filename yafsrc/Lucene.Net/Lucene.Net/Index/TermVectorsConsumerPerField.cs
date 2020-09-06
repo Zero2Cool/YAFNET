@@ -1,7 +1,7 @@
 using YAF.Lucene.Net.Analysis.TokenAttributes;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Index
@@ -25,8 +25,6 @@ namespace YAF.Lucene.Net.Index
 
     using ByteBlockPool = YAF.Lucene.Net.Util.ByteBlockPool;
     using BytesRef = YAF.Lucene.Net.Util.BytesRef;
-    using OffsetAttribute = YAF.Lucene.Net.Analysis.TokenAttributes.OffsetAttribute;
-    using PayloadAttribute = YAF.Lucene.Net.Analysis.TokenAttributes.PayloadAttribute;
     using RamUsageEstimator = YAF.Lucene.Net.Util.RamUsageEstimator;
     using TermVectorsWriter = YAF.Lucene.Net.Codecs.TermVectorsWriter;
 
@@ -57,13 +55,7 @@ namespace YAF.Lucene.Net.Index
             fieldState = termsHashPerField.fieldState;
         }
 
-        internal override int StreamCount
-        {
-            get
-            {
-                return 2;
-            }
-        }
+        internal override int StreamCount => 2;
 
         internal override bool Start(IIndexableField[] fields, int count)
         {
@@ -90,22 +82,22 @@ namespace YAF.Lucene.Net.Index
                         else if (field.IndexableFieldType.StoreTermVectorPayloads)
                         {
                             // TODO: move this check somewhere else, and impl the other missing ones
-                            throw new System.ArgumentException("cannot index term vector payloads without term vector positions (field=\"" + field.Name + "\")");
+                            throw new ArgumentException("cannot index term vector payloads without term vector positions (field=\"" + field.Name + "\")");
                         }
                     }
                     else
                     {
                         if (field.IndexableFieldType.StoreTermVectorOffsets)
                         {
-                            throw new System.ArgumentException("cannot index term vector offsets when term vectors are not indexed (field=\"" + field.Name + "\")");
+                            throw new ArgumentException("cannot index term vector offsets when term vectors are not indexed (field=\"" + field.Name + "\")");
                         }
                         if (field.IndexableFieldType.StoreTermVectorPositions)
                         {
-                            throw new System.ArgumentException("cannot index term vector positions when term vectors are not indexed (field=\"" + field.Name + "\")");
+                            throw new ArgumentException("cannot index term vector positions when term vectors are not indexed (field=\"" + field.Name + "\")");
                         }
                         if (field.IndexableFieldType.StoreTermVectorPayloads)
                         {
-                            throw new System.ArgumentException("cannot index term vector payloads when term vectors are not indexed (field=\"" + field.Name + "\")");
+                            throw new ArgumentException("cannot index term vector payloads when term vectors are not indexed (field=\"" + field.Name + "\")");
                         }
                     }
                 }
@@ -113,19 +105,19 @@ namespace YAF.Lucene.Net.Index
                 {
                     if (field.IndexableFieldType.StoreTermVectors)
                     {
-                        throw new System.ArgumentException("cannot index term vectors when field is not indexed (field=\"" + field.Name + "\")");
+                        throw new ArgumentException("cannot index term vectors when field is not indexed (field=\"" + field.Name + "\")");
                     }
                     if (field.IndexableFieldType.StoreTermVectorOffsets)
                     {
-                        throw new System.ArgumentException("cannot index term vector offsets when field is not indexed (field=\"" + field.Name + "\")");
+                        throw new ArgumentException("cannot index term vector offsets when field is not indexed (field=\"" + field.Name + "\")");
                     }
                     if (field.IndexableFieldType.StoreTermVectorPositions)
                     {
-                        throw new System.ArgumentException("cannot index term vector positions when field is not indexed (field=\"" + field.Name + "\")");
+                        throw new ArgumentException("cannot index term vector positions when field is not indexed (field=\"" + field.Name + "\")");
                     }
                     if (field.IndexableFieldType.StoreTermVectorPayloads)
                     {
-                        throw new System.ArgumentException("cannot index term vector payloads when field is not indexed (field=\"" + field.Name + "\")");
+                        throw new ArgumentException("cannot index term vector payloads when field is not indexed (field=\"" + field.Name + "\")");
                     }
                 }
             }
@@ -172,13 +164,13 @@ namespace YAF.Lucene.Net.Index
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal void FinishDocument()
         {
-            Debug.Assert(docState.TestPoint("TermVectorsTermsWriterPerField.finish start"));
+            if (Debugging.AssertsEnabled) Debugging.Assert(docState.TestPoint("TermVectorsTermsWriterPerField.finish start"));
 
             int numPostings = termsHashPerField.bytesHash.Count;
 
             BytesRef flushTerm = termsWriter.flushTerm;
 
-            Debug.Assert(numPostings >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numPostings >= 0);
 
             if (numPostings > maxNumPostings)
             {
@@ -189,7 +181,7 @@ namespace YAF.Lucene.Net.Index
             // of a given field in the doc.  At this point we flush
             // our hash into the DocWriter.
 
-            Debug.Assert(termsWriter.VectorFieldsInOrder(fieldInfo));
+            if (Debugging.AssertsEnabled) Debugging.Assert(termsWriter.VectorFieldsInOrder(fieldInfo));
 
             TermVectorsPostingsArray postings = (TermVectorsPostingsArray)termsHashPerField.postingsArray;
             TermVectorsWriter tv = termsWriter.writer;
@@ -301,7 +293,7 @@ namespace YAF.Lucene.Net.Index
 
         internal override void NewTerm(int termID)
         {
-            Debug.Assert(docState.TestPoint("TermVectorsTermsWriterPerField.newTerm start"));
+            if (Debugging.AssertsEnabled) Debugging.Assert(docState.TestPoint("TermVectorsTermsWriterPerField.newTerm start"));
             TermVectorsPostingsArray postings = (TermVectorsPostingsArray)termsHashPerField.postingsArray;
 
             postings.freqs[termID] = 1;
@@ -313,7 +305,7 @@ namespace YAF.Lucene.Net.Index
 
         internal override void AddTerm(int termID)
         {
-            Debug.Assert(docState.TestPoint("TermVectorsTermsWriterPerField.addTerm start"));
+            if (Debugging.AssertsEnabled) Debugging.Assert(docState.TestPoint("TermVectorsTermsWriterPerField.addTerm start"));
             TermVectorsPostingsArray postings = (TermVectorsPostingsArray)termsHashPerField.postingsArray;
 
             postings.freqs[termID]++;
@@ -352,7 +344,7 @@ namespace YAF.Lucene.Net.Index
 
             internal override void CopyTo(ParallelPostingsArray toArray, int numToCopy)
             {
-                Debug.Assert(toArray is TermVectorsPostingsArray);
+                if (Debugging.AssertsEnabled) Debugging.Assert(toArray is TermVectorsPostingsArray);
                 TermVectorsPostingsArray to = (TermVectorsPostingsArray)toArray;
 
                 base.CopyTo(toArray, numToCopy);

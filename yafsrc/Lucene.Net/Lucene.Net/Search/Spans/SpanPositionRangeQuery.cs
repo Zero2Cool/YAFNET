@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 using System.Text;
 
 namespace YAF.Lucene.Net.Search.Spans
@@ -40,7 +40,7 @@ namespace YAF.Lucene.Net.Search.Spans
 
         protected override AcceptStatus AcceptPosition(Spans spans)
         {
-            Debug.Assert(spans.Start != spans.End);
+            if (Debugging.AssertsEnabled) Debugging.Assert(spans.Start != spans.End);
             if (spans.Start >= m_end)
             {
                 return AcceptStatus.NO_AND_ADVANCE;
@@ -56,22 +56,10 @@ namespace YAF.Lucene.Net.Search.Spans
         }
 
         /// <returns> The minimum position permitted in a match </returns>
-        public virtual int Start
-        {
-            get
-            {
-                return m_start;
-            }
-        }
+        public virtual int Start => m_start;
 
         /// <returns> The maximum end position permitted in a match. </returns>
-        public virtual int End
-        {
-            get
-            {
-                return m_end;
-            }
-        }
+        public virtual int End => m_end;
 
         public override string ToString(string field)
         {

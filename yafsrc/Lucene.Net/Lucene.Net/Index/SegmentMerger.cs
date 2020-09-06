@@ -1,8 +1,9 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Index
@@ -24,12 +25,12 @@ namespace YAF.Lucene.Net.Index
      * limitations under the License.
      */
 
-    using IBits = YAF.Lucene.Net.Util.IBits;
     using Codec = YAF.Lucene.Net.Codecs.Codec;
     using Directory = YAF.Lucene.Net.Store.Directory;
     using DocValuesConsumer = YAF.Lucene.Net.Codecs.DocValuesConsumer;
     using FieldInfosWriter = YAF.Lucene.Net.Codecs.FieldInfosWriter;
     using FieldsConsumer = YAF.Lucene.Net.Codecs.FieldsConsumer;
+    using IBits = YAF.Lucene.Net.Util.IBits;
     using InfoStream = YAF.Lucene.Net.Util.InfoStream;
     using IOContext = YAF.Lucene.Net.Store.IOContext;
     using IOUtils = YAF.Lucene.Net.Util.IOUtils;
@@ -76,16 +77,13 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// <c>True</c> if any merging should happen </summary>
-        internal bool ShouldMerge
-        {
-            get { return mergeState.SegmentInfo.DocCount > 0; }
-        }
+        internal bool ShouldMerge => mergeState.SegmentInfo.DocCount > 0;
 
         /// <summary>
         /// Merges the readers into the directory passed to the constructor </summary>
         /// <returns> The number of documents that were merged </returns>
         /// <exception cref="CorruptIndexException"> if the index is corrupt </exception>
-        /// <exception cref="System.IO.IOException"> if there is a low-level IO error </exception>
+        /// <exception cref="IOException"> if there is a low-level IO error </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal MergeState Merge()
         {
@@ -112,7 +110,7 @@ namespace YAF.Lucene.Net.Index
                 long t1 = Time.NanoTime();
                 mergeState.InfoStream.Message("SM", ((t1 - t0) / 1000000) + " msec to merge stored fields [" + numMerged + " docs]");
             }
-            Debug.Assert(numMerged == mergeState.SegmentInfo.DocCount);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numMerged == mergeState.SegmentInfo.DocCount);
 
             SegmentWriteState segmentWriteState = new SegmentWriteState(mergeState.InfoStream, directory, mergeState.SegmentInfo, mergeState.FieldInfos, termIndexInterval, null, context);
             if (mergeState.InfoStream.IsEnabled("SM"))
@@ -166,7 +164,7 @@ namespace YAF.Lucene.Net.Index
                     long t1 = Time.NanoTime();
                     mergeState.InfoStream.Message("SM", ((t1 - t0) / 1000000) + " msec to merge vectors [" + numMerged + " docs]");
                 }
-                Debug.Assert(numMerged == mergeState.SegmentInfo.DocCount);
+                if (Debugging.AssertsEnabled) Debugging.Assert(numMerged == mergeState.SegmentInfo.DocCount);
             }
 
             // write the merged infos
@@ -380,7 +378,7 @@ namespace YAF.Lucene.Net.Index
         ///
         /// <returns> The number of documents in all of the readers </returns>
         /// <exception cref="CorruptIndexException"> if the index is corrupt </exception>
-        /// <exception cref="System.IO.IOException"> if there is a low-level IO error </exception>
+        /// <exception cref="IOException"> if there is a low-level IO error </exception>
         private int MergeFields()
         {
             StoredFieldsWriter fieldsWriter = codec.StoredFieldsFormat.FieldsWriter(directory, mergeState.SegmentInfo, context);
@@ -397,7 +395,7 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// Merge the TermVectors from each of the segments into the new one. </summary>
-        /// <exception cref="System.IO.IOException"> if there is a low-level IO error </exception>
+        /// <exception cref="IOException"> if there is a low-level IO error </exception>
         private int MergeVectors()
         {
             TermVectorsWriter termVectorsWriter = codec.TermVectorsFormat.VectorsWriter(directory, mergeState.SegmentInfo, context);

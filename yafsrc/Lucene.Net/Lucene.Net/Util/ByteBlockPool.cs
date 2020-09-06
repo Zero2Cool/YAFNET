@@ -1,10 +1,10 @@
+using J2N.Collections.Generic.Extensions;
 using J2N.Numerics;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -63,7 +63,7 @@ namespace YAF.Lucene.Net.Util
                 this.m_blockSize = blockSize;
             }
 
-            public abstract void RecycleByteBlocks(byte[][] blocks, int start, int end);
+            public abstract void RecycleByteBlocks(byte[][] blocks, int start, int end); // LUCENENT TODO: API - Change to use IList<byte[]>
 
             public virtual void RecycleByteBlocks(IList<byte[]> blocks)
             {
@@ -139,8 +139,8 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public byte[][] Buffers
         {
-            get { return buffers; }
-            set { buffers = value; }
+            get => buffers;
+            set => buffers = value;
         }
         private byte[][] buffers = new byte[10][];
 
@@ -159,8 +159,8 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public byte[] Buffer
         {
-            get { return buffer; }
-            set { buffer = value; }
+            get => buffer;
+            set => buffer = value;
         }
         private byte[] buffer;
 
@@ -354,7 +354,7 @@ namespace YAF.Lucene.Net.Util
                 term.Length = (bytes[pos] & 0x7f) + ((bytes[pos + 1] & 0xff) << 7);
                 term.Offset = pos + 2;
             }
-            Debug.Assert(term.Length >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(term.Length >= 0);
         }
 
         /// <summary>

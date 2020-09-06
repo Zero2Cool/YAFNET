@@ -27,14 +27,12 @@ namespace YAF.Modules
 
     using System;
 
-    using YAF.Core;
-    using YAF.Core.Context;
-    using YAF.Dialogs;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Attributes;
     using YAF.Types.Constants;
     using YAF.Types.Interfaces;
-    using YAF.Types.Objects;
+    using YAF.Utils;
 
     #endregion
 
@@ -97,28 +95,18 @@ namespace YAF.Modules
         /// </summary>
         private void GeneratePopUp()
         {
-            var notification = (DialogBox)this.PageContext.CurrentForumPage.Notification;
-
             // This happens when user logs in
-            if (this.DisplayPmPopup() && (!this.PageContext.ForumPageType.Equals(ForumPages.PM)
+            if (this.DisplayPmPopup() && (!this.PageContext.ForumPageType.Equals(ForumPages.MyMessages)
                                           || !this.PageContext.ForumPageType.Equals(ForumPages.Friends)))
             {
-                notification.Show(
-                    this.GetTextFormatted("UNREAD_MSG2", this.PageContext.UnreadPrivate),
-                    this.GetText("COMMON", "UNREAD_MSG_TITLE"),
-                    new DialogButton
-                                  {
-                                      Text = this.GetText("COMMON", "YES"),
-                                      CssClass = "btn btn-success btn-sm",
-                                      ForumPageLink = new ForumLink { ForumPage = ForumPages.PM }
-                                  },
-                    new DialogButton
-                                      {
-                                          Text = this.GetText("COMMON", "NO"),
-                                          CssClass = "btn btn-danger btn-sm",
-                                          ForumPageLink =
-                                              new ForumLink { ForumPage = BoardContext.Current.ForumPageType }
-                                      });
+                this.PageContext.PageElements.RegisterJsBlockStartup(
+                    "ModalConfirmJs",
+                    JavaScriptBlocks.BootBoxConfirmJs(
+                        this.GetText("COMMON", "UNREAD_MSG_TITLE"),
+                        this.GetTextFormatted("UNREAD_MSG2", this.PageContext.UnreadPrivate),
+                        this.GetText("COMMON", "YES"),
+                        this.GetText("COMMON", "NO"),
+                        BuildLink.GetLink(ForumPages.MyMessages)));
 
                 this.Get<ISession>().LastPm = this.PageContext.LastUnreadPm;
 
@@ -126,27 +114,19 @@ namespace YAF.Modules
                 return;
             }
 
-            if (!this.DisplayPendingBuddies() || this.PageContext.ForumPageType.Equals(ForumPages.Friends) || this.PageContext.ForumPageType.Equals(ForumPages.PM))
+            if (!this.DisplayPendingBuddies() || this.PageContext.ForumPageType.Equals(ForumPages.Friends) || this.PageContext.ForumPageType.Equals(ForumPages.MyMessages))
             {
                 return;
             }
 
-            notification.Show(
-                this.GetTextFormatted("PENDINGBUDDIES2", this.PageContext.PendingBuddies),
-                this.GetText("BUDDY", "PENDINGBUDDIES_TITLE"),
-                new DialogButton
-                              {
-                                  Text = this.GetText("COMMON", "YES"),
-                                  CssClass = "btn btn-success btn-sm",
-                                  ForumPageLink = new ForumLink { ForumPage = ForumPages.Friends }
-                              },
-                new DialogButton
-                                  {
-                                      Text = this.GetText("COMMON", "NO"),
-                                      CssClass = "btn btn-danger btn-sm",
-                                      ForumPageLink =
-                                          new ForumLink { ForumPage = BoardContext.Current.ForumPageType }
-                                  });
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                "ModalConfirmJs",
+                JavaScriptBlocks.BootBoxConfirmJs(
+                    this.GetText("BUDDY", "PENDINGBUDDIES_TITLE"),
+                    this.GetTextFormatted("PENDINGBUDDIES2", this.PageContext.PendingBuddies),
+                    this.GetText("COMMON", "YES"),
+                    this.GetText("COMMON", "NO"),
+                    BuildLink.GetLink(ForumPages.Friends)));
 
             this.Get<ISession>().LastPendingBuddies = this.PageContext.LastPendingBuddies;
         }

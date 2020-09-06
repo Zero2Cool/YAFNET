@@ -7,7 +7,8 @@
 <YAF:PageLinks ID="PageLinks" runat="server" />
 <div class="row">
     <div class="col-xl-12">
-        <h1><YAF:LocalizedLabel ID="LocalizedLabel18" runat="server" LocalizedTag="TITLE" LocalizedPage="ADMIN_ADMIN" /></h1>
+        <h1><YAF:LocalizedLabel ID="LocalizedLabel18" runat="server" 
+                                LocalizedTag="TITLE" LocalizedPage="ADMIN_ADMIN" /></h1>
     </div>
 </div>
     <asp:PlaceHolder ID="UpdateHightlight" runat="server" Visible="false">
@@ -16,8 +17,7 @@
             <YAF:LocalizedLabel runat="server"
                                 LocalizedTag="NEW_VERSION"></YAF:LocalizedLabel>
             <YAF:ThemeButton ID="UpdateLinkHighlight" runat="server" 
-                             TextLocalizedTag="NEW_VERSION_DOWNLOAD"
-                             NavigateUrl="https://yetanotherforum.net/download"
+                             TextLocalizedTag="UPGRADE_VERSION"
                              Type="Info"
                              Icon="cloud-download-alt"></YAF:ThemeButton>
         </YAF:Alert>
@@ -25,18 +25,28 @@
     <div class="row">
              <div class="col-xl-12">
                     <div class="card mb-3">
-                        <div class="card-header form-inline">
-                            <YAF:IconHeader runat="server"
-                                            IconName="tachometer-alt"
-                                            LocalizedTag="HEADER3"
-                                            LocalizedPage="ADMIN_ADMIN"></YAF:IconHeader>&nbsp;
-                            <asp:DropDownList ID="BoardStatsSelect" runat="server" 
-                                              DataTextField="Name" 
-                                              DataValueField="ID"
-                                              OnSelectedIndexChanged="BoardStatsSelectChanged" 
-                                              AutoPostBack="true" 
-                                              CssClass="custom-select" 
-                                              Width="300" />
+                        <div class="card-header ">
+                            <div class="row row-cols-md-auto align-items-center">
+                                <div class="col-12">
+                                    <YAF:Icon runat="server"
+                                              IconName="tachometer-alt"/>
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-group">
+                                        <div class="input-group-text" id="btnGroupAddon">
+                                            <YAF:LocalizedLabel runat="server"
+                                                                LocalizedTag="HEADER3"
+                                                                LocalizedPage="ADMIN_ADMIN" />
+                                        </div>
+                                        <asp:DropDownList ID="BoardStatsSelect" runat="server" 
+                                                          DataTextField="Name" 
+                                                          DataValueField="ID"
+                                                          OnSelectedIndexChanged="BoardStatsSelectChanged" 
+                                                          AutoPostBack="true" 
+                                                          CssClass="form-select" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -218,7 +228,7 @@
                     <HeaderTemplate>
                         <div class="table-responsive">
                         <table class="table tablesorter table-bordered table-striped" id="ActiveUsers">
-                            <thead class="thead-light">
+                            <thead class="table-light">
                             <tr>
                                 <th>
                                     <YAF:LocalizedLabel ID="LocalizedLabel2" runat="server"
@@ -227,10 +237,6 @@
                                 <th>
                                     <YAF:LocalizedLabel ID="LocalizedLabel3" runat="server"
                                         LocalizedTag="ADMIN_IPADRESS" LocalizedPage="ADMIN_ADMIN" />
-                                </th>
-                                <th>
-                                    <YAF:LocalizedLabel ID="LocalizedLabel4" runat="server"
-                                        LocalizedTag="LOCATION" />
                                 </th>
                                 <th>
                                     <YAF:LocalizedLabel ID="LocalizedLabel5" runat="server"
@@ -244,6 +250,8 @@
                             <tr>
                     <td>
                         <YAF:UserLink ID="ActiveUserLink" 
+                                      ReplaceName='<%# this.Eval(this.PageContext.BoardSettings.EnableDisplayName ? "UserDisplayName" : "UserName") %>'
+                                      Suspended='<%# this.Eval("Suspended").ToType<DateTime?>() %>'
                                       UserID='<%# this.Eval("UserID") %>' 
                                       CrawlerName='<%# this.Eval("IsCrawler").ToType<int>() > 0 ? this.Eval("Browser").ToString() : string.Empty %>'
                                       Style='<%# this.Eval("Style") %>' runat="server" />
@@ -252,9 +260,6 @@
                         <a id="A1" href='<%# string.Format(this.Get<BoardSettings>().IPInfoPageURL, IPHelper.GetIp4Address(this.Eval("IP").ToString())) %>'
                             title='<%# this.GetText("COMMON","TT_IPDETAILS") %>' target="_blank" runat="server">
                             <%# IPHelper.GetIp4Address(this.Eval("IP").ToString())%></a>
-                    </td>
-                    <td>
-                        <%# this.SetLocation(this.Eval("UserName").ToString())%>
                     </td>
                     <td>
                         <YAF:ActiveLocation ID="ActiveLocation2" 
@@ -272,22 +277,50 @@
                             </tbody>
                         </table>
                         </div>
-                        <div id="ActiveUsersPager" class=" tableSorterPager form-inline">
-                            <select class="pagesize custom-select custom-select-sm">
-		                        <option selected="selected" value="10">10</option>
-		                        <option value="20">20</option>
-                        	    <option value="30">30</option>
-                        	    <option value="40">40</option>
-                            </select>
-                            &nbsp;
-                            <div class="btn-group"  role="group">
-                                <a href="#" class="first btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-left"></i></span></a>
-                                <a href="#" class="prev btn btn-secondary btn-sm"><span><i class="fas fa-angle-left"></i></span></a>
-                                <input type="button" class="pagedisplay  btn btn-secondary btn-sm disabled"  style="width:150px" />
-                                <a href="#" class="next btn btn-secondary btn-sm"><span><i class="fas fa-angle-right"></i></span></a>
-                                <a href="#" class="last btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-right"></i></span></a>
-                            </div>
+                        <div id="ActiveUsersPager" class="row justify-content-between align-items-center">
+                <div class="col-auto mb-1">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-text">
+                            <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
                         </div>
+                        <select class="pagesize form-select form-select-sm w-25">
+                            <option selected="selected" value="5">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_5" />
+                            </option>
+                            <option value="10">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_10" />
+
+                            </option>
+                            <option value="20">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_20" />
+
+                            </option>
+                            <option value="25">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_25" />
+
+                            </option>
+                            <option value="50">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_50" />
+
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-auto mb-1">
+                    <div class="btn-group" role="group">
+                        <a href="#" class="first  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-left"></i></span></a>
+                        <a href="#" class="prev  btn btn-secondary btn-sm"><span><i class="fas fa-angle-left"></i></span></a>
+                        <input type="button" class="pagedisplay  btn btn-secondary btn-sm disabled"  style="width:150px" />
+                        <a href="#" class="next btn btn-secondary btn-sm"><span><i class="fas fa-angle-right"></i></span></a>
+                        <a href="#" class="last  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-right"></i></span></a>
+                    </div>
+                </div>
+            </div>
                     </FooterTemplate>
                 </asp:Repeater>
     </div>
@@ -313,7 +346,7 @@
             <HeaderTemplate>
                 <div class="table-responsive">
                 <table class="table tablesorter table-bordered table-striped" id="UnverifiedUsers">
-                <thead class="thead-light">
+                <thead class="table-light">
                 <tr>
                     <th>
                         <YAF:LocalizedLabel ID="LocalizedLabel2" runat="server" LocalizedTag="ADMIN_NAME"
@@ -322,9 +355,6 @@
                     <th>
                         <YAF:LocalizedLabel ID="LocalizedLabel6" runat="server" LocalizedTag="ADMIN_EMAIL"
                             LocalizedPage="ADMIN_ADMIN" />
-                    </th>
-                    <th>
-                        <YAF:LocalizedLabel ID="LocalizedLabel4" runat="server" LocalizedTag="LOCATION" />
                     </th>
                     <th>
                         <YAF:LocalizedLabel ID="LocalizedLabel7" runat="server" LocalizedTag="ADMIN_JOINED"
@@ -338,15 +368,14 @@
                 <tr>
                     <td>
                         <YAF:UserLink ID="UnverifiedUserLink" 
-                                      UserID='<%# this.Eval("UserID") %>' 
-                                      Style='<%# this.Eval("Style") %>'
+                                      ReplaceName='<%# this.Eval(this.PageContext.BoardSettings.EnableDisplayName ? "DisplayName" : "Name") %>'
+                                      Suspended='<%# this.Eval("Suspended").ToType<DateTime?>() %>'
+                                      UserID='<%# this.Eval("ID") %>' 
+                                      Style='<%# this.Eval("UserStyle") %>'
                             runat="server" />
                     </td>
                     <td>
                         <%# this.Eval("Email") %>
-                    </td>
-                    <td>
-                        <%# this.SetLocation(this.Eval("Name").ToString())%>
                     </td>
                     <td>
                         <%# this.Get<IDateTime>().FormatDateTime((DateTime)this.Eval("Joined")) %>
@@ -368,7 +397,7 @@
                         </YAF:ThemeButton>
                         <YAF:ThemeButton runat="server" 
                                          CommandName="approve" 
-                                         CommandArgument='<%# this.Eval("UserID") %>'
+                                         CommandArgument='<%# this.Eval("ID") %>'
                                          Type="None"
                                          CssClass="dropdown-item"
                                          ReturnConfirmText='<%# this.GetText("ADMIN_ADMIN", "CONFIRM_APPROVE") %>'
@@ -377,7 +406,7 @@
                         </YAF:ThemeButton>
                         <YAF:ThemeButton runat="server" 
                                          CommandName="delete" 
-                                         CommandArgument='<%# this.Eval("UserID") %>'
+                                         CommandArgument='<%# this.Eval("ID") %>'
                                          Type="None"
                                          CssClass="dropdown-item" 
                                          ReturnConfirmText='<%# this.GetText("ADMIN_ADMIN", "CONFIRM_DELETE") %>'
@@ -393,45 +422,82 @@
                 </tbody>
                 </table>
                 </div>
-                    <div id="UnverifiedUsersPager" class=" tableSorterPager form-inline">
-                        <select class="pagesize custom-select custom-select-sm">
-		                        <option selected="selected" value="10">10</option>
-		                        <option value="20">20</option>
-                        	    <option value="30">30</option>
-                        	    <option value="40">40</option>
-                            </select>
-                            &nbsp;
-                        <div class="btn-group"  role="group">
-                            <a href="#" class="first  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-left"></i></span></a>
-                            <a href="#" class="prev  btn btn-secondary btn-sm"><span><i class="fas fa-angle-left"></i></span></a>
-                            <input type="button" class="pagedisplay  btn btn-secondary btn-sm disabled"  style="width:150px" />
-                            <a href="#" class="next btn btn-secondary btn-sm"><span><i class="fas fa-angle-right"></i></span></a>
-                            <a href="#" class="last  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-right"></i></span></a>
+            <div id="UnverifiedUsersPager" class="row justify-content-between align-items-center">
+                <div class="col-auto mb-1">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-text">
+                            <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
+                        </div>
+                        <select class="pagesize form-select form-select-sm w-25">
+                            <option selected="selected" value="5">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_5" />
+                            </option>
+                            <option value="10">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_10" />
+
+                            </option>
+                            <option value="20">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_20" />
+
+                            </option>
+                            <option value="25">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_25" />
+
+                            </option>
+                            <option value="50">
+                                <YAF:LocalizedLabel runat="server" 
+                                                    LocalizedPage="COMMON" LocalizedTag="ENTRIES_50" />
+
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-auto mb-1">
+                    <div class="btn-group" role="group">
+                        <a href="#" class="first  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-left"></i></span></a>
+                        <a href="#" class="prev  btn btn-secondary btn-sm"><span><i class="fas fa-angle-left"></i></span></a>
+                        <input type="button" class="pagedisplay  btn btn-secondary btn-sm disabled"  style="width:150px" />
+                        <a href="#" class="next btn btn-secondary btn-sm"><span><i class="fas fa-angle-right"></i></span></a>
+                        <a href="#" class="last  btn btn-secondary btn-sm"><span><i class="fas fa-angle-double-right"></i></span></a>
+                    </div>
+                </div>
+            </div>
+               </div>
+                <div class="card-footer">
+                    <div class="d-lg-flex">
+                        <div>
+                            <YAF:ThemeButton runat="server" 
+                                             CommandName="approveall" 
+                                             Type="Primary" 
+                                             Icon="check" 
+                                             TextLocalizedTag="APROVE_ALL" 
+                                             CssClass="mb-1"
+                                             ReturnConfirmText='<%# this.GetText("ADMIN_ADMIN", "CONFIRM_APROVE_ALL") %>'/>
+                            <YAF:ThemeButton runat="server"
+                                             CommandName="deleteall" 
+                                             Type="Danger" 
+                                             Icon="trash" 
+                                             TextLocalizedTag="DELETE_ALL" 
+                                             ReturnConfirmText='<%# this.GetText("ADMIN_ADMIN", "CONFIRM_DELETE_ALL") %>'
+                                             CssClass="mr-1 mb-1"/>
+                        </div>
+                        <div>
+                            <div class="input-group">
+                            <asp:TextBox ID="DaysOld" runat="server" 
+                                         MaxLength="5" 
+                                         Text="14" 
+                                         CssClass="form-control"
+                                         TextMode="Number">
+                            </asp:TextBox>
+                        </div>
                         </div>
                     </div>
-               </div>
-                <div class="card-footer form-inline">
-                    <YAF:ThemeButton runat="server" 
-                                     CommandName="approveall" 
-                                     Type="Primary" 
-                                     Icon="check" 
-                                     TextLocalizedTag="APROVE_ALL" 
-                                     CssClass="mr-1"
-                                     ReturnConfirmText='<%# this.GetText("ADMIN_ADMIN", "CONFIRM_APROVE_ALL") %>'/>
+                   
                     
-                    <YAF:ThemeButton runat="server"
-                                     CommandName="deleteall" 
-                                     Type="Danger" 
-                                     Icon="trash" 
-                                     TextLocalizedTag="DELETE_ALL" 
-                                     ReturnConfirmText='<%# this.GetText("ADMIN_ADMIN", "CONFIRM_DELETE_ALL") %>'
-                                     CssClass="mr-1"/>
-                    <asp:TextBox ID="DaysOld" runat="server" 
-                                 MaxLength="5" 
-                                 Text="14" 
-                                 CssClass="form-control"
-                                 TextMode="Number">
-                    </asp:TextBox>
                 </div>
             </FooterTemplate>
         </asp:Repeater>

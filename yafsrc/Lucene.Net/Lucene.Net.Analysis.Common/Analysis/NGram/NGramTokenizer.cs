@@ -1,6 +1,7 @@
 ﻿using J2N;
 using YAF.Lucene.Net.Analysis.TokenAttributes;
 using YAF.Lucene.Net.Analysis.Util;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Diagnostics;
@@ -175,7 +176,7 @@ namespace YAF.Lucene.Net.Analysis.NGram
             if (!version.OnOrAfter(LuceneVersion.LUCENE_44))
 #pragma warning restore 612, 618
             {
-                throw new System.ArgumentException("This class only works with Lucene 4.4+. To emulate the old (broken) behavior of NGramTokenizer, use Lucene43NGramTokenizer/Lucene43EdgeNGramTokenizer");
+                throw new ArgumentException("This class only works with Lucene 4.4+. To emulate the old (broken) behavior of NGramTokenizer, use Lucene43NGramTokenizer/Lucene43EdgeNGramTokenizer");
             }
 #pragma warning disable 612, 618
             charUtils = version.OnOrAfter(LuceneVersion.LUCENE_44) ?
@@ -183,11 +184,11 @@ namespace YAF.Lucene.Net.Analysis.NGram
                 CharacterUtils.GetInstance(version) : CharacterUtils.GetJava4Instance(version);
             if (minGram < 1)
             {
-                throw new System.ArgumentException("minGram must be greater than zero");
+                throw new ArgumentException("minGram must be greater than zero");
             }
             if (minGram > maxGram)
             {
-                throw new System.ArgumentException("minGram must not be greater than maxGram");
+                throw new ArgumentException("minGram must not be greater than maxGram");
             }
             termAtt = AddAttribute<ICharTermAttribute>();
             posIncAtt = AddAttribute<IPositionIncrementAttribute>();
@@ -231,7 +232,7 @@ namespace YAF.Lucene.Net.Analysis.NGram
                 {
                     if (bufferStart + 1 + minGram > bufferEnd)
                     {
-                        Debug.Assert(exhausted);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(exhausted);
                         return false;
                     }
                     Consume();
@@ -294,7 +295,7 @@ namespace YAF.Lucene.Net.Analysis.NGram
         public override sealed void End()
         {
             base.End();
-            Debug.Assert(bufferStart <= bufferEnd);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bufferStart <= bufferEnd);
             int endOffset = offset;
             for (int i = bufferStart; i < bufferEnd; ++i)
             {

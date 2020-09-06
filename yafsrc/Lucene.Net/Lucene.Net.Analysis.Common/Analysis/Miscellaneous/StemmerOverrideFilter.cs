@@ -3,6 +3,8 @@ using YAF.Lucene.Net.Analysis.TokenAttributes;
 using YAF.Lucene.Net.Util;
 using YAF.Lucene.Net.Util.Fst;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 
 namespace YAF.Lucene.Net.Analysis.Miscellaneous
 {
@@ -133,7 +135,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
                 while (bufUpto < bufferLen)
                 {
                     int codePoint = Character.CodePointAt(buffer, bufUpto, bufferLen);
-                    if (fst.FindTargetArc(ignoreCase ? Character.ToLower(codePoint) : codePoint, scratchArc, scratchArc, fstReader) == null)
+                    if (fst.FindTargetArc(ignoreCase ? Character.ToLower(codePoint, CultureInfo.InvariantCulture) : codePoint, scratchArc, scratchArc, fstReader) == null)
                     {
                         return null;
                     }
@@ -191,7 +193,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
                     char[] buffer = charsSpare.Chars;
                     for (int i = 0; i < length;)
                     {
-                        i += Character.ToChars(Character.ToLower(Character.CodePointAt(input, i)), buffer, i);
+                        i += Character.ToChars(Character.ToLower(Character.CodePointAt(input, i), CultureInfo.InvariantCulture), buffer, i);
                     }
                     UnicodeUtil.UTF16toUTF8(buffer, 0, length, spare);
                 }
@@ -210,7 +212,7 @@ namespace YAF.Lucene.Net.Analysis.Miscellaneous
             /// <summary>
             /// Returns a <see cref="StemmerOverrideMap"/> to be used with the <see cref="StemmerOverrideFilter"/> </summary>
             /// <returns> a <see cref="StemmerOverrideMap"/> to be used with the <see cref="StemmerOverrideFilter"/> </returns>
-            /// <exception cref="System.IO.IOException"> if an <see cref="System.IO.IOException"/> occurs; </exception>
+            /// <exception cref="IOException"> if an <see cref="IOException"/> occurs; </exception>
             public virtual StemmerOverrideMap Build()
             {
                 ByteSequenceOutputs outputs = ByteSequenceOutputs.Singleton;

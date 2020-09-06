@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -47,7 +47,7 @@ namespace YAF.Lucene.Net.Util
                 return false;
             }
 
-            Debug.Assert(nextIsSet);
+            if (Debugging.AssertsEnabled) Debugging.Assert(nextIsSet);
             try
             {
                 current = next;
@@ -81,17 +81,17 @@ namespace YAF.Lucene.Net.Util
             return false;
         }
 
-        public T Current
-        {
-            get { return current; }
-        }
+        public T Current => current;
 
-        object System.Collections.IEnumerator.Current
-        {
-            get { return Current; }
-        }
+        object System.Collections.IEnumerator.Current => Current;
 
         public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
         }
     }

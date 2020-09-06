@@ -63,19 +63,15 @@ namespace YAF.Core.Model
             string reason,
             int? boardId = null)
         {
-            CodeContracts.VerifyNotNull(repository, "repository");
+            CodeContracts.VerifyNotNull(repository);
 
             if (id.HasValue)
             {
                 repository.Update(
                     new BannedName
-                        {
-                            BoardID = boardId ?? repository.BoardID,
-                            ID = id.Value,
-                            Mask = mask,
-                            Reason = reason,
-                            Since = DateTime.Now
-                        });
+                    {
+                        BoardID = boardId ?? repository.BoardID, Mask = mask, Reason = reason, Since = DateTime.Now
+                    });
 
                 repository.FireUpdated(id.Value);
             }
@@ -86,8 +82,8 @@ namespace YAF.Core.Model
                 if (banned == null)
                 {
                     repository.Insert(
-                        new BannedName()
-                            {
+                        new BannedName
+                        {
                                 BoardID = boardId ?? repository.BoardID,
                                 Mask = mask,
                                 Reason = reason,

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Util
@@ -61,7 +60,7 @@ namespace YAF.Lucene.Net.Util
             {
                 try
                 {
-                    foreach (var type in assembly.GetTypes().Where(x => x.GetTypeInfo().IsPublic))
+                    foreach (var type in assembly.GetTypes().Where(x => x.IsPublic))
                     {
                         try
                         {
@@ -93,6 +92,7 @@ namespace YAF.Lucene.Net.Util
                                 types.Add(type);
                             }
                         }
+#pragma warning disable CA1031 // Do not catch general exception types
                         catch
                         {
                             // swallow
@@ -103,13 +103,14 @@ namespace YAF.Lucene.Net.Util
                 {
                     // swallow
                 }
+#pragma warning restore CA1031 // Do not catch general exception types
             }
             return types;
         }
 
         internal static bool IsInvokableSubclassOf<T>(Type type)
         {
-            return typeof(T).IsAssignableFrom(type) && !type.GetTypeInfo().IsAbstract && !type.GetTypeInfo().IsInterface;
+            return typeof(T).IsAssignableFrom(type) && !type.IsAbstract && !type.IsInterface;
         }
 
         public static SPIClassIterator<S> Get()
@@ -173,7 +174,7 @@ namespace YAF.Lucene.Net.Util
           string fullName = META_INF_SERVICES + clazz.Name;
           this.ProfilesEnum = (loader == null) ? ClassLoader.getSystemResources(fullName) : loader.getResources(fullName);
         }
-        catch (System.IO.IOException ioe)
+        catch (IOException ioe)
         {
           throw new ServiceConfigurationError("Error loading SPI profiles for type " + clazz.Name + " from classpath", ioe);
         }
@@ -198,7 +199,7 @@ namespace YAF.Lucene.Net.Util
           try
           {
             InputStream @in = url.openStream();
-            System.IO.IOException priorE = null;
+            IOException priorE = null;
             try
             {
               BufferedReader reader = new BufferedReader(new InputStreamReader(@in, IOUtils.CHARSET_UTF_8));
@@ -217,7 +218,7 @@ namespace YAF.Lucene.Net.Util
                 }
               }
             }
-            catch (System.IO.IOException ioe)
+            catch (IOException ioe)
             {
               priorE = ioe;
             }
@@ -226,7 +227,7 @@ namespace YAF.Lucene.Net.Util
               IOUtils.CloseWhileHandlingException(priorE, @in);
             }
           }
-          catch (System.IO.IOException ioe)
+          catch (IOException ioe)
           {
             throw new ServiceConfigurationError("Error loading SPI class list from URL: " + url, ioe);
           }
@@ -264,7 +265,7 @@ namespace YAF.Lucene.Net.Util
 
       public override void Remove()
       {
-        throw new System.NotSupportedException();
+        throw new NotSupportedException();
       }
     }*/
 }

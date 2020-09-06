@@ -1,6 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace YAF.Lucene.Net.Util
@@ -99,8 +99,8 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public int[][] Buffers
         {
-            get { return buffers; }
-            set { buffers = value; }
+            get => buffers;
+            set => buffers = value;
         }
         private int[][] buffers = new int[10][];
 
@@ -121,8 +121,8 @@ namespace YAF.Lucene.Net.Util
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
         public int[] Buffer
         {
-            get { return buffer; }
-            set { buffer = value; }
+            get => buffer;
+            set => buffer = value;
         }
         private int[] buffer;
 
@@ -243,7 +243,7 @@ namespace YAF.Lucene.Net.Util
             if (Int32Upto > INT32_BLOCK_SIZE - size)
             {
                 NextBuffer();
-                Debug.Assert(AssertSliceBuffer(buffer));
+                if (Debugging.AssertsEnabled) Debugging.Assert(AssertSliceBuffer(buffer));
             }
 
             int upto = Int32Upto;
@@ -292,7 +292,7 @@ namespace YAF.Lucene.Net.Util
             if (Int32Upto > INT32_BLOCK_SIZE - newSize)
             {
                 NextBuffer();
-                Debug.Assert(AssertSliceBuffer(buffer));
+                if (Debugging.AssertsEnabled) Debugging.Assert(AssertSliceBuffer(buffer));
             }
 
             int newUpto = Int32Upto;
@@ -337,7 +337,7 @@ namespace YAF.Lucene.Net.Util
             public virtual void WriteInt32(int value)
             {
                 int[] ints = pool.buffers[offset >> INT32_BLOCK_SHIFT];
-                Debug.Assert(ints != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(ints != null);
                 int relativeOffset = offset & INT32_BLOCK_MASK;
                 if (ints[relativeOffset] != 0)
                 {
@@ -365,13 +365,7 @@ namespace YAF.Lucene.Net.Util
             /// this slice is fully written or to reset the this writer if another slice
             /// needs to be written.
             /// </summary>
-            public virtual int CurrentOffset
-            {
-                get
-                {
-                    return offset;
-                }
-            }
+            public virtual int CurrentOffset => offset;
         }
 
         /// <summary>
@@ -433,7 +427,7 @@ namespace YAF.Lucene.Net.Util
             {
                 get
                 {
-                    Debug.Assert(upto + bufferOffset <= end);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(upto + bufferOffset <= end);
                     return upto + bufferOffset == end;
                 }
             }
@@ -446,8 +440,11 @@ namespace YAF.Lucene.Net.Util
             /// <seealso cref="SliceReader.IsEndOfSlice"/>
             public int ReadInt32()
             {
-                Debug.Assert(!IsEndOfSlice);
-                Debug.Assert(upto <= limit);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(!IsEndOfSlice);
+                    Debugging.Assert(upto <= limit);
+                }
                 if (upto == limit)
                 {
                     NextSlice();
@@ -471,7 +468,7 @@ namespace YAF.Lucene.Net.Util
                 if (nextIndex + newSize >= end)
                 {
                     // We are advancing to the final slice
-                    Debug.Assert(end - nextIndex > 0);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(end - nextIndex > 0);
                     limit = end - bufferOffset;
                 }
                 else

@@ -1,0 +1,81 @@
+﻿<%@ Control Language="c#" AutoEventWireup="True" Inherits="YAF.Pages.Profile.Attachments" Codebehind="Attachments.ascx.cs" %>
+
+<%@ Import Namespace="YAF.Types.Extensions" %>
+
+<YAF:PageLinks runat="server" ID="PageLinks" />
+
+<div class="row">
+    <div class="col-sm-auto">
+        <YAF:ProfileMenu runat="server"></YAF:ProfileMenu>
+    </div>
+    <div class="col">
+        <div class="row">
+            <div class="col">
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-auto">
+                        <YAF:IconHeader runat="server"
+                                        LocalizedTag="TITLE"
+                                        LocalizedPage="ATTACHMENTS"
+                                        IconName="paperclip"></YAF:IconHeader>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group input-group-sm mr-2" role="group">
+                            <div class="input-group-text">
+                                <YAF:LocalizedLabel ID="HelpLabel2" runat="server" LocalizedTag="SHOW" />:
+                            </div>
+                            <asp:DropDownList runat="server" ID="PageSize"
+                                              AutoPostBack="True"
+                                              OnSelectedIndexChanged="PageSizeSelectedIndexChanged"
+                                              CssClass="form-select">
+                            </asp:DropDownList>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <asp:Repeater runat="server" ID="List" OnItemCommand="List_ItemCommand">
+                    <HeaderTemplate>
+                        <ul class="list-group list-group-flush">
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <li class="list-group-item d-inline-flex align-items-center">
+                            <asp:CheckBox ID="Selected" runat="server"
+                                              Text="&nbsp;"
+                                              CssClass="form-check" />
+                                <%# this.GetPreviewImage(Container.DataItem) %>
+                                <%# this.Eval( "FileName") %> <em>(<%# this.Eval("Bytes").ToType<int>() / 1024%> kb)</em>
+                            <YAF:ThemeButton ID="ThemeButtonDelete" runat="server"
+                                                 CommandName="delete" CommandArgument='<%# this.Eval( "ID") %>' 
+                                                 CssClass="ml-2"
+                                                 TitleLocalizedTag="DELETE" 
+                                                 Size="Small"
+                                                 TextLocalizedTag="DELETE"
+                                                 Icon="trash"
+                                                 Type="Danger"
+                                                 ReturnConfirmText='<%#this.GetText("ATTACHMENTS", "CONFIRM_DELETE") %>'>
+                                </YAF:ThemeButton>
+                            
+                        </li>
+                    </ItemTemplate>
+                    <FooterTemplate>
+                        </ul>
+                    </FooterTemplate>
+                </asp:Repeater>
+                <YAF:ThemeButton ID="DeleteAttachment2" runat="server"
+                                 TextLocalizedTag="BUTTON_DELETEATTACHMENT" TitleLocalizedTag="BUTTON_DELETEATTACHMENT_TT"
+                                 ReturnConfirmText='<%#this.GetText("ATTACHMENTS", "CONFIRM_DELETE") %>'
+                                 OnClick="DeleteAttachments_Click"
+                                 Icon="trash"
+                                 Type="Danger"
+                                 Visible="<%# this.List.Items.Count > 0 %>"
+                                 CssClass="m-3"/>
+                <YAF:Pager ID="PagerTop" runat="server" 
+                           OnPageChange="PagerTop_PageChange" />
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>

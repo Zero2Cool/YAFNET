@@ -33,6 +33,7 @@ namespace YAF.Pages
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Services;
+    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -79,6 +80,34 @@ namespace YAF.Pages
                 return;
             }
 
+            this.PageContext.PageElements.RegisterJsBlockStartup(
+                nameof(JavaScriptBlocks.FormValidatorJs),
+                JavaScriptBlocks.FormValidatorJs(this.SendEmail.ClientID));
+
+            this.Subject.Text = this.PageContext.PageTopicName;
+
+            var emailTopic = new TemplateEmail
+            {
+                TemplateParams =
+                {
+                    ["{link}"] = BuildLink.GetLink(
+                        ForumPages.Posts,
+                        true,
+                        "t={0}&name={1}",
+                        this.PageContext.PageTopicID,
+                        this.PageContext.PageTopicName),
+                    ["{user}"] = this.PageContext.User.DisplayOrUserName()
+                }
+            };
+
+            this.Message.Text = emailTopic.ProcessTemplate("EMAILTOPIC");
+        }
+
+        /// <summary>
+        /// Create the Page links.
+        /// </summary>
+        protected override void CreatePageLinks()
+        {
             if (this.PageContext.Settings.LockedForum == 0)
             {
                 this.PageLinks.AddRoot();
@@ -90,25 +119,7 @@ namespace YAF.Pages
 
             this.PageLinks.AddLink(
                 this.PageContext.PageTopicName,
-                BuildLink.GetLink(ForumPages.Posts, "t={0}", this.PageContext.PageTopicID));
-
-            this.Subject.Text = this.PageContext.PageTopicName;
-
-            var emailTopic = new TemplateEmail
-                                 {
-                                     TemplateParams =
-                                         {
-                                             ["{link}"] =
-                                             BuildLink.GetLinkNotEscaped(
-                                                 ForumPages.Posts,
-                                                 true,
-                                                 "t={0}",
-                                                 this.PageContext.PageTopicID),
-                                             ["{user}"] = this.PageContext.PageUserName
-                                         }
-                                 };
-
-            this.Message.Text = emailTopic.ProcessTemplate("EMAILTOPIC");
+                BuildLink.GetTopicLink(this.PageContext.PageTopicID, this.PageContext.PageTopicName));
         }
 
         /// <summary>
@@ -118,12 +129,6 @@ namespace YAF.Pages
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void SendEmail_Click([NotNull] object sender, [NotNull] EventArgs e)
         {
-            if (this.EmailAddress.Text.Length == 0)
-            {
-                this.PageContext.AddLoadMessage(this.GetText("need_email"), MessageTypes.warning);
-                return;
-            }
-
             try
             {
                 var emailTopic = new TemplateEmail("EMAILTOPIC")
@@ -134,7 +139,11 @@ namespace YAF.Pages
                 // send a change email message...
                 emailTopic.SendEmail(new MailAddress(this.EmailAddress.Text.Trim()), this.Subject.Text.Trim());
 
-                BuildLink.Redirect(ForumPages.Posts, "t={0}", this.PageContext.PageTopicID);
+                BuildLink.Redirect(
+                    ForumPages.Posts,
+                    "t={0}&name={1}",
+                    this.PageContext.PageTopicID,
+                    this.PageContext.PageTopicName);
             }
             catch (Exception x)
             {

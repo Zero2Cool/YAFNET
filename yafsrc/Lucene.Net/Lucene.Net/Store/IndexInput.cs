@@ -50,7 +50,7 @@ namespace YAF.Lucene.Net.Store
         {
             if (resourceDescription == null)
             {
-                throw new System.ArgumentException("resourceDescription must not be null");
+                throw new ArgumentException("resourceDescription must not be null");
             }
             this.resourceDescription = resourceDescription;
         }
@@ -72,7 +72,7 @@ namespace YAF.Lucene.Net.Store
         /// Returns the current position in this file, where the next read will
         /// occur. </summary>
         /// <seealso cref="Seek(long)"/>
-        public abstract long GetFilePointer();
+        public abstract long GetFilePointer(); // LUCENENET TODO: API - make into property
 
         /// <summary>
         /// Sets current position in this file, where the next read will occur.

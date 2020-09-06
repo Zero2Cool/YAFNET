@@ -1,7 +1,8 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -55,7 +56,7 @@ namespace YAF.Lucene.Net.Search
             {
                 if (fields.Length == 0)
                 {
-                    throw new System.ArgumentException("Sort must contain at least one field");
+                    throw new ArgumentException("Sort must contain at least one field");
                 }
 
                 SortField field = fields[0];
@@ -71,8 +72,11 @@ namespace YAF.Lucene.Net.Search
             /// <returns><c>true</c> if document <c>a</c> should be sorted after document <c>b</c>.</returns>
             protected internal override bool LessThan(T hitA, T hitB)
             {
-                Debug.Assert(hitA != hitB);
-                Debug.Assert(hitA.Slot != hitB.Slot);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(hitA != hitB);
+                    Debugging.Assert(hitA.Slot != hitB.Slot);
+                }
 
                 int c = oneReverseMul * m_firstComparer.Compare(hitA.Slot, hitB.Slot);
                 if (c != 0)
@@ -106,8 +110,11 @@ namespace YAF.Lucene.Net.Search
 
             protected internal override bool LessThan(T hitA, T hitB)
             {
-                Debug.Assert(hitA != hitB);
-                Debug.Assert(hitA.Slot != hitB.Slot);
+                if (Debugging.AssertsEnabled)
+                {
+                    Debugging.Assert(hitA != hitB);
+                    Debugging.Assert(hitA.Slot != hitB.Slot);
+                }
 
                 int numComparers = m_comparers.Length;
                 for (int i = 0; i < numComparers; ++i)
@@ -134,7 +141,7 @@ namespace YAF.Lucene.Net.Search
         /// </param>
         /// <param name="size">The number of hits to retain. Must be greater than zero.
         /// </param>
-        /// <exception cref="System.IO.IOException">If there is a low-level IO error</exception>
+        /// <exception cref="IOException">If there is a low-level IO error</exception>
         public static FieldValueHitQueue<T> Create<T>(SortField[] fields, int size)
             where T : FieldValueHitQueue.Entry
         {
@@ -184,17 +191,11 @@ namespace YAF.Lucene.Net.Search
 
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        public virtual FieldComparer[] Comparers
-        {
-            get { return m_comparers; }
-        }
+        public virtual FieldComparer[] Comparers => m_comparers;
 
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        public virtual int[] ReverseMul
-        {
-            get { return m_reverseMul; }
-        }
+        public virtual int[] ReverseMul => m_reverseMul;
 
         public virtual void SetComparer(int pos, FieldComparer comparer)
         {
@@ -213,10 +214,7 @@ namespace YAF.Lucene.Net.Search
         protected FieldComparer m_firstComparer; // this must always be equal to comparers[0]
         protected readonly int[] m_reverseMul;
 
-        internal FieldComparer FirstComparer
-        {
-            get { return this.m_firstComparer; }
-        }
+        internal FieldComparer FirstComparer => this.m_firstComparer;
 
         // LUCENENET NOTE: We don't need this declaration because we are using
         // a generic constraint on T
@@ -248,9 +246,6 @@ namespace YAF.Lucene.Net.Search
         /// Returns the <see cref="SortField"/>s being used by this hit queue. </summary>
         [WritableArray]
         [SuppressMessage("Microsoft.Performance", "CA1819", Justification = "Lucene's design requires some writable array properties")]
-        internal virtual SortField[] Fields
-        {
-            get { return m_fields; }
-        }
+        internal virtual SortField[] Fields => m_fields;
     }
 }

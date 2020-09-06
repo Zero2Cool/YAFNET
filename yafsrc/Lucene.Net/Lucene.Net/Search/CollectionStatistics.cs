@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 
 namespace YAF.Lucene.Net.Search
 {
@@ -37,10 +37,13 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public CollectionStatistics(string field, long maxDoc, long docCount, long sumTotalTermFreq, long sumDocFreq)
         {
-            Debug.Assert(maxDoc >= 0);
-            Debug.Assert(docCount >= -1 && docCount <= maxDoc); // #docs with field must be <= #docs
-            Debug.Assert(sumDocFreq == -1 || sumDocFreq >= docCount); // #postings must be >= #docs with field
-            Debug.Assert(sumTotalTermFreq == -1 || sumTotalTermFreq >= sumDocFreq); // #positions must be >= #postings
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(maxDoc >= 0);
+                Debugging.Assert(docCount >= -1 && docCount <= maxDoc); // #docs with field must be <= #docs
+                Debugging.Assert(sumDocFreq == -1 || sumDocFreq >= docCount); // #postings must be >= #docs with field
+                Debugging.Assert(sumTotalTermFreq == -1 || sumTotalTermFreq >= sumDocFreq); // #positions must be >= #postings
+            }
             this.field = field;
             this.maxDoc = maxDoc;
             this.docCount = docCount;
@@ -50,43 +53,28 @@ namespace YAF.Lucene.Net.Search
 
         /// <summary>
         /// Returns the field name </summary>
-        public string Field
-        {
-            get { return field; }
-        }
+        public string Field => field;
 
         /// <summary>
         /// Returns the total number of documents, regardless of
         /// whether they all contain values for this field. </summary>
         /// <seealso cref="Index.IndexReader.MaxDoc"/>
-        public long MaxDoc
-        {
-            get { return maxDoc; }
-        }
+        public long MaxDoc => maxDoc;
 
         /// <summary>
         /// Returns the total number of documents that
         /// have at least one term for this field. </summary>
         /// <seealso cref="Index.Terms.DocCount"/>
-        public long DocCount
-        {
-            get { return docCount; }
-        }
+        public long DocCount => docCount;
 
         /// <summary>
         /// Returns the total number of tokens for this field </summary>
         /// <seealso cref="Index.Terms.SumTotalTermFreq"/>
-        public long SumTotalTermFreq
-        {
-            get { return sumTotalTermFreq; }
-        }
+        public long SumTotalTermFreq => sumTotalTermFreq;
 
         /// <summary>
         /// Returns the total number of postings for this field </summary>
         /// <seealso cref="Index.Terms.SumDocFreq"/>
-        public long SumDocFreq
-        {
-            get { return sumDocFreq; }
-        }
+        public long SumDocFreq => sumDocFreq;
     }
 }

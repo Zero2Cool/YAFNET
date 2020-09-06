@@ -35,6 +35,7 @@ namespace YAF.Core.Events
   /// The event converter.
   /// </summary>
   /// <typeparam name="T">
+  /// The Typed Parameter
   /// </typeparam>
   public class FireEvent<T> : IFireEvent<T>
     where T : IAmEvent

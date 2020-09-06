@@ -1,10 +1,10 @@
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Support;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using JCG = J2N.Collections.Generic;
 
@@ -95,17 +95,13 @@ namespace YAF.Lucene.Net.Search
         /// </summary>
         public virtual int Slop
         {
+            get => slop;
             set
             {
                 if (value < 0)
-                {
-                    throw new System.ArgumentException("slop value cannot be negative");
-                }
+                    throw new ArgumentException("slop value cannot be negative");
+
                 slop = value;
-            }
-            get
-            {
-                return slop;
             }
         }
 
@@ -138,7 +134,7 @@ namespace YAF.Lucene.Net.Search
             }
             else if (!term.Field.Equals(field, StringComparison.Ordinal))
             {
-                throw new System.ArgumentException("All phrase terms must be in the same field: " + term);
+                throw new ArgumentException("All phrase terms must be in the same field: " + term);
             }
 
             terms.Add(term);
@@ -327,13 +323,7 @@ namespace YAF.Lucene.Net.Search
                 return "weight(" + outerInstance + ")";
             }
 
-            public override Query Query
-            {
-                get
-                {
-                    return outerInstance;
-                }
-            }
+            public override Query Query => outerInstance;
 
             public override float GetValueForNormalization()
             {
@@ -347,7 +337,7 @@ namespace YAF.Lucene.Net.Search
 
             public override Scorer GetScorer(AtomicReaderContext context, IBits acceptDocs)
             {
-                Debug.Assert(outerInstance.terms.Count > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(outerInstance.terms.Count > 0);
                 AtomicReader reader = context.AtomicReader;
                 IBits liveDocs = acceptDocs;
                 PostingsAndFreq[] postingsFreqs = new PostingsAndFreq[outerInstance.terms.Count];
@@ -367,7 +357,7 @@ namespace YAF.Lucene.Net.Search
                     TermState state = states[i].Get(context.Ord);
                     if (state == null) // term doesnt exist in this segment
                     {
-                        Debug.Assert(TermNotInReader(reader, t), "no termstate found but term exists in reader");
+                        if (Debugging.AssertsEnabled) Debugging.Assert(TermNotInReader(reader, t), "no termstate found but term exists in reader");
                         return null;
                     }
                     te.SeekExact(t.Bytes, state);
@@ -377,7 +367,7 @@ namespace YAF.Lucene.Net.Search
                     // positions.
                     if (postingsEnum == null)
                     {
-                        Debug.Assert(te.SeekExact(t.Bytes), "termstate found but no term exists in reader");
+                        if (Debugging.AssertsEnabled) Debugging.Assert(te.SeekExact(t.Bytes), "termstate found but no term exists in reader");
                         // term does exist, but has no positions
                         throw new InvalidOperationException("field \"" + t.Field + "\" was indexed without position data; cannot run PhraseQuery (term=" + t.Text() + ")");
                     }

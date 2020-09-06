@@ -1,6 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
+using System.IO;
 
 namespace YAF.Lucene.Net.Util.Packed
 {
@@ -40,7 +41,7 @@ namespace YAF.Lucene.Net.Util.Packed
             this.packedIntsVersion = packedIntsVersion;
             bulkOperation = BulkOperation.Of(format, bitsPerValue);
             iterations = Iterations(mem);
-            Debug.Assert(valueCount == 0 || iterations > 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(valueCount == 0 || iterations > 0);
             nextBlocks = new byte[iterations * bulkOperation.ByteBlockCount];
             nextValues = new Int64sRef(new long[iterations * bulkOperation.ByteValueCount], 0, 0);
             nextValues.Offset = nextValues.Int64s.Length;
@@ -60,16 +61,19 @@ namespace YAF.Lucene.Net.Util.Packed
 
         public override Int64sRef Next(int count)
         {
-            Debug.Assert(nextValues.Length >= 0);
-            Debug.Assert(count > 0);
-            Debug.Assert(nextValues.Offset + nextValues.Length <= nextValues.Int64s.Length);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(nextValues.Length >= 0);
+                Debugging.Assert(count > 0);
+                Debugging.Assert(nextValues.Offset + nextValues.Length <= nextValues.Int64s.Length);
+            }
 
             nextValues.Offset += nextValues.Length;
 
             int remaining = m_valueCount - position - 1;
             if (remaining <= 0)
             {
-                throw new System.IO.EndOfStreamException();
+                throw new EndOfStreamException();
             }
             count = Math.Min(remaining, count);
 
@@ -92,9 +96,6 @@ namespace YAF.Lucene.Net.Util.Packed
             return nextValues;
         }
 
-        public override int Ord
-        {
-            get { return position; }
-        }
+        public override int Ord => position;
     }
 }

@@ -18,32 +18,26 @@
 
 <YAF:PageLinks ID="PageLinks" runat="server" />
 
-<YAF:PollList ID="PollList" TopicId="<%# this.PageContext.PageTopicID %>"
-    ShowButtons="<%# this.ShowPollButtons() %>"
-    Visible="<%# this.PollGroupId() > 0 %>"
-    PollGroupId="<%# this.PollGroupId() %>" runat="server" />
+<YAF:PollList ID="PollList" runat="server"
+              Visible="False" />
 
-<a id="top"></a>
-
-<div class="row mb-3 d-flex justify-content-between">
-    <div class="col-md-4">
-        <YAF:Pager ID="Pager" runat="server" UsePostBack="False" />
-    </div>
-    <div class="col-md-8 mt-1 mt-md-0">
-        <div class="d-flex justify-content-end flex-wrap">
+<div class="row justify-content-end">
+    <div class="col-auto">
             <span id="dvFavorite1">
                 <YAF:ThemeButton ID="TagFavorite1" runat="server"
                                  Type="Secondary"
+                                 CssClass="mb-1 mr-1"
                                  TextLocalizedTag="BUTTON_TAGFAVORITE" TitleLocalizedTag="BUTTON_TAGFAVORITE_TT"
                                  Icon="star"
                                  IconColor="text-warning" />
             </span>
             <YAF:ThemeButton ID="Tools1" runat="server"
-                             CssClass="dropdown-toggle ml-1"
+                             CssClass="dropdown-toggle mr-1 mb-1"
                              Type="Danger"
                              DataToggle="dropdown"
                              TextLocalizedTag="MANAGE_TOPIC"
                              TextLocalizedPage="POSTS"
+                             NavigateUrl="#"
                              Icon="cogs" />
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="<%# this.Tools1.ClientID %>">
                 <YAF:ThemeButton ID="MoveTopic1" runat="server"
@@ -76,28 +70,28 @@
             <YAF:ThemeButton ID="NewTopic1" runat="server"
                              Type="Secondary"
                              TextLocalizedTag="BUTTON_NEWTOPIC" TitleLocalizedTag="BUTTON_NEWTOPIC_TT"
-                             CssClass="ml-1"
+                             CssClass="mr-1 mb-1"
                              Icon="plus" />
             <YAF:ThemeButton ID="PostReplyLink1" runat="server"
                              Type="Primary"
-                             CssClass="ml-1"
+                             CssClass="mr-1 mb-1"
                              OnClick="PostReplyLink_Click"
                              TextLocalizedTag="BUTTON_POSTREPLY" TitleLocalizedTag="BUTTON_POSTREPLY_TT"
                              Icon="reply" />
             <YAF:ThemeButton ID="QuickReplyLink1" runat="server"
                              Type="Primary"
-                             CssClass="ml-1"
+                             CssClass="mb-1"
                              TextLocalizedTag="QUICKREPLY" TitleLocalizedTag="BUTTON_POSTREPLY_TT"
                              Icon="reply"
                              DataToggle="modal"
                              DataTarget="QuickReplyDialog" />
         </div>
-    </div>
 </div>
 <div class="row mb-3">
     <div class="col">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border rounded border-light">
-            <asp:HyperLink ID="TopicLink" runat="server" 
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <asp:HyperLink ID="TopicLink" runat="server" 
                            CssClass="navbar-brand pt-0">
                 <asp:Label ID="TopicTitle" runat="server" 
                            CssClass="topic-title" />
@@ -126,16 +120,14 @@
                 </ul>
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item dropdown">
-                        <div id="fb-root"></div>
                         <YAF:ThemeButton runat="server" ID="ShareLink"
                                          TextLocalizedTag="SHARE" TitleLocalizedTag="SHARE_TOOLTIP"
                                          Icon="share-alt"
                                          Type="Link"
                                          CssClass="dropdown-toggle"
-                                         DataToggle="dropdown" />
-                        <YAF:PopMenu ID="ShareMenu" runat="server" 
-                                     Control="ShareLink" 
-                                     AlignRight="true" />
+                                         DataToggle="dropdown"
+                                         NavigateUrl="#" />
+                        <YAF:PopMenu ID="ShareMenu" runat="server" />
                     </li>
                     <li class="nav-item dropdown">
                         <YAF:ThemeButton runat="server" ID="OptionsLink"
@@ -143,17 +135,12 @@
                                          Icon="cog"
                                          Type="Link"
                                          CssClass="dropdown-toggle"
-                                         DataToggle="dropdown" />
-                        <asp:UpdatePanel ID="PopupMenuUpdatePanel" runat="server" style="display: inline">
-                            <ContentTemplate>
-                                <span id="WatchTopicID" runat="server" visible="false"></span>
-                            </ContentTemplate>
-                        </asp:UpdatePanel>
-                        <YAF:PopMenu runat="server" ID="OptionsMenu" 
-                                     Control="OptionsLink"
-                                     AlignRight="true" />
+                                         DataToggle="dropdown"
+                                         NavigateUrl="#" />
+                        <YAF:PopMenu runat="server" ID="OptionsMenu" />
                     </li>
                 </ul>
+            </div>
             </div>
         </nav>
     </div>
@@ -177,31 +164,32 @@
         <div class="col">
             <YAF:RssFeedLink ID="RssFeed" runat="server"
                              FeedType="Posts"
-                             AdditionalParameters='<%# "t={0}".Fmt(this.PageContext.PageTopicID) %>'
+                             AdditionalParameters='<%# "t={0}&name={1}".Fmt(this.PageContext.PageTopicID, this.PageContext.PageTopicName) %>'
                              Visible="<%# this.Get<IPermissions>().Check(this.Get<BoardSettings>().PostsFeedAccess) %>" />
         </div>
     </div>
 </asp:PlaceHolder>
 <div class="row mb-3 d-flex justify-content-between">
     <div class="col-md-4">
-        <YAF:Pager ID="PagerBottom" runat="server" 
-                   LinkedPager="Pager" 
+        <YAF:Pager ID="Pager" runat="server" 
                    UsePostBack="False" />
     </div>
     <div class="col-md-8 mt-1 mt-md-0">
         <div class="d-flex justify-content-end flex-wrap">
             <span id="dvFavorite2">
                 <YAF:ThemeButton ID="TagFavorite2" runat="server"
+                                 CssClass="mb-1"
                                  Type="Secondary"
                                  TextLocalizedTag="BUTTON_TAGFAVORITE" TitleLocalizedTag="BUTTON_TAGFAVORITE_TT"
                                  Icon="star"
                                  IconColor="text-warning" />
             </span>
             <YAF:ThemeButton ID="Tools2" runat="server"
-                             CssClass="dropdown-toggle ml-1"
+                             CssClass="dropdown-toggle ml-1 mb-1"
                              Type="Danger"
                              DataToggle="dropdown"
                              TextLocalizedTag="MANAGE_TOPIC"
+                             NavigateUrl="#"
                              Icon="cogs" />
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="<%# this.Tools1.ClientID %>">
                 <YAF:ThemeButton ID="MoveTopic2" runat="server"
@@ -234,17 +222,17 @@
             <YAF:ThemeButton ID="NewTopic2" runat="server"
                              Type="Secondary"
                              TextLocalizedTag="BUTTON_NEWTOPIC" TitleLocalizedTag="BUTTON_NEWTOPIC_TT"
-                             CssClass="ml-1"
+                             CssClass="ml-1 mb-1"
                              Icon="comment" />
             <YAF:ThemeButton ID="PostReplyLink2" runat="server"
                              Type="Primary"
-                             CssClass="ml-1"
+                             CssClass="ml-1 mb-1"
                              OnClick="PostReplyLink_Click"
                              TextLocalizedTag="BUTTON_POSTREPLY" TitleLocalizedTag="BUTTON_POSTREPLY_TT"
                              Icon="reply" />
             <YAF:ThemeButton ID="QuickReplyLink2" runat="server"
                              Type="Primary"
-                             CssClass="ml-1"
+                             CssClass="ml-1 mb-1"
                              TextLocalizedTag="QUICKREPLY" TitleLocalizedTag="BUTTON_POSTREPLY_TT"
                              Icon="reply"
                              DataToggle="modal"
@@ -259,8 +247,6 @@
         <YAF:ForumUsers ID="ForumUsers1" runat="server" />
     </div>
 </div>
-<YAF:PageLinks ID="PageLinksBottom" runat="server" 
-               LinkedPageLinkID="PageLinks" />
 
 <modal:MoveTopic ID="MoveTopicDialog" runat="server" />
 <modal:QuickReply ID="QuickReplyDialog" runat="server" />

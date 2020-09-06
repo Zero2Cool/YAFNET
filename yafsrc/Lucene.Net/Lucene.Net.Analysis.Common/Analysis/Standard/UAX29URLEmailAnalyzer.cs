@@ -84,8 +84,8 @@ namespace YAF.Lucene.Net.Analysis.Standard
         /// </summary>
         public int MaxTokenLength
         {
-            set { maxTokenLength = value; }
-            get { return maxTokenLength; }
+            set => maxTokenLength = value;
+            get => maxTokenLength;
         }
 
         protected internal override TokenStreamComponents CreateComponents(string fieldName, TextReader reader)
@@ -95,21 +95,19 @@ namespace YAF.Lucene.Net.Analysis.Standard
             TokenStream tok = new StandardFilter(m_matchVersion, src);
             tok = new LowerCaseFilter(m_matchVersion, tok);
             tok = new StopFilter(m_matchVersion, tok, m_stopwords);
-            return new TokenStreamComponentsAnonymousInnerClassHelper(this, src, tok, reader);
+            return new TokenStreamComponentsAnonymousInnerClassHelper(this, src, tok);
         }
 
         private class TokenStreamComponentsAnonymousInnerClassHelper : TokenStreamComponents
         {
             private readonly UAX29URLEmailAnalyzer outerInstance;
 
-            private TextReader reader;
-            private UAX29URLEmailTokenizer src;
+            private readonly UAX29URLEmailTokenizer src;
 
-            public TokenStreamComponentsAnonymousInnerClassHelper(UAX29URLEmailAnalyzer outerInstance, UAX29URLEmailTokenizer src, TokenStream tok, TextReader reader)
+            public TokenStreamComponentsAnonymousInnerClassHelper(UAX29URLEmailAnalyzer outerInstance, UAX29URLEmailTokenizer src, TokenStream tok)
                 : base(src, tok)
             {
                 this.outerInstance = outerInstance;
-                this.reader = reader;
                 this.src = src;
             }
 

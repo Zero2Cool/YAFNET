@@ -1,12 +1,11 @@
 using J2N;
 using J2N.Text;
-using YAF.Lucene.Net.Support;
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using BitSet = YAF.Lucene.Net.Util.OpenBitSet;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Util.Fst
@@ -33,12 +32,8 @@ namespace YAF.Lucene.Net.Util.Fst
     /// <para/>
     /// @lucene.experimental
     /// </summary>
-    public sealed class Util // LUCENENET TODO: Fix naming conflict with containing namespace
+    public static class Util // LUCENENET specific - made static // LUCENENET TODO: Fix naming conflict with containing namespace
     {
-        private Util()
-        {
-        }
-
         /// <summary>
         /// Looks up the output for this input, or <c>null</c> if the
         /// input is not accepted.
@@ -56,7 +51,7 @@ namespace YAF.Lucene.Net.Util.Fst
             {
                 if (fst.FindTargetArc(input.Int32s[input.Offset + i], arc, arc, fstReader) == null)
                 {
-                    return default(T);
+                    return default;
                 }
                 output = fst.Outputs.Add(output, arc.Output);
             }
@@ -67,7 +62,7 @@ namespace YAF.Lucene.Net.Util.Fst
             }
             else
             {
-                return default(T);
+                return default;
             }
         }
 
@@ -79,7 +74,7 @@ namespace YAF.Lucene.Net.Util.Fst
         /// </summary>
         public static T Get<T>(FST<T> fst, BytesRef input)
         {
-            Debug.Assert(fst.InputType == FST.INPUT_TYPE.BYTE1);
+            if (Debugging.AssertsEnabled) Debugging.Assert(fst.InputType == FST.INPUT_TYPE.BYTE1);
 
             var fstReader = fst.GetBytesReader();
 
@@ -92,7 +87,7 @@ namespace YAF.Lucene.Net.Util.Fst
             {
                 if (fst.FindTargetArc(input.Bytes[i + input.Offset] & 0xFF, arc, arc, fstReader) == null)
                 {
-                    return default(T);
+                    return default;
                 }
                 output = fst.Outputs.Add(output, arc.Output);
             }
@@ -103,7 +98,7 @@ namespace YAF.Lucene.Net.Util.Fst
             }
             else
             {
-                return default(T);
+                return default;
             }
         }
 
@@ -366,7 +361,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
             internal JCG.SortedSet<FSTPath<T>> queue = null;
 
-            private object syncLock = new object();
+            private readonly object syncLock = new object();
 
             /// <summary>
             /// Creates an unbounded TopNSearcher </summary>
@@ -390,7 +385,7 @@ namespace YAF.Lucene.Net.Util.Fst
             /// </summary>
             protected virtual void AddIfCompetitive(FSTPath<T> path)
             {
-                Debug.Assert(queue != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(queue != null);
 
                 T cost = fst.Outputs.Add(path.Cost, path.Arc.Output);
                 //System.out.println("  addIfCompetitive queue.size()=" + queue.size() + " path=" + path + " + label=" + path.arc.label);
@@ -413,7 +408,7 @@ namespace YAF.Lucene.Net.Util.Fst
                         path.Input.Length--;
 
                         // We should never see dups:
-                        Debug.Assert(cmp != 0);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(cmp != 0);
 
                         if (cmp < 0)
                         {
@@ -601,7 +596,7 @@ namespace YAF.Lucene.Net.Util.Fst
                             fst.ReadNextArc(path.Arc, fstReader);
                         }
 
-                        Debug.Assert(foundZero);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(foundZero);
 
                         if (queue != null)
                         {
@@ -757,16 +752,18 @@ namespace YAF.Lucene.Net.Util.Fst
             IList<FST.Arc<T>> thisLevelQueue = new JCG.List<FST.Arc<T>>();
 
             // A queue of transitions to consider when processing the next level.
-            IList<FST.Arc<T>> nextLevelQueue = new JCG.List<FST.Arc<T>>();
-            nextLevelQueue.Add(startArc);
+            IList<FST.Arc<T>> nextLevelQueue = new JCG.List<FST.Arc<T>>
+            {
+                startArc
+            };
             //System.out.println("toDot: startArc: " + startArc);
 
             // A list of states on the same level (for ranking).
             IList<int?> sameLevelStates = new JCG.List<int?>();
 
             // A bitset of already seen states (target offset).
-            BitArray seen = new BitArray(32);
-            seen.SafeSet((int)startArc.Target, true);
+            BitSet seen = new BitSet();
+            seen.Set((int)startArc.Target);
 
             // Shape for states.
             const string stateShape = "circle";
@@ -804,12 +801,12 @@ namespace YAF.Lucene.Net.Util.Fst
                 if (startArc.IsFinal)
                 {
                     isFinal = true;
-                    finalOutput = startArc.NextFinalOutput.Equals(NO_OUTPUT) ? default(T) : startArc.NextFinalOutput;
+                    finalOutput = startArc.NextFinalOutput.Equals(NO_OUTPUT) ? default : startArc.NextFinalOutput;
                 }
                 else
                 {
                     isFinal = false;
-                    finalOutput = default(T);
+                    finalOutput = default;
                 }
 
                 EmitDotState(@out, Convert.ToString(startArc.Target), isFinal ? finalStateShape : stateShape, stateColor, finalOutput == null ? "" : fst.Outputs.OutputToString(finalOutput));
@@ -848,7 +845,7 @@ namespace YAF.Lucene.Net.Util.Fst
                         {
                             //System.out.println("  cycle arc=" + arc);
                             // Emit the unseen state and add it to the queue for the next level.
-                            if (arc.Target >= 0 && !seen.SafeGet((int)arc.Target))
+                            if (arc.Target >= 0 && !seen.Get((int)arc.Target))
                             {
                                 /*
                                 boolean isFinal = false;
@@ -884,7 +881,7 @@ namespace YAF.Lucene.Net.Util.Fst
                                 EmitDotState(@out, Convert.ToString(arc.Target), stateShape, stateColor, finalOutput);
                                 // To see the node address, use this instead:
                                 //emitDotState(out, Integer.toString(arc.target), stateShape, stateColor, String.valueOf(arc.target));
-                                seen.SafeSet((int)arc.Target, true);
+                                seen.Set((int)arc.Target);
                                 nextLevelQueue.Add((new FST.Arc<T>()).CopyFrom(arc));
                                 sameLevelStates.Add((int)arc.Target);
                             }
@@ -920,7 +917,7 @@ namespace YAF.Lucene.Net.Util.Fst
                                 arcColor = "black";
                             }
 
-                            Debug.Assert(arc.Label != FST.END_LABEL);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(arc.Label != FST.END_LABEL);
                             @out.Write("  " + node + " -> " + arc.Target + " [label=\"" + PrintableLabel(arc.Label) + outs + "\"" + (arc.IsFinal ? " style=\"bold\"" : "") + " color=\"" + arcColor + "\"]\n");
 
                             // Break the loop if we're on the last arc of this state.
@@ -1071,7 +1068,7 @@ namespace YAF.Lucene.Net.Util.Fst
             {
                 int value = input.Int32s[i + input.Offset];
                 // NOTE: we allow -128 to 255
-                Debug.Assert(value >= sbyte.MinValue && value <= 255, "value " + value + " doesn't fit into byte");
+                if (Debugging.AssertsEnabled) Debugging.Assert(value >= sbyte.MinValue && value <= 255, () => "value " + value + " doesn't fit into byte");
                 scratch.Bytes[i] = (byte)value;
             }
             scratch.Length = input.Length;
@@ -1137,7 +1134,7 @@ namespace YAF.Lucene.Net.Util.Fst
 
                 int low = arc.ArcIdx;
                 int high = arc.NumArcs - 1;
-                int mid = 0;
+                int mid /*= 0*/; // LUCENENET: Removed unnecessary assignment
                 // System.out.println("do arc array low=" + low + " high=" + high +
                 // " targetLabel=" + targetLabel);
                 while (low <= high)

@@ -1,10 +1,10 @@
 using J2N.Threading.Atomic;
 using J2N.Runtime.CompilerServices;
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Codecs.Lucene3x
@@ -136,7 +136,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
                     }
                 }
                 // TODO: change to a real check? see LUCENE-3619
-                Debug.Assert(singleNormStream == null || nextNormSeek == singleNormStream.Length, singleNormStream != null ? "len: " + singleNormStream.Length + " expected: " + nextNormSeek : "null");
+                if (Debugging.AssertsEnabled) Debugging.Assert(singleNormStream == null || nextNormSeek == singleNormStream.Length, () => singleNormStream != null ? "len: " + singleNormStream.Length + " expected: " + nextNormSeek : "null");
                 success = true;
             }
             finally
@@ -155,7 +155,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             {
                 try
                 {
-                    IOUtils.Dispose(openFiles.ToArray());
+                    IOUtils.Dispose(openFiles);
                 }
                 finally
                 {
@@ -188,7 +188,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
             }
             else
             {
-                Debug.Assert(Convert.ToInt64(v, CultureInfo.InvariantCulture) != SegmentInfo.NO);
+                if (Debugging.AssertsEnabled) Debugging.Assert(Convert.ToInt64(v, CultureInfo.InvariantCulture) != SegmentInfo.NO);
                 return true;
             }
         }
@@ -258,7 +258,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene3x
         public override NumericDocValues GetNumeric(FieldInfo field)
         {
             var dv = norms[field.Name];
-            Debug.Assert(dv != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(dv != null);
             return dv.Instance;
         }
 

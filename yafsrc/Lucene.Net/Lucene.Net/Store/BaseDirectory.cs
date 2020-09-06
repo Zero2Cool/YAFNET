@@ -1,6 +1,5 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Diagnostics;
-using System.Reflection;
 
 namespace YAF.Lucene.Net.Store
 {
@@ -35,8 +34,8 @@ namespace YAF.Lucene.Net.Store
         // property.
         protected internal virtual bool IsOpen
         {
-            get { return isOpen; }
-            set { isOpen = value; }
+            get => isOpen;
+            set => isOpen = value;
         }
 
         /// <summary>
@@ -67,24 +66,18 @@ namespace YAF.Lucene.Net.Store
 
         public override void SetLockFactory(LockFactory lockFactory)
         {
-            Debug.Assert(lockFactory != null);
+            if (Debugging.AssertsEnabled) Debugging.Assert(lockFactory != null);
             this.m_lockFactory = lockFactory;
             lockFactory.LockPrefix = this.GetLockID();
         }
 
-        public override LockFactory LockFactory
-        {
-            get
-            {
-                return this.m_lockFactory;
-            }
-        }
+        public override LockFactory LockFactory => this.m_lockFactory;
 
         protected internal override sealed void EnsureOpen()
         {
             if (!IsOpen)
             {
-                throw new ObjectDisposedException(this.GetType().GetTypeInfo().FullName, "this Directory is closed");
+                throw new ObjectDisposedException(this.GetType().FullName, "this Directory is closed");
             }
         }
     }

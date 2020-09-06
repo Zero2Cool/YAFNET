@@ -1,31 +1,31 @@
 ﻿using YAF.Lucene.Net.Analysis.Util;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Store;
 using YAF.Lucene.Net.Util;
 using YAF.Lucene.Net.Util.Automaton;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
 namespace YAF.Lucene.Net.Analysis.Hunspell
 {
     /*
-	 * Licensed to the Apache Software Foundation (ASF) under one or more
-	 * contributor license agreements.  See the NOTICE file distributed with
-	 * this work for additional information regarding copyright ownership.
-	 * The ASF licenses this file to You under the Apache License, Version 2.0
-	 * (the "License"); you may not use this file except in compliance with
-	 * the License.  You may obtain a copy of the License at
-	 *
-	 *     http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 */
+     * Licensed to the Apache Software Foundation (ASF) under one or more
+     * contributor license agreements.  See the NOTICE file distributed with
+     * this work for additional information regarding copyright ownership.
+     * The ASF licenses this file to You under the Apache License, Version 2.0
+     * (the "License"); you may not use this file except in compliance with
+     * the License.  You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
 
     /// <summary>
     /// Stemmer uses the affix rules declared in the <see cref="Dictionary"/> to generate one or more stems for a word.  It
@@ -210,7 +210,7 @@ namespace YAF.Lucene.Net.Analysis.Hunspell
                             // cross check incoming continuation class (flag of previous affix) against list.
                             dictionary.flagLookup.Get(append, scratch);
                             char[] appendFlags = Dictionary.DecodeFlags(scratch);
-                            Debug.Assert(prevFlag >= 0);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(prevFlag >= 0);
                             compatible = HasCrossCheckedFlag((char)prevFlag, appendFlags, false);
                         }
                         else
@@ -279,7 +279,7 @@ namespace YAF.Lucene.Net.Analysis.Hunspell
                             // cross check incoming continuation class (flag of previous affix) against list.
                             dictionary.flagLookup.Get(append, scratch);
                             char[] appendFlags = Dictionary.DecodeFlags(scratch);
-                            Debug.Assert(prevFlag >= 0);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(prevFlag >= 0);
                             compatible = HasCrossCheckedFlag((char)prevFlag, appendFlags, previousWasPrefix);
                         }
                         else

@@ -1,3 +1,5 @@
+using YAF.Lucene.Net.Support;
+using System;
 using System.Collections.Generic;
 
 namespace YAF.Lucene.Net.Index
@@ -67,7 +69,7 @@ namespace YAF.Lucene.Net.Index
             // at the start
             if (compiled.Type != CompiledAutomaton.AUTOMATON_TYPE.NORMAL)
             {
-                throw new System.ArgumentException("please use CompiledAutomaton.getTermsEnum instead");
+                throw new ArgumentException("please use CompiledAutomaton.getTermsEnum instead");
             }
             if (startTerm == null)
             {
@@ -168,6 +170,6 @@ namespace YAF.Lucene.Net.Index
 
         /// <summary>
         /// Zero-length array of <see cref="Terms"/>. </summary>
-        public static readonly Terms[] EMPTY_ARRAY = new Terms[0];
+        public static readonly Terms[] EMPTY_ARRAY = Arrays.Empty<Terms>();
     }
 }

@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using System;
 using System.Diagnostics;
 
@@ -129,13 +130,7 @@ namespace YAF.Lucene.Net.Codecs
         /// Returns the id of the doc to which the last call of <see cref="SkipTo(int)"/>
         /// has skipped.
         /// </summary>
-        public virtual int Doc
-        {
-            get
-            {
-                return lastDoc;
-            }
-        }
+        public virtual int Doc => lastDoc;
 
         /// <summary>
         /// Skips entries to the first beyond the current whose document number is
@@ -258,7 +253,7 @@ namespace YAF.Lucene.Net.Codecs
         {
             this.skipPointer[0] = skipPointer;
             this.docCount = df;
-            Debug.Assert(skipPointer >= 0 && skipPointer <= skipStream[0].Length, "invalid skip pointer: " + skipPointer + ", length=" + skipStream[0].Length);
+            if (Debugging.AssertsEnabled) Debugging.Assert(skipPointer >= 0 && skipPointer <= skipStream[0].Length, () => "invalid skip pointer: " + skipPointer + ", length=" + skipStream[0].Length);
             Array.Clear(m_skipDoc, 0, m_skipDoc.Length);
             Array.Clear(numSkipped, 0, numSkipped.Length);
             Array.Clear(childPointer, 0, childPointer.Length);
@@ -367,10 +362,7 @@ namespace YAF.Lucene.Net.Codecs
                 return pointer + pos;
             }
 
-            public override long Length
-            {
-                get { return data.Length; }
-            }
+            public override long Length => data.Length;
 
             public override byte ReadByte()
             {

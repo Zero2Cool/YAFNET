@@ -30,6 +30,7 @@ namespace YAF.Core.Data.Filters
     using System.Linq;
 
     using YAF.Configuration;
+    using YAF.Types.Constants;
     using YAF.Types.Interfaces;
     using YAF.Types.Interfaces.Data;
 
@@ -43,18 +44,13 @@ namespace YAF.Core.Data.Filters
         #region Fields
 
         /// <summary>
-        ///     The _styled nick operations.
+        ///     The styled nick operations.
         /// </summary>
-        private readonly string[] _styledNickOperations = {
-                                                                  "active_list", 
-                                                                  "active_listtopic", 
-                                                                  "active_listforum", 
-                                                                  "forum_moderators", 
-                                                                  "topic_latest", 
-                                                                  "topic_latest", 
-                                                                  "active_list_user", 
-                                                                  "admin_list"
-                                                              };
+        private readonly string[] styledNickOperations =
+        {
+            "active_list", "active_listtopic", "active_listforum", "forum_moderators", "topic_latest",
+            "topic_latest", "active_list_user"
+        };
 
         #endregion
 
@@ -110,14 +106,14 @@ namespace YAF.Core.Data.Filters
         /// </returns>
         public bool IsSupportedOperation(string operationName)
         {
-            return this._styledNickOperations.Contains(operationName.ToLower());
+            return this.styledNickOperations.Contains(operationName.ToLower());
         }
 
         /// <summary>
         /// The run.
         /// </summary>
-        /// <param name="dbfunctionType">
-        /// The dbfunction type.
+        /// <param name="functionType">
+        /// The function Type.
         /// </param>
         /// <param name="operationName">
         /// The operation name.
@@ -128,14 +124,12 @@ namespace YAF.Core.Data.Filters
         /// <param name="data">
         /// The data.
         /// </param>
-        public void Run(DbFunctionType dbfunctionType, string operationName, IEnumerable<KeyValuePair<string, object>> parameters, object data)
+        public void Run(DatabaseFunctionType functionType, string operationName, IEnumerable<KeyValuePair<string, object>> parameters, object data)
         {
-            if (!this.ServiceLocator.IsBoardContext() || !this._styledNickOperations.Contains(operationName.ToLower()) || dbfunctionType != DbFunctionType.DataTable)
+            if (!this.ServiceLocator.IsBoardContext() || !this.styledNickOperations.Contains(operationName.ToLower()) || functionType != DatabaseFunctionType.DataTable)
             {
                 return;
             }
-
-            var colorOnly = false;
 
             if (!this.BoardSettings.UseStyledNicks)
             {

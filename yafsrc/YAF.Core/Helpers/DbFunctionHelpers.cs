@@ -26,7 +26,7 @@ namespace YAF.Core.Helpers
 {
     using System;
     using System.Linq;
-
+    
     using YAF.Types;
     using YAF.Types.Extensions.Data;
     using YAF.Types.Interfaces.Data;
@@ -88,20 +88,6 @@ namespace YAF.Core.Helpers
         /// <returns>
         /// Returns the current SQL Engine Edition.
         /// </returns>
-        public static string GetSQLEngine([NotNull] this IDbFunction dbFunction)
-        {
-            CodeContracts.VerifyNotNull(dbFunction, "dbFunction");
-
-            return dbFunction.ValidateAndExecute("GetSQLEngine", f => f.GetScalar<string>(s => s.GetSQLEngine()));
-        }
-
-        /// <summary>
-        /// Gets the current SQL Engine Edition.
-        /// </summary>
-        /// <param name="dbFunction">The database function.</param>
-        /// <returns>
-        /// Returns the current SQL Engine Edition.
-        /// </returns>
         public static string GetSQLVersion([NotNull] this IDbFunction dbFunction)
         {
             CodeContracts.VerifyNotNull(dbFunction, "dbFunction");
@@ -153,7 +139,7 @@ namespace YAF.Core.Helpers
         /// <param name="useTransactions">
         /// The use transactions.
         /// </param>
-        public static void SystemInitializeExecutescripts(
+        public static void SystemInitializeExecuteScripts(
             [NotNull] this IDbFunction dbFunction,
             [NotNull] string script,
             [NotNull] string scriptFile,
@@ -162,8 +148,8 @@ namespace YAF.Core.Helpers
             CodeContracts.VerifyNotNull(dbFunction, "dbFunction");
 
             dbFunction.ValidateAndExecute(
-                "SystemInitializeExecutescripts",
-                f => f.Scalar.SystemInitializeExecutescripts(script, scriptFile, useTransactions));
+                "SystemInitializeExecuteScripts",
+                f => f.Scalar.SystemInitializeExecuteScripts(script, scriptFile, useTransactions));
         }
 
         /// <summary>
@@ -175,15 +161,15 @@ namespace YAF.Core.Helpers
         /// <param name="grantAccess">
         /// The grant access.
         /// </param>
-        public static void SystemInitializeFixaccess(
+        public static void SystemInitializeFixAccess(
             [NotNull] this IDbFunction dbFunction,
             bool grantAccess)
         {
             CodeContracts.VerifyNotNull(dbFunction, "dbFunction");
 
             dbFunction.ValidateAndExecute(
-                "SystemInitializeFixaccess",
-                f => f.Scalar.SystemInitializeFixaccess(grantAccess));
+                "SystemInitializeFixAccess",
+                f => f.Scalar.SystemInitializeFixAccess(grantAccess));
         }
 
         /// <summary>

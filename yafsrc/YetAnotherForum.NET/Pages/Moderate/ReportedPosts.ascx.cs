@@ -31,7 +31,7 @@ namespace YAF.Pages.Moderate
     using System.Web.UI.WebControls;
 
     using YAF.Core.BasePages;
-    using YAF.Core.Context;
+    using YAF.Core.Extensions;
     using YAF.Core.Model;
     using YAF.Types;
     using YAF.Types.Constants;
@@ -133,9 +133,6 @@ namespace YAF.Pages.Moderate
                     // delete message
                     this.GetRepository<Message>().Delete(e.CommandArgument.ToType<int>(), true, string.Empty, 1, true);
 
-                    // Update statistics
-                    this.Get<IDataCache>().Remove(Constants.Cache.BoardStats);
-
                     // re-bind data
                     this.BindData();
 
@@ -145,22 +142,28 @@ namespace YAF.Pages.Moderate
                 case "view":
 
                     // go to the message
-                    BuildLink.Redirect(ForumPages.Posts, "m={0}#post{0}", e.CommandArgument);
+                    BuildLink.Redirect(
+                        ForumPages.Posts,
+                        "m={0}&name={1}#post{0}",
+                        e.CommandArgument,
+                        this.GetRepository<Topic>().GetNameFromMessage(e.CommandArgument.ToType<int>()));
                     break;
                 case "copyover":
 
                     // re-bind data
                     this.BindData();
 
+                    var message = this.GetRepository<Message>().GetById(e.CommandArgument.ToType<int>());
+
                     // update message text
-                    this.GetRepository<Message>().ReportCopyOver(e.CommandArgument.ToType<int>());
+                    this.GetRepository<MessageReported>().ReportCopyOver(message);
                     break;
                 case "viewhistory":
 
                     // go to history page
                     var ff = e.CommandArgument.ToString().Split(',');
-                    BoardContext.Current.Get<HttpResponseBase>().Redirect(
-                      BuildLink.GetLinkNotEscaped(ForumPages.MessageHistory, "f={0}&m={1}", ff[0], ff[1]));
+                    this.Get<HttpResponseBase>().Redirect(
+                      BuildLink.GetLink(ForumPages.MessageHistory, "f={0}&m={1}", ff[0], ff[1]));
                     break;
                 case "resolved":
 

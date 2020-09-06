@@ -1,4 +1,5 @@
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
+using System;
 
 namespace YAF.Lucene.Net.Util.Packed
 {
@@ -35,7 +36,7 @@ namespace YAF.Lucene.Net.Util.Packed
         public BulkOperationPacked(int bitsPerValue)
         {
             this.bitsPerValue = bitsPerValue;
-            Debug.Assert(bitsPerValue > 0 && bitsPerValue <= 64);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue > 0 && bitsPerValue <= 64);
             int blocks = bitsPerValue;
             while ((blocks & 1) == 0)
             {
@@ -61,34 +62,22 @@ namespace YAF.Lucene.Net.Util.Packed
                 this.mask = (1L << bitsPerValue) - 1;
             }
             this.intMask = (int)mask;
-            Debug.Assert(longValueCount * bitsPerValue == 64 * longBlockCount);
+            if (Debugging.AssertsEnabled) Debugging.Assert(longValueCount * bitsPerValue == 64 * longBlockCount);
         }
 
         /// <summary>
         /// NOTE: This was longBlockCount() in Lucene.
         /// </summary>
-        public override int Int64BlockCount
-        {
-            get { return longBlockCount; }
-        }
+        public override int Int64BlockCount => longBlockCount;
 
         /// <summary>
         /// NOTE: This was longValueCount() in Lucene.
         /// </summary>
-        public override int Int64ValueCount
-        {
-            get { return longValueCount; }
-        }
+        public override int Int64ValueCount => longValueCount;
 
-        public override int ByteBlockCount
-        {
-            get { return byteBlockCount; }
-        }
+        public override int ByteBlockCount => byteBlockCount;
 
-        public override int ByteValueCount
-        {
-            get { return byteValueCount; }
-        }
+        public override int ByteValueCount => byteValueCount;
 
         public override void Decode(long[] blocks, int blocksOffset, long[] values, int valuesOffset, int iterations)
         {
@@ -136,14 +125,14 @@ namespace YAF.Lucene.Net.Util.Packed
                     nextValue = (bytes & ((1L << bits) - 1)) << bitsLeft;
                 }
             }
-            Debug.Assert(bitsLeft == bitsPerValue);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsLeft == bitsPerValue);
         }
 
         public override void Decode(long[] blocks, int blocksOffset, int[] values, int valuesOffset, int iterations)
         {
             if (bitsPerValue > 32)
             {
-                throw new System.NotSupportedException("Cannot decode " + bitsPerValue + "-bits values into an int[]");
+                throw new NotSupportedException("Cannot decode " + bitsPerValue + "-bits values into an int[]");
             }
             int bitsLeft = 64;
             for (int i = 0; i < longValueCount * iterations; ++i)
@@ -189,7 +178,7 @@ namespace YAF.Lucene.Net.Util.Packed
                     nextValue = (bytes & ((1 << bits) - 1)) << bitsLeft;
                 }
             }
-            Debug.Assert(bitsLeft == bitsPerValue);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsLeft == bitsPerValue);
         }
 
         public override void Encode(long[] values, int valuesOffset, long[] blocks, int blocksOffset, int iterations)
@@ -255,7 +244,7 @@ namespace YAF.Lucene.Net.Util.Packed
             for (int i = 0; i < byteValueCount * iterations; ++i)
             {
                 long v = values[valuesOffset++];
-                Debug.Assert(bitsPerValue == 64 || PackedInt32s.BitsRequired(v) <= bitsPerValue);
+                if (Debugging.AssertsEnabled) Debugging.Assert(bitsPerValue == 64 || PackedInt32s.BitsRequired(v) <= bitsPerValue);
                 if (bitsPerValue < bitsLeft)
                 {
                     // just buffer
@@ -277,7 +266,7 @@ namespace YAF.Lucene.Net.Util.Packed
                     nextBlock = (int)((v & ((1L << bits) - 1)) << bitsLeft);
                 }
             }
-            Debug.Assert(bitsLeft == 8);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsLeft == 8);
         }
 
         public override void Encode(int[] values, int valuesOffset, byte[] blocks, int blocksOffset, int iterations)
@@ -287,7 +276,7 @@ namespace YAF.Lucene.Net.Util.Packed
             for (int i = 0; i < byteValueCount * iterations; ++i)
             {
                 int v = values[valuesOffset++];
-                Debug.Assert(PackedInt32s.BitsRequired(v & 0xFFFFFFFFL) <= bitsPerValue);
+                if (Debugging.AssertsEnabled) Debugging.Assert(PackedInt32s.BitsRequired(v & 0xFFFFFFFFL) <= bitsPerValue);
                 if (bitsPerValue < bitsLeft)
                 {
                     // just buffer
@@ -309,7 +298,7 @@ namespace YAF.Lucene.Net.Util.Packed
                     nextBlock = (v & ((1 << bits) - 1)) << bitsLeft;
                 }
             }
-            Debug.Assert(bitsLeft == 8);
+            if (Debugging.AssertsEnabled) Debugging.Assert(bitsLeft == 8);
         }
     }
 }

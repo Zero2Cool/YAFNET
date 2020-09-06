@@ -1,9 +1,8 @@
 using J2N;
+using J2N.Collections.Generic.Extensions;
+using YAF.Lucene.Net.Diagnostics;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using JCG = J2N.Collections.Generic;
 
@@ -182,13 +181,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// default, the flag is not set.
         /// </summary>
         /// <returns> current value of the flag </returns>
-        internal static bool AllowMutate
-        {
-            get
-            {
-                return allow_mutation;
-            }
-        }
+        internal static bool AllowMutate => allow_mutation;
 
         internal virtual void CheckMinimizeAlways()
         {
@@ -259,31 +252,29 @@ namespace YAF.Lucene.Net.Util.Automaton
             {
                 ExpandSingleton();
                 JCG.HashSet<State> visited = new JCG.HashSet<State>();
-                LinkedList<State> worklist = new LinkedList<State>();
+                Queue<State> worklist = new Queue<State>(); // LUCENENET specific - Queue is much more performant than LinkedList
                 State[] states = new State[4];
                 int upto = 0;
-                worklist.AddLast(initial);
+                worklist.Enqueue(initial);
                 visited.Add(initial);
                 initial.number = upto;
                 states[upto] = initial;
                 upto++;
                 while (worklist.Count > 0)
                 {
-                    State s = worklist.First.Value;
-                    worklist.Remove(s);
+                    State s = worklist.Dequeue();
                     for (int i = 0; i < s.numTransitions; i++)
                     {
                         Transition t = s.TransitionsArray[i];
                         if (!visited.Contains(t.to))
                         {
                             visited.Add(t.to);
-                            worklist.AddLast(t.to);
+                            worklist.Enqueue(t.to);
                             t.to.number = upto;
                             if (upto == states.Length)
                             {
-                                State[] newArray = new State[ArrayUtil.Oversize(1 + upto, RamUsageEstimator.NUM_BYTES_OBJECT_REF)];
-                                Array.Copy(states, 0, newArray, 0, upto);
-                                states = newArray;
+                                // LUCENENET: Resize rather than copy
+                                Array.Resize(ref states, ArrayUtil.Oversize(1 + upto, RamUsageEstimator.NUM_BYTES_OBJECT_REF));
                             }
                             states[upto] = t.to;
                             upto++;
@@ -292,9 +283,8 @@ namespace YAF.Lucene.Net.Util.Automaton
                 }
                 if (states.Length != upto)
                 {
-                    State[] newArray = new State[upto];
-                    Array.Copy(states, 0, newArray, 0, upto);
-                    states = newArray;
+                    // LUCENENET: Resize rather than copy
+                    Array.Resize(ref states, upto);
                 }
                 numberedStates = states;
             }
@@ -309,7 +299,7 @@ namespace YAF.Lucene.Net.Util.Automaton
 
         public virtual void SetNumberedStates(State[] states, int count)
         {
-            Debug.Assert(count <= states.Length);
+            if (Debugging.AssertsEnabled) Debugging.Assert(count <= states.Length);
             // TODO: maybe we can eventually allow for oversizing here...
             if (count < states.Length)
             {
@@ -337,13 +327,12 @@ namespace YAF.Lucene.Net.Util.Automaton
             ExpandSingleton();
             JCG.HashSet<State> accepts = new JCG.HashSet<State>();
             JCG.HashSet<State> visited = new JCG.HashSet<State>();
-            LinkedList<State> worklist = new LinkedList<State>();
-            worklist.AddLast(initial);
+            Queue<State> worklist = new Queue<State>(); // LUCENENET specific - Queue is much more performant than LinkedList
+            worklist.Enqueue(initial);
             visited.Add(initial);
             while (worklist.Count > 0)
             {
-                State s = worklist.First.Value;
-                worklist.Remove(s);
+                State s = worklist.Dequeue();
                 if (s.accept)
                 {
                     accepts.Add(s);
@@ -353,7 +342,7 @@ namespace YAF.Lucene.Net.Util.Automaton
                     if (!visited.Contains(t.to))
                     {
                         visited.Add(t.to);
-                        worklist.AddLast(t.to);
+                        worklist.Enqueue(t.to);
                     }
                 }
             }
@@ -425,8 +414,10 @@ namespace YAF.Lucene.Net.Util.Automaton
         public virtual int[] GetStartPoints()
         {
             State[] states = GetNumberedStates();
-            JCG.HashSet<int> pointset = new JCG.HashSet<int>();
-            pointset.Add(Character.MinCodePoint);
+            JCG.HashSet<int> pointset = new JCG.HashSet<int>
+            {
+                Character.MinCodePoint
+            };
             foreach (State s in states)
             {
                 foreach (Transition t in s.GetTransitions())
@@ -477,7 +468,7 @@ namespace YAF.Lucene.Net.Util.Automaton
                     map[s.TransitionsArray[i].to.Number].Add(s);
                 }
             }
-            LinkedList<State> worklist = new LinkedList<State>(live);
+            LinkedList<State> worklist = new LinkedList<State>(live); // LUCENENET: Queue would be slower in this case because of the copy constructor
             while (worklist.Count > 0)
             {
                 State s = worklist.First.Value;
@@ -559,7 +550,7 @@ namespace YAF.Lucene.Net.Util.Automaton
                 s.SortTransitions(Transition.COMPARE_BY_MIN_MAX_THEN_DEST);
                 s.TrimTransitionsArray();
                 transitions[s.number] = s.TransitionsArray;
-                Debug.Assert(s.TransitionsArray != null);
+                if (Debugging.AssertsEnabled) Debugging.Assert(s.TransitionsArray != null);
             }
             return transitions;
         }
@@ -574,7 +565,8 @@ namespace YAF.Lucene.Net.Util.Automaton
             {
                 State p = new State();
                 initial = p;
-                for (int i = 0, cp = 0; i < singleton.Length; i += Character.CharCount(cp))
+                int cp; // LUCENENET: Removed unnecessary assignment
+                for (int i = 0; i < singleton.Length; i += Character.CharCount(cp))
                 {
                     State q = new State();
                     p.AddTransition(new Transition(cp = Character.CodePointAt(singleton, i), q));
@@ -620,7 +612,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         {
             var other = obj as Automaton;
             return BasicOperations.SameLanguage(this, other);
-            //throw new System.NotSupportedException("use BasicOperations.sameLanguage instead");
+            //throw new NotSupportedException("use BasicOperations.sameLanguage instead");
         }
 
         // LUCENENET specific - in .NET, we can't simply throw an exception here because 
@@ -638,16 +630,15 @@ namespace YAF.Lucene.Net.Util.Automaton
             this.Determinize(); // LUCENENET: should we do this ?
 
             Transition[][] transitions = this.GetSortedTransitions();
-            LinkedList<State> worklist = new LinkedList<State>();
+            Queue<State> worklist = new Queue<State>(); // LUCENENET specific - Queue is much more performant than LinkedList
             JCG.HashSet<State> visited = new JCG.HashSet<State>();
 
-            State current = this.initial;
-            worklist.AddLast(this.initial);
+            State current;
+            worklist.Enqueue(this.initial);
             visited.Add(this.initial);
             while (worklist.Count > 0)
             {
-                current = worklist.First.Value;
-                worklist.Remove(current);
+                current = worklist.Dequeue();
                 hash = 31 * hash + current.accept.GetHashCode();
 
                 Transition[] t1 = transitions[current.number];
@@ -662,14 +653,14 @@ namespace YAF.Lucene.Net.Util.Automaton
                     State next = t1[n1].to;
                     if (!visited.Contains(next))
                     {
-                        worklist.AddLast(next);
+                        worklist.Enqueue(next);
                         visited.Add(next);
                     }
                 }
             }
 
             return hash;
-            //throw new System.NotSupportedException();
+            //throw new NotSupportedException();
         }
 
         ///// <summary>
@@ -692,7 +683,8 @@ namespace YAF.Lucene.Net.Util.Automaton
                 b.Append("singleton: ");
                 int length = singleton.CodePointCount(0, singleton.Length);
                 int[] codepoints = new int[length];
-                for (int i = 0, j = 0, cp = 0; i < singleton.Length; i += Character.CharCount(cp))
+                int cp; // LUCENENET: Removed unnecessary assignment
+                for (int i = 0, j = 0; i < singleton.Length; i += Character.CharCount(cp))
                 {
                     codepoints[j++] = cp = singleton.CodePointAt(i);
                 }
@@ -930,13 +922,7 @@ namespace YAF.Lucene.Net.Util.Automaton
         /// <summary>
         /// See <see cref="BasicOperations.IsEmptyString(Automaton)"/>.
         /// </summary>
-        public virtual bool IsEmptyString
-        {
-            get
-            {
-                return BasicOperations.IsEmptyString(this);
-            }
-        }
+        public virtual bool IsEmptyString => BasicOperations.IsEmptyString(this);
 
         /// <summary>
         /// See <see cref="MinimizationOperations.Minimize(Automaton)"/>. Returns the

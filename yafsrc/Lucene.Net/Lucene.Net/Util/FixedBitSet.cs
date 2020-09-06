@@ -1,7 +1,7 @@
 using J2N.Numerics;
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
 
 namespace YAF.Lucene.Net.Util
 {
@@ -88,10 +88,7 @@ namespace YAF.Lucene.Net.Util
                 return doc = NO_MORE_DOCS;
             }
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             public override long GetCost()
             {
@@ -223,7 +220,7 @@ namespace YAF.Lucene.Net.Util
             this.numWords = Bits2words(numBits);
             if (numWords > storedBits.Length)
             {
-                throw new System.ArgumentException("The given long array is too small  to hold " + numBits + " bits");
+                throw new ArgumentException("The given long array is too small  to hold " + numBits + " bits");
             }
             this.numBits = numBits;
             this.bits = storedBits;
@@ -234,25 +231,13 @@ namespace YAF.Lucene.Net.Util
             return new FixedBitSetIterator(bits, numBits, numWords);
         }
 
-        public override IBits Bits
-        {
-            get { return this; }
-        }
+        public override IBits Bits => this;
 
-        public int Length
-        {
-            get { return numBits; }
-        }
+        public int Length => numBits;
 
         /// <summary>
         /// This DocIdSet implementation is cacheable. </summary>
-        public override bool IsCacheable
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool IsCacheable => true;
 
         /// <summary>
         /// Expert. </summary>
@@ -274,7 +259,7 @@ namespace YAF.Lucene.Net.Util
 
         public bool Get(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits, "index=" + index + ", numBits=" + numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits, () => "index=" + index + ", numBits=" + numBits);
             int i = index >> 6; // div 64
             // signed shift will keep a negative index and force an
             // array-index-out-of-bounds-exception, removing the need for an explicit check.
@@ -285,7 +270,7 @@ namespace YAF.Lucene.Net.Util
 
         public void Set(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits, "index=" + index + ", numBits=" + numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits, () => "index=" + index + ", numBits=" + numBits);
             int wordNum = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -294,7 +279,7 @@ namespace YAF.Lucene.Net.Util
 
         public bool GetAndSet(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -305,7 +290,7 @@ namespace YAF.Lucene.Net.Util
 
         public void Clear(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6;
             int bit = index & 0x03f;
             long bitmask = 1L << bit;
@@ -314,7 +299,7 @@ namespace YAF.Lucene.Net.Util
 
         public bool GetAndClear(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits);
             int wordNum = index >> 6; // div 64
             int bit = index & 0x3f; // mod 64
             long bitmask = 1L << bit;
@@ -329,7 +314,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public int NextSetBit(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits, "index=" + index + ", numBits=" + numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits, () => "index=" + index + ", numBits=" + numBits);
             int i = index >> 6;
             int subIndex = index & 0x3f; // index within the word
             long word = bits[i] >> subIndex; // skip all the bits to the right of index
@@ -357,7 +342,7 @@ namespace YAF.Lucene.Net.Util
         /// </summary>
         public int PrevSetBit(int index)
         {
-            Debug.Assert(index >= 0 && index < numBits, "index=" + index + " numBits=" + numBits);
+            if (Debugging.AssertsEnabled) Debugging.Assert(index >= 0 && index < numBits, () => "index=" + index + " numBits=" + numBits);
             int i = index >> 6;
             int subIndex = index & 0x3f; // index within the word
             long word = (bits[i] << (63 - subIndex)); // skip all the bits to the left of index
@@ -420,7 +405,7 @@ namespace YAF.Lucene.Net.Util
 
         private void Or(long[] otherArr, int otherNumWords)
         {
-            Debug.Assert(otherNumWords <= numWords, "numWords=" + numWords + ", otherNumWords=" + otherNumWords);
+            if (Debugging.AssertsEnabled) Debugging.Assert(otherNumWords <= numWords, () => "numWords=" + numWords + ", otherNumWords=" + otherNumWords);
             long[] thisArr = this.bits;
             int pos = Math.Min(numWords, otherNumWords);
             while (--pos >= 0)
@@ -433,7 +418,7 @@ namespace YAF.Lucene.Net.Util
         /// this = this XOR other </summary>
         public void Xor(FixedBitSet other)
         {
-            Debug.Assert(other.numWords <= numWords, "numWords=" + numWords + ", other.numWords=" + other.numWords);
+            if (Debugging.AssertsEnabled) Debugging.Assert(other.numWords <= numWords, () => "numWords=" + numWords + ", other.numWords=" + other.numWords);
             long[] thisBits = this.bits;
             long[] otherBits = other.bits;
             int pos = Math.Min(numWords, other.numWords);
@@ -592,8 +577,11 @@ namespace YAF.Lucene.Net.Util
         /// <param name="endIndex"> One-past the last bit to flip </param>
         public void Flip(int startIndex, int endIndex)
         {
-            Debug.Assert(startIndex >= 0 && startIndex < numBits);
-            Debug.Assert(endIndex >= 0 && endIndex <= numBits);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(startIndex >= 0 && startIndex < numBits);
+                Debugging.Assert(endIndex >= 0 && endIndex <= numBits);
+            }
             if (endIndex <= startIndex)
             {
                 return;
@@ -638,8 +626,11 @@ namespace YAF.Lucene.Net.Util
         /// <param name="endIndex"> One-past the last bit to set </param>
         public void Set(int startIndex, int endIndex)
         {
-            Debug.Assert(startIndex >= 0 && startIndex < numBits);
-            Debug.Assert(endIndex >= 0 && endIndex <= numBits);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(startIndex >= 0 && startIndex < numBits);
+                Debugging.Assert(endIndex >= 0 && endIndex <= numBits);
+            }
             if (endIndex <= startIndex)
             {
                 return;
@@ -670,8 +661,11 @@ namespace YAF.Lucene.Net.Util
         /// <param name="endIndex"> One-past the last bit to clear </param>
         public void Clear(int startIndex, int endIndex)
         {
-            Debug.Assert(startIndex >= 0 && startIndex < numBits, "startIndex=" + startIndex + ", numBits=" + numBits);
-            Debug.Assert(endIndex >= 0 && endIndex <= numBits, "endIndex=" + endIndex + ", numBits=" + numBits);
+            if (Debugging.AssertsEnabled)
+            {
+                Debugging.Assert(startIndex >= 0 && startIndex < numBits, () => "startIndex=" + startIndex + ", numBits=" + numBits);
+                Debugging.Assert(endIndex >= 0 && endIndex <= numBits, () => "endIndex=" + endIndex + ", numBits=" + numBits);
+            }
             if (endIndex <= startIndex)
             {
                 return;

@@ -27,9 +27,7 @@ namespace YAF.Controls
 
   using System;
 
-  using YAF.Core;
   using YAF.Core.BaseControls;
-  using YAF.Core.Context;
   using YAF.Core.Extensions;
   using YAF.Core.Model;
   using YAF.Types;
@@ -70,28 +68,27 @@ namespace YAF.Controls
     {
       var groups = this.GetRepository<UserGroup>().List(this.PageContext.PageUserID);
 
-      if (BoardContext.Current.BoardSettings.UseStyledNicks)
+      if (this.PageContext.BoardSettings.UseStyledNicks)
       {
-        this.Get<IStyleTransform>().DecodeStyleByGroupList(groups, false);
+        this.Get<IStyleTransform>().DecodeStyleByGroupList(groups);
       }
 
       this.Groups.DataSource = groups;
 
-      // Bind			
       this.DataBind();
 
       // TitleUserName.Text = HtmlEncode( userData.Membership.UserName );
-      this.AccountEmail.Text = this.PageContext.CurrentUserData.Membership.Email;
-      this.Name.Text = this.HtmlEncode(this.PageContext.CurrentUserData.Membership.UserName);
-      this.Joined.Text = this.Get<IDateTime>().FormatDateTime(this.PageContext.CurrentUserData.Joined);
-      this.NumPosts.Text = $"{this.PageContext.CurrentUserData.NumPosts:N0}";
+      this.AccountEmail.Text = this.PageContext.User.Email;
+      this.Name.Text = this.HtmlEncode(this.PageContext.User.Name);
+      this.Joined.Text = this.Get<IDateTime>().FormatDateTime(this.PageContext.User.Joined);
+      this.NumPosts.Text = $"{this.PageContext.User.NumPosts:N0}";
 
       this.DisplayNameHolder.Visible = this.PageContext.BoardSettings.EnableDisplayName;
 
       if (this.PageContext.BoardSettings.EnableDisplayName)
       {
         this.DisplayName.Text =
-          this.HtmlEncode(this.Get<IUserDisplayName>().GetName(this.PageContext.PageUserID));
+          this.HtmlEncode(this.PageContext.User.DisplayOrUserName());
       }
 
       var avatarImg = this.Get<IAvatars>().GetAvatarUrlForCurrentUser();

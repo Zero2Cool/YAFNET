@@ -1,6 +1,6 @@
 using YAF.Lucene.Net.Documents;
 using System;
-using System.Diagnostics;
+using YAF.Lucene.Net.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace YAF.Lucene.Net.Index
@@ -56,10 +56,7 @@ namespace YAF.Lucene.Net.Index
                 this.docs = docs;
             }
 
-            public override object Value
-            {
-                get { return value; }
-            }
+            public override object Value => value;
 
             public override int NextDoc()
             {
@@ -86,10 +83,7 @@ namespace YAF.Lucene.Net.Index
                 return doc;
             }
 
-            public override int Doc
-            {
-                get { return doc; }
-            }
+            public override int Doc => doc;
 
             public override void Reset()
             {
@@ -212,7 +206,7 @@ namespace YAF.Lucene.Net.Index
         [MethodImpl(MethodImplOptions.NoInlining)]
         public override void Merge(DocValuesFieldUpdates other)
         {
-            Debug.Assert(other is NumericDocValuesFieldUpdates);
+            if (Debugging.AssertsEnabled) Debugging.Assert(other is NumericDocValuesFieldUpdates);
             NumericDocValuesFieldUpdates otherUpdates = (NumericDocValuesFieldUpdates)other;
             if (size + otherUpdates.size > int.MaxValue)
             {

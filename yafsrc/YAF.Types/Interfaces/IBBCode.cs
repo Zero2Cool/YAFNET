@@ -26,10 +26,12 @@ namespace YAF.Types.Interfaces
     #region Using
 
     using System;
+    using System.Collections.Generic;
     using System.Web.UI;
 
     using YAF.Types;
     using YAF.Types.Flags;
+    using YAF.Types.Models;
 
     #endregion
 
@@ -73,8 +75,8 @@ namespace YAF.Types.Interfaces
         /// <returns>
         /// The converted text
         /// </returns>
-        [Obsolete]
-        string ConvertBBCodeToHtmlForEdit([NotNull] string message);
+        //[Obsolete]
+        //string ConvertBBCodeToHtmlForEdit([NotNull] string message);
 
         /// <summary>
         /// Converts a message containing HTML to BBCode for editing.
@@ -90,6 +92,9 @@ namespace YAF.Types.Interfaces
         /// <summary>
         /// Creates the rules that convert BBCode to HTML
         /// </summary>
+        /// <param name="messageId">
+        /// The message Id.
+        /// </param>
         /// <param name="ruleEngine">
         /// The rule Engine.
         /// </param>
@@ -106,6 +111,7 @@ namespace YAF.Types.Interfaces
         /// Indicates if the formatting is for the Editor.
         /// </param>
         void CreateBBCodeRules(
+            [NotNull] int messageId,
             [NotNull] IProcessReplaceRules ruleEngine,
             bool doFormatting,
             bool targetBlankOverride,
@@ -170,6 +176,12 @@ namespace YAF.Types.Interfaces
             [NotNull] Page currentPage,
             [NotNull] Type currentType,
             [NotNull] string editorID);
+
+        /// <summary>
+        ///     The get custom bb code.
+        /// </summary>
+        /// <returns> Returns List with Custom BBCodes </returns>
+        IEnumerable<BBCode> GetCustomBBCode();
 
         #endregion
     }

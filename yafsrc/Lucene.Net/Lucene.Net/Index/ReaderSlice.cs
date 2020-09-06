@@ -1,3 +1,5 @@
+using YAF.Lucene.Net.Support;
+
 namespace YAF.Lucene.Net.Index
 {
     /*
@@ -26,7 +28,7 @@ namespace YAF.Lucene.Net.Index
     {
         /// <summary>
         /// Zero-length <see cref="ReaderSlice"/> array. </summary>
-        public static readonly ReaderSlice[] EMPTY_ARRAY = new ReaderSlice[0];
+        public static readonly ReaderSlice[] EMPTY_ARRAY = Arrays.Empty<ReaderSlice>();
 
         /// <summary>
         /// Document ID this slice starts from. </summary>

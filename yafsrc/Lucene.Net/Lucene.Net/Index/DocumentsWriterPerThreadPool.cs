@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support.Threading;
 using System;
 using System.Diagnostics;
@@ -79,14 +80,14 @@ namespace YAF.Lucene.Net.Index
             /// <seealso cref="IsActive"/>
             internal void Deactivate() // LUCENENET NOTE: Made internal because it is called outside of this context
             {
-                //Debug.Assert(this.HeldByCurrentThread);
+                if (Debugging.AssertsEnabled) Debugging.Assert(this.IsHeldByCurrentThread);
                 isActive = false;
                 Reset();
             }
 
             internal void Reset() // LUCENENET NOTE: Made internal because it is called outside of this context
             {
-                //Debug.Assert(this.HeldByCurrentThread);
+                if (Debugging.AssertsEnabled) Debugging.Assert(this.IsHeldByCurrentThread);
                 this.dwpt = null;
                 this.bytesUsed = 0;
                 this.flushPending = false;
@@ -101,19 +102,21 @@ namespace YAF.Lucene.Net.Index
             {
                 get
                 {
-                    //Debug.Assert(this.HeldByCurrentThread);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(this.IsHeldByCurrentThread);
                     return isActive;
                 }
+
             }
 
             internal bool IsInitialized
             {
                 get
                 {
-                    //Debug.Assert(this.HeldByCurrentThread);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(this.IsHeldByCurrentThread);
                     return IsActive && dwpt != null;
                 }
             }
+                
 
             /// <summary>
             /// Returns the number of currently active bytes in this ThreadState's
@@ -123,7 +126,7 @@ namespace YAF.Lucene.Net.Index
             {
                 get
                 {
-                    //Debug.Assert(this.HeldByCurrentThread);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(this.IsHeldByCurrentThread);
                     // public for FlushPolicy
                     return bytesUsed;
                 }
@@ -136,7 +139,7 @@ namespace YAF.Lucene.Net.Index
             {
                 get
                 {
-                    //Debug.Assert(this.HeldByCurrentThread);
+                    if (Debugging.AssertsEnabled) Debugging.Assert(this.IsHeldByCurrentThread);
                     // public for FlushPolicy
                     return dwpt;
                 }
@@ -146,13 +149,7 @@ namespace YAF.Lucene.Net.Index
             /// Returns <c>true</c> iff this <see cref="ThreadState"/> is marked as flush
             /// pending otherwise <c>false</c>
             /// </summary>
-            public bool IsFlushPending
-            {
-                get
-                {
-                    return flushPending;
-                }
-            }
+            public bool IsFlushPending => flushPending;
         }
 
         private ThreadState[] threadStates;
@@ -165,7 +162,7 @@ namespace YAF.Lucene.Net.Index
         {
             if (maxNumThreadStates < 1)
             {
-                throw new System.ArgumentException("maxNumThreadStates must be >= 1 but was: " + maxNumThreadStates);
+                throw new ArgumentException("maxNumThreadStates must be >= 1 but was: " + maxNumThreadStates);
             }
             threadStates = new ThreadState[maxNumThreadStates];
             numThreadStatesActive = 0;
@@ -199,24 +196,12 @@ namespace YAF.Lucene.Net.Index
         /// Returns the max number of <see cref="ThreadState"/> instances available in this
         /// <see cref="DocumentsWriterPerThreadPool"/>
         /// </summary>
-        public virtual int MaxThreadStates
-        {
-            get
-            {
-                return threadStates.Length;
-            }
-        }
+        public virtual int MaxThreadStates => threadStates.Length;
 
         /// <summary>
         /// Returns the active number of <see cref="ThreadState"/> instances.
         /// </summary>
-        public virtual int NumThreadStatesActive // LUCENENET NOTE: Changed from getActiveThreadState() because the name wasn't clear
-        {
-            get
-            {
-                return numThreadStatesActive;
-            }
-        }
+        public virtual int NumThreadStatesActive => numThreadStatesActive; // LUCENENET NOTE: Changed from getActiveThreadState() because the name wasn't clear
 
         /// <summary>
         /// Returns a new <see cref="ThreadState"/> iff any new state is available otherwise
@@ -241,12 +226,12 @@ namespace YAF.Lucene.Net.Index
                         {
                             // unreleased thread states are deactivated during DW#close()
                             numThreadStatesActive++; // increment will publish the ThreadState
-                            Debug.Assert(threadState.dwpt == null);
+                            if (Debugging.AssertsEnabled) Debugging.Assert(threadState.dwpt == null);
                             unlock = false;
                             return threadState;
                         }
                         // unlock since the threadstate is not active anymore - we are closed!
-                        Debug.Assert(AssertUnreleasedThreadStatesInactive());
+                        if (Debugging.AssertsEnabled) Debugging.Assert(AssertUnreleasedThreadStatesInactive());
                         return null;
                     }
                     finally
@@ -268,10 +253,10 @@ namespace YAF.Lucene.Net.Index
             {
                 for (int i = numThreadStatesActive; i < threadStates.Length; i++)
                 {
-                    Debug.Assert(threadStates[i].TryLock(), "unreleased threadstate should not be locked");
+                    if (Debugging.AssertsEnabled) Debugging.Assert(threadStates[i].TryLock(), "unreleased threadstate should not be locked");
                     try
                     {
-                        Debug.Assert(!threadStates[i].IsInitialized, "expected unreleased thread state to be inactive");
+                        if (Debugging.AssertsEnabled) Debugging.Assert(!threadStates[i].IsInitialized, "expected unreleased thread state to be inactive");
                     }
                     finally
                     {
@@ -307,7 +292,7 @@ namespace YAF.Lucene.Net.Index
 
         internal virtual DocumentsWriterPerThread Reset(ThreadState threadState, bool closed)
         {
-            //Debug.Assert(threadState.HeldByCurrentThread);
+            if (Debugging.AssertsEnabled) Debugging.Assert(threadState.IsHeldByCurrentThread);
             DocumentsWriterPerThread dwpt = threadState.dwpt;
             if (!closed)
             {
@@ -397,7 +382,7 @@ namespace YAF.Lucene.Net.Index
         /// <param name="threadState"> the state to deactivate </param>
         internal virtual void DeactivateThreadState(ThreadState threadState)
         {
-            Debug.Assert(threadState.IsActive);
+            if (Debugging.AssertsEnabled) Debugging.Assert(threadState.IsActive);
             threadState.Deactivate();
         }
     }

@@ -27,7 +27,6 @@ namespace YAF.Web.BBCodes
     using System.Web.UI;
 
     using YAF.Configuration;
-    using YAF.Core;
     using YAF.Core.BBCode;
     using YAF.Core.Context;
     using YAF.Core.Model;
@@ -75,7 +74,7 @@ namespace YAF.Web.BBCodes
                 return;
             }
 
-            var userId = BoardContext.Current.CurrentUserData.UserID;
+            var userId = BoardContext.Current.PageUserID;
 
             // Handle Hide Thanks
             if (!this.Get<BoardSettings>().EnableThanksMod)
@@ -92,7 +91,7 @@ namespace YAF.Web.BBCodes
 
             if (this.DisplayUserID == userId ||
                 this.GetRepository<Thanks>().ThankedMessage(messageId.ToType<int>(), userId) ||
-                this.GetRepository<User>().RepliedTopic(messageId.ToType<int>(), userId))
+                this.GetRepository<Message>().RepliedTopic(this.PageContext.PageTopicID, userId))
             {
                 // Show hidden content if user is the poster or have thanked the poster.
                 shownContent = hiddenContent;

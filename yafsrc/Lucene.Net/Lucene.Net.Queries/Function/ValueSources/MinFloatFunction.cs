@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System;
 
 namespace YAF.Lucene.Net.Queries.Function.ValueSources
 {
@@ -31,10 +31,7 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
         {
         }
 
-        protected override string Name
-        {
-            get { return "min"; }
-        }
+        protected override string Name => "min";
 
         protected override float Func(int doc, FunctionValues[] valsArr)
         {
@@ -42,7 +39,12 @@ namespace YAF.Lucene.Net.Queries.Function.ValueSources
             {
                 return 0.0f;
             }
-            return valsArr.Select(vals => vals.SingleVal(doc)).Concat(new[] {float.PositiveInfinity}).Min();
+            float val = float.PositiveInfinity;
+            foreach (FunctionValues vals in valsArr)
+            {
+                val = Math.Min(vals.SingleVal(doc), val);
+            }
+            return val;
         }
     }
 }

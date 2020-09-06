@@ -1,4 +1,5 @@
 ﻿using YAF.Lucene.Net.Analysis.TokenAttributes;
+using YAF.Lucene.Net.Support;
 using YAF.Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
@@ -8,21 +9,21 @@ using System.Text;
 namespace YAF.Lucene.Net.Analysis.Shingle
 {
     /*
-	 * Licensed to the Apache Software Foundation (ASF) under one or more
-	 * contributor license agreements.  See the NOTICE file distributed with
-	 * this work for additional information regarding copyright ownership.
-	 * The ASF licenses this file to You under the Apache License, Version 2.0
-	 * (the "License"); you may not use this file except in compliance with
-	 * the License.  You may obtain a copy of the License at
-	 *
-	 *     http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 */
+     * Licensed to the Apache Software Foundation (ASF) under one or more
+     * contributor license agreements.  See the NOTICE file distributed with
+     * this work for additional information regarding copyright ownership.
+     * The ASF licenses this file to You under the Apache License, Version 2.0
+     * (the "License"); you may not use this file except in compliance with
+     * the License.  You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
 
     /// <summary>
     /// <para>A <see cref="ShingleFilter"/> constructs shingles (token n-grams) from a token stream.
@@ -69,7 +70,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
         /// The sequence of input stream tokens (or filler tokens, if necessary)
         /// that will be composed to form output shingles.
         /// </summary>
-        private LinkedList<InputWindowToken> inputWindow = new LinkedList<InputWindowToken>();
+        private readonly Queue<InputWindowToken> inputWindow = new Queue<InputWindowToken>();
 
         /// <summary>
         /// The number of input tokens in the next output token.  This is the "n" in
@@ -80,7 +81,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
         /// <summary>
         /// Shingle and unigram text is composed here.
         /// </summary>
-        private StringBuilder gramBuilder = new StringBuilder();
+        private readonly StringBuilder gramBuilder = new StringBuilder();
 
         /// <summary>
         /// The token type attribute value to use - default is "shingle"
@@ -260,7 +261,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
         {
             if (maxShingleSize < 2)
             {
-                throw new System.ArgumentException("Max shingle size must be >= 2");
+                throw new ArgumentException("Max shingle size must be >= 2");
             }
             this.maxShingleSize = maxShingleSize;
         }
@@ -281,11 +282,11 @@ namespace YAF.Lucene.Net.Analysis.Shingle
         {
             if (minShingleSize < 2)
             {
-                throw new System.ArgumentException("Min shingle size must be >= 2");
+                throw new ArgumentException("Min shingle size must be >= 2");
             }
             if (minShingleSize > maxShingleSize)
             {
-                throw new System.ArgumentException("Min shingle size must be <= max shingle size");
+                throw new ArgumentException("Min shingle size must be <= max shingle size");
             }
             this.minShingleSize = minShingleSize;
             gramSize = new CircularSequence(this);
@@ -296,7 +297,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
         /// <param name="tokenSeparator"> used to separate input stream tokens in output shingles </param>
         public void SetTokenSeparator(string tokenSeparator)
         {
-            this.tokenSeparator = null == tokenSeparator ? "" : tokenSeparator;
+            this.tokenSeparator = tokenSeparator ?? string.Empty;
         }
 
         /// <summary>
@@ -306,7 +307,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
         /// <param name="fillerToken"> string to insert at each position where there is no token </param>
         public void SetFillerToken(string fillerToken)
         {
-            this.fillerToken = null == fillerToken ? new char[0] : fillerToken.ToCharArray();
+            this.fillerToken = null == fillerToken ? Arrays.Empty<char>() : fillerToken.ToCharArray();
         }
 
         public override bool IncrementToken()
@@ -355,7 +356,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
                 }
                 if (!isAllFiller && builtGramSize == gramSize.Value)
                 {
-                    inputWindow.First.Value.attSource.CopyTo(this);
+                    inputWindow.Peek().attSource.CopyTo(this);
                     posIncrAtt.PositionIncrement = isOutputHere ? 0 : 1;
                     termAtt.SetEmpty().Append(gramBuilder);
                     if (gramSize.Value > 1)
@@ -393,7 +394,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
             {
                 if (null == target)
                 {
-                    newTarget = new InputWindowToken(this, nextInputStreamToken.CloneAttributes());
+                    newTarget = new InputWindowToken(nextInputStreamToken.CloneAttributes());
                 }
                 else
                 {
@@ -409,7 +410,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
             {
                 if (null == target)
                 {
-                    newTarget = new InputWindowToken(this, nextInputStreamToken.CloneAttributes());
+                    newTarget = new InputWindowToken(nextInputStreamToken.CloneAttributes());
                 }
                 else
                 {
@@ -424,7 +425,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
                 {
                     if (null == target)
                     {
-                        newTarget = new InputWindowToken(this, CloneAttributes());
+                        newTarget = new InputWindowToken(CloneAttributes());
                     }
                     else
                     {
@@ -510,8 +511,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
             InputWindowToken firstToken = null;
             if (inputWindow.Count > 0)
             {
-                firstToken = inputWindow.First.Value;
-                inputWindow.Remove(firstToken);
+                firstToken = inputWindow.Dequeue();
             }
             while (inputWindow.Count < maxShingleSize)
             {
@@ -519,7 +519,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
                 {
                     if (null != GetNextToken(firstToken))
                     {
-                        inputWindow.AddLast(firstToken); // the firstToken becomes the last
+                        inputWindow.Enqueue(firstToken); // the firstToken becomes the last
                         firstToken = null;
                     }
                     else
@@ -532,7 +532,7 @@ namespace YAF.Lucene.Net.Analysis.Shingle
                     InputWindowToken nextToken = GetNextToken(null);
                     if (null != nextToken)
                     {
-                        inputWindow.AddLast(nextToken);
+                        inputWindow.Enqueue(nextToken);
                     }
                     else
                     {
@@ -588,22 +588,16 @@ namespace YAF.Lucene.Net.Analysis.Shingle
             private int previousValue;
             private int minValue;
 
-            public CircularSequence(ShingleFilter outerInstance)
+            public CircularSequence(ShingleFilter shingleFilter)
             {
-                this.outerInstance = outerInstance;
-                minValue = outerInstance.outputUnigrams ? 1 : outerInstance.minShingleSize;
+                this.outerInstance = shingleFilter;
+                minValue = shingleFilter.outputUnigrams ? 1 : shingleFilter.minShingleSize;
                 Reset();
             }
 
             /// <returns> the current value. </returns>
             /// <seealso cref="Advance()"/>
-            public virtual int Value
-            {
-                get
-                {
-                    return value;
-                }
-            }
+            public virtual int Value => value;
 
             /// <summary>
             /// <para>Increments this circular number's value to the next member in the
@@ -665,33 +659,24 @@ namespace YAF.Lucene.Net.Analysis.Shingle
             }
 
             /// <returns> the value this instance had before the last <see cref="Advance()"/> call </returns>
-            public virtual int PreviousValue
-            {
-                get
-                {
-                    return previousValue;
-                }
-            }
+            public virtual int PreviousValue => previousValue;
 
             internal virtual int MinValue // LUCENENET specific - added to encapsulate minValue field
             {
-                get { return minValue; }
-                set { minValue = value; }
+                get => minValue;
+                set => minValue = value;
             }
         }
 
         private class InputWindowToken
         {
-            private readonly ShingleFilter outerInstance;
-
             internal readonly AttributeSource attSource;
             internal readonly ICharTermAttribute termAtt;
             internal readonly IOffsetAttribute offsetAtt;
             internal bool isFiller = false;
 
-            public InputWindowToken(ShingleFilter outerInstance, AttributeSource attSource)
+            public InputWindowToken(AttributeSource attSource)
             {
-                this.outerInstance = outerInstance;
                 this.attSource = attSource;
                 this.termAtt = attSource.GetAttribute<ICharTermAttribute>();
                 this.offsetAtt = attSource.GetAttribute<IOffsetAttribute>();

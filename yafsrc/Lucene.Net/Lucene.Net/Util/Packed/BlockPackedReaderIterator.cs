@@ -1,6 +1,7 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Support;
 using System;
-using System.Diagnostics;
+using System.IO;
 
 namespace YAF.Lucene.Net.Util.Packed
 {
@@ -128,7 +129,7 @@ namespace YAF.Lucene.Net.Util.Packed
         public void Reset(DataInput @in, long valueCount)
         {
             this.@in = @in;
-            Debug.Assert(valueCount >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(valueCount >= 0);
             this.valueCount = valueCount;
             off = blockSize;
             ord = 0;
@@ -138,10 +139,10 @@ namespace YAF.Lucene.Net.Util.Packed
         /// Skip exactly <paramref name="count"/> values. </summary>
         public void Skip(long count)
         {
-            Debug.Assert(count >= 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(count >= 0);
             if (ord + count > valueCount || ord + count < 0)
             {
-                throw new System.IO.EndOfStreamException();
+                throw new EndOfStreamException();
             }
 
             // 1. skip buffered values
@@ -155,14 +156,14 @@ namespace YAF.Lucene.Net.Util.Packed
             }
 
             // 2. skip as many blocks as necessary
-            Debug.Assert(off == blockSize);
+            if (Debugging.AssertsEnabled) Debugging.Assert(off == blockSize);
             while (count >= blockSize)
             {
                 int token = @in.ReadByte() & 0xFF;
                 int bitsPerValue = (int)((uint)token >> AbstractBlockPackedWriter.BPV_SHIFT);
                 if (bitsPerValue > 64)
                 {
-                    throw new System.IO.IOException("Corrupted");
+                    throw new IOException("Corrupted");
                 }
                 if ((token & AbstractBlockPackedWriter.MIN_VALUE_EQUALS_0) == 0)
                 {
@@ -179,7 +180,7 @@ namespace YAF.Lucene.Net.Util.Packed
             }
 
             // 3. skip last values
-            Debug.Assert(count < blockSize);
+            if (Debugging.AssertsEnabled) Debugging.Assert(count < blockSize);
             Refill();
             ord += count;
             off += (int)count;
@@ -187,10 +188,9 @@ namespace YAF.Lucene.Net.Util.Packed
 
         private void SkipBytes(long count)
         {
-            if (@in is IndexInput)
+            if (@in is IndexInput input)
             {
-                IndexInput iin = (IndexInput)@in;
-                iin.Seek(iin.GetFilePointer() + count);
+                input.Seek(input.GetFilePointer() + count);
             }
             else
             {
@@ -214,7 +214,7 @@ namespace YAF.Lucene.Net.Util.Packed
         {
             if (ord == valueCount)
             {
-                throw new System.IO.EndOfStreamException();
+                throw new EndOfStreamException();
             }
             if (off == blockSize)
             {
@@ -229,10 +229,10 @@ namespace YAF.Lucene.Net.Util.Packed
         /// Read between <c>1</c> and <paramref name="count"/> values. </summary>
         public Int64sRef Next(int count)
         {
-            Debug.Assert(count > 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(count > 0);
             if (ord == valueCount)
             {
-                throw new System.IO.EndOfStreamException();
+                throw new EndOfStreamException();
             }
             if (off == blockSize)
             {
@@ -256,10 +256,10 @@ namespace YAF.Lucene.Net.Util.Packed
             int bitsPerValue = (int)((uint)token >> AbstractBlockPackedWriter.BPV_SHIFT);
             if (bitsPerValue > 64)
             {
-                throw new System.IO.IOException("Corrupted");
+                throw new IOException("Corrupted");
             }
             long minValue = minEquals0 ? 0L : ZigZagDecode(1L + ReadVInt64(@in));
-            Debug.Assert(minEquals0 || minValue != 0);
+            if (Debugging.AssertsEnabled) Debugging.Assert(minEquals0 || minValue != 0);
 
             if (bitsPerValue == 0)
             {
@@ -294,9 +294,6 @@ namespace YAF.Lucene.Net.Util.Packed
 
         /// <summary>
         /// Return the offset of the next value to read. </summary>
-        public long Ord
-        {
-            get { return ord; }
-        }
+        public long Ord => ord;
     }
 }

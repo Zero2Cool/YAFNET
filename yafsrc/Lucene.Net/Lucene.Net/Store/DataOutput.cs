@@ -1,5 +1,6 @@
+using YAF.Lucene.Net.Diagnostics;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 
 namespace YAF.Lucene.Net.Store
 {
@@ -192,7 +193,7 @@ namespace YAF.Lucene.Net.Store
         /// </summary>
         /// <param name="i"> Smaller values take fewer bytes.  Negative numbers are
         /// supported, but should be avoided. </param>
-        /// <exception cref="System.IO.IOException"> If there is an I/O error writing to the underlying medium. </exception>
+        /// <exception cref="IOException"> If there is an I/O error writing to the underlying medium. </exception>
         /// <seealso cref="DataInput.ReadVInt32()"/>
         public void WriteVInt32(int i)
         {
@@ -230,7 +231,7 @@ namespace YAF.Lucene.Net.Store
         /// <seealso cref="DataInput.ReadVInt64()"/>
         public void WriteVInt64(long i)
         {
-            Debug.Assert(i >= 0L);
+            if (Debugging.AssertsEnabled) Debugging.Assert(i >= 0L);
             while ((i & ~0x7FL) != 0L)
             {
                 WriteByte((byte)unchecked((sbyte)((i & 0x7FL) | 0x80L)));
@@ -261,7 +262,7 @@ namespace YAF.Lucene.Net.Store
         /// Copy numBytes bytes from input to ourself. </summary>
         public virtual void CopyBytes(DataInput input, long numBytes)
         {
-            Debug.Assert(numBytes >= 0, "numBytes=" + numBytes);
+            if (Debugging.AssertsEnabled) Debugging.Assert(numBytes >= 0, () => "numBytes=" + numBytes);
             long left = numBytes;
             if (copyBuffer == null)
             {

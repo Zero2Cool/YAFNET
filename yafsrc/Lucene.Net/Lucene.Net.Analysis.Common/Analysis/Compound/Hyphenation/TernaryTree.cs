@@ -401,10 +401,7 @@ namespace YAF.Lucene.Net.Analysis.Compound.Hyphenation
             m_sc = na;
         }
 
-        public virtual int Length
-        {
-            get { return m_length; }
-        }
+        public virtual int Length => m_length;
 
         public virtual object Clone()
         {
@@ -583,18 +580,18 @@ namespace YAF.Lucene.Net.Analysis.Compound.Hyphenation
             /// <summary>
             /// Node stack
             /// </summary>
-            private Stack<Item> ns;
+            private readonly Stack<Item> ns;
 
             /// <summary>
             /// key stack implemented with a <see cref="StringBuilder"/>
             /// </summary>
-            private StringBuilder ks;
+            private readonly StringBuilder ks;
 
             private bool isInitialized = false;
 
-            public Iterator(TernaryTree outerInstance)
+            public Iterator(TernaryTree ternaryTree)
             {
-                this.outerInstance = outerInstance;
+                this.outerInstance = ternaryTree;
                 cur = -1;
                 ns = new Stack<Item>();
                 ks = new StringBuilder();
@@ -741,23 +738,18 @@ namespace YAF.Lucene.Net.Analysis.Compound.Hyphenation
             }
 
             #region Added for better .NET support
-            public string Current
-            {
-                get
-                {
-                    return curkey;
-                }
-            }
+            public string Current => curkey;
 
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
+            object IEnumerator.Current => Current;
 
             public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            // LUCENENET specific - implemented proper dispose pattern
+            protected virtual void Dispose(bool disposing)
             {
                 // nothing to do
             }

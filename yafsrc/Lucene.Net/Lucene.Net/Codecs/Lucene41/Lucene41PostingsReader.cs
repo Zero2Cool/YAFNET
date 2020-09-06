@@ -1,3 +1,4 @@
+using YAF.Lucene.Net.Diagnostics;
 using YAF.Lucene.Net.Index;
 using YAF.Lucene.Net.Store;
 using YAF.Lucene.Net.Support;
@@ -394,20 +395,14 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                 return this;
             }
 
-            public override int Freq
-            {
-                get { return freq; }
-            }
+            public override int Freq => freq;
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             private void RefillDocs()
             {
                 int left = docFreq - docUpto;
-                Debug.Assert(left > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(left > 0);
 
                 if (left >= Lucene41PostingsFormat.BLOCK_SIZE)
                 {
@@ -516,7 +511,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
 
                     if (!skipped)
                     {
-                        Debug.Assert(skipOffset != -1);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(skipOffset != -1);
                         // this is the first time this enum has skipped
                         // since reset() was called; load the skip data:
                         skipper.Init(docTermStartFP + skipOffset, docTermStartFP, 0, 0, docFreq);
@@ -533,7 +528,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                         // if (DEBUG) {
                         //   System.out.println("skipper moved to docUpto=" + newDocUpto + " vs current=" + docUpto + "; docID=" + skipper.getDoc() + " fp=" + skipper.getDocPointer());
                         // }
-                        Debug.Assert(newDocUpto % Lucene41PostingsFormat.BLOCK_SIZE == 0, "got " + newDocUpto);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(newDocUpto % Lucene41PostingsFormat.BLOCK_SIZE == 0, () => "got " + newDocUpto);
                         docUpto = newDocUpto;
 
                         // Force to read next block
@@ -729,20 +724,14 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                 return this;
             }
 
-            public override int Freq
-            {
-                get { return freq; }
-            }
+            public override int Freq => freq;
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             private void RefillDocs()
             {
                 int left = docFreq - docUpto;
-                Debug.Assert(left > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(left > 0);
 
                 if (left >= Lucene41PostingsFormat.BLOCK_SIZE)
                 {
@@ -886,7 +875,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
 
                     if (!skipped)
                     {
-                        Debug.Assert(skipOffset != -1);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(skipOffset != -1);
                         // this is the first time this enum has skipped
                         // since reset() was called; load the skip data:
                         // if (DEBUG) {
@@ -905,7 +894,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                         //   System.out.println("    skipper moved to docUpto=" + newDocUpto + " vs current=" + docUpto + "; docID=" + skipper.getDoc() + " fp=" + skipper.getDocPointer() + " pos.fp=" + skipper.getPosPointer() + " pos.bufferUpto=" + skipper.getPosBufferUpto());
                         // }
 
-                        Debug.Assert(newDocUpto % Lucene41PostingsFormat.BLOCK_SIZE == 0, "got " + newDocUpto);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(newDocUpto % Lucene41PostingsFormat.BLOCK_SIZE == 0, () => "got " + newDocUpto);
                         docUpto = newDocUpto;
 
                         // Force to read next block
@@ -994,7 +983,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                         // if (DEBUG) {
                         //   System.out.println("        skip whole block @ fp=" + posIn.getFilePointer());
                         // }
-                        Debug.Assert(posIn.GetFilePointer() != lastPosBlockFP);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(posIn.GetFilePointer() != lastPosBlockFP);
                         outerInstance.forUtil.SkipBlock(posIn);
                         toSkip -= Lucene41PostingsFormat.BLOCK_SIZE;
                     }
@@ -1044,15 +1033,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                 return position;
             }
 
-            public override int StartOffset
-            {
-                get { return -1; }
-            }
+            public override int StartOffset => -1;
 
-            public override int EndOffset
-            {
-                get { return -1; }
-            }
+            public override int EndOffset => -1;
 
             public override BytesRef GetPayload()
             {
@@ -1246,20 +1229,14 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                 return this;
             }
 
-            public override int Freq
-            {
-                get { return freq; }
-            }
+            public override int Freq => freq;
 
-            public override int DocID
-            {
-                get { return doc; }
-            }
+            public override int DocID => doc;
 
             private void RefillDocs()
             {
                 int left = docFreq - docUpto;
-                Debug.Assert(left > 0);
+                if (Debugging.AssertsEnabled) Debugging.Assert(left > 0);
 
                 if (left >= Lucene41PostingsFormat.BLOCK_SIZE)
                 {
@@ -1473,7 +1450,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
 
                     if (!skipped)
                     {
-                        Debug.Assert(skipOffset != -1);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(skipOffset != -1);
                         // this is the first time this enum has skipped
                         // since reset() was called; load the skip data:
                         // if (DEBUG) {
@@ -1491,7 +1468,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                         // if (DEBUG) {
                         //   System.out.println("    skipper moved to docUpto=" + newDocUpto + " vs current=" + docUpto + "; docID=" + skipper.getDoc() + " fp=" + skipper.getDocPointer() + " pos.fp=" + skipper.getPosPointer() + " pos.bufferUpto=" + skipper.getPosBufferUpto() + " pay.fp=" + skipper.getPayPointer() + " lastStartOffset=" + lastStartOffset);
                         // }
-                        Debug.Assert(newDocUpto % Lucene41PostingsFormat.BLOCK_SIZE == 0, "got " + newDocUpto);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(newDocUpto % Lucene41PostingsFormat.BLOCK_SIZE == 0, () => "got " + newDocUpto);
                         docUpto = newDocUpto;
 
                         // Force to read next block
@@ -1591,7 +1568,7 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                         // if (DEBUG) {
                         //   System.out.println("        skip whole block @ fp=" + posIn.getFilePointer());
                         // }
-                        Debug.Assert(posIn.GetFilePointer() != lastPosBlockFP);
+                        if (Debugging.AssertsEnabled) Debugging.Assert(posIn.GetFilePointer() != lastPosBlockFP);
                         outerInstance.forUtil.SkipBlock(posIn);
 
                         if (indexHasPayloads)
@@ -1694,15 +1671,9 @@ namespace YAF.Lucene.Net.Codecs.Lucene41
                 return position;
             }
 
-            public override int StartOffset
-            {
-                get { return startOffset; }
-            }
+            public override int StartOffset => startOffset;
 
-            public override int EndOffset
-            {
-                get { return endOffset; }
-            }
+            public override int EndOffset => endOffset;
 
             public override BytesRef GetPayload()
             {

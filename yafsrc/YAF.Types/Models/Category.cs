@@ -38,13 +38,6 @@ namespace YAF.Types.Models
     [UniqueConstraint(nameof(BoardID), nameof(Name))]
     public partial class Category : IEntity, IHaveID, IHaveBoardID
     {
-        partial void OnCreated();
-
-        public Category()
-        {
-            this.OnCreated();
-        }
-
         #region Properties
 
         [AutoIncrement]
@@ -66,10 +59,6 @@ namespace YAF.Types.Models
 
         [StringLength(255)]
         public string CategoryImage { get; set; }
-
-        [References(typeof(PollGroupCluster))]
-        public int? PollGroupID { get; set; }
-
 
         #endregion
     }

@@ -26,10 +26,8 @@ namespace YAF.Web.Controls
     #region Using
 
     using System.Collections.Generic;
-    using System.Text;
     using System.Web.UI;
-    using System.Web.UI.WebControls;
-
+    
     using YAF.Core.BaseControls;
     using YAF.Types;
     using YAF.Types.Extensions;
@@ -73,45 +71,11 @@ namespace YAF.Web.Controls
         /// <summary>
         ///   Gets or sets Control.
         /// </summary>
-        public string Control { get; set; } = string.Empty;
-
-        /// <summary>
-        ///   Gets or sets Control.
-        /// </summary>
         public string ButtonId { get; set; }
-
-        /// <summary>
-        ///   Gets or sets Right-Alignment (default: left).
-        /// </summary>
-        public bool AlignRight { get; set; } = false;
-
-
 
         #endregion
 
         #region Public Methods
-
-        /// <summary>
-        /// The attach.
-        /// </summary>
-        /// <param name="control">
-        /// The control.
-        /// </param>
-        public void Attach([NotNull] WebControl control)
-        {
-            this.ButtonId = control.ClientID;
-        }
-
-        /// <summary>
-        /// The attach.
-        /// </summary>
-        /// <param name="userLinkControl">
-        /// The user link control.
-        /// </param>
-        public void Attach([NotNull] UserLink userLinkControl)
-        {
-            this.ButtonId = userLinkControl.ClientID;
-        }
 
         /// <summary>
         /// Attaches the specified theme button.
@@ -209,14 +173,10 @@ namespace YAF.Web.Controls
                 return;
             }
 
-            var sb = new StringBuilder();
-
-            sb.AppendFormat(
-                @"<div class=""dropdown-menu{2}"" id=""{0}"" aria-labelledby=""{1}"">",
+            writer.Write(
+                @"<div class=""dropdown-menu dropdown-menu-right"" id=""{0}"" aria-labelledby=""{1}"">",
                 this.ClientID,
-                this.ButtonId,
-                this.AlignRight ? " dropdown-menu-right" : string.Empty
-                );
+                this.ButtonId);
 
             // add the items
             this.items.ForEach(
@@ -244,16 +204,14 @@ namespace YAF.Web.Controls
                             iconImage = $@"<i class=""{thisItem.Icon}""></i>&nbsp;";
                         }
 
-                        sb.AppendFormat(
+                        writer.Write(
                             @"<a class=""dropdown-item"" onclick=""{2}"" title=""{1}"" href=""#"">{0}{1}</a>",
                             iconImage,
                             thisItem.Description,
                             onClick);
                     });
 
-            sb.AppendFormat("</div>");
-
-            writer.WriteLine(sb.ToString());
+            writer.Write("</div>");
 
             base.Render(writer);
         }

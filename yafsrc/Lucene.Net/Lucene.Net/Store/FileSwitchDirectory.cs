@@ -1,7 +1,7 @@
+using J2N.Collections.Generic.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using JCG = J2N.Collections.Generic;
 
 namespace YAF.Lucene.Net.Store
@@ -53,23 +53,11 @@ namespace YAF.Lucene.Net.Store
 
         /// <summary>
         /// Return the primary directory </summary>
-        public virtual Directory PrimaryDir
-        {
-            get
-            {
-                return primaryDir;
-            }
-        }
+        public virtual Directory PrimaryDir => primaryDir;
 
         /// <summary>
         /// Return the secondary directory </summary>
-        public virtual Directory SecondaryDir
-        {
-            get
-            {
-                return secondaryDir;
-            }
-        }
+        public virtual Directory SecondaryDir => secondaryDir;
 
         protected override void Dispose(bool disposing)
         {
