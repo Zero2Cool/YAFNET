@@ -179,6 +179,7 @@ namespace YAF.Core.Nntp
 
                             // update the group lastMessage info...
                             BoardContext.Current.GetRepository<NntpForum>().Update(
+                                nntpForum.Item1.ForumID,
                                 nntpForum.Item1.ID,
                                 currentMessage,
                                 guestUserId);
@@ -242,17 +243,16 @@ namespace YAF.Core.Nntp
 
                                 if (createUsers)
                                 {
-                                    guestUserId = BoardContext.Current.GetRepository<User>().CreateNntpUser(
+                                    guestUserId = BoardContext.Current.GetRepository<User>().UpdateNntpUser(
                                         boardID,
                                         fromName,
-                                        string.Empty,
-                                        article.Header.TimeZoneOffset);
+                                        string.Empty);
                                 }
 
                                 var body = ReplaceBody(article.Body.Text.Trim());
 
                                 BoardContext.Current.GetRepository<NntpTopic>().SaveMessage(
-                                    nntpForumID,
+                                    nntpForum.Item1,
                                     subject.Truncate(75),
                                     body,
                                     guestUserId,
@@ -280,6 +280,7 @@ namespace YAF.Core.Nntp
 
                                 count = 0;
                                 BoardContext.Current.GetRepository<NntpForum>().Update(
+                                    nntpForum.Item1.ForumID,
                                     nntpForum.Item1.ID,
                                     lastMessageNo,
                                     guestUserId);
@@ -302,6 +303,7 @@ namespace YAF.Core.Nntp
                         }
 
                         BoardContext.Current.GetRepository<NntpForum>().Update(
+                            nntpForum.Item1.ForumID,
                             nntpForum.Item1.ID,
                             lastMessageNo,
                             guestUserId);

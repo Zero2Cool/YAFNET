@@ -144,9 +144,6 @@ namespace YAF.Core.Services
         /// <param name="forumName">
         /// The forum name.
         /// </param>
-        /// <param name="timeZone">
-        /// The time zone.
-        /// </param>
         /// <param name="culture">
         /// The culture.
         /// </param>
@@ -169,42 +166,43 @@ namespace YAF.Core.Services
         /// The admin provider user key.
         /// </param>
         public void InitializeForum(
-            Guid applicationId,
-            string forumName,
-            string timeZone,
-            string culture,
-            string forumEmail,
-            string forumLogo,
-            string forumBaseUrlMask,
-            string adminUserName,
-            string adminEmail,
-            object adminProviderUserKey)
+            [NotNull] Guid applicationId,
+            [NotNull] string forumName,
+            [NotNull] string culture,
+            [NotNull] string forumEmail,
+            [NotNull] string forumLogo,
+            [NotNull] string forumBaseUrlMask,
+            [NotNull] string adminUserName,
+            [NotNull] string adminEmail,
+            [NotNull] string adminProviderUserKey)
         {
             var cult = StaticDataHelper.Cultures();
             var langFile = "english.xml";
 
-            cult.Where(dataRow => dataRow.CultureTag == culture)
-                .ForEach(dataRow => langFile = dataRow.CultureFile);
+            cult.Where(c => c.CultureTag == culture)
+                .ForEach(c => langFile = c.CultureFile);
 
-            this.GetRepository<Board>().SystemInitialize(
-                forumName,
-                timeZone,
-                culture,
-                langFile,
-                forumEmail,
-                forumLogo,
-                forumBaseUrlMask,
-                string.Empty,
-                adminUserName,
-                adminEmail,
-                adminProviderUserKey,
-                Config.CreateDistinctRoles && Config.IsAnyPortal ? "YAF " : string.Empty);
-
+            // -- initialize required 'registry' settings
             this.GetRepository<Registry>().Save("applicationid", applicationId.ToString());
             this.GetRepository<Registry>().Save("version", BoardInfo.AppVersion.ToString());
             this.GetRepository<Registry>().Save("versionname", BoardInfo.AppVersionName);
 
-            this.ImportStatics();
+            this.GetRepository<Registry>().Save("forumemail", forumEmail);
+            this.GetRepository<Registry>().Save("forumlogo", forumLogo);
+            this.GetRepository<Registry>().Save("baseurlmask", forumBaseUrlMask);
+
+            this.GetRepository<Board>().Create(
+                forumName,
+                forumEmail,
+                culture,
+                langFile,
+                adminUserName,
+                adminEmail,
+                adminProviderUserKey,
+                true,
+                Config.CreateDistinctRoles && Config.IsAnyPortal ? "YAF " : string.Empty);
+
+            this.AddOrUpdateExtensions();
         }
 
         /// <summary>
@@ -222,63 +220,62 @@ namespace YAF.Core.Services
         }
 
         /// <summary>
-        /// The upgrade database.
+        /// Initialize Or Upgrade the Database
         /// </summary>
-        /// <param name="upgradeExtensions">
-        /// The upgrade Extensions.
+        /// <param name="updateExtensions">
+        /// update Extensions ?!.
         /// </param>
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool UpgradeDatabase(bool upgradeExtensions)
+        public bool InitializeOrUpgradeDatabase(bool updateExtensions)
         {
             var isForumInstalled = this.IsForumInstalled;
 
-            // try
-            this.FixAccess(false);
-
-            this.CreateTablesIfNotExists();
+            this.CreateOrUpdateTables();
 
             if (!isForumInstalled)
             {
                 this.ExecuteInstallScripts();
             }
-            else
-            {
-                // TODO Move to ORM
-                // this.UpdateTables();
-                this.ExecuteUpgradeScripts();
-            }
-
-            this.FixAccess(true);
 
             var prevVersion = this.GetRepository<Registry>().GetDbVersion();
 
             this.GetRepository<Registry>().Save("version", BoardInfo.AppVersion.ToString());
             this.GetRepository<Registry>().Save("versionname", BoardInfo.AppVersionName);
 
-            // Ederon : 9/7/2007
-            // re-sync all boards - necessary for proper last post bubbling
-            this.GetRepository<Board>().ReSync();
-
             if (isForumInstalled)
             {
+                if (prevVersion >= 80)
+                {
+                    this.ExecuteNewUpgradeScripts();
+                }
+                else
+                {
+                    this.ExecuteUpgradeScripts();
+
+                    this.ExecuteScript(this.DbAccess.Information.FullTextUpgradeScript, false);
+                }
+
                 if (prevVersion < 80)
                 {
                     // Upgrade to ASPNET Identity
                     this.DbAccess.Information.IdentityUpgradeScripts.ForEach(script => this.ExecuteScript(script, true));
-                    
+
                     this.Get<ITaskModuleManager>().StartTask(MigrateAttachmentsTask.TaskName, () => new MigrateAttachmentsTask());
 
                     while (this.Get<ITaskModuleManager>().IsTaskRunning(MigrateAttachmentsTask.TaskName))
                     {
                         Thread.Sleep(100);
                     }
+
+                    // Delete old registry Settings
+                    this.GetRepository<Registry>().DeleteLegacy();
                 }
 
-                if (prevVersion < 30 || upgradeExtensions)
+                if (prevVersion < 30 || updateExtensions)
                 {
-                    this.ImportStatics();
+                    this.AddOrUpdateExtensions();
                 }
 
                 if (prevVersion < 42)
@@ -302,11 +299,6 @@ namespace YAF.Core.Services
                 this.GetRepository<Registry>().Save("cdvversion", this.Get<BoardSettings>().CdvVersion++);
 
                 this.Get<IDataCache>().Remove(Constants.Cache.Version);
-            }
-
-            if (this.IsForumInstalled)
-            {
-                this.ExecuteScript(this.DbAccess.Information.FullTextUpgradeScript, false);
             }
 
             // run custom script...
@@ -349,6 +341,24 @@ namespace YAF.Core.Services
         private void ExecuteUpgradeScripts()
         {
             this.DbAccess.Information.UpgradeScripts.ForEach(script => this.ExecuteScript(script, true));
+        }
+
+        /// <summary>
+        /// Executes the New upgrade scripts.
+        /// </summary>
+        private void ExecuteNewUpgradeScripts()
+        {
+            this.DbAccess.Information.NewUpgradeScripts.ForEach(script => this.ExecuteScript(script, true));
+        }
+
+        /// <summary>
+        /// Crate Tables and Update Tables
+        /// </summary>
+        private void CreateOrUpdateTables()
+        {
+            this.CreateTablesIfNotExists();
+
+            this.UpdateTables();
         }
 
         /// <summary>
@@ -414,10 +424,13 @@ namespace YAF.Core.Services
             this.DbAccess.Execute(db => db.Connection.CreateTableIfNotExists<ProfileCustom>());
         }
 
-        /*private void UpdateTables()
+        /// <summary>
+        /// Update Tables.
+        /// </summary>
+        private void UpdateTables()
         {
             // Add Missing Ids
-            this.DbAccess.Execute(
+            /*this.DbAccess.Execute(
                 db =>
                 {
                     if (!db.Connection.ColumnExists<ActiveAccess>(x => x.Id))
@@ -426,8 +439,8 @@ namespace YAF.Core.Services
                     }
 
                     return true;
-                });
-        }*/
+                });*/
+        }
 
         /// <summary>
         /// The execute script.
@@ -460,18 +473,9 @@ namespace YAF.Core.Services
         }
 
         /// <summary>
-        /// Fixes the access.
+        ///    Add or Update BBCode Extensions and Spam Words
         /// </summary>
-        /// <param name="grantAccess">if set to <c>true</c> [grant access].</param>
-        private void FixAccess(bool grantAccess)
-        {
-            this.Get<IDbFunction>().SystemInitializeFixAccess(grantAccess);
-        }
-
-        /// <summary>
-        ///     The import statics.
-        /// </summary>
-        private void ImportStatics()
+        private void AddOrUpdateExtensions()
         {
             var loadWrapper = new Action<string, Action<Stream>>(
                 (file, streamAction) =>

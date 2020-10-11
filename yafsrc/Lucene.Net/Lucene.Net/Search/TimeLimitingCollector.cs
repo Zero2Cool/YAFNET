@@ -25,8 +25,8 @@ namespace YAF.Lucene.Net.Search
      * limitations under the License.
      */
 
-    using AtomicReaderContext = YAF.Lucene.Net.Index.AtomicReaderContext;
-    using Counter = YAF.Lucene.Net.Util.Counter;
+    using AtomicReaderContext = Lucene.Net.Index.AtomicReaderContext;
+    using Counter = Lucene.Net.Util.Counter;
 
     /// <summary>
     /// The <see cref="TimeLimitingCollector"/> is used to timeout search requests that
@@ -147,12 +147,12 @@ namespace YAF.Lucene.Net.Search
         }
 
         /// <summary>
-        /// Syntactic sugar for <see cref="SetBaseline(long)"/> using <see cref="Counter.Get()"/>
+        /// Syntactic sugar for <see cref="SetBaseline(long)"/> using <see cref="Counter.Value"/>
         /// on the clock passed to the constructor.
         /// </summary>
         public virtual void SetBaseline()
         {
-            SetBaseline(clock.Get());
+            SetBaseline(clock);
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace YAF.Lucene.Net.Search
         ///           If the time allowed has exceeded. </exception>
         public virtual void Collect(int doc)
         {
-            long time = clock.Get();
+            long time = clock;
             if (timeout < time)
             {
                 if (greedy)
@@ -303,12 +303,12 @@ namespace YAF.Lucene.Net.Search
                 {
                     // TODO: Use System.nanoTime() when Lucene moves to Java SE 5.
                     counter.AddAndGet(resolution);
-//#if !NETSTANDARD1_6
+//#if FEATURE_THREAD_INTERRUPT
 //                    try
 //                    {
 //#endif
                         Thread.Sleep(TimeSpan.FromMilliseconds(Interlocked.Read(ref resolution)));
-//#if !NETSTANDARD1_6 // LUCENENET NOTE: Senseless to catch and rethrow the same exception type
+//#if FEATURE_THREAD_INTERRUPT // LUCENENET NOTE: Senseless to catch and rethrow the same exception type
 //                    }
 //                    catch (ThreadInterruptedException ie)
 //                    {

@@ -1,5 +1,5 @@
 /*
- * blueimp Gallery JS v3.1.1
+ * blueimp Gallery JS v3.3.0
  * https://github.com/blueimp/Gallery
  *
  * Copyright 2013, Sebastian Tschan
@@ -105,7 +105,7 @@
       // The class for the "next" control:
       nextClass: "next",
       // The class for the "close" control:
-      closeClass: "close",
+      closeClass: "btn-close",
       // The class for the "play-pause" toggle control:
       playPauseClass: "play-pause",
       // The list object property (or data attribute) with the object type:
@@ -1516,8 +1516,7 @@
       } else {
         this.handleOpen();
       }
-        if (this.options.hidePageScrollbars
-            ) {
+      if (this.options.hidePageScrollbars) {
         // Hide the page scrollbars:
         this.bodyOverflowStyle = document.body.style.overflow;
         document.body.style.overflow = "hidden";

@@ -11,25 +11,16 @@ namespace YAF.Controls
 {
 
 
-    public partial class ForumCategoryList
+    public partial class CategoryList
     {
 
         /// <summary>
-        /// UpdatePanelCategory control.
+        /// Categories control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel UpdatePanelCategory;
-
-        /// <summary>
-        /// CategoryList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater CategoryList;
+        protected global::System.Web.UI.WebControls.Repeater Categories;
     }
 }

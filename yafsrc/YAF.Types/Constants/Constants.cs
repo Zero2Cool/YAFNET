@@ -77,9 +77,19 @@ namespace YAF.Types.Constants
             public const string BoardUserStats = "BoardUserStats";
 
             /// <summary>
+            ///   The board user members.
+            /// </summary>
+            public const string BoardMembers = "BoardMembers";
+
+            /// <summary>
             ///   The custom bb code.
             /// </summary>
             public const string CustomBBCode = "CustomBBCode";
+
+            /// <summary>
+            ///   The user data which is not refreshed too often.
+            /// </summary>
+            public const string UserCustomProfileData = "UserCustomProfileData{0}";
 
             /// <summary>
             ///   The favorite topic list.
@@ -90,11 +100,6 @@ namespace YAF.Types.Constants
             ///   The first post cleaned.
             /// </summary>
             public const string FirstPostCleaned = "FirstPostCleaned{0}{1}";
-
-            /// <summary>
-            ///   The forum active discussions.
-            /// </summary>
-            public const string ForumActiveDiscussions = "ForumActiveDiscussions";
 
             /// <summary>
             ///   The forum category.

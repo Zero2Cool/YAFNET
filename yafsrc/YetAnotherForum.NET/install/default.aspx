@@ -431,16 +431,6 @@
                                      CssClass="form-control"/>
                     </div>
                     <div class="mb-3">
-                        <asp:Label id="Label6" runat="server" 
-                                   AssociatedControlId="TimeZones">
-                            <%# YAF.App_GlobalResources.Install.TimeZone %>
-                        </asp:Label>
-                        <asp:DropDownList ID="TimeZones" runat="server" 
-                                          DataTextField="Name" 
-                                          DataValueField="Value" 
-                                          CssClass="form-select" />
-                    </div>
-                    <div class="mb-3">
                         <asp:Label id="Label7" runat="server" 
                                    AssociatedControlId="Cultures">
                             <%# YAF.App_GlobalResources.Install.Culture %>
@@ -608,7 +598,7 @@
                             <div class="modal-body">
                                 <asp:PlaceHolder ID="errorMessage" runat="server" Visible="false">
                                     <div class="alert alert-warning">
-                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                        <button type="button" class="btn-close" data-dismiss="alert" aria-hidden="true"></button>
                                         <asp:Literal runat="server" ID="errorMessageContent"></asp:Literal>
                                     </div>
                                 </asp:PlaceHolder>

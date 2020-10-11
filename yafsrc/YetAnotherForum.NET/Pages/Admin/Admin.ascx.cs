@@ -27,7 +27,6 @@ namespace YAF.Pages.Admin
     #region Using
 
     using System;
-    using System.Data;
     using System.Data.SqlClient;
     using System.Linq;
     using System.Net.Mail;
@@ -41,7 +40,6 @@ namespace YAF.Pages.Admin
     using YAF.Core.Helpers;
     using YAF.Core.Model;
     using YAF.Core.Services;
-    using YAF.Core.Utilities;
     using YAF.Types;
     using YAF.Types.Constants;
     using YAF.Types.Extensions;
@@ -96,7 +94,7 @@ namespace YAF.Pages.Admin
                         var verifyEmail = new TemplateEmail("VERIFYEMAIL");
 
                         var subject = this.Get<ILocalization>()
-                            .GetTextFormatted("VERIFICATION_EMAIL_SUBJECT", this.Get<BoardSettings>().Name);
+                            .GetTextFormatted("VERIFICATION_EMAIL_SUBJECT", this.PageContext.BoardSettings.Name);
 
                         verifyEmail.TemplateParams["{link}"] = BuildLink.GetLink(
                             ForumPages.Account_Approve,
@@ -104,7 +102,7 @@ namespace YAF.Pages.Admin
                             "code={0}",
                             checkMail.Hash);
                         verifyEmail.TemplateParams["{key}"] = checkMail.Hash;
-                        verifyEmail.TemplateParams["{forumname}"] = this.Get<BoardSettings>().Name;
+                        verifyEmail.TemplateParams["{forumname}"] = this.PageContext.BoardSettings.Name;
                         verifyEmail.TemplateParams["{forumlink}"] = BoardInfo.ForumURL;
 
                         verifyEmail.SendEmail(new MailAddress(checkMail.Email, commandArgument[1]), subject);
@@ -164,8 +162,6 @@ namespace YAF.Pages.Admin
                 case "approveall":
                     this.Get<IAspNetUsersHelper>().ApproveAll();
 
-                    // vzrus: Should delete users from send email list
-                    this.GetRepository<User>().ApproveAll(this.PageContext.PageBoardID);
                     this.BindData();
                     break;
             }
@@ -242,6 +238,16 @@ namespace YAF.Pages.Admin
                 return;
             }
 
+            this.PageSize.DataSource = StaticDataHelper.PageEntries();
+            this.PageSize.DataTextField = "Name";
+            this.PageSize.DataValueField = "Value";
+            this.PageSize.DataBind();
+
+            this.PageSizeUnverified.DataSource = StaticDataHelper.PageEntries();
+            this.PageSizeUnverified.DataTextField = "Name";
+            this.PageSizeUnverified.DataValueField = "Value";
+            this.PageSizeUnverified.DataBind();
+
             this.BoardStatsSelect.Visible = this.PageContext.User.UserFlags.IsHostAdmin;
 
             // bind data
@@ -263,6 +269,54 @@ namespace YAF.Pages.Admin
             this.PageLinks.AddLink(this.GetText("ADMIN_ADMIN", "Administration"), string.Empty);
 
             this.Page.Header.Title = this.GetText("ADMIN_ADMIN", "Administration");
+        }
+
+        /// <summary>
+        /// The pager top_ page change.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void PagerTopChange([NotNull] object sender, [NotNull] EventArgs e)
+        {
+            this.BindActiveUserData();
+        }
+
+        /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeSelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.BindActiveUserData();
+        }
+
+        /// <summary>
+        /// The pager top_ page change.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void PagerUnverifiedChange([NotNull] object sender, [NotNull] EventArgs e)
+        {
+            this.BindUnverifiedUsers();
+        }
+
+        /// <summary>
+        /// The page size on selected index changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        protected void PageSizeUnverifiedSelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.BindUnverifiedUsers();
         }
 
         /// <summary>
@@ -297,14 +351,15 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void BindActiveUserData()
         {
-            var activeUsers = this.GetActiveUsersData(true, true);
+            this.PagerTop.PageSize = this.PageSize.SelectedValue.ToType<int>();
 
-            if (activeUsers.HasRows())
-            {
-                this.PageContext.PageElements.RegisterJsBlock(
-                    "ActiveUsersTablesorterLoadJs",
-                    JavaScriptBlocks.LoadTableSorter("#ActiveUsers", "sortList: [[0,0]]", "#ActiveUsersPager"));
-            }
+            var activeUsers = this.GetRepository<Active>().ListUsersPaged(
+                this.PageContext.PageUserID,
+                true,
+                true,
+                this.PageContext.BoardSettings.ActiveListTime,
+                this.PagerTop.CurrentPageIndex,
+                this.PagerTop.PageSize);
 
             this.ActiveList.DataSource = activeUsers;
             this.ActiveList.DataBind();
@@ -323,9 +378,6 @@ namespace YAF.Pages.Admin
 
             var boards = this.GetRepository<Board>().GetAll();
 
-            // add row for "all boards" (null value)
-            boards.Insert(0, new Board { ID = -1, Name = this.GetText("ADMIN_ADMIN", "ALL_BOARDS") });
-
             // set data source
             this.BoardStatsSelect.DataSource = boards;
             this.BoardStatsSelect.DataBind();
@@ -341,55 +393,36 @@ namespace YAF.Pages.Admin
         /// </summary>
         private void BindData()
         {
-            this.UnverifiedUsersHolder.Visible = !Config.IsDotNetNuke;
-
-            if (this.UnverifiedUsersHolder.Visible)
-            {
-                var unverifiedUsers = this.GetRepository<User>().UnApprovedUsers(this.PageContext.PageBoardID);
-
-                if (unverifiedUsers.Any())
-                {
-                    this.PageContext.PageElements.RegisterJsBlock(
-                        "UnverifiedUserstablesorterLoadJs",
-                        JavaScriptBlocks.LoadTableSorter(
-                            "#UnverifiedUsers",
-                            "headers: { 4: { sorter: false }},sortList: [[3,1],[0,0]]",
-                            "#UnverifiedUsersPager"));
-                }
-
-                // bind list
-                this.UserList.DataSource = unverifiedUsers;
-                this.UserList.DataBind();
-            }
+            this.BindUnverifiedUsers();
 
             // get stats for current board, selected board or all boards (see function)
-            var row = this.GetRepository<Board>().Stats(this.GetSelectedBoardId());
+            var data = this.GetRepository<Board>().Stats(this.GetSelectedBoardId());
 
-            this.NumPosts.Text = $"{row["NumPosts"]:N0}";
-            this.NumTopics.Text = $"{row["NumTopics"]:N0}";
-            this.NumUsers.Text = $"{row["NumUsers"]:N0}";
+            this.NumPosts.Text = $"{(int)data.Posts:N0}";
+            this.NumTopics.Text = $"{(int)data.Topics:N0}";
+            this.NumUsers.Text = $"{(int)data.Users:N0}";
 
-            var span = System.DateTime.UtcNow - (System.DateTime)row["BoardStart"];
+            var span = System.DateTime.UtcNow - (System.DateTime)data.BoardStart;
             double days = span.Days;
 
             this.BoardStart.Text = this.Get<IDateTime>().FormatDateTimeTopic(
-                this.Get<BoardSettings>().UseFarsiCalender
-                    ? PersianDateConverter.ToPersianDate((System.DateTime)row["BoardStart"])
-                    : row["BoardStart"]);
+                this.PageContext.BoardSettings.UseFarsiCalender
+                    ? PersianDateConverter.ToPersianDate((System.DateTime)data.BoardStart)
+                    : data.BoardStart);
 
             this.BoardStartAgo.Text = new DisplayDateTime
             {
-                                              DateTime = (System.DateTime)row["BoardStart"], Format = DateTimeFormat.BothTopic
-                                          }.RenderToString();
+                DateTime = (System.DateTime)data.BoardStart, Format = DateTimeFormat.BothTopic
+            }.RenderToString();
 
             if (days < 1)
             {
                 days = 1;
             }
 
-            this.DayPosts.Text = $"{row["NumPosts"].ToType<int>() / days:N2}";
-            this.DayTopics.Text = $"{row["NumTopics"].ToType<int>() / days:N2}";
-            this.DayUsers.Text = $"{row["NumUsers"].ToType<int>() / days:N2}";
+            this.DayPosts.Text = $"{(int)data.Posts / days:N2}";
+            this.DayTopics.Text = $"{(int)data.Topics / days:N2}";
+            this.DayUsers.Text = $"{(int)data.Users / days:N2}";
 
             try
             {
@@ -406,28 +439,25 @@ namespace YAF.Pages.Admin
         }
 
         /// <summary>
-        /// Gets active user data Table data for a page user
+        /// Bind unverified users.
         /// </summary>
-        /// <param name="showGuests">
-        /// The show guests.
-        /// </param>
-        /// <param name="showCrawlers">
-        /// The show crawlers.
-        /// </param>
-        /// <returns>
-        /// A DataTable
-        /// </returns>
-        private DataTable GetActiveUsersData(bool showGuests, bool showCrawlers)
+        private void BindUnverifiedUsers()
         {
-            var activeUsers = this.GetRepository<Active>()
-                .ListUserAsDataTable(
-                    this.PageContext.PageUserID,
-                    showGuests,
-                    showCrawlers,
-                    this.PageContext.BoardSettings.ActiveListTime,
-                    this.PageContext.BoardSettings.UseStyledNicks);
+            this.UnverifiedUsersHolder.Visible = !Config.IsDotNetNuke;
 
-            return activeUsers;
+            if (!this.UnverifiedUsersHolder.Visible)
+            {
+                return;
+            }
+
+            this.PagerUnverified.PageSize = this.PageSizeUnverified.SelectedValue.ToType<int>();
+
+            var unverifiedUsers = this.GetRepository<User>().UnApprovedUsers(this.PageContext.PageBoardID)
+                .GetPaged(this.PagerUnverified);
+
+            // bind list
+            this.UserList.DataSource = unverifiedUsers;
+            this.UserList.DataBind();
         }
 
         /// <summary>
@@ -436,16 +466,12 @@ namespace YAF.Pages.Admin
         /// <returns>
         /// Returns ID of selected board (for host admin), ID of current board (for admin), null if all boards is selected.
         /// </returns>
-        private int? GetSelectedBoardId()
+        private int GetSelectedBoardId()
         {
             // check dropdown only if user is host admin
-            if (!this.PageContext.User.UserFlags.IsHostAdmin)
-            {
-                return this.PageContext.PageBoardID;
-            }
-
-            // -1 means all boards are selected
-            return this.BoardStatsSelect.SelectedValue == "-1" ? (int?)null : this.BoardStatsSelect.SelectedValue.ToType<int>();
+            return !this.PageContext.User.UserFlags.IsHostAdmin
+                ? this.PageContext.PageBoardID
+                : this.BoardStatsSelect.SelectedValue.ToType<int>();
         }
 
         #endregion

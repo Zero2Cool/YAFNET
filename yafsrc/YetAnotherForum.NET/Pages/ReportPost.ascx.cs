@@ -29,7 +29,6 @@ namespace YAF.Pages
     using System;
     using System.Web;
 
-    using YAF.Configuration;
     using YAF.Core.BasePages;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
@@ -52,9 +51,9 @@ namespace YAF.Pages
         #region Constants and Fields
 
         /// <summary>
-        ///   To save message id value.
+        ///   The _all posts by user.
         /// </summary>
-        private int messageID;
+        private Tuple<Topic, Message, User, Forum> message;
 
         /// <summary>
         /// The topic name.
@@ -62,6 +61,14 @@ namespace YAF.Pages
         private string topicName;
 
         #endregion
+
+        /// <summary>
+        ///   Gets AllPostsByUser.
+        /// </summary>
+        public Tuple<Topic, Message, User, Forum> Message =>
+            this.message ??= this.GetRepository<Message>().GetMessageWithAccess(this.MessageId, this.PageContext.PageUserID);
+
+        protected int MessageId => Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("m"));
 
         #region Constructors and Destructors
 
@@ -108,29 +115,29 @@ namespace YAF.Pages
                 return;
             }
 
-            if (this.Report.Text.Length > this.Get<BoardSettings>().MaxReportPostChars)
+            if (this.Report.Text.Length > this.PageContext.BoardSettings.MaxReportPostChars)
             {
                 this.PageContext.AddLoadMessage(
-                    this.GetTextFormatted("REPORTTEXT_TOOLONG", this.Get<BoardSettings>().MaxReportPostChars),
+                    this.GetTextFormatted("REPORTTEXT_TOOLONG", this.PageContext.BoardSettings.MaxReportPostChars),
                     MessageTypes.danger);
 
                 return;
             }
 
             // Save the reported message
-            this.GetRepository<Message>().Report(
-                this.messageID,
+            this.GetRepository<MessageReported>().Report(
+                this.Message,
                 this.PageContext.PageUserID,
                 DateTime.UtcNow,
                 this.Report.Text);
 
             // Send Notification to Mods about the Reported Post.
-            if (this.Get<BoardSettings>().EmailModeratorsOnReportedPost)
+            if (this.PageContext.BoardSettings.EmailModeratorsOnReportedPost)
             {
                 // not approved, notify moderators
                 this.Get<ISendNotification>().ToModeratorsThatMessageWasReported(
                     this.PageContext.PageForumID,
-                    this.messageID,
+                    this.MessageId,
                     this.PageContext.PageUserID,
                     this.Report.Text);
             }
@@ -149,13 +156,10 @@ namespace YAF.Pages
             if (this.Get<HttpRequestBase>().QueryString.Exists("m"))
             {
                 // We check here if the user have access to the option
-                if (!this.Get<IPermissions>().Check(this.Get<BoardSettings>().ReportPostPermissions))
+                if (!this.Get<IPermissions>().Check(this.PageContext.BoardSettings.ReportPostPermissions))
                 {
                     BuildLink.Redirect(ForumPages.Info, "i=1");
                 }
-
-                this.messageID =
-                    Security.StringToIntOrRedirect(this.Get<HttpRequestBase>().QueryString.GetFirstOrDefault("m"));
             }
 
             this.PageContext.PageElements.RegisterJsBlockStartup(
@@ -167,31 +171,28 @@ namespace YAF.Pages
                 return;
             }
 
-            // Get reported message text for better quoting                    
-            var message = this.GetRepository<Message>().GetMessageWithAccess(this.messageID, this.PageContext.PageUserID);
-
             // Checking if the user has a right to view the message and getting data  
-            if (message != null)
+            if (this.Message != null)
             {
-                this.topicName = message.Item1.TopicName;
+                this.topicName = this.Message.Item1.TopicName;
 
-                this.MessagePreview.CurrentMessage = message.Item2;
+                this.MessagePreview.CurrentMessage = this.Message.Item2;
 
-                this.UserLink1.Suspended = message.Item3.Suspended;
-                this.UserLink1.ReplaceName = message.Item3.DisplayOrUserName();
-                this.UserLink1.Style = message.Item3.UserStyle;
-                this.UserLink1.UserID = message.Item3.ID;
+                this.UserLink1.Suspended = this.Message.Item3.Suspended;
+                this.UserLink1.ReplaceName = this.Message.Item3.DisplayOrUserName();
+                this.UserLink1.Style = this.Message.Item3.UserStyle;
+                this.UserLink1.UserID = this.Message.Item3.ID;
 
-                this.Posted.DateTime = message.Item2.Posted;
+                this.Posted.DateTime = this.Message.Item2.Posted;
             }
             else
             {
                 BuildLink.Redirect(ForumPages.Info, "i=1");
             }
 
-            this.Report.MaxLength = this.Get<BoardSettings>().MaxReportPostChars;
+            this.Report.MaxLength = this.PageContext.BoardSettings.MaxReportPostChars;
 
-            this.LocalizedLblMaxNumberOfPost.Param0 = this.Get<BoardSettings>().MaxReportPostChars.ToString();
+            this.LocalizedLblMaxNumberOfPost.Param0 = this.PageContext.BoardSettings.MaxReportPostChars.ToString();
         }
 
         /// <summary>
@@ -209,7 +210,7 @@ namespace YAF.Pages
         protected void RedirectToPost()
         {
             // Redirect to reported post
-            BuildLink.Redirect(ForumPages.Posts, "m={0}&name={1}#post{0}", this.messageID, this.topicName);
+            BuildLink.Redirect(ForumPages.Posts, "m={0}&name={1}#post{0}", this.MessageId, this.topicName);
         }
 
         #endregion

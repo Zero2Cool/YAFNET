@@ -31,7 +31,6 @@ namespace YAF.Controls
     using System.Linq;
     using System.Web;
 
-    using YAF.Configuration;
     using YAF.Core.BaseControls;
     using YAF.Core.Extensions;
     using YAF.Core.Model;
@@ -59,7 +58,7 @@ namespace YAF.Controls
         /// <summary>
         ///   The _all posts by user.
         /// </summary>
-        private IOrderedEnumerable<Message> allPostsByUser;
+        private IOrderedEnumerable<Tuple<Message, Topic>> allPostsByUser;
 
         /// <summary>
         /// The user.
@@ -73,7 +72,7 @@ namespace YAF.Controls
         /// <summary>
         ///   Gets AllPostsByUser.
         /// </summary>
-        public IOrderedEnumerable<Message> AllPostsByUser =>
+        public IOrderedEnumerable<Tuple<Message, Topic>> AllPostsByUser =>
             this.allPostsByUser ??= this.GetRepository<Message>().GetAllUserMessages(this.CurrentUserId);
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace YAF.Controls
         {
             get
             {
-                var list = this.AllPostsByUser.Select(m => m.IP).OrderBy(x => x).Distinct().ToList();
+                var list = this.AllPostsByUser.Select(m => m.Item1.IP).OrderBy(x => x).Distinct().ToList();
 
                 if (list.Count.Equals(0))
                 {
@@ -151,7 +150,7 @@ namespace YAF.Controls
 
             this.DeleteAllUserMessages();
 
-            if (this.ReportUser.Checked && this.Get<BoardSettings>().StopForumSpamApiKey.IsSet() &&
+            if (this.ReportUser.Checked && this.PageContext.BoardSettings.StopForumSpamApiKey.IsSet() &&
                 this.IPAddresses.Any())
             {
                 try
@@ -305,12 +304,12 @@ namespace YAF.Controls
                     ? this.User.Item1.DisplayOrUserName()
                     : this.Get<IAspNetUsersHelper>().GuestUserName);
 
-            this.ReportUserRow.Visible = this.Get<BoardSettings>().StopForumSpamApiKey.IsSet();
+            this.ReportUserRow.Visible = this.PageContext.BoardSettings.StopForumSpamApiKey.IsSet();
 
             // load ip address history for user...
             this.IPAddresses.Take(5).ForEach(
                 ipAddress => this.IpAddresses.Text +=
-                                 $@"<a href=""{string.Format(this.Get<BoardSettings>().IPInfoPageURL, ipAddress)}""
+                                 $@"<a href=""{string.Format(this.PageContext.BoardSettings.IPInfoPageURL, ipAddress)}""
                                        target=""_blank"" 
                                        title=""{this.GetText("COMMON", "TT_IPDETAILS")}"">
                                        {ipAddress}
@@ -350,9 +349,18 @@ namespace YAF.Controls
         private void DeleteAllUserMessages()
         {
             // delete posts...
-            var messageIds = this.AllPostsByUser.Select(m => m.ID).Distinct().ToList();
+            var messages = this.AllPostsByUser.Distinct().ToList();
 
-            messageIds.ForEach(x => this.GetRepository<Message>().Delete(x, true, string.Empty, 1, true, true));
+            messages.ForEach(
+                x => this.GetRepository<Message>().Delete(
+                    x.Item2.ForumID,
+                    x.Item2.ID,
+                    x.Item1.ID,
+                    true,
+                    string.Empty,
+                    true,
+                    true,
+                    true));
         }
 
         #endregion

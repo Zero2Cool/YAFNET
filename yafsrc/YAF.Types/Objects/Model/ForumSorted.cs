@@ -22,33 +22,31 @@
  * under the License.
  */
 
-namespace YAF.Types.Extensions
+namespace YAF.Types.Objects.Model
 {
-    #region Using
-
-    using System.Data;
-
-    using YAF.Types;
-
-    #endregion
-
     /// <summary>
-    /// The DataTable Extensions
+    /// The forum sorted.
     /// </summary>
-    public static class DataTableExtensions
+    public class ForumSorted
     {
-        #region Public Methods
+        /// <summary>
+        /// Gets or sets the forum id.
+        /// </summary>
+        public int ForumID { get; set; }
 
         /// <summary>
-        /// Determines whether the specified table has rows.
+        /// Gets or sets the forum.
         /// </summary>
-        /// <param name="table">The table.</param>
-        /// <returns>Returns if the table has rows or not</returns>
-        public static bool HasRows([CanBeNull] this DataTable table)
-        {
-            return table.Rows.Count > 0;
-        }
+        public string Forum { get; set; }
 
-        #endregion
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon.
+        /// </summary>
+        public string Icon { get; set; }
     }
 }

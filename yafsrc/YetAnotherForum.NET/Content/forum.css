@@ -72,7 +72,7 @@ ins {
   background-color: #99EE99 !important;
   text-decoration: underline !important; }
 
-/* PrismJS 1.21.0
+/* PrismJS 1.22.0
 https://prismjs.com/download.html?#themes=prism-okaidia&languages=markup+css+clike+javascript+aspnet+bash+basic+c+csharp+cpp+css-extras+git+java+python+scss+sql+vbnet+visual-basic&plugins=line-highlight+line-numbers+autolinker+normalize-whitespace+toolbar+copy-to-clipboard */
 /**
  * okaidia theme for JavaScript, CSS and HTML
@@ -524,11 +524,11 @@ div.code-toolbar > .toolbar span:focus {
   animation-name: fadeOutUp; }
 
 /*!
- * Font Awesome Free 5.14.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 /*!
- * Font Awesome Free 5.14.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 .fa,
@@ -744,9 +744,6 @@ readers do not read off random characters that represent icons */
 
 .fa-adn:before {
   content: "\f170"; }
-
-.fa-adobe:before {
-  content: "\f778"; }
 
 .fa-adversal:before {
   content: "\f36a"; }
@@ -1536,6 +1533,9 @@ readers do not read off random characters that represent icons */
 
 .fa-cloud-upload-alt:before {
   content: "\f382"; }
+
+.fa-cloudflare:before {
+  content: "\e07d"; }
 
 .fa-cloudscale:before {
   content: "\f383"; }
@@ -2530,6 +2530,9 @@ readers do not read off random characters that represent icons */
 .fa-grunt:before {
   content: "\f3ad"; }
 
+.fa-guilded:before {
+  content: "\e07e"; }
+
 .fa-guitar:before {
   content: "\f7a6"; }
 
@@ -2704,6 +2707,9 @@ readers do not read off random characters that represent icons */
 .fa-history:before {
   content: "\f1da"; }
 
+.fa-hive:before {
+  content: "\e07f"; }
+
 .fa-hockey-puck:before {
   content: "\f453"; }
 
@@ -2833,11 +2839,17 @@ readers do not read off random characters that represent icons */
 .fa-info-circle:before {
   content: "\f05a"; }
 
+.fa-innosoft:before {
+  content: "\e080"; }
+
 .fa-instagram:before {
   content: "\f16d"; }
 
 .fa-instagram-square:before {
   content: "\e055"; }
+
+.fa-instalod:before {
+  content: "\e081"; }
 
 .fa-intercom:before {
   content: "\f7af"; }
@@ -3358,6 +3370,9 @@ readers do not read off random characters that represent icons */
 .fa-object-ungroup:before {
   content: "\f248"; }
 
+.fa-octopus-deploy:before {
+  content: "\e082"; }
+
 .fa-odnoklassniki:before {
   content: "\f263"; }
 
@@ -3495,6 +3510,9 @@ readers do not read off random characters that represent icons */
 
 .fa-pepper-hot:before {
   content: "\f816"; }
+
+.fa-perbyte:before {
+  content: "\e083"; }
 
 .fa-percent:before {
   content: "\f295"; }
@@ -4666,6 +4684,9 @@ readers do not read off random characters that represent icons */
 .fa-umbrella-beach:before {
   content: "\f5ca"; }
 
+.fa-uncharted:before {
+  content: "\e084"; }
+
 .fa-underline:before {
   content: "\f0cd"; }
 
@@ -4819,6 +4840,12 @@ readers do not read off random characters that represent icons */
 .fa-venus-mars:before {
   content: "\f228"; }
 
+.fa-vest:before {
+  content: "\e085"; }
+
+.fa-vest-patches:before {
+  content: "\e086"; }
+
 .fa-viacoin:before {
   content: "\f237"; }
 
@@ -4909,6 +4936,9 @@ readers do not read off random characters that represent icons */
 .fa-warehouse:before {
   content: "\f494"; }
 
+.fa-watchman-monitoring:before {
+  content: "\e087"; }
+
 .fa-water:before {
   content: "\f773"; }
 
@@ -4983,6 +5013,9 @@ readers do not read off random characters that represent icons */
 
 .fa-wizards-of-the-coast:before {
   content: "\f730"; }
+
+.fa-wodu:before {
+  content: "\e088"; }
 
 .fa-wolf-pack-battalion:before {
   content: "\f514"; }
@@ -5081,7 +5114,7 @@ readers do not read off random characters that represent icons */
   width: auto; }
 
 /*!
- * Font Awesome Free 5.14.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 @font-face {
@@ -5098,7 +5131,7 @@ readers do not read off random characters that represent icons */
   font-weight: 900; }
 
 /*!
- * Font Awesome Free 5.14.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 @font-face {
@@ -5114,7 +5147,7 @@ readers do not read off random characters that represent icons */
   font-weight: 400; }
 
 /*!
- * Font Awesome Free 5.14.0 by @fontawesome - https://fontawesome.com
+ * Font Awesome Free 5.15.1 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
  */
 @font-face {
@@ -5132,8 +5165,8 @@ readers do not read off random characters that represent icons */
 /* Extensions */
 .fa-badge-bg {
   position: absolute;
-  right: 1%;
-  bottom: -2%;
+  right: 0%;
+  bottom: -5%;
   font-size: 91%;
   height: 60%;
   width: 60%;
@@ -5149,6 +5182,9 @@ readers do not read off random characters that represent icons */
   width: 30%;
   line-height: 120%;
   text-align: center; }
+
+.fa-outline-inverse {
+  text-shadow: -0.12ex 0 #FFF,-0.1ex -0.1ex #FFF, 0 -0.12ex #FFF, 0.1ex -0.1ex #FFF, 0.12ex 0 #FFF, 0.1ex 0.1ex #FFF, 0 0.12ex #FFF, -0.1ex 0.1ex #FFF; }
 
 .flag-icon-background, .flag-icon {
   background-size: contain;
@@ -6476,11 +6512,11 @@ readers do not read off random characters that represent icons */
   cursor: pointer;
   white-space: normal; }
 
-.tablesorter-bootstrap:not(.table-dark) thead:not(.table-dark) .tablesorter-header,
-.tablesorter-bootstrap:not(.table-dark) tfoot th,
-.tablesorter-bootstrap:not(.table-dark) tfoot td {
-  background-color: #eee; }
-
+/*  .tablesorter-bootstrap:not(.table-dark) thead:not(.table-dark) .tablesorter-header,
+    .tablesorter-bootstrap:not(.table-dark) tfoot th,
+    .tablesorter-bootstrap:not(.table-dark) tfoot td {
+        background-color: #eee;
+    }*/
 .tablesorter-bootstrap thead .sorter-false {
   cursor: default;
   background-image: none; }
@@ -6515,53 +6551,11 @@ readers do not read off random characters that represent icons */
 .tablesorter-bootstrap.table-dark thead .tablesorter-headerDesc {
   background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgdmlld0JveD0iMCAwIDE0IDE0Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMTQgNWwtMi41LTIuNS00LjUgNC41LTQuNS00LjVMMCA1IDcgMTJ6Ii8+PC9zdmc+); }
 
-/* since bootstrap (table-striped) uses nth-child(), we just use this to add a zebra stripe color */
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.odd > td,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.tablesorter-hasChildRow.odd:hover ~ tr.tablesorter-hasChildRow.odd ~ .tablesorter-childRow.odd > td {
-  background-color: #f9f9f9; }
-
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.hover > td,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.odd:hover > td,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.even:hover > td,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.tablesorter-hasChildRow.odd:hover ~ .tablesorter-childRow.odd > td,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.tablesorter-hasChildRow.even:hover ~ .tablesorter-childRow.even > td {
-  background-color: #f5f5f5; }
-
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.even > td,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.tablesorter-hasChildRow.even:hover ~ tr.tablesorter-hasChildRow.even ~ .tablesorter-childRow.even > td {
-  background-color: #fff; }
-
 /* processing icon */
 .tablesorter-bootstrap .tablesorter-processing {
   background-image: url("data:image/gif;base64,R0lGODlhFAAUAKEAAO7u7lpaWgAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQBCgACACwAAAAAFAAUAAACQZRvoIDtu1wLQUAlqKTVxqwhXIiBnDg6Y4eyx4lKW5XK7wrLeK3vbq8J2W4T4e1nMhpWrZCTt3xKZ8kgsggdJmUFACH5BAEKAAIALAcAAAALAAcAAAIUVB6ii7jajgCAuUmtovxtXnmdUAAAIfkEAQoAAgAsDQACAAcACwAAAhRUIpmHy/3gUVQAQO9NetuugCFWAAAh+QQBCgACACwNAAcABwALAAACE5QVcZjKbVo6ck2AF95m5/6BSwEAIfkEAQoAAgAsBwANAAsABwAAAhOUH3kr6QaAcSrGWe1VQl+mMUIBACH5BAEKAAIALAIADQALAAcAAAIUlICmh7ncTAgqijkruDiv7n2YUAAAIfkEAQoAAgAsAAAHAAcACwAAAhQUIGmHyedehIoqFXLKfPOAaZdWAAAh+QQFCgACACwAAAIABwALAAACFJQFcJiXb15zLYRl7cla8OtlGGgUADs=");
   background-position: center center !important;
   background-repeat: no-repeat !important; }
-
-/* Column Widget - column sort colors */
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.odd td.primary {
-  background-color: #bfbfbf; }
-
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr td.primary,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.even td.primary {
-  background-color: #d9d9d9; }
-
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.odd td.secondary {
-  background-color: #d9d9d9; }
-
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr td.secondary,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.even td.secondary {
-  background-color: #e6e6e6; }
-
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.odd td.tertiary {
-  background-color: #e6e6e6; }
-
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr td.tertiary,
-.tablesorter-bootstrap:not(.table-dark) > tbody > tr.even td.tertiary {
-  background-color: #f2f2f2; }
-
-/* caption */
-.tablesorter-bootstrap:not(.table-dark) > .caption {
-  background-color: #fff; }
 
 /* filter widget */
 .tablesorter-bootstrap .tablesorter-filter-row input.tablesorter-filter,
@@ -6572,13 +6566,6 @@ readers do not read off random characters that represent icons */
   box-sizing: border-box;
   -webkit-transition: height 0.1s ease;
   transition: height 0.1s ease; }
-
-.tablesorter-bootstrap:not(.table-dark) .tablesorter-filter-row {
-  background-color: #efefef; }
-
-.tablesorter-bootstrap:not(.table-dark) .tablesorter-filter-row input.tablesorter-filter,
-.tablesorter-bootstrap:not(.table-dark) .tablesorter-filter-row select.tablesorter-filter {
-  color: #333; }
 
 .tablesorter-bootstrap .tablesorter-filter-row .tablesorter-filter.disabled {
   cursor: not-allowed;
@@ -7622,7 +7609,7 @@ readers do not read off random characters that represent icons */
 .input-group.date .input-group-addon {
   cursor: pointer; }
 
-.sr-only {
+.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -8285,6 +8272,7 @@ div#UploadDialog {
 
 .scrollable-dropdown {
   height: auto;
+  width: 100%;
   max-height: 200px;
   overflow-x: hidden; }
 

@@ -119,7 +119,7 @@ namespace YAF.Pages
         /// <summary>
         ///   Gets TopicID.
         /// </summary>
-        protected int TopicId => this.Get<HttpRequestBase>().QueryString.GetFirstOrDefaultAs<int>("t");
+        protected int TopicId => this.PageContext.PageTopicID;
 
         #endregion
 
@@ -213,7 +213,7 @@ namespace YAF.Pages
             }
 
             if (!this.Get<IPermissions>().Check(this.PageContext.BoardSettings.AllowCreateTopicsSameName)
-                && this.GetRepository<Topic>().CheckForDuplicateTopic(this.TopicSubjectTextBox.Text.Trim())
+                && this.GetRepository<Topic>().CheckForDuplicate(this.TopicSubjectTextBox.Text.Trim())
                 && !this.EditMessageId.HasValue)
             {
                 this.PageContext.AddLoadMessage(this.GetText("SUBJECT_DUPLICATE"), MessageTypes.warning);
@@ -572,7 +572,7 @@ namespace YAF.Pages
 
             this.GetRepository<Message>().Update(
                 editMessage.ID,
-                this.Priority.SelectedValue.ToType<int>(),
+                this.Priority.SelectedValue.ToType<short>(),
                 this.forumEditor.Text.Trim(),
                 descriptionSave.Trim(),
                 string.Empty,
@@ -644,6 +644,7 @@ namespace YAF.Pages
             };
 
             var messageId = this.GetRepository<Message>().SaveNew(
+                this.PageContext.PageForumID,
                 this.TopicId,
                 this.PageContext.PageUserID,
                 this.forumEditor.Text,
@@ -997,9 +998,6 @@ namespace YAF.Pages
             this.PostReply.TextLocalizedTag = "SAVE";
             this.PostReply.TextLocalizedPage = "COMMON";
 
-            // add topic link...
-            this.PageLinks.AddTopic(this.Server.HtmlDecode(this.PageContext.PageTopicName), this.PageContext.PageTopicID);
-
             // editing..
             this.PageLinks.AddLink(this.GetText("EDIT"));
 
@@ -1120,13 +1118,16 @@ namespace YAF.Pages
             this.StyleRow.Visible = false;
             this.TagsHolder.Visible = false;
 
-            this.Title.Text = this.GetText("reply");
-
             // add topic link...
-            this.PageLinks.AddTopic(this.topic.TopicName, this.TopicId.ToType<int>());
+            this.PageLinks.AddTopic(this.topic.TopicName, this.PageContext.PageTopicID);
 
-            // add "reply" text...
-            this.PageLinks.AddLink(this.GetText("reply"));
+            if (!this.EditMessageId.HasValue)
+            {
+                this.Title.Text = this.GetText("reply");
+                
+                // add "reply" text...
+                this.PageLinks.AddLink(this.GetText("reply"));
+            }
 
             this.HandleUploadControls();
 
